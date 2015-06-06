@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<project>
+  <fileVersion>2</fileVersion>
+  <fileChecksum>2922592762</fileChecksum>
+  <configuration>
+    <name>Debug</name>
+    <outputs>
+      <file>$TOOLKIT_DIR$\inc\c\DLib_Product_string.h</file>
+      <file>$PROJ_DIR$\src\libemqtt.c</file>
+      <file>$TOOLKIT_DIR$\inc\c\DLib_Product.h</file>
+      <file>$PROJ_DIR$\Build\Debug\Obj\libemqtt.o</file>
+      <file>$TOOLKIT_DIR$\inc\c\DLib_Config_Normal.h</file>
+      <file>$PROJ_DIR$\..\mqx\source\include\mqx_ioc.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\psp_supp.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\psp_cpudef.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\psp_comp.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\ycheck.h</file>
+      <file>$PROJ_DIR$\..\mqx\source\include\mqx_macros.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\cortex.h</file>
+      <file>$PROJ_DIR$\Build\Debug\Obj\libemqtt.pbi</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\psp_cpu.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\kinetis.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\MK60DZ10.h</file>
+      <file>$PROJ_DIR$\..\mqx\source\include\queue.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\psptypes.h</file>
+      <file>$PROJ_DIR$\..\mqx\source\include\lwmem.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\DLib_Threads.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\xencoding_limits.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\intrinsics.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\string.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\nvic.h</file>
+      <file>$PROJ_DIR$\..\mqx\source\include\lwsem.h</file>
+      <file>$PROJ_DIR$\..\mqx\source\include\mqx.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\comp.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\kinetis_mpu.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\yvals.h</file>
+      <file>$PROJ_DIR$\..\config\common\verif_enabled_config.h</file>
+      <file>$PROJ_DIR$\..\config\user_config.h</file>
+      <file>$PROJ_DIR$\..\config\common\small_ram_config.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\DLib_Defaults.h</file>
+      <file>$PROJ_DIR$\..\mqx\source\include\mqx_cpudef.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\ysizet.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\stdint.h</file>
+      <file>$PROJ_DIR$\include\libemqtt.h</file>
+      <file>$PROJ_DIR$\..\mqx\source\include\mqx_cnfg.h</file>
+    </outputs>
+    <file>
+      <name>$PROJ_DIR$\src\libemqtt.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 3</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 25 37 30 31 29 17 8 7 33 26 21 9 6 5 10 16 24 13 14 15 35 28 32 4 2 20 19 23 27 11 22 34 0 18 36</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 25 37 30 31 29 17 8 7 33 26 21 9 6 5 10 16 24 13 14 15 35 28 32 4 2 20 19 23 27 11 22 34 0 18 36</file>
+        </tool>
+      </inputs>
+    </file>
+  </configuration>
+  <configuration>
+    <name>Release</name>
+    <outputs>
+      <file>$TOOLKIT_DIR$\inc\c\DLib_Product_string.h</file>
+      <file>$PROJ_DIR$\src\libemqtt.c</file>
+      <file>$TOOLKIT_DIR$\inc\c\DLib_Product.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\DLib_Config_Normal.h</file>
+      <file>$PROJ_DIR$\..\mqx\source\include\mqx_ioc.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\psp_supp.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\psp_cpudef.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\psp_comp.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\ycheck.h</file>
+      <file>$PROJ_DIR$\..\mqx\source\include\mqx_macros.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\cortex.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\psp_cpu.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\kinetis.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\MK60DZ10.h</file>
+      <file>$PROJ_DIR$\..\mqx\source\include\queue.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\psptypes.h</file>
+      <file>$PROJ_DIR$\..\mqx\source\include\lwmem.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\DLib_Threads.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\xencoding_limits.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\intrinsics.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\string.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\nvic.h</file>
+      <file>$PROJ_DIR$\..\mqx\source\include\lwsem.h</file>
+      <file>$PROJ_DIR$\..\mqx\source\include\mqx.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\comp.h</file>
+      <file>$PROJ_DIR$\..\mqx\include\psp\cortex_m\kinetis_mpu.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\yvals.h</file>
+      <file>$PROJ_DIR$\..\config\common\verif_enabled_config.h</file>
+      <file>$PROJ_DIR$\..\config\user_config.h</file>
+      <file>$PROJ_DIR$\..\config\common\small_ram_config.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\DLib_Defaults.h</file>
+      <file>$PROJ_DIR$\..\mqx\source\include\mqx_cpudef.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\ysizet.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\stdint.h</file>
+      <file>$PROJ_DIR$\include\libemqtt.h</file>
+      <file>$PROJ_DIR$\..\mqx\source\include\mqx_cnfg.h</file>
+      <file>$PROJ_DIR$\Build\Release\Obj\libemqtt.pbi</file>
+      <file>$PROJ_DIR$\Build\Release\Obj\libemqtt.o</file>
+    </outputs>
+    <file>
+      <name>$PROJ_DIR$\src\libemqtt.c</name>
+      <outputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 37</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 36</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCARM</name>
+          <file> 23 35 28 29 27 15 7 6 31 24 19 8 5 4 9 14 22 11 12 13 33 26 30 3 2 18 17 21 25 10 20 32 0 16 34</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 23 35 28 29 27 15 7 6 31 24 19 8 5 4 9 14 22 11 12 13 33 26 30 3 2 18 17 21 25 10 20 32 0 16 34</file>
+        </tool>
+      </inputs>
+    </file>
+  </configuration>
+</project>
+
+

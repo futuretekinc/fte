@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<Workspace>
+  <ConfigDictionary>
+    
+    
+    
+  <CurrentConfigs><Project>future_edgenode/Debug</Project><Project>libbsp/Release</Project><Project>libemqtt/Debug</Project><Project>librtcs/Debug</Project><Project>libshell/Debug</Project><Project>libmfs/Debug</Project><Project>libpsp/Debug</Project><Project>libusbd/Debug</Project><Project>libusbh/Debug</Project></CurrentConfigs><CurrentProj>future_edgenode</CurrentProj><OverviewSelected>0</OverviewSelected></ConfigDictionary>
+  <Desktop>
+    <Static>
+      <Workspace>
+        <ColumnWidths>
+          
+          
+          
+          
+        <Column0>304</Column0><Column1>27</Column1><Column2>27</Column2><Column3>27</Column3></ColumnWidths>
+      </Workspace>
+      <Build>
+        
+        
+        
+        
+      <PreferedWindows><Position>3</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows/></PreferedWindows><ColumnWidth0>20</ColumnWidth0><ColumnWidth1>1395</ColumnWidth1><ColumnWidth2>372</ColumnWidth2><ColumnWidth3>93</ColumnWidth3></Build>
+    <TerminalIO/><Debug-Log><PreferedWindows><Position>3</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows/></PreferedWindows><ColumnWidth0>20</ColumnWidth0><ColumnWidth1>1861</ColumnWidth1></Debug-Log><Find-in-Files><PreferedWindows><Position>3</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows/></PreferedWindows><ColumnWidth0>664</ColumnWidth0><ColumnWidth1>94</ColumnWidth1><ColumnWidth2>1138</ColumnWidth2></Find-in-Files><Select-Ambiguous-Definitions><PreferedWindows><Position>4</Position><ScreenPosX>923</ScreenPosX><ScreenPosY>643</ScreenPosY><Windows/></PreferedWindows><ColumnWidth0>664</ColumnWidth0><ColumnWidth1>94</ColumnWidth1><ColumnWidth2>1138</ColumnWidth2></Select-Ambiguous-Definitions><Find-All-References><PreferedWindows><Position>3</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows><Window><Factory>Debug-Log</Factory></Window></Windows></PreferedWindows><ColumnWidth0>664</ColumnWidth0><ColumnWidth1>94</ColumnWidth1><ColumnWidth2>1138</ColumnWidth2></Find-All-References></Static>
+    <Windows>
+      
+      
+    <Wnd2>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-30327-26258</Identity>
+            <TabName>Workspace</TabName>
+            <Factory>Workspace</Factory>
+            <Session>
+              
+            <NodeDict><ExpandedNode>&lt;ws&gt;</ExpandedNode><ExpandedNode>&lt;ws&gt;/fts_s5</ExpandedNode><ExpandedNode>future_edgenode</ExpandedNode><ExpandedNode>future_edgenode/Output</ExpandedNode><ExpandedNode>future_edgenode/Source</ExpandedNode><ExpandedNode>future_edgenode/Source/dev</ExpandedNode><ExpandedNode>future_edgenode/Source/mach</ExpandedNode><ExpandedNode>future_edgenode/Source/net</ExpandedNode><ExpandedNode>future_edgenode/Source/net/smng</ExpandedNode><ExpandedNode>future_edgenode/Source/net/snmp</ExpandedNode><ExpandedNode>future_edgenode/Source/obj</ExpandedNode><ExpandedNode>future_edgenode/Source/sys</ExpandedNode><ExpandedNode>future_edgenode/Source/task</ExpandedNode><ExpandedNode>future_edgenode/config</ExpandedNode><ExpandedNode>libbsp</ExpandedNode><ExpandedNode>libpsp</ExpandedNode><ExpandedNode>libpsp/PSP Cortex</ExpandedNode></NodeDict></Session>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd2><Wnd3><Tabs><Tab><Identity>TabID-3785-4184</Identity><TabName>Build</TabName><Factory>Build</Factory><Session/></Tab></Tabs><SelectedTab>0</SelectedTab></Wnd3></Windows>
+    <Editor>
+      
+      
+      
+      
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\target\source\obj\fte_object.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>784</YPos2><SelStart2>29484</SelStart2><SelEnd2>29484</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\target\source\obj\fte_cozir.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>0</YPos2><SelStart2>0</SelStart2><SelEnd2>0</SelEnd2></Tab><ActiveTab>1</ActiveTab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+    <Positions>
+      
+      
+      
+      
+      
+    <Top><Row0><Sizes><Toolbar-00e009b0><key>iaridepm.enu1</key></Toolbar-00e009b0></Sizes></Row0></Top><Left><Row0><Sizes><Wnd2><Rect><Top>-2</Top><Left>-2</Left><Bottom>795</Bottom><Right>395</Right><x>-2</x><y>-2</y><xscreen>45</xscreen><yscreen>23</yscreen><sizeHorzCX>23438</sizeHorzCX><sizeHorzCY>22158</sizeHorzCY><sizeVertCX>206771</sizeVertCX><sizeVertCY>767823</sizeVertCY></Rect></Wnd2></Sizes></Row0></Left><Right><Row0><Sizes/></Row0></Right><Bottom><Row0><Sizes><Wnd3><Rect><Top>-2</Top><Left>-2</Left><Bottom>198</Bottom><Right>1922</Right><x>-2</x><y>-2</y><xscreen>1924</xscreen><yscreen>200</yscreen><sizeHorzCX>1002083</sizeHorzCX><sizeHorzCY>192678</sizeHorzCY><sizeVertCX>104167</sizeVertCX><sizeVertCY>192678</sizeVertCY></Rect></Wnd3></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+  </Desktop>
+</Workspace>
+
+

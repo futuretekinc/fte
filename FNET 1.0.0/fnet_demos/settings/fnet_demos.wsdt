@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<Workspace>
+  <ConfigDictionary>
+    
+  <CurrentConfigs><Project>twrk60n512_shell/FLASH_512KB_PFLASH</Project><Project>twrk60n512_boot/FLASH_512KB_PFLASH</Project><Project>twrk60n512_shell_boot/FLASH_512KB_PFLASH</Project></CurrentConfigs><CurrentProj>twrk60n512_boot</CurrentProj><OverviewSelected>1</OverviewSelected></ConfigDictionary>
+  <Desktop>
+    <Static>
+      <Workspace>
+        <ColumnWidths>
+          
+          
+          
+          
+        <Column0>321</Column0><Column1>27</Column1><Column2>27</Column2><Column3>27</Column3></ColumnWidths>
+      </Workspace>
+      <Build>
+        
+        
+        
+        
+      <PreferedWindows><Position>3</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows><Window><Factory>Debug-Log</Factory></Window></Windows></PreferedWindows><ColumnWidth0>20</ColumnWidth0><ColumnWidth1>1395</ColumnWidth1><ColumnWidth2>372</ColumnWidth2><ColumnWidth3>93</ColumnWidth3></Build>
+      <Debug-Log>
+        <ColumnWidth0>20</ColumnWidth0>
+        <ColumnWidth1>1861</ColumnWidth1>
+      <PreferedWindows><Position>3</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows><Window><Factory>Build</Factory></Window></Windows></PreferedWindows></Debug-Log>
+      <TerminalIO/>
+    <Select-Ambiguous-Definitions><PreferedWindows><Position>3</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows/></PreferedWindows><ColumnWidth0>664</ColumnWidth0><ColumnWidth1>94</ColumnWidth1><ColumnWidth2>1138</ColumnWidth2></Select-Ambiguous-Definitions></Static>
+    <Windows>
+      
+      
+    <Wnd0>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-14496-20067</Identity>
+            <TabName>Workspace</TabName>
+            <Factory>Workspace</Factory>
+            <Session>
+              
+            <NodeDict><ExpandedNode>&lt;ws&gt;</ExpandedNode><ExpandedNode>&lt;ws&gt;/twrk60n512_boot</ExpandedNode><ExpandedNode>&lt;ws&gt;/twrk60n512_boot/fnet_stack</ExpandedNode><ExpandedNode>&lt;ws&gt;/twrk60n512_boot/fnet_stack/compiler</ExpandedNode><ExpandedNode>&lt;ws&gt;/twrk60n512_boot/startup_k60n512</ExpandedNode><ExpandedNode>twrk60n512_boot</ExpandedNode><ExpandedNode>twrk60n512_boot/Output</ExpandedNode><ExpandedNode>twrk60n512_boot/fnet_application</ExpandedNode><ExpandedNode>twrk60n512_boot/fnet_stack</ExpandedNode><ExpandedNode>twrk60n512_boot/fnet_stack/os</ExpandedNode><ExpandedNode>twrk60n512_boot/fnet_stack/stack</ExpandedNode><ExpandedNode>twrk60n512_boot/startup_k60n512</ExpandedNode><ExpandedNode>twrk60n512_shell</ExpandedNode><ExpandedNode>twrk60n512_shell/Linker Files</ExpandedNode><ExpandedNode>twrk60n512_shell/Output</ExpandedNode><ExpandedNode>twrk60n512_shell/startup_mk60n512</ExpandedNode><ExpandedNode>twrk60n512_shell_boot</ExpandedNode><ExpandedNode>twrk60n512_shell_boot/Linker Files</ExpandedNode><ExpandedNode>twrk60n512_shell_boot/Output</ExpandedNode><ExpandedNode>twrk60n512_shell_boot/startup_k60n512</ExpandedNode><ExpandedNode>twrk60n512_shell_boot/startup_k60n512/common</ExpandedNode><ExpandedNode>twrk60n512_shell_boot/startup_k60n512/drivers</ExpandedNode></NodeDict></Session>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd0><Wnd3><Tabs><Tab><Identity>TabID-21504-5590</Identity><TabName>Build</TabName><Factory>Build</Factory><Session/></Tab></Tabs><SelectedTab>0</SelectedTab></Wnd3></Windows>
+    <Editor>
+      
+      
+      
+      
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\fnet_stack\cpu\mk\fnet_mk_config.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>87</YPos2><SelStart2>3867</SelStart2><SelEnd2>3867</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\fnet_stack\fnet_config.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>23</YPos2><SelStart2>2328</SelStart2><SelEnd2>2328</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\fnet_stack\fnet.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>60</YPos2><SelStart2>0</SelStart2><SelEnd2>0</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\common\startup\startup_mk60n512\k60_tower.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>16</YPos2><SelStart2>0</SelStart2><SelEnd2>0</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\fnet_stack\cpu\common\fnet_fec.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>533</YPos2><SelStart2>21264</SelStart2><SelEnd2>21264</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\mk60n512\shell\iararm6.1\src\fnet_user_config.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>76</YPos2><SelStart2>5766</SelStart2><SelEnd2>5766</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\mk60n512\shell\iararm6.1\src\fapp_user_config.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>8</YPos2><SelStart2>0</SelStart2><SelEnd2>0</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\mk60n512\shell\iararm6.1\config files\512KB_Pflash.icf</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>0</YPos2><SelStart2>1032</SelStart2><SelEnd2>1032</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\mk60n512\shell_boot\iararm6.1\src\fnet_user_config.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>76</YPos2><SelStart2>5790</SelStart2><SelEnd2>5790</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\fnet_stack\services\dhcp\fnet_dhcp.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>1039</YPos2><SelStart2>48456</SelStart2><SelEnd2>48458</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\mk60n512\shell_boot\iararm6.1\config files\512KB_Pflash.icf</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>0</YPos2><SelStart2>629</SelStart2><SelEnd2>629</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\fnet_stack\services\shell\fnet_shell.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>110</YPos2><SelStart2>5260</SelStart2><SelEnd2>5260</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\mk60n512\boot\iararm6.1\src\fapp_user_config.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>41</YPos2><SelStart2>2523</SelStart2><SelEnd2>2523</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\fnet_stack\cpu\mk\fnet_mk_serial.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>50</YPos2><SelStart2>2637</SelStart2><SelEnd2>2637</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\common\startup\startup_mk60n512\vectors.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>254</YPos2><SelStart2>5124</SelStart2><SelEnd2>5124</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\fnet_stack\stack\fnet_socket.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>1204</YPos2><SelStart2>36399</SelStart2><SelEnd2>36399</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\fnet_stack\services\tftp\fnet_tftp_srv.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>617</YPos2><SelStart2>27239</SelStart2><SelEnd2>27239</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\common\startup\startup_mk60n512\vectors.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>3</YPos2><SelStart2>498</SelStart2><SelEnd2>498</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\fnet_stack\services\poll\fnet_poll.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>61</YPos2><SelStart2>2978</SelStart2><SelEnd2>2978</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\common\fnet_application\fapp.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>35</YPos2><SelStart2>2121</SelStart2><SelEnd2>2121</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\common\startup\startup_mk60n512\crt0.s</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>0</YPos2><SelStart2>232</SelStart2><SelEnd2>232</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\common\startup\startup_mk60n512\start.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>0</YPos2><SelStart2>424</SelStart2><SelEnd2>424</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\common\fnet_application\fapp_dhcp.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>25</YPos2><SelStart2>1994</SelStart2><SelEnd2>1994</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\common\fnet_application\fapp_telnet.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>35</YPos2><SelStart2>2155</SelStart2><SelEnd2>2159</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\mk60n512\boot\iararm6.1\src\fnet_user_config.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>50</YPos2><SelStart2>5832</SelStart2><SelEnd2>5832</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\mk60n512\boot\iararm6.1\src\main.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>24</YPos2><SelStart2>1305</SelStart2><SelEnd2>1334</SelEnd2></Tab><ActiveTab>25</ActiveTab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+    <Positions>
+      
+      
+      
+      
+      
+    <Top><Row0><Sizes><Toolbar-02723c90><key>iaridepm.enu1</key></Toolbar-02723c90></Sizes></Row0><Row1><Sizes/></Row1></Top><Left><Row0><Sizes><Wnd0><Rect><Top>-2</Top><Left>-2</Left><Bottom>795</Bottom><Right>395</Right><x>-2</x><y>-2</y><xscreen>200</xscreen><yscreen>200</yscreen><sizeHorzCX>104167</sizeHorzCX><sizeHorzCY>192678</sizeHorzCY><sizeVertCX>206771</sizeVertCX><sizeVertCY>767823</sizeVertCY></Rect></Wnd0></Sizes></Row0></Left><Right><Row0><Sizes/></Row0></Right><Bottom><Row0><Sizes><Wnd3><Rect><Top>-2</Top><Left>-2</Left><Bottom>198</Bottom><Right>1922</Right><x>-2</x><y>-2</y><xscreen>1924</xscreen><yscreen>200</yscreen><sizeHorzCX>1002083</sizeHorzCX><sizeHorzCY>192678</sizeHorzCY><sizeVertCX>104167</sizeVertCX><sizeVertCY>192678</sizeVertCY></Rect></Wnd3></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+  </Desktop>
+</Workspace>
+
+

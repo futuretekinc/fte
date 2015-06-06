@@ -1,0 +1,113 @@
+[Stack]
+FillEnabled=0
+OverflowWarningsEnabled=1
+WarningThreshold=90
+SpWarningsEnabled=1
+WarnLogOnly=1
+UseTrigger=1
+TriggerName=main
+LimitSize=0
+ByteLimit=50
+[DebugChecksum]
+Checksum=-1616039808
+[Exceptions]
+StopOnUncaught=_ 0
+StopOnThrow=_ 0
+[CallStack]
+ShowArgs=0
+[Disassembly]
+MixedMode=1
+[JLinkDriver]
+CStepIntDis=_ 0
+TraceBufferSize=0x00010000
+TraceStallIfFIFOFull=0x00000000
+TracePortSize=0x00000004
+[InterruptLog]
+LogEnabled=0
+SumEnabled=0
+GraphEnabled=0
+ShowTimeLog=1
+ShowTimeSum=1
+SumSortOrder=0
+[DataLog]
+LogEnabled=0
+SumEnabled=0
+GraphEnabled=0
+ShowTimeLog=1
+ShowTimeSum=1
+[Interrupts]
+Enabled=1
+[MemoryMap]
+Enabled=0
+Base=0
+UseAuto=0
+TypeViolation=1
+UnspecRange=1
+ActionState=1
+[struct_types]
+Fmt0=FTE_GPIO_CONFIG-nDevID	4	0
+Fmt1=FTE_GPIO_CONFIG-nID	4	0
+Fmt2=FTE_LED_CONFIG-nID	4	0
+Fmt3=FTE_LWGPIO_CONFIG-nID	4	0
+Fmt4=FTE_LWGPIO_CONFIG-nLWGPIO	4	0
+Fmt5=FTE_SPI_CONFIG-nID	4	0
+Fmt6=FTE_SPI_CONFIG-xCSGPIO	4	0
+Fmt7=IPCFG_IP_ADDRESS_DATA-ip	4	0
+Fmt8=LWSEM_STRUCT-VALID	4	0
+Fmt9=in_addr-s_addr	4	0
+Fmt10=struct RTC_MemMap-TPR	4	0
+Fmt11=struct RTC_MemMap-TSR	4	0
+Fmt12=struct _FTE_SPI_CONFIG_STRUCT-nID	4	0
+Fmt13=struct _fte_object_config_struct-nID	4	0
+Fmt14=struct _fte_object_config_struct-xFlags	4	0
+Fmt15=struct _fte_object_desc_struct-nType	4	0
+Fmt16=struct lwsem_struct-VALID	4	0
+[array_types]
+Fmt0=uchar[6]	4	0
+Fmt1=uint_8[8]	4	0
+[watch_formats]
+Fmt0={W}0:_pObjDescs[i].nType	4	0
+Fmt1={W}0:buf	4	0
+Fmt2={W}0:data	4	0
+Fmt3={W}0:getValue	4	0
+Fmt4={W}0:nID	4	0
+Fmt5={W}0:nOID	4	0
+Fmt6={W}0:nType	4	0
+Fmt7={W}0:nValue	4	0
+Fmt8={W}0:pAD7785->nLastValue	4	0
+Fmt9={W}0:pAD7785->nLastValue*10000	4	0
+Fmt10={W}0:pGPIO->pConfig->nID	4	0
+Fmt11={W}0:raddr	4	0
+Fmt12={W}0:setValue	4	0
+[Log file]
+LoggingEnabled=_ 0
+LogFile=_ ""
+Category=_ 0
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""
+[Trace1]
+Enabled=0
+ShowSource=1
+[CallStackLog]
+Enabled=0
+[DriverProfiling]
+Enabled=0
+Mode=1
+Graph=0
+Symbiont=0
+Exclusions=
+[Disassemble mode]
+mode=0
+[Breakpoints2]
+Bp0=_ 0 "EMUL_CODE" "{$PROJ_DIR$\include\fte_object.h}.266.1" 0 0 1 "" 0 "" 0
+Bp1=_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\obj\fte_do.c}.459.17" 0 0 1 "" 0 "" 0
+Bp2=_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\obj\fte_do.c}.409.13" 0 0 1 "" 0 "" 0
+Bp3=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\..\..\..\Projects\fts_base\mqx\source\kernel\lwmem.c}.1997.21" 0 0 1 "" 0 "" 0
+Bp4=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\..\..\..\Projects\fts_base\mqx\source\kernel\lwmem.c}.2004.9" 0 0 1 "" 0 "" 0
+Bp5=_ 1 "EMUL_CODE" "{$PROJ_DIR$\source\net\http\fte_cgi.c}.247.5" 0 0 1 "" 0 "" 0
+Bp6=_ 1 "EMUL_CODE" "{$PROJ_DIR$\source\obj\fte_do.c}.479.17" 0 0 1 "" 0 "" 0
+Count=7
+[Aliases]
+Count=0
+SuppressDialog=0

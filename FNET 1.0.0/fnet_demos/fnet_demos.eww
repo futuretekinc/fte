@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<workspace>
+  <project>
+    <path>$WS_DIR$\mk60n512\boot\iararm6.1\twrk60n512_boot.ewp</path>
+  </project>
+  <project>
+    <path>$WS_DIR$\mk60n512\shell\iararm6.1\twrk60n512_shell.ewp</path>
+  </project>
+  <project>
+    <path>$WS_DIR$\mk60n512\shell_boot\iararm6.1\twrk60n512_shell_boot.ewp</path>
+  </project>
+  <batchBuild/>
+</workspace>
+
+

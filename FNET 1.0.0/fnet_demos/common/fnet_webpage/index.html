@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>FNET Overview</title>
+	<link rel="shortcut icon" href="favicon.ico"/>
+	<link rel="Stylesheet" href="fnet.css" type="text/css" media="screen"/>
+	<script src="fnet.js" type="text/javascript"></script>
+</head>
+<body>
+	<script type="text/javascript">
+		fnetPrintHeader("FNET Overview");
+	</script>
+	The FNET is a free, open source software project (under dual GNU LGPL/GPLv3 license the linking exception) for building
+	embedded communication software using the Freescale processors.
+	<br /> <br />
+	<strong>The stack provides following protocols and services:</strong>
+	<ul>
+		<li>Supported platforms:
+		<ul>
+			<li>ARM Cortex-M4:</li>
+			<ul>
+				<li>Kinetis - MK60N512 (TWR-K60N512).</li>
+			</ul>
+            <li>ColdFire:</li>
+			<ul>
+				<li>Reindeer - MCF5282 (M5282EVB).</li>
+				<li>Kirin2 - MCF52235 (M52235EVB).</li>
+				<li>Kirin3 - MCF52259 (M52259EVB, M52259DEMO, TWR-MCF52259).</li>
+				<li>Lasko - MCF51CN128 (TWR-MCF51CN).</li>
+			</ul>
+		</ul>
+		</li>
+		<li>Supported Compilers:
+		<ul>
+			<li>Freescale:</li>
+			<ul>
+				<li>CodeWarrior for ColdFire Version 7.2.2 (MCF5282, MCF52235, MCF52259).</li>
+				<li>CodeWarrior for Microcontrollers Version 6.3 (MCF51CN128).</li>
+			</ul>
+			<li>IAR:</li>
+			<ul>
+				<li>Embedded Workbench for ARM Version 6.2 (MK60N512).</li>
+				<li>Embedded Workbench for ColdFire Version 1.22 (MCF52259).</li>
+			</ul>
+		</ul>
+		</li>
+		<li>Bare-metal TCP/IP stack. No underlying RTOS is required, although it can be used with it.</li>
+		<li>BSD-like, non-blocking Socket layer API</li>
+		<li>Protocols:
+		<ul>
+			<li>User Datagram Protocol (UDP).</li>
+			<li>Transmission Control Protocol (TCP).</li>
+			<li>Internet Protocol (IPv4).</li>
+			<li>Internet Control Message Protocol (ICMP).</li>
+			<li>Address Resolution Protocol (ARP).</li>
+		</ul>
+		</li>
+		<li>Network Interfaces:
+		<ul>
+			<li>Ethernet interface.</li>
+			<li>Loopback interface.</li>
+		</ul>
+		</li>
+		<li>Services:
+		<ul>
+            <li>HTTP server:
+			<ul>
+				<li>HTTP/1.0 or HTTP/0.9 protocols.</li>
+				<li>GET and POST requests.</li>
+				<li>CGI and SSI.</li>
+				<li>Basic access authentication.</li>
+			</ul>
+			</li>
+			<li>Telnet server.</li>
+			<li>DHCP client.</li>
+			<li>TFTP server and client.</li>
+			<li>Static File System.</li>
+			<li>Flash Memory driver.</li>
+			<li>Command line shell.</li>
+			<li>Serial driver.</li>
+		</ul>
+		</li>
+		<li>Tools:
+		<ul>
+			<li>GUI File System Generation Tool.</li>
+			<li>GUI Throughput Benchmark Tool.</li>
+		</ul>
+		</li>
+		<li>Applications:
+     	<ul>
+        	<li>TFTP Bootloader.</li>
+			<li>Shell Application.</li>
+			<li>Throughput Benchmark Application.</li>
+		</ul>
+		</li>
+		<li>User Documentation.</li>
+	</ul>
+	<script type="text/javascript">
+		fnetPrintFooter(); /* Footer */
+	</script>
+</body>
+</html>

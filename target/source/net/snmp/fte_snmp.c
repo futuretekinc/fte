@@ -1,0 +1,4016 @@
+#include <stdlib.h>
+#include <ctype.h>
+#include "fte_target.h"
+#include "snmpcfg.h"
+#include "asn1.h"
+#include "snmp.h"
+#include "fte_target.h"
+#include "fte_config.h" 
+#include "fte_net.h"
+#include "fte_object.h"
+#include "fte_log.h"
+#include "fte_snmp.h" 
+#include "fte_time.h" 
+#include "fte_sys.h" 
+#include "fte_dev.h"
+#include "sys/fte_sys_timer.h"
+#include "nxjson.h"
+#include "fte_json.h"
+
+#if ! RTCSCFG_ENABLE_IP4 
+  #error This application requires RTCSCFG_ENABLE_IP4 defined non-zero in user_config.h. Please recompile BSP with this option.
+#endif
+
+#if ! RTCSCFG_ENABLE_SNMP
+  #error This application requires RTCSCFG_ENABLE_SNMP defined non-zero in user_config.h. Please recompile BSP with this option.
+#endif
+
+#if ! MQX_HAS_TIME_SLICE
+  #error This application requires MQX_HAS_TIME_SLICE defined non-zero in user_config.h. Please recompile BSP with this option.
+#endif
+
+/****************************************************************/
+#if 1
+#define SNMP_TRACE(...)  
+#else
+#define SNMP_TRACE(...)  TRACE(DEBUG_NET_SNMP, __VA_ARGS__)
+#endif
+
+#define COUNTER_OVERFLOW    5
+#define COUNTER_DELAY       5000
+
+#ifndef FTE_NET_SNMP_TRAPS_COUNT
+#define FTE_NET_SNMP_TRAPS_COUNT           5
+#endif
+
+typedef struct
+{
+    boolean     bStatic;
+    _ip_address xIP;
+}   FTE_TRAP_SERVER, _PTR_ FTE_TRAP_SERVER_PTR;
+
+typedef struct  
+{
+    struct queue_element_struct _PTR_   NEXT;
+    struct queue_element_struct _PTR_   PREV;
+    FTE_NET_SNMP_TRAP_TYPE              xType;
+    union 
+    {
+        struct
+        {
+            uint_32     nOID;
+            boolean     bOccurred;
+        }   xAlert;
+        
+        struct
+        {
+            _ip_address xHostIP;
+        }   xDiscovery;
+    }   xParams;
+    char_ptr    pBuff;
+}   FTE_TRAP_MSG, _PTR_ FTE_TRAP_MSG_PTR;
+
+static const char_ptr _unknown = "";
+
+static char             _buff[2048];
+static FTE_LIST         _trapList;
+static FTE_LIST         _trapServerList;
+static uint_32          ulReqAlertCount = 0;
+static uint_32          ulRespAlertCount = 0;
+static uint_32          ulReqDiscoveryCount = 0;
+static uint_32          ulRespDiscoveryCount = 0;
+
+extern RTCSMIB_NODE MIBNODE_enterprises;
+extern RTCSMIB_NODE MIBNODE_futuretek;
+extern const RTCSMIB_NODE MIBNODE_msgDiscovery;
+extern const RTCSMIB_NODE MIBNODE_msgAlert;
+
+_mqx_uint   FTE_SNMPD_init(FTE_SNMP_CFG_PTR pConfig)
+{
+    int_32  i, ret;
+
+   TRACE_ON(DEBUG_NET_SNMP);
+    
+#if FTE_NET_SNMP_MIB1213
+    /* init RFC 1213 MIB */
+    MIB1213_init();
+#endif
+    
+#if FTE_NET_SNMP_MIBMQX
+    /* init MQX MIB */
+    MIBMQX_init();
+#endif
+    
+    RTCSMIB_mib_add(&MIBNODE_futuretek);
+    
+    ret = SNMP_init(FTE_NET_SNMP_NAME, FTE_NET_SNMP_PRIO, FTE_NET_SNMP_STACK);
+    if (ret != RTCS_OK)
+    {
+        return  MQX_ERROR;
+    }
+
+    FTE_TASK_append(FTE_TASK_TYPE_RTCS, _task_get_id_from_name(FTE_NET_SNMP_NAME));
+    
+    FTE_LIST_init(&_trapList);
+    FTE_LIST_init(&_trapServerList);
+    
+    for(i = 0 ;i < pConfig->xTrap.ulCount ; i++)
+    {
+        FTE_SNMPD_TRAP_add(pConfig->xTrap.pList[i], TRUE);
+    }
+    
+    SNMP_trap_select_community(pConfig->xTrap.pCommunity);
+    
+#if FTE_NET_SNMP_TRAP_V1
+    SNMP_trap_coldStart();
+#elif FTE_NET_SNMP_TRAP_V2
+    SNMPv2_trap_coldStart();
+#endif
+
+    return  MQX_OK;
+}
+
+_mqx_uint   FTE_SNMPD_TRAP_add(_ip_address target, boolean bStatic)
+{
+    FTE_LIST_ITERATOR   xIter;
+    FTE_TRAP_SERVER_PTR pServer;
+    
+    FTE_LIST_ITER_init(&_trapServerList, &xIter);
+    while ((pServer = FTE_LIST_ITER_getNext(&xIter)) != NULL)
+    {
+        if (pServer->xIP == target)
+        {
+            return  MQX_OK;
+        }
+    }    
+
+    pServer = FTE_MEM_allocZero(sizeof(FTE_TRAP_SERVER));
+    if (pServer == NULL)
+    {
+        return  MQX_ERROR;
+    }
+    
+    pServer->xIP = target;
+    pServer->bStatic = bStatic;    
+    
+    if (FTE_LIST_pushBack(&_trapServerList, pServer) != MQX_OK)
+    {
+        FTE_MEM_free(pServer);
+        return  MQX_OK;
+    }
+    
+    RTCS_trap_target_add(target);
+    if (bStatic)
+    {
+        return  FTE_CFG_NET_TRAP_addIP(target);
+    }
+    
+   return   MQX_OK;
+}
+
+_mqx_uint   FTE_SNMPD_TRAP_del(_ip_address target)
+{
+    FTE_LIST_ITERATOR   xIter;
+    FTE_TRAP_SERVER_PTR pServer;
+    
+    FTE_LIST_ITER_init(&_trapServerList, &xIter);
+    while ((pServer = FTE_LIST_ITER_getNext(&xIter)) != NULL)
+    {
+        if (pServer->xIP == target)
+        {            
+            RTCS_trap_target_remove(target);
+            if (pServer->bStatic)
+            {
+                FTE_CFG_NET_TRAP_delIP(target);
+            }
+         
+            FTE_LIST_remove(&_trapServerList, pServer);
+            FTE_MEM_free(pServer);
+            
+            return  MQX_OK;
+        }
+    }    
+    
+    return  MQX_ERROR;
+}
+
+static FTE_TRAP_MSG_PTR pCurrentTrapMsg = NULL;
+
+void FTE_SNMPD_TRAP_processing(void)
+{
+    if (IPCFG_STATE_UNBOUND == ipcfg_get_state(BSP_DEFAULT_ENET_DEVICE))
+    {
+        return;
+    }
+    
+    if (FTE_LIST_count(&_trapList) != 0)
+    {
+        if (FTE_LIST_popFront(&_trapList, (pointer _PTR_)&pCurrentTrapMsg) != MQX_OK)
+        {
+            ERROR("Trap list broken!\n");
+            FTE_LIST_init(&_trapList);
+            return;
+        }
+        
+        switch(pCurrentTrapMsg->xType)
+        {
+        case    FTE_NET_SNMP_TRAP_TYPE_ALERT:
+            {
+#if  FTE_NET_SNMP_TRAP_V1
+                SNMP_trap_userSpec((RTCSMIB_NODE *)&MIBNODE_msgAlert , 3, &MIBNODE_futuretek );
+#elif FTE_NET_SNMP_TRAP_V2
+                SNMPv2_trap_userSpec( (RTCSMIB_NODE *)&MIBNODE_msgAlert );
+#endif
+                ++ulRespAlertCount;
+                SNMP_TRACE("Send Alert trap[%d]\n", ulRespAlertCount);
+            }
+            break;
+            
+        case    FTE_NET_SNMP_TRAP_TYPE_DISCOVERY:
+            {
+                boolean bNewServer = FALSE;
+                if (!FTE_NET_SERVER_isExist(pCurrentTrapMsg->xParams.xDiscovery.xHostIP))
+                {
+                    SNMP_TRACE("\nAdd new trap server\n");
+                    uint_32 error = RTCS_trap_target_add(pCurrentTrapMsg->xParams.xDiscovery.xHostIP);
+                    if (error) 
+                    {
+                        printf("\nFailed to add target trap, error = %X", error);
+                    } 
+                    bNewServer = TRUE;
+                }
+#if  FTE_NET_SNMP_TRAP_V1
+                SNMP_trap_userSpec((RTCSMIB_NODE *)&MIBNODE_msgDiscovery , 3, &MIBNODE_futuretek );
+#elif FTE_NET_SNMP_TRAP_V2
+                SNMPv2_trap_userSpec( (RTCSMIB_NODE *)&MIBNODE_msgDiscovery );
+#endif
+                if (bNewServer)
+                {
+                    RTCS_trap_target_remove(pCurrentTrapMsg->xParams.xDiscovery.xHostIP);
+                }                
+                ++ulRespDiscoveryCount;
+            }
+            break;
+        }
+        
+        if (pCurrentTrapMsg->pBuff != NULL)
+        {
+            FTE_MEM_free(pCurrentTrapMsg->pBuff);
+            pCurrentTrapMsg->pBuff = NULL;
+        }
+        FTE_MEM_free(pCurrentTrapMsg);
+        pCurrentTrapMsg = NULL;
+        
+        _time_delay(10);
+    }
+}
+
+_mqx_uint   FTE_SNMPD_TRAP_sendAlert(uint_32 nOID, boolean bOccurred)
+{
+    FTE_TRAP_MSG_PTR    pMsg = (FTE_TRAP_MSG_PTR)FTE_MEM_allocZero(sizeof(FTE_TRAP_MSG));
+    if (pMsg == NULL)
+    {
+        return   MQX_ERROR;
+    }
+        
+    ++ulReqAlertCount;
+    
+    pMsg->xType                     = FTE_NET_SNMP_TRAP_TYPE_ALERT;
+    pMsg->xParams.xAlert.nOID      = nOID;
+    pMsg->xParams.xAlert.bOccurred = bOccurred;
+
+    if (FTE_LIST_pushBack(&_trapList, pMsg) != MQX_OK)
+    {
+        DEBUG("Not enough memory!\n");
+        FTE_MEM_free(pMsg);
+        return  MQX_ERROR;
+    }
+
+   return   MQX_OK;
+}
+
+_mqx_uint   FTE_SNMPD_TRAP_discovery(_ip_address xHostIP)
+{
+    FTE_LIST_ITERATOR   xIter;
+    FTE_TRAP_MSG_PTR    pMsg;
+    
+    ulReqDiscoveryCount ++;
+
+    FTE_LIST_ITER_init(&_trapList, &xIter);
+    while ((pMsg = FTE_LIST_ITER_getNext(&xIter)) != NULL)
+    {
+        if ((pMsg->xType == FTE_NET_SNMP_TRAP_TYPE_DISCOVERY) && (pMsg->xParams.xDiscovery.xHostIP == xHostIP))
+        {
+            return  MQX_OK;
+        }
+    }    
+    
+    pMsg = (FTE_TRAP_MSG_PTR)FTE_MEM_allocZero(sizeof(FTE_TRAP_MSG));
+    if (pMsg == NULL)
+    {
+        return   MQX_ERROR;
+    }
+
+    pMsg->xType     = FTE_NET_SNMP_TRAP_TYPE_DISCOVERY;
+    pMsg->xParams.xDiscovery.xHostIP = xHostIP;
+    
+    if (FTE_LIST_pushBack(&_trapList, pMsg) != MQX_OK)
+    {
+        ERROR("Not enough memory!\n");
+        FTE_MEM_free(pMsg);
+        return  MQX_ERROR;
+    }
+
+    return  MQX_OK;
+}        
+
+
+/*******************************************************************************
+ * Support for MIB
+ ******************************************************************************/
+char const *MIB_get_productID(pointer dummy)
+{
+    FTE_PRODUCT_DESC const *dev_desc = fte_get_product_desc();
+    if (dev_desc == NULL)
+    {
+        return  _unknown;
+    }
+    
+    return  FTE_SYS_getOIDString();
+}
+
+char const *MIB_get_productModel(pointer dummy)
+{
+    FTE_PRODUCT_DESC const *dev_desc = fte_get_product_desc();
+    if (dev_desc == NULL)
+    {
+        return  _unknown;
+    }
+
+    return  dev_desc->pModel;
+}
+
+char const *MIB_get_vendorID(pointer dummy)
+{
+    FTE_PRODUCT_DESC const *dev_desc = fte_get_product_desc();
+    if (dev_desc == NULL)
+    {
+        return  _unknown;
+    }
+
+    return  dev_desc->pManufacturer;
+}
+
+char const *MIB_get_HWVersion(pointer dummy)
+{
+    FTE_PRODUCT_DESC const *desc = fte_get_product_desc();
+    if (desc == NULL)
+    {
+        return  _unknown;
+    }
+
+    sprintf(_buff, "%d.%d.%d.%d",
+            (desc->xVersion.hw >> 24) & 0xFF,
+            (desc->xVersion.hw >> 16) & 0xFF,
+            (desc->xVersion.hw >>  8) & 0xFF,
+            (desc->xVersion.hw      ) & 0xFF);
+
+    return  _buff;
+}
+
+char const *MIB_get_SWVersion(pointer dummy)
+{
+    FTE_PRODUCT_DESC const *desc = fte_get_product_desc();
+    if (desc == NULL)
+    {
+        return  _unknown;
+    } 
+
+    sprintf(_buff, "%d.%d.%d.%d",
+            (desc->xVersion.sw >> 24) & 0xFF,
+            (desc->xVersion.sw >> 16) & 0xFF,
+            (desc->xVersion.sw >>  8) & 0xFF,
+            (desc->xVersion.sw      ) & 0xFF);
+
+    
+    return  _buff;
+}
+
+char const *MIB_get_prodDesc(pointer dummy)
+{
+    memset(_buff, 0, sizeof(_buff));
+    FTE_CFG_getLocation(_buff, FTE_LOCATION_MAX_LEN);
+    
+    return  _buff;
+}
+
+uint_32 MIB_set_prodDesc(pointer dummy, uchar_ptr varptr, uint_32 varlen)
+{
+    if (varlen > FTE_LOCATION_MAX_LEN) 
+    {
+        return  SNMP_ERROR_wrongLength;
+    }
+ 
+    FTE_CFG_setLocation((char_ptr)varptr, varlen);
+    
+    return   SNMP_ERROR_noError;
+}
+
+/******************************************************************************
+ * Network Configuration 
+ ******************************************************************************/
+uint_32 MIB_get_netType(pointer dummy)
+{
+    FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
+    
+    return  pCfgNet->nType;
+}
+
+char const *MIB_get_netMacAddr(pointer dummy)
+{
+    _enet_address   xMACAddress;
+    
+    FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
+    
+    FTE_SYS_getMAC(xMACAddress);
+    sprintf(_buff, "%02x:%02x:%02x:%02x:%02x:%02x", 
+            xMACAddress[0], xMACAddress[1],
+            xMACAddress[2], xMACAddress[3],
+            xMACAddress[4], xMACAddress[5]);
+    
+    return  _buff;
+}
+
+char const *MIB_get_netIpAddr(pointer dummy)
+{
+    FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
+    
+    sprintf(_buff, "%d.%d.%d.%d", IPBYTES(pCfgNet->xIPData.ip));
+    
+    return  _buff;
+}
+
+char const *MIB_get_netNetMask(pointer dummy)
+{
+    FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
+    
+    sprintf(_buff, "%d.%d.%d.%d", IPBYTES(pCfgNet->xIPData.mask));
+    
+    return  _buff;
+}
+char const *MIB_get_netGateway(pointer dummy)
+{
+    FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
+    
+    sprintf(_buff, "%d.%d.%d.%d", IPBYTES(pCfgNet->xIPData.gateway));
+    
+    return  _buff;
+}
+
+/******************************************************************************
+ * Object Management
+ ******************************************************************************/
+char const *MIB_get_objID(pointer param) 
+{
+    assert(param != NULL);
+    
+    sprintf(_buff, "%08x", ((FTE_OBJECT_PTR)param)->pConfig->xCommon.nID);
+    return  _buff;
+}
+
+char const *MIB_get_objType(pointer param) 
+{
+    assert(param != NULL);
+    
+    FTE_OBJECT_PTR  obj = (FTE_OBJECT_PTR)param;
+    
+    return FTE_OBJ_typeString(obj);
+}
+
+char const *MIB_get_objSN(pointer param) 
+{
+    assert(param != NULL);
+    
+    FTE_OBJECT_PTR  obj = (FTE_OBJECT_PTR)param;
+    
+    FTE_OBJ_getSN(obj, _buff, sizeof(_buff));
+    
+    return _buff;
+}
+
+
+char const *MIB_get_objName(pointer param)
+{
+    assert(param != NULL);
+    
+    FTE_OBJ_getName((FTE_OBJECT_PTR)param, _buff, sizeof(_buff));
+    
+    return  _buff;
+}
+
+uint_32 MIB_set_objName(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    assert(param != NULL);
+    
+    FTE_OBJECT_PTR  obj = (FTE_OBJECT_PTR)param;
+    
+    if (varlen > MAX_OBJECT_NAME_LEN) 
+    {
+        return  SNMP_ERROR_wrongLength;
+    }
+    FTE_OBJ_setName(obj, (char_ptr)varptr, varlen);
+    
+    return   SNMP_ERROR_noError;
+}
+
+char const *MIB_get_objState(pointer param)
+{
+    assert(param != NULL);
+
+    if (FTE_OBJ_IS_ENABLED((FTE_OBJECT_PTR)param))
+    {
+        sprintf(_buff, "RUN");
+    }
+    else
+    {
+        sprintf(_buff, "STOP");
+    }
+    
+    return  _buff;
+}
+
+uint_32 MIB_set_objState(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    assert(param != NULL);
+
+    if (varlen >= sizeof(_buff))
+    {
+        return  SNMP_ERROR_wrongValue;
+    }
+        
+    strncpy(_buff, (char_ptr)varptr, varlen);
+    _buff[varlen] = '\0';
+    
+    if (strcasecmp((char_ptr)_buff, "run") == 0)
+    {
+        FTE_OBJ_activate((FTE_OBJECT_PTR)param, TRUE);
+    }
+    else if (strcasecmp((char_ptr)_buff, "stop") == 0)
+    {
+        FTE_OBJ_activate((FTE_OBJECT_PTR)param, FALSE);
+    }
+    else
+    {
+        return  SNMP_ERROR_wrongValue;
+    }
+
+    return SNMP_ERROR_noError;
+}
+
+uint_32 MIB_set_objValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    FTE_VALUE       xValue;
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;
+
+    assert(pObj != NULL);
+        
+    if (varlen >= sizeof(_buff))
+    {
+        return  SNMP_ERROR_wrongValue;
+    }
+
+    strncpy(_buff, (char_ptr)varptr, varlen);
+    _buff[varlen] = '\0';        
+
+    if (FTE_OBJ_CLASS(pObj) == FTE_OBJ_CLASS_MULTI)
+    {
+        if (pObj->pAction->f_set_config != NULL)
+        {
+            pObj->pAction->f_set_config(pObj, _buff);
+        }
+    }
+    else
+    {       
+        FTE_VALUE_copy(&xValue, pObj->pStatus->pValue);
+        if (FTE_VALUE_set(&xValue, _buff) != MQX_OK)
+        { 
+            return SNMP_ERROR_wrongValue;
+        }
+        
+        if (FTE_OBJ_setValue(pObj, &xValue) != MQX_OK)
+        {
+            return SNMP_ERROR_wrongValue;
+        }
+    }
+    
+    return SNMP_ERROR_noError;
+}
+
+char const *MIB_get_objValue(pointer param)
+{
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;    
+    ASSERT(pObj != NULL);
+    
+    FTE_SYS_LIVE_CHECK_touch();
+     
+    if ( FTE_OBJ_IS_ENABLED(pObj))
+    {
+        if (FTE_OBJ_CLASS(pObj) == FTE_OBJ_CLASS_MULTI)
+        {
+            if (pObj->pAction->f_get_config != NULL)
+            {
+                pObj->pAction->f_get_config(pObj, _buff, sizeof(_buff));
+            }
+        }
+        else
+        {
+            FTE_VALUE_toString(pObj->pStatus->pValue, _buff, sizeof(_buff));
+        }
+    }
+    else
+    {
+        strcpy(_buff, "N/A");
+    }
+    
+    return  _buff;
+}
+
+char const *MIB_get_objLastValue(pointer param)
+{
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;    
+    ASSERT(pObj != NULL);
+    
+    if ( FTE_OBJ_IS_ENABLED(pObj))
+    {
+        FTE_VALUE_toString(pObj->pStatus->pValue, _buff, sizeof(_buff));
+    }
+    else
+    {
+        strcpy(_buff, "N/A");
+    }
+    
+    return  _buff;
+}
+
+char const *MIB_get_objLastTime(pointer param)
+{
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;
+    
+    if (FTE_VALUE_isValid(pObj->pStatus->pValue))
+    {
+        TIME_STRUCT xTimeStamp;
+        
+        FTE_VALUE_getTimeStamp(pObj->pStatus->pValue, &xTimeStamp);
+        sprintf(_buff,"%d", xTimeStamp.SECONDS);
+    }
+    else
+    {
+        strcpy(_buff, "0");
+    }
+
+    return  _buff;
+}
+
+char const *MIB_get_objInitValue(pointer param)
+{
+    return  _buff;
+}
+
+uint_32 MIB_set_objInitValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  0;
+}
+
+
+uint_32 MIB_get_objTriggerMode(pointer param)
+{
+    return  0;
+}
+
+uint_32 MIB_set_objTriggerMode(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  0;
+}
+
+
+uint_32 MIB_get_objUpdateInterval(pointer param)
+{
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;
+    
+    if (pObj->pAction->f_get_update_interval == NULL)
+    {
+        return  0;
+    }
+
+    return  pObj->pAction->f_get_update_interval(pObj);
+}
+
+uint_32 MIB_set_objUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    int_32 nUpdateInterval;
+    
+    FTE_OBJECT_PTR pObj = (FTE_OBJECT_PTR)param;
+    
+    assert(pObj != NULL);
+
+    if (pObj->pAction->f_set_update_interval == NULL)
+    {
+        return  SNMP_ERROR_wrongType;
+    }
+    
+    nUpdateInterval = RTCSMIB_int_read(varptr, varlen);
+    if ((1 <= nUpdateInterval) || (nUpdateInterval <= 60 * 60 * 24))
+    {
+        pObj->pAction->f_set_update_interval(pObj, nUpdateInterval);
+        return SNMP_ERROR_noError;
+    }
+
+    return  SNMP_ERROR_wrongValue;
+}
+
+
+uint_32 MIB_get_objTotalTrial(pointer param)
+{
+    FTE_OBJECT_STATISTICS    xStatistics;
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param; 
+    
+    if (pObj->pAction->f_get_statistic == NULL)
+    {
+        return  0;
+    }
+
+    if (pObj->pAction->f_get_statistic(pObj, &xStatistics) != MQX_OK)
+    {
+        return  0;
+    }
+    
+    return  xStatistics.nTotalTrial;
+}
+
+uint_32 MIB_get_objTotalFailed(pointer param)
+{
+    FTE_OBJECT_STATISTICS    xStatistics;
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param; 
+    
+    if (pObj->pAction->f_get_statistic == NULL)
+    {
+        return  0;
+    }
+
+    if (pObj->pAction->f_get_statistic(pObj, &xStatistics) != MQX_OK)
+    {
+        return  0;
+    }
+    
+    return  xStatistics.nTotalFail;
+}
+
+
+static  int_32    _nDiscoveryKey = 0;
+
+int_32  MIB_get_smDiscovery(pointer param)
+{
+    _nDiscoveryKey = (RTCS_rand() & 0x7FFFFFFF);
+    
+    return  _nDiscoveryKey;
+}
+
+uint_32 MIB_set_smDiscovery(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    int_32 nKey= (uint_32)RTCSMIB_int_read(varptr, varlen);
+
+#if FTE_1WIRE_SUPPORTED
+    if ((_nDiscoveryKey != 0) && (_nDiscoveryKey == nKey))
+    {
+        FTE_1WIRE_PTR   p1Wire;
+        FTE_DS18B20_CREATE_PARAMS xParams;
+        uint_32 nIndex;
+        
+        p1Wire = FTE_1WIRE_getFirst();
+        while(p1Wire != 0)
+        {
+            xParams.nBUSID = p1Wire->pConfig->nID;
+            for(nIndex = 0 ; nIndex < FTE_1WIRE_DEV_count(p1Wire) ; nIndex++)
+            {
+                if (FTE_1WIRE_DEV_getROMCode(p1Wire, nIndex, xParams.pROMCode) != MQX_OK)
+                {
+                    return  SNMP_ERROR_resourceUnavailable;
+                }
+             
+                if (strcmp(FTE_1WIRE_getFailmyName(xParams.pROMCode[0]), "18B20") == 0)
+                {
+                    if (!fte_ds18b20_is_exist_rom_code(xParams.pROMCode) )
+                    {
+                        FTE_OBJECT_PTR          pObj = fte_ds18b20_create(&xParams);
+                        if (pObj == NULL)
+                        {
+                            return  SNMP_ERROR_resourceUnavailable;
+                        }
+
+                        pObj->pAction->f_run(pObj);
+                        
+                        FTE_CFG_OBJ_save(pObj);
+                    }
+                }
+            }
+            
+            p1Wire = FTE_1WIRE_getNext(p1Wire);
+        } 
+        
+        FTE_CFG_save(TRUE);
+
+    }
+#endif
+    
+    return  SNMP_ERROR_noError;
+}
+
+char const * MIB_get_smDestroyDynamicObject(pointer param)
+{
+    return  "";
+}
+
+uint_32 MIB_set_smDestroyDynamicObject(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    uint_32 nOID = 0;
+    
+    if (varlen > 8)
+    {
+        return  SNMP_ERROR_badValue;
+    }
+    
+    for(int i = 0 ; i < varlen ; i++)
+    {
+        uint_32 nValue;
+        
+        if ( isdigit(varptr[i]))
+        {
+            nValue = varptr[i] - '0';
+        }
+        else if ( isxdigit(varptr[i]))
+        {
+            if (islower(varptr[i]))
+            {
+                nValue = varptr[i] - 'a' + 10;            
+            }
+            else
+            {
+                nValue = varptr[i] - 'A' + 10;            
+            }
+        }
+        else
+        {
+            return  SNMP_ERROR_badValue;
+        }
+        
+        nOID = (nOID << 4) + nValue;
+    }
+
+    if (nOID == 0)
+    {
+        
+    }
+    else 
+    {
+        FTE_OBJECT_PTR pObj = FTE_OBJ_get(nOID);
+        if (pObj == NULL)
+        {
+            return  SNMP_ERROR_badValue;
+        }
+        
+        FTE_OBJ_destroy(pObj);
+    }
+    
+     return  SNMP_ERROR_noError;
+}
+/******************************************************************************
+ * Digital Input 
+ ******************************************************************************/
+struct MIB_get_sensor_struct 
+{
+   uint_32                 current_index;
+   uint_32                 index;
+};
+
+uint_32  MIB_get_diCount(pointer dummy)
+{ 
+    return  FTE_OBJ_count(FTE_OBJ_TYPE_DI, FTE_OBJ_CLASS_MASK, FALSE);
+} 
+
+uint_32 MIB_set_diIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+
+boolean MIB_find_diEntry
+(
+    uint_32        op,
+    pointer        index,
+    pointer _PTR_  instance
+)
+{ 
+   uint_32           nIndex = *(uint_32_ptr)index;
+   pointer           pObj;
+
+   if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
+   {
+      nIndex = 1;
+   } /* Endif */
+
+   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_DI, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   if (!pObj) 
+   {
+      return FALSE;
+   } /* Endif */
+   *(uint_32_ptr)index = nIndex;
+   *instance = pObj;
+   return TRUE;
+
+} /* Endbody */
+
+
+uint_32 MIB_set_diState(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objState(param, varptr, varlen);
+}
+
+uint_32 MIB_set_diName(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objName(param, varptr, varlen);
+}
+
+uint_32 MIB_set_diInitValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objInitValue(param, varptr, varlen);
+}
+
+/******************************************************************************
+ * Temperature Sensor
+ ******************************************************************************/
+uint_32 MIB_get_tempCount(pointer dummy)
+{ 
+    return  FTE_OBJ_count(FTE_OBJ_TYPE_TEMPERATURE, FTE_OBJ_CLASS_MASK, FALSE);
+} 
+
+uint_32 MIB_set_tempIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+
+boolean MIB_find_tempEntry
+(
+    uint_32        op,
+    pointer        index,
+    pointer _PTR_  instance
+)
+{ /* Body */
+   uint_32           nIndex = *(uint_32_ptr)index;
+   pointer           pObj;
+
+   if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
+   {
+      nIndex = 1;
+   } /* Endif */
+
+   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_TEMPERATURE, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   if (!pObj) 
+   {
+      return FALSE;
+   } /* Endif */ 
+   *(uint_32_ptr)index = nIndex;
+   *instance = pObj;
+   return TRUE;
+ 
+} /* Endbody */
+
+
+uint_32 MIB_set_tempName(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objName(param, varptr, varlen);
+}
+
+uint_32 MIB_set_tempState(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objState(param, varptr, varlen);
+}
+
+uint_32 MIB_set_tempUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+}
+
+/******************************************************************************
+ * Humidity Sensor
+ ******************************************************************************/
+uint_32 MIB_get_humiCount(pointer dummy)
+{ 
+    return  FTE_OBJ_count(FTE_OBJ_TYPE_HUMIDITY, FTE_OBJ_CLASS_MASK, FALSE);
+} 
+
+uint_32 MIB_set_humiIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+
+boolean MIB_find_humiEntry
+(
+    uint_32        op,
+    pointer        index,
+    pointer _PTR_  instance
+)
+{ /* Body */
+   uint_32           nIndex = *(uint_32_ptr)index;
+   pointer           pObj;
+
+   if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
+   {
+      nIndex = 1;
+   } /* Endif */
+
+   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_HUMIDITY, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   if (!pObj) 
+   {
+      return FALSE;
+   } /* Endif */ 
+   *(uint_32_ptr)index = nIndex;
+   *instance = pObj;
+   return TRUE;
+ 
+} /* Endbody */
+
+uint_32 MIB_set_humiName(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objName(param, varptr, varlen);
+}
+
+uint_32 MIB_set_humiState(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objState(param, varptr, varlen);
+}
+
+uint_32 MIB_set_humiUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+}
+
+/******************************************************************************
+ * Voltage Sensor
+ ******************************************************************************/
+uint_32 MIB_get_vltCount(pointer dummy)
+{ 
+    return  FTE_OBJ_count(FTE_OBJ_TYPE_VOLTAGE, FTE_OBJ_CLASS_MASK, FALSE);
+} 
+
+uint_32 MIB_set_vltIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+
+boolean MIB_find_vltEntry
+(
+    uint_32        op,
+    pointer        index,
+    pointer _PTR_  instance
+)
+{ /* Body */
+   uint_32           nIndex = *(uint_32_ptr)index;
+   pointer           pObj;
+
+   if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
+   {
+      nIndex = 1;
+   } /* Endif */
+
+   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_VOLTAGE, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   if (!pObj) 
+   {
+      return FALSE;
+   } /* Endif */ 
+   *(uint_32_ptr)index = nIndex;
+   *instance = pObj;
+   return TRUE;
+ 
+} /* Endbody */
+
+uint_32 MIB_set_vltName(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objName(param, varptr, varlen);
+}
+
+uint_32 MIB_set_vltState(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objState(param, varptr, varlen);
+}
+
+uint_32 MIB_set_vltUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+}
+
+/******************************************************************************
+ * Current Sensor
+ ******************************************************************************/
+uint_32 MIB_get_currCount(pointer dummy)
+{ 
+    return  FTE_OBJ_count(FTE_OBJ_TYPE_CURRENT, FTE_OBJ_CLASS_MASK, FALSE);
+} 
+
+uint_32 MIB_set_currIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+
+boolean MIB_find_currEntry
+(
+    uint_32        op,
+    pointer        index,
+    pointer _PTR_  instance
+)
+{ /* Body */
+   uint_32           nIndex = *(uint_32_ptr)index;
+   pointer           pObj;
+
+   if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
+   {
+      nIndex = 1;
+   } /* Endif */
+
+   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_CURRENT, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   if (!pObj) 
+   {
+      return FALSE;
+   } /* Endif */ 
+   *(uint_32_ptr)index = nIndex;
+   *instance = pObj;
+   return TRUE;
+ 
+} /* Endbody */
+
+uint_32 MIB_set_currName(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objName(param, varptr, varlen);
+}
+
+uint_32 MIB_set_currState(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objState(param, varptr, varlen);
+}
+
+uint_32 MIB_set_currUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+}
+/******************************************************************************
+ * Digital Output 
+ ******************************************************************************/
+uint_32 MIB_get_doCount(pointer dummy)
+{ 
+    return  FTE_OBJ_count(FTE_OBJ_TYPE_DO, FTE_OBJ_CLASS_MASK, FALSE);
+} 
+
+uint_32 MIB_set_doIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+
+boolean MIB_find_doEntry
+(
+    uint_32        op,
+    pointer        index,
+    pointer _PTR_  instance
+)
+{ /* Body */
+   uint_32           nIndex = *(uint_32_ptr)index;
+   pointer           pObj;
+
+   if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
+   {
+      nIndex = 1;
+   } /* Endif */
+
+   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_DO, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   if (!pObj) 
+   {
+      return FALSE;
+   } /* Endif */ 
+   *(uint_32_ptr)index = nIndex;
+   *instance = pObj;
+   return TRUE;
+ 
+} /* Endbody */
+
+const char *MIB_get_doInitState(pointer param)
+{
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;
+    FTE_VALUE       xValue;
+    assert(pObj != NULL);
+
+    FTE_VALUE_copy(&xValue, pObj->pStatus->pValue);
+    FTE_DO_getInitState(pObj, &xValue.xData.ulValue);    
+    FTE_VALUE_toString(pObj->pStatus->pValue, _buff, sizeof(_buff));
+
+    return _buff;
+}
+
+uint_32 MIB_set_doInitState(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;
+    assert(pObj != NULL);
+
+    if (varlen >= sizeof(_buff))
+    {
+        return  SNMP_ERROR_wrongValue;
+    }
+        
+    strncpy(_buff, (char_ptr)varptr, varlen);
+    _buff[varlen] = '\0';
+    
+    if ((strcasecmp((char_ptr)_buff, "on") == 0) || (strcmp((char_ptr)_buff, "1") == 0))
+    {
+        FTE_DO_setInitState(pObj, TRUE);        
+    }
+    else if ((strcasecmp((char_ptr)_buff, "off") == 0) || (strcmp((char_ptr)_buff, "0") == 0))
+    {
+        FTE_DO_setInitState(pObj, FALSE);        
+    }
+    else
+    {
+        return SNMP_ERROR_wrongValue;
+    }
+
+    return SNMP_ERROR_noError;    
+}
+
+uint_32 MIB_set_doName(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objName(param, varptr, varlen);
+}
+
+uint_32 MIB_set_doState(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objState(param, varptr, varlen);
+}
+
+uint_32 MIB_set_doValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objValue(param, varptr, varlen);
+}
+
+uint_32 MIB_set_doInitValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objInitValue(param, varptr, varlen);
+}
+
+/******************************************************************************
+ * Relay
+ ******************************************************************************/
+uint_32 MIB_get_rlCount(pointer dummy)
+{ 
+    return  FTE_OBJ_count(FTE_OBJ_TYPE_RL, FTE_OBJ_CLASS_MASK, FALSE);
+} 
+
+uint_32 MIB_set_rlIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+
+boolean MIB_find_rlEntry
+(
+    uint_32        op,
+    pointer        index,
+    pointer _PTR_  instance
+)
+{ /* Body */
+   uint_32           nIndex = *(uint_32_ptr)index;
+   pointer           pObj;
+
+   if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
+   {
+      nIndex = 1;
+   } /* Endif */
+
+   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_RL, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   if (!pObj) 
+   {
+      return FALSE;
+   } /* Endif */
+   *(uint_32_ptr)index = nIndex;
+   *instance = pObj;
+   return TRUE;
+
+} /* Endbody */
+
+const char *MIB_get_rlInitState(pointer param)
+{
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;
+    FTE_VALUE       xValue;
+    
+    assert(pObj != NULL);
+
+    FTE_VALUE_copy(&xValue, pObj->pStatus->pValue);
+    FTE_DO_getInitState(pObj, &xValue.xData.ulValue);    
+    FTE_VALUE_toString(pObj->pStatus->pValue, _buff, sizeof(_buff));
+
+    return _buff;
+}
+
+uint_32 MIB_set_rlInitState(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;
+    assert(pObj != NULL);
+        
+    if (varlen >= sizeof(_buff))
+    {
+        return  SNMP_ERROR_wrongValue;
+    }
+        
+    strncpy(_buff, (char_ptr)varptr, varlen);
+    _buff[varlen] = '\0';
+    
+    if ((strcasecmp((char_ptr)_buff, "on") == 0) || (strcmp((char_ptr)_buff, "1") == 0))
+    {
+        FTE_RL_setInitState(pObj, TRUE);        
+    }
+    else if ((strcasecmp((char_ptr)_buff, "off") == 0) || (strcmp((char_ptr)_buff, "0") == 0))
+    {
+        FTE_RL_setInitState(pObj, FALSE);        
+    }
+    else
+    {
+        return SNMP_ERROR_wrongValue;
+    }
+
+    return SNMP_ERROR_noError;    
+}
+
+uint_32 MIB_set_rlName(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objName(param, varptr, varlen);
+}
+
+uint_32 MIB_set_rlState(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objState(param, varptr, varlen);
+}
+
+uint_32 MIB_set_rlValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objValue(param, varptr, varlen);
+}
+
+uint_32 MIB_set_rlInitValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objInitValue(param, varptr, varlen);
+}
+
+/******************************************************************************
+ * Power Sensor
+ ******************************************************************************/
+uint_32 MIB_get_pwrCount(pointer dummy)
+{ 
+    return  FTE_OBJ_count(FTE_OBJ_TYPE_POWER, FTE_OBJ_CLASS_MASK, FALSE);
+} 
+
+uint_32 MIB_set_pwrIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+
+boolean MIB_find_pwrEntry
+(
+    uint_32        op,
+    pointer        index,
+    pointer _PTR_  instance
+)
+{ /* Body */
+   uint_32           nIndex = *(uint_32_ptr)index;
+   pointer           pObj;
+
+   if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
+   {
+      nIndex = 1;
+   } /* Endif */
+
+   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_POWER, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   if (!pObj) 
+   {
+      return FALSE;
+   } /* Endif */ 
+   *(uint_32_ptr)index = nIndex;
+   *instance = pObj;
+   return TRUE;
+ 
+} /* Endbody */
+
+
+uint_32 MIB_set_pwrName(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objName(param, varptr, varlen);
+}
+
+uint_32 MIB_set_pwrState(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objState(param, varptr, varlen);
+}
+
+uint_32 MIB_set_pwrUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+}
+
+/******************************************************************************
+ * GAS Sensor
+ ******************************************************************************/
+uint_32 MIB_get_gasCount(pointer dummy)
+{ 
+    return  FTE_OBJ_count(FTE_OBJ_TYPE_GAS, FTE_OBJ_CLASS_MASK, FALSE);
+} 
+
+uint_32 MIB_set_gasIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+
+boolean MIB_find_gasEntry
+(
+    uint_32        op,
+    pointer        index,
+    pointer _PTR_  instance
+)
+{ /* Body */
+   uint_32           nIndex = *(uint_32_ptr)index;
+   pointer           pObj;
+
+   if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
+   {
+      nIndex = 1;
+   } /* Endif */
+
+   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_GAS, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   if (!pObj) 
+   {
+      return FALSE;
+   } /* Endif */ 
+   *(uint_32_ptr)index = nIndex;
+   *instance = pObj;
+   return TRUE;
+ 
+} /* Endbody */
+
+
+uint_32 MIB_set_gasName(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objName(param, varptr, varlen);
+}
+
+uint_32 MIB_set_gasState(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objState(param, varptr, varlen);
+}
+
+uint_32 MIB_set_gasUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+}
+
+/******************************************************************************
+ * Dust Sensor
+ ******************************************************************************/
+uint_32 MIB_get_dustCount(pointer dummy)
+{ 
+    return  FTE_OBJ_count(FTE_OBJ_TYPE_DUST, FTE_OBJ_TYPE_MASK, FALSE);
+} 
+
+uint_32 MIB_set_dustIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+
+boolean MIB_find_dustEntry
+(
+    uint_32        op,
+    pointer        index,
+    pointer _PTR_  instance
+)
+{ /* Body */
+   uint_32           nIndex = *(uint_32_ptr)index;
+   pointer           pObj;
+
+   if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
+   {
+      nIndex = 1;
+   } /* Endif */
+
+   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_DUST, FTE_OBJ_TYPE_MASK, nIndex - 1, FALSE);
+   if (!pObj) 
+   {
+      return FALSE;
+   } /* Endif */ 
+   *(uint_32_ptr)index = nIndex;
+   *instance = pObj;
+   return TRUE;
+ 
+} /* Endbody */
+
+
+uint_32 MIB_set_dustName(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objName(param, varptr, varlen);
+}
+
+uint_32 MIB_set_dustState(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objState(param, varptr, varlen);
+}
+
+uint_32 MIB_set_dustUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+}
+
+/******************************************************************************
+ * Count
+ ******************************************************************************/
+uint_32 MIB_get_cntCount(pointer dummy)
+{ 
+    return  FTE_OBJ_count(FTE_OBJ_TYPE_COUNT, FTE_OBJ_CLASS_MASK, FALSE);
+} 
+
+uint_32 MIB_set_cntIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+
+boolean MIB_find_cntEntry
+(
+    uint_32        op,
+    pointer        index,
+    pointer _PTR_  instance
+)
+{ /* Body */
+   uint_32           nIndex = *(uint_32_ptr)index;
+   pointer           pObj;
+
+   if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
+   {
+      nIndex = 1;
+   } /* Endif */
+
+   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_COUNT, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   if (!pObj) 
+   {
+      return FALSE;
+   } /* Endif */
+   *(uint_32_ptr)index = nIndex;
+   *instance = pObj;
+   return TRUE;
+
+} /* Endbody */
+
+const char *MIB_get_cntInitState(pointer param)
+{
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;
+    FTE_VALUE       xValue;
+    assert(pObj != NULL);
+
+    FTE_VALUE_copy(&xValue, pObj->pStatus->pValue);
+    FTE_DO_getInitState(pObj, &xValue.xData.ulValue);    
+    FTE_VALUE_toString(pObj->pStatus->pValue, _buff, sizeof(_buff));
+
+    return _buff;
+}
+
+uint_32 MIB_set_cntInitState(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;
+    assert(pObj != NULL);
+        
+    if (varlen >= sizeof(_buff))
+    {
+        return  SNMP_ERROR_wrongValue;
+    }
+        
+    strncpy(_buff, (char_ptr)varptr, varlen);
+    _buff[varlen] = '\0';
+    
+    if ((strcasecmp((char_ptr)_buff, "on") == 0) || (strcmp((char_ptr)_buff, "1") == 0))
+    {
+        //fte_cnt_set_init_state(pObj, TRUE);        
+    }
+    else if ((strcasecmp((char_ptr)_buff, "off") == 0) || (strcmp((char_ptr)_buff, "0") == 0))
+    {
+        //fte_cnt_set_init_state(pObj, FALSE);        
+    }
+    else
+    {
+        return SNMP_ERROR_wrongValue;
+    }
+
+    return SNMP_ERROR_noError;    
+}
+
+uint_32 MIB_set_cntName(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objName(param, varptr, varlen);
+}
+
+uint_32 MIB_set_cntState(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objState(param, varptr, varlen);
+}
+
+uint_32 MIB_set_cntValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objValue(param, varptr, varlen);
+}
+
+uint_32 MIB_set_cntInitValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objInitValue(param, varptr, varlen);
+}
+
+/******************************************************************************
+ * Pressure Sensor
+ ******************************************************************************/
+uint_32 MIB_get_prsCount(pointer dummy)
+{ 
+    return  FTE_OBJ_count(FTE_OBJ_TYPE_PRESSURE, FTE_OBJ_CLASS_MASK, FALSE);
+} 
+
+uint_32 MIB_set_prsIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+
+boolean MIB_find_prsEntry
+(
+    uint_32        op,
+    pointer        index,
+    pointer _PTR_  instance
+)
+{ /* Body */
+   uint_32           nIndex = *(uint_32_ptr)index;
+   pointer           pObj;
+
+   if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
+   {
+      nIndex = 1;
+   } /* Endif */
+
+   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_PRESSURE, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   if (!pObj) 
+   {
+      return FALSE;
+   } /* Endif */ 
+   *(uint_32_ptr)index = nIndex;
+   *instance = pObj;
+   return TRUE;
+ 
+} /* Endbody */
+
+uint_32 MIB_set_prsName(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objName(param, varptr, varlen);
+}
+
+uint_32 MIB_set_prsState(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objState(param, varptr, varlen);
+}
+
+uint_32 MIB_set_prsUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+}
+
+uint_32 MIB_set_prsValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objValue(param, varptr, varlen);
+}
+
+uint_32 MIB_set_prsInitValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objInitValue(param, varptr, varlen);
+}
+
+/******************************************************************************
+ * Device
+ ******************************************************************************/
+uint_32 MIB_get_devCount(pointer dummy)
+{ 
+    return  FTE_OBJ_count(FTE_OBJ_TYPE_MULTI, FTE_OBJ_CLASS_MASK, FALSE);
+} 
+
+uint_32 MIB_set_devIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+
+boolean MIB_find_devEntry
+(
+    uint_32        op,
+    pointer        index,
+    pointer _PTR_  instance
+)
+{ /* Body */
+   uint_32           nIndex = *(uint_32_ptr)index;
+   pointer           pObj;
+
+   if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
+   {
+      nIndex = 1;
+   } /* Endif */
+
+   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_MULTI, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   if (!pObj) 
+   {
+      return FALSE;
+   } /* Endif */ 
+   *(uint_32_ptr)index = nIndex;
+   *instance = pObj;
+   return TRUE;
+ 
+} /* Endbody */
+
+uint_32 MIB_set_devName(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objName(param, varptr, varlen);
+}
+
+uint_32 MIB_set_devState(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objState(param, varptr, varlen);
+}
+
+uint_32 MIB_set_devUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+}
+
+uint_32 MIB_set_devValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objValue(param, varptr, varlen);
+}
+
+uint_32 MIB_set_devInitValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objInitValue(param, varptr, varlen);
+}
+
+/******************************************************************************
+ * Event
+ ******************************************************************************/
+uint_32 MIB_get_eventCount(pointer dummy)
+{ 
+    return  1;
+} 
+uint_32 MIB_set_eventIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+
+boolean MIB_find_eventEntry
+(
+    uint_32        op,
+    pointer        index,
+    pointer _PTR_  instance
+)
+{ /* Body */
+   uint_32           nIndex = *(uint_32_ptr)index;
+   pointer           pObj;
+
+   if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
+   {
+      nIndex = 1;
+   } /* Endif */
+
+   if ((pObj = FTE_EVENT_getAt(nIndex - 1)) == NULL)
+   {
+      return FALSE;
+   } /* Endif */
+   *(uint_32_ptr)index = nIndex;
+   *instance = pObj;
+   return TRUE;
+
+} /* Endbody */
+
+const char *MIB_get_eventCondition(pointer param)
+{
+    assert(param != NULL);
+    
+    FTE_EVENT_PTR   pEvent = (FTE_EVENT_PTR)param;
+    switch(pEvent->pConfig->xCondition)
+    {
+    case    FTE_EVENT_CONDITION_ABOVE:   
+        {
+            snprintf(_buff, sizeof(_buff), 
+                     "{ \"type\":\"%s\", \"limit\" : \"%d\", \"threshold\" : \"%d\"}", 
+                     "above", 
+                     pEvent->pConfig->xParams.xLimit.nValue,
+                     pEvent->pConfig->xParams.xLimit.ulThreshold);                     
+        }
+        break;
+            
+    case    FTE_EVENT_CONDITION_BELOW:   
+        {
+            snprintf(_buff, sizeof(_buff), 
+                     "{ \"type\":\"%s\", \"limit\" : \"%d\", \"threshold\" : \"%d\"}", 
+                     "below", 
+                     pEvent->pConfig->xParams.xLimit.nValue,
+                     pEvent->pConfig->xParams.xLimit.ulThreshold);                     
+        }
+        break;
+        
+    case    FTE_EVENT_CONDITION_INSIDE:  
+        {
+            snprintf(_buff, sizeof(_buff), 
+                     "{ \"type\":\"%s\", \"upper\" : \"%d\", \"lower\" : \"%d\", \"threshold\" : \"%d\"}", 
+                     "inside", 
+                     pEvent->pConfig->xParams.xRange.nUpper,
+                     pEvent->pConfig->xParams.xRange.nLower,
+                     pEvent->pConfig->xParams.xLimit.ulThreshold);                     
+        }
+        break;
+        
+    case    FTE_EVENT_CONDITION_OUTSIDE: 
+        {
+            snprintf(_buff, sizeof(_buff), 
+                     "{ \"type\":\"%s\", \"upper\" : \"%d\", \"lower\" : \"%d\", \"threshold\" : \"%d\"}", 
+                     "outside", 
+                     pEvent->pConfig->xParams.xRange.nUpper,
+                     pEvent->pConfig->xParams.xRange.nLower,
+                     pEvent->pConfig->xParams.xLimit.ulThreshold);                     
+        }
+        break;
+        
+    case    FTE_EVENT_CONDITION_INTERVAL:
+        {
+            snprintf(_buff, sizeof(_buff), 
+                     "{ \"type\":\"%s\", \"interval\" : \"%d\"}", 
+                     "interval", 
+                     pEvent->pConfig->xParams.ulInterval);                     
+        }
+        break;
+        
+    case    FTE_EVENT_CONDITION_TIME:    
+        {
+            snprintf(_buff, sizeof(_buff), 
+                     "{ \"type\":\"%s\" }", 
+                     "time");                     
+        }
+        break;
+    }
+
+    return _buff;
+}
+
+uint_32 MIB_set_eventCondition(pointer param, uchar_ptr varptr, uint_32 varlen)
+{     
+    assert(param != NULL);
+
+    strncpy(_buff, (char_ptr)varptr, varlen);
+    
+    const nx_json* json = nx_json_parse_utf8(_buff);
+    if (json == NULL)
+    {
+        return  SNMP_ERROR_wrongValue;
+    } 
+    
+    const nx_json* type_json = nx_json_get(json, "type");
+
+    printf("type : %s\n", type_json->text_value);
+    
+    nx_json_free(json);
+
+    return SNMP_ERROR_noError;    
+}
+ 
+const char *MIB_get_eventEPID(pointer param)
+{
+    assert(param != NULL);
+    
+    FTE_EVENT_PTR   pEvent = (FTE_EVENT_PTR)param;
+    
+    sprintf(_buff, "%08lx", pEvent->pConfig->ulEPID);
+    
+    return  _buff;
+} 
+     
+
+const char *MIB_get_eventLevel(pointer param)
+{
+    assert(param != NULL);
+
+    FTE_EVENT_PTR   pEvent = (FTE_EVENT_PTR)param;
+    FTE_EVENT_level_string(pEvent->pConfig->xLevel, _buff, sizeof(_buff));
+    
+    return  _buff;
+}
+
+const char *MIB_get_eventType(pointer param)
+{
+    assert(param != NULL);
+
+    FTE_EVENT_PTR   pEvent = (FTE_EVENT_PTR)param;
+    FTE_EVENT_type_string(pEvent->pConfig->xType, _buff, sizeof(_buff));
+    
+    return  _buff;
+}
+
+    
+/******************************************************************************
+ * for Server Configuratoin
+ ******************************************************************************/
+
+boolean MIB_find_svrEntry 
+(
+    uint_32        op,
+    pointer        index,
+    pointer _PTR_  instance
+)
+{ 
+   uint_32           serverIndex = *(uint_32_ptr)index;
+
+   if ((op == RTCSMIB_OP_GETNEXT) && (serverIndex == 0)) 
+   {
+      serverIndex  = 1;
+   } /* Endif */
+
+   if (serverIndex - 1 < FTE_NET_SERVER_count())
+   {
+        *instance = (pointer)(serverIndex - 1);
+        *(uint_32_ptr)index = serverIndex;
+        
+        return TRUE;
+   }
+   else
+   {
+        *(uint_32_ptr)index = 0;
+        
+        return FALSE;   
+   }
+
+
+} /* Endbody */
+
+char const *MIB_get_srvIpAddr(pointer params)
+{
+    uint_32 idx = (uint_32)params;
+    uint_32 ip;
+
+    ip = FTE_NET_SERVER_getAt(idx);
+    
+    sprintf(_buff, "%d.%d.%d.%d", IPBYTES(ip));
+    
+    return  _buff;
+}
+
+/******************************************************************************
+ * Log Management
+ ******************************************************************************/
+
+uint_32 MIB_get_logCount(pointer dummy)
+{
+    return  fte_log_count();
+}
+
+boolean MIB_find_logEntry
+(
+    uint_32        op,
+    pointer        index,
+    pointer _PTR_  instance
+)
+{ 
+    uint_32             logIndex = *(uint_32_ptr)index;
+
+    if ((op == RTCSMIB_OP_GETNEXT) && (logIndex == 0)) 
+    {
+        logIndex = 1;
+    } 
+
+    if (logIndex > fte_log_count())
+    {
+        return  FALSE;
+    }
+
+    *instance = (pointer)(fte_log_count() - logIndex + 1);
+    *(uint_32_ptr)index = logIndex;
+                    
+    return TRUE;
+} /* Endbody */
+
+
+uint_32 MIB_get_logIndex(pointer dummy)
+{
+    return  (uint_32)dummy;
+}
+
+char const *MIB_get_logTime(pointer pIndex)
+{
+    FTE_LOG_PTR pLog;
+    
+    pLog = FTE_LOG_getAt((uint_32)pIndex - 1);
+    if (pLog == NULL)
+    {
+        return  _unknown;
+    } 
+    
+    strcpy(_buff, FTE_VALUE_printTimeStamp(&pLog->xValue));
+    
+    return  _buff;
+}
+
+uint_32 MIB_get_logLevel(pointer pIndex)
+{
+    uint_32     nIndex = (uint_32)pIndex;
+    FTE_LOG_PTR pLog = FTE_LOG_getAt(nIndex - 1);
+    
+    if (pLog == NULL)
+    {
+        return  0;
+    }
+    
+    return  pLog->nLevel;
+}
+
+char const *MIB_get_logID(pointer pIndex)
+{
+    uint_32     nIndex = (uint_32)pIndex;
+    FTE_LOG_PTR pLog = FTE_LOG_getAt(nIndex - 1);
+    
+    if (pLog == NULL)
+    {
+        return  _unknown;
+    }
+    
+    sprintf(_buff, "%08x", pLog->nID);
+
+    return  _buff;
+}
+ 
+char const *MIB_get_logValue(pointer pIndex)
+{
+    uint_32         nIndex = (uint_32)pIndex;
+    FTE_LOG_PTR     pLog = FTE_LOG_getAt(nIndex - 1);
+    
+    if (pLog == NULL)
+    {
+        return  _unknown;
+    }
+    
+    FTE_VALUE_toString(&pLog->xValue, _buff, sizeof(_buff));
+    
+    return  _buff;
+}
+
+char const *MIB_get_logString(pointer pIndex)
+{
+    uint_32         nIndex = (uint_32)pIndex;
+    FTE_LOG_PTR     pLog = FTE_LOG_getAt(nIndex - 1);
+    
+    return  _unknown;
+}
+
+/******************************************************************************
+ * for TRAP 
+ ******************************************************************************/
+
+boolean MIB_find_tsEntry
+(
+    uint_32        op,
+    pointer        index,
+    pointer _PTR_  instance
+)
+{ 
+    uint_32         serverIndex = *(uint_32_ptr)index;
+    FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
+
+    if (pCfgNet->xSNMP.xTrap.ulCount == 0)
+    {
+        return  FALSE;
+    }
+    
+    if ((op == RTCSMIB_OP_GETNEXT) && (serverIndex == 0)) 
+    {
+        serverIndex = 1;
+    } 
+    
+    if (serverIndex > pCfgNet->xSNMP.xTrap.ulCount)
+    {
+        return  FALSE;
+    }
+
+    *instance = (pointer)&pCfgNet->xSNMP.xTrap.pList[serverIndex - 1];
+    *(uint_32_ptr)index = serverIndex;
+                    
+    return TRUE;
+} /* Endbody */
+
+
+char const *MIB_get_tsIpAddr(pointer dummy)
+{
+    _ip_address *ip = dummy;
+    
+    sprintf(_buff, "%d.%d.%d.%d", IPBYTES(*ip));
+    
+    return  _buff;
+}
+
+uint_32 MIB_get_tsCount(pointer dummy)
+{
+    FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
+
+    if (pCfgNet == NULL)
+    {
+        return  0;
+    }
+    
+    return  pCfgNet->xSNMP.xTrap.ulCount; 
+}
+
+char const *MIB_get_tsAdd(pointer dummy)
+{
+    sprintf(_buff,"xxx.xxx.xxx.xxx");
+    return  _buff;
+}
+
+
+uint_32 MIB_set_tsAdd(pointer dummy, uchar_ptr varptr, uint_32 varlen)
+{
+    uint_32 nIP;
+    
+    if (varlen >= sizeof(_buff))
+    {
+        return  SNMP_ERROR_wrongValue;
+    }
+        
+    strncpy(_buff, (char_ptr)varptr, varlen);
+    _buff[varlen] = '\0';
+    
+    if (fte_parse_ip_address((char_ptr)_buff, &nIP) != TRUE)
+    {
+        return  SNMP_ERROR_badValue;
+    }
+
+    FTE_SNMPD_TRAP_add(nIP, TRUE);
+    
+    return   SNMP_ERROR_noError;
+}
+
+char const *MIB_get_tsDel(pointer dummy)
+{
+    return   SNMP_ERROR_noError;    
+}
+
+uint_32 MIB_set_tsDel(pointer dummy, uchar_ptr varptr, uint_32 varlen)
+{
+    uint_32 nIP;
+    
+    if (varlen >= sizeof(_buff))
+    {
+        return  SNMP_ERROR_wrongValue;
+    }
+        
+    strncpy(_buff, (char_ptr)varptr, varlen);
+    _buff[varlen] = '\0';
+    
+    if (fte_parse_ip_address((char_ptr)_buff, &nIP) != TRUE)
+    {
+         return  SNMP_ERROR_badValue;
+    }
+
+    if (FTE_SNMPD_TRAP_del(nIP) != MQX_OK)
+    {
+        return  SNMP_ERROR_badValue;
+    }
+    
+     return   SNMP_ERROR_noError;
+}
+
+
+char const *MIB_get_msgDiscovery(pointer param)
+{ 
+    return  FTE_SMNG_getDiscoveryMessage();
+}
+
+char const *MIB_get_msgAlert(pointer param)
+{
+    if ((pCurrentTrapMsg != NULL) && (pCurrentTrapMsg->xType == FTE_NET_SNMP_TRAP_TYPE_ALERT))
+    {
+        if (pCurrentTrapMsg->pBuff == NULL)
+        {
+            uint_32         ulLen;
+            FTE_OBJECT_PTR  pObj = FTE_OBJ_get(pCurrentTrapMsg->xParams.xAlert.nOID);    
+            if (pObj == NULL)
+            {
+                return  _unknown;
+            }
+            
+            FTE_JSON_VALUE_PTR  pJSONValue = (FTE_JSON_VALUE_PTR)FTE_OBJ_createJSON(pObj, FTE_OBJ_FIELD_EP_VALUE);
+            if (pJSONValue == NULL)
+            {
+                ERROR("Not enough memory!\n");
+                return  _unknown;
+            }            
+            
+            ulLen = FTE_JSON_VALUE_buffSize(pJSONValue) + 1;
+            pCurrentTrapMsg->pBuff = (char_ptr)FTE_MEM_alloc(ulLen);
+            if (pCurrentTrapMsg == NULL)
+            {
+                ERROR("Not enough memory!\n");
+            }
+            else
+            {
+                FTE_JSON_VALUE_snprint(pCurrentTrapMsg->pBuff, ulLen, pJSONValue);            
+            }
+            
+            FTE_JSON_VALUE_destroy(pJSONValue);
+        }
+        
+        return  pCurrentTrapMsg->pBuff;
+    }
+    
+    return  _unknown;
+}
+
+/******************************************************************************
+ * for Admin
+ ******************************************************************************/
+
+uint_32 MIB_set_adminOID(pointer dummy, uchar_ptr varptr, uint_32 varlen)
+{
+    return   SNMP_ERROR_noError;
+}
+
+char const *MIB_get_adminMAC(pointer dummy)
+{
+    _enet_address   pMAC;
+    
+    if (FTE_SYS_getMAC(pMAC) != MQX_OK)
+    {
+        return  _unknown;
+    }
+
+    sprintf(_buff, "%02x:%02x:%02x:%02x:%02x:%02x", 
+            pMAC[0], pMAC[1], pMAC[2], pMAC[3], pMAC[4], pMAC[5]);
+    
+    return  _buff;
+}
+
+
+uint_32 MIB_set_adminMAC(pointer dummy, uchar_ptr varptr, uint_32 varlen)
+{
+    return   SNMP_ERROR_noError;
+}
+
+static  int_32    _nFactoryResetKey = 0;
+
+char const *MIB_get_adminFactoryReset(pointer dummy)
+{
+    _nFactoryResetKey = (RTCS_rand() & 0x7FFFFFFF);
+
+    sprintf(_buff, "%08x", _nFactoryResetKey);
+    
+    return  _buff;
+}
+
+
+uint_32 MIB_set_adminFactoryReset(pointer dummy, uchar_ptr varptr, uint_32 varlen)
+{
+    sprintf(_buff, "%08x", _nFactoryResetKey);
+
+    if ((_nFactoryResetKey == 0) || varlen != 8 || strncmp(_buff, (char*)varptr, 8) != 0)
+    {
+        return  SNMP_ERROR_wrongValue;
+    }
+    
+    FTE_CFG_clear();
+
+    return   SNMP_ERROR_noError;
+}
+
+
+char const *MIB_get_adminSystemTime(pointer dummy)
+{
+    TIME_STRUCT xTime;
+    
+    _time_get(&xTime);
+    FTE_TIME_toString(&xTime, _buff, sizeof(_buff));
+
+    return  _buff;
+}
+
+
+uint_32 MIB_set_adminSystemTime(pointer dummy, uchar_ptr varptr, uint_32 varlen)
+{
+    TIME_STRUCT xTime;
+    
+
+    strncpy(_buff, (char_ptr)varptr, varlen);
+    _buff[varlen] = '\0';
+    if (FTE_TIME_toTime((char_ptr)_buff, &xTime) != MQX_OK)
+    {
+        return  SNMP_ERROR_badValue;
+    }
+
+    _time_set(&xTime);
+    _rtc_init(RTC_INIT_FLAG_CLEAR | RTC_INIT_FLAG_ENABLE);
+    if( _rtc_sync_with_mqx(FALSE) != MQX_OK )
+    {
+        printf("\nError synchronize time!\n");
+    }
+
+    return   SNMP_ERROR_noError;
+}
+
+static  int_32    _nResetKey = 0;
+
+char const *MIB_get_adminReset(pointer dummy)
+{
+    _nResetKey = (RTCS_rand() & 0x7FFFFFFF);
+
+    sprintf(_buff, "%08x", _nResetKey);
+    
+    return  _buff;
+}
+
+static void _config_save(pointer params)
+{
+    FTE_CFG_save(TRUE);
+}
+
+uint_32 MIB_set_adminReset(pointer dummy, uchar_ptr varptr, uint_32 varlen)
+{
+    sprintf(_buff, "%08x", _nResetKey);
+
+    if ((_nResetKey == 0) || varlen != 8 || strncmp(_buff, (char*)varptr, 8) != 0)
+    {
+        return  SNMP_ERROR_wrongValue;
+    }
+    
+    fte_timer_add(1, 1, (LWTIMER_ISR_FPTR)_config_save, NULL);
+    fte_timer_add(3, 1, (LWTIMER_ISR_FPTR)FTE_SYS_reset, NULL);
+
+    return   SNMP_ERROR_noError;
+}
+
+
+boolean MIB_find_dbgBTEntry
+(
+    uint_32        op,
+    pointer        index,
+    pointer _PTR_  instance
+)
+{ 
+    uint_32              nIndex = *(uint_32_ptr)index;
+
+    if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
+    {
+        nIndex = 1;
+    } 
+    
+    if (nIndex > FTE_LOG_BOOT_TIME_MAX_COUNT)
+    {
+        return  FALSE;
+    }
+
+    *instance = (pointer)(nIndex - 1);
+    *(uint_32_ptr)index = nIndex;
+                    
+    return TRUE;
+} /* Endbody */
+
+
+uint_32 MIB_get_dbgBTIndex(pointer dummy)
+{
+    return  (uint_32)dummy + 1;
+}
+
+char const *MIB_get_dbgBTTime(pointer dummy)
+{
+    
+    TIME_STRUCT xTime;
+    uint_32 nIndex = (uint_32)dummy;
+    
+    if (FTE_CFG_DBG_getBootTime(nIndex, &xTime) == MQX_OK)
+    {
+        FTE_TIME_toString(&xTime, _buff, sizeof(_buff));
+        return  _buff;
+    }
+    
+    return  _unknown;
+}
+
+/******************************************************************************
+ * for MIB
+ ******************************************************************************/
+const RTCSMIB_VALUE MIBVALUE_futuretek = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_fts = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_p5 = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_p5Desc = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_p5Config = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_descDevice = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_descSensors = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_descControls = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_descPower = 
+{
+	RTCSMIB_NODETYPE_DISPSTR_PTR,
+	(void _PTR_)"FTS-P5"
+};
+
+const RTCSMIB_VALUE MIBVALUE_prodID= 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_productID
+};
+
+const RTCSMIB_VALUE MIBVALUE_prodModel= 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_productModel
+};
+
+const RTCSMIB_VALUE MIBVALUE_prodVendor = 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_vendorID
+};
+
+const RTCSMIB_VALUE MIBVALUE_prodHWVer = 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_HWVersion
+};
+
+const RTCSMIB_VALUE MIBVALUE_prodSWVer = 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_SWVersion
+};
+
+const RTCSMIB_VALUE MIBVALUE_prodDesc = 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_prodDesc
+};
+
+const RTCSMIB_VALUE MIBVALUE_netType= 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_netType
+};
+
+const RTCSMIB_VALUE MIBVALUE_netMacAddr = 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_netMacAddr
+};
+
+const RTCSMIB_VALUE MIBVALUE_netIpAddr = 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_netIpAddr
+};
+
+const RTCSMIB_VALUE MIBVALUE_netNetMask = 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_netNetMask
+};
+
+const RTCSMIB_VALUE MIBVALUE_netGateway = 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_netGateway
+};
+
+const RTCSMIB_VALUE MIBVALUE_smDiscovery = 
+{
+	RTCSMIB_NODETYPE_INT_FN,
+	(void _PTR_)MIB_get_smDiscovery
+};
+
+const RTCSMIB_VALUE MIBVALUE_smDestroyDynamicObject= 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_smDestroyDynamicObject 
+};
+
+/******************************************************************************
+ * futuretek.fte.endpoints.epDI.xxx
+ ******************************************************************************/
+
+const RTCSMIB_VALUE MIBVALUE_diCount= 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_diCount
+};
+
+const RTCSMIB_VALUE MIBVALUE_diTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_diEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_diIndex = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_diID = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objID
+};
+
+const RTCSMIB_VALUE MIBVALUE_diType = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objType
+};
+
+const RTCSMIB_VALUE MIBVALUE_diSN = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objSN
+};
+
+const RTCSMIB_VALUE MIBVALUE_diName = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objName
+};
+
+const RTCSMIB_VALUE MIBVALUE_diState = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objState
+};
+
+const RTCSMIB_VALUE MIBVALUE_diValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_diLastValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_diLastTime = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastTime
+};
+
+const RTCSMIB_VALUE MIBVALUE_diInitValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objInitValue
+};
+
+/******************************************************************************
+ * futuretek.fts.endpoints.epTemperature.xxx
+ ******************************************************************************/
+
+const RTCSMIB_VALUE MIBVALUE_tempCount= 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_tempCount
+};
+
+const RTCSMIB_VALUE MIBVALUE_tempTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_tempEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_tempIndex = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_tempID= 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objID
+};
+
+const RTCSMIB_VALUE MIBVALUE_tempType = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objType
+};
+
+const RTCSMIB_VALUE MIBVALUE_tempSN = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objSN
+};
+
+const RTCSMIB_VALUE MIBVALUE_tempName = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objName
+};
+
+const RTCSMIB_VALUE MIBVALUE_tempState = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objState
+};
+
+const RTCSMIB_VALUE MIBVALUE_tempValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_tempLastValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_tempLastTime = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastTime
+};
+
+const RTCSMIB_VALUE MIBVALUE_tempUpdateInterval = 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_objUpdateInterval
+};
+
+/******************************************************************************
+ * futuretek.fts.endpoints.epHumidity.xxx
+ ******************************************************************************/
+
+const RTCSMIB_VALUE MIBVALUE_humiCount= 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_humiCount
+};
+
+const RTCSMIB_VALUE MIBVALUE_humiTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_humiEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_humiIndex = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_humiID= 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objID
+};
+
+const RTCSMIB_VALUE MIBVALUE_humiType = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objType
+};
+
+const RTCSMIB_VALUE MIBVALUE_humiSN = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objSN
+};
+
+const RTCSMIB_VALUE MIBVALUE_humiName = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objName
+};
+
+const RTCSMIB_VALUE MIBVALUE_humiState = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objState
+};
+
+const RTCSMIB_VALUE MIBVALUE_humiValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_humiLastValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_humiLastTime = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastTime
+};
+
+const RTCSMIB_VALUE MIBVALUE_humiUpdateInterval = 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+    (void _PTR_)MIB_get_objUpdateInterval
+};
+
+/******************************************************************************
+ * futuretek.fts.endpoints.epVoltage.xxx
+ ******************************************************************************/
+
+const RTCSMIB_VALUE MIBVALUE_vltCount= 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_vltCount
+};
+
+const RTCSMIB_VALUE MIBVALUE_vltTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_vltEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_vltIndex = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_vltID= 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objID
+};
+
+const RTCSMIB_VALUE MIBVALUE_vltType = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objType
+};
+
+const RTCSMIB_VALUE MIBVALUE_vltSN = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objSN
+};
+
+const RTCSMIB_VALUE MIBVALUE_vltName = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objName
+};
+
+const RTCSMIB_VALUE MIBVALUE_vltState = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objState
+};
+
+const RTCSMIB_VALUE MIBVALUE_vltValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_vltLastValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_vltLastTime = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastTime
+};
+
+const RTCSMIB_VALUE MIBVALUE_vltUpdateInterval = 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+    (void _PTR_)MIB_get_objUpdateInterval
+};
+
+/******************************************************************************
+ * futuretek.fts.endpoints.epCurrent.xxx
+ ******************************************************************************/
+
+const RTCSMIB_VALUE MIBVALUE_currCount= 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_currCount
+};
+
+const RTCSMIB_VALUE MIBVALUE_currTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_currEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_currIndex = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_currID= 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objID
+};
+
+const RTCSMIB_VALUE MIBVALUE_currType = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objType
+};
+
+const RTCSMIB_VALUE MIBVALUE_currSN = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objSN
+};
+
+const RTCSMIB_VALUE MIBVALUE_currName = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objName
+};
+
+const RTCSMIB_VALUE MIBVALUE_currState = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objState
+};
+
+const RTCSMIB_VALUE MIBVALUE_currValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_currLastValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_currLastTime = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastTime
+};
+
+const RTCSMIB_VALUE MIBVALUE_currUpdateInterval = 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+    (void _PTR_)MIB_get_objUpdateInterval
+};
+
+
+/******************************************************************************
+ * futuretek.fts.endpoints.epDO.xxx
+ ******************************************************************************/
+
+const RTCSMIB_VALUE MIBVALUE_doCount= 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_doCount
+};
+
+const RTCSMIB_VALUE MIBVALUE_doTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_doEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_doIndex = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_doID= 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objID
+};
+
+const RTCSMIB_VALUE MIBVALUE_doType = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objType
+};
+
+const RTCSMIB_VALUE MIBVALUE_doInitState = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_doInitState
+};
+
+const RTCSMIB_VALUE MIBVALUE_doName = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objName
+};
+
+const RTCSMIB_VALUE MIBVALUE_doSN = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objSN
+};
+
+const RTCSMIB_VALUE MIBVALUE_doState = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objState
+};
+
+const RTCSMIB_VALUE MIBVALUE_doValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_doLastValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_doLastTime = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastTime
+};
+
+const RTCSMIB_VALUE MIBVALUE_doInitValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objInitValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_rlCount= 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_rlCount
+};
+
+const RTCSMIB_VALUE MIBVALUE_rlTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_rlEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_rlIndex = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_rlID = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objID
+};
+
+const RTCSMIB_VALUE MIBVALUE_rlType = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objType
+};
+
+const RTCSMIB_VALUE MIBVALUE_rlName = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objName
+};
+
+const RTCSMIB_VALUE MIBVALUE_rlSN = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objSN
+};
+
+const RTCSMIB_VALUE MIBVALUE_rlState = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objState
+};
+
+const RTCSMIB_VALUE MIBVALUE_rlValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_rlLastValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_rlLastTime = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastTime
+};
+
+const RTCSMIB_VALUE MIBVALUE_rlInitValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objInitValue
+}; 
+
+/*************************************************************
+* futuretek.fts.endpoints.epPower.xxx
+ *************************************************************/
+
+const RTCSMIB_VALUE MIBVALUE_pwrCount= 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_pwrCount
+};
+
+const RTCSMIB_VALUE MIBVALUE_pwrTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_pwrEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_pwrIndex = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_pwrID= 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objID
+};
+
+const RTCSMIB_VALUE MIBVALUE_pwrType = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objType
+};
+
+const RTCSMIB_VALUE MIBVALUE_pwrSN = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objSN
+};
+
+const RTCSMIB_VALUE MIBVALUE_pwrName = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objName
+};
+
+const RTCSMIB_VALUE MIBVALUE_pwrState = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objState
+};
+
+const RTCSMIB_VALUE MIBVALUE_pwrValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_pwrLastValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_pwrLastTime = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastTime
+};
+
+const RTCSMIB_VALUE MIBVALUE_pwrUpdateInterval = 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_objUpdateInterval
+};
+
+/*************************************************************
+ * futuretek.fts.endpoints.epGAS.xxx
+ *************************************************************/
+
+const RTCSMIB_VALUE MIBVALUE_gasCount= 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_gasCount
+};
+
+const RTCSMIB_VALUE MIBVALUE_gasTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_gasEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_gasIndex = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_gasID= 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objID
+};
+
+const RTCSMIB_VALUE MIBVALUE_gasType = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objType
+};
+
+const RTCSMIB_VALUE MIBVALUE_gasSN = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objSN
+};
+
+const RTCSMIB_VALUE MIBVALUE_gasName = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objName
+};
+
+const RTCSMIB_VALUE MIBVALUE_gasState = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objState
+};
+
+const RTCSMIB_VALUE MIBVALUE_gasValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_gasLastValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_gasLastTime = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastTime
+};
+
+const RTCSMIB_VALUE MIBVALUE_gasUpdateInterval = 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_objUpdateInterval
+};
+
+const RTCSMIB_VALUE MIBVALUE_gasTotalTrial = 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_objTotalTrial
+};
+
+const RTCSMIB_VALUE MIBVALUE_gasTotalFailed = 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_objTotalFailed
+};
+
+/*************************************************************
+ * futuretek.fts.endpoints.epDust.xxx
+ *************************************************************/
+
+const RTCSMIB_VALUE MIBVALUE_dustCount= 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_dustCount
+};
+
+const RTCSMIB_VALUE MIBVALUE_dustTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_dustEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_dustIndex = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_dustID= 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objID
+};
+
+const RTCSMIB_VALUE MIBVALUE_dustType = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objType
+};
+
+const RTCSMIB_VALUE MIBVALUE_dustSN = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objSN
+};
+
+const RTCSMIB_VALUE MIBVALUE_dustName = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objName
+};
+
+const RTCSMIB_VALUE MIBVALUE_dustState = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objState
+};
+
+const RTCSMIB_VALUE MIBVALUE_dustValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_dustLastValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_dustLastTime = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastTime
+};
+
+const RTCSMIB_VALUE MIBVALUE_dustUpdateInterval = 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_objUpdateInterval
+};
+
+const RTCSMIB_VALUE MIBVALUE_dustTotalTrial = 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_objTotalTrial
+};
+
+const RTCSMIB_VALUE MIBVALUE_dustTotalFailed = 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_objTotalFailed
+};
+
+/******************************************************************************
+ *
+ ******************************************************************************/
+const RTCSMIB_VALUE MIBVALUE_cntCount= 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_cntCount
+};
+
+const RTCSMIB_VALUE MIBVALUE_cntTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_cntEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_cntIndex = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_cntID = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objID
+};
+
+const RTCSMIB_VALUE MIBVALUE_cntType = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objType
+};
+
+const RTCSMIB_VALUE MIBVALUE_cntName = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objName
+};
+
+const RTCSMIB_VALUE MIBVALUE_cntSN = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objSN
+};
+
+const RTCSMIB_VALUE MIBVALUE_cntState = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objState
+};
+
+const RTCSMIB_VALUE MIBVALUE_cntValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_cntLastValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_cntLastTime = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastTime
+};
+
+const RTCSMIB_VALUE MIBVALUE_cntInitValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objInitValue
+}; 
+
+/******************************************************************************
+ * futuretek.fts.endpoints.epPressure.xxx
+ ******************************************************************************/
+
+const RTCSMIB_VALUE MIBVALUE_prsCount= 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_prsCount
+};
+
+const RTCSMIB_VALUE MIBVALUE_prsTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_prsEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_prsIndex = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_prsID= 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objID
+};
+
+const RTCSMIB_VALUE MIBVALUE_prsType = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objType
+};
+
+const RTCSMIB_VALUE MIBVALUE_prsSN = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objSN
+};
+
+const RTCSMIB_VALUE MIBVALUE_prsName = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objName
+};
+
+const RTCSMIB_VALUE MIBVALUE_prsState = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objState
+};
+
+const RTCSMIB_VALUE MIBVALUE_prsValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_prsLastValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_prsLastTime = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastTime
+};
+
+const RTCSMIB_VALUE MIBVALUE_prsUpdateInterval = 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+    (void _PTR_)MIB_get_objUpdateInterval
+};
+
+
+const RTCSMIB_VALUE MIBVALUE_prsInitValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objInitValue
+}; 
+
+/******************************************************************************
+ * futuretek.fts.endpoints.epDevice.xxx
+ ******************************************************************************/
+
+const RTCSMIB_VALUE MIBVALUE_devCount = 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_devCount
+};
+
+const RTCSMIB_VALUE MIBVALUE_devTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_devEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_devIndex = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_devID= 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objID
+};
+
+const RTCSMIB_VALUE MIBVALUE_devType = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objType
+};
+
+const RTCSMIB_VALUE MIBVALUE_devSN = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objSN
+};
+
+const RTCSMIB_VALUE MIBVALUE_devName = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objName
+};
+
+const RTCSMIB_VALUE MIBVALUE_devState = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objState
+};
+
+const RTCSMIB_VALUE MIBVALUE_devValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objValue
+};
+
+
+/******************************************************************************
+ *
+ ******************************************************************************/
+const RTCSMIB_VALUE MIBVALUE_eventCount= 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_eventCount
+};
+
+const RTCSMIB_VALUE MIBVALUE_eventTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_eventEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_eventIndex = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_eventEPID = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_eventEPID
+};
+
+const RTCSMIB_VALUE MIBVALUE_eventLevel = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_eventLevel
+};
+
+const RTCSMIB_VALUE MIBVALUE_eventType = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_eventType
+};
+
+const RTCSMIB_VALUE MIBVALUE_eventCondition = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_eventCondition
+};
+
+    /******************************************************************************
+ *
+ ******************************************************************************/
+const RTCSMIB_VALUE MIBVALUE_svrTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_svrEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_svrIndex = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_svrIpAddr = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_srvIpAddr
+};
+
+const RTCSMIB_VALUE MIBVALUE_logCount = 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_logCount
+};
+
+const RTCSMIB_VALUE MIBVALUE_logTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_logEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_logIndex = 
+{
+    RTCSMIB_NODETYPE_UINT_FN,
+    (void _PTR_)MIB_get_logIndex
+};
+
+const RTCSMIB_VALUE MIBVALUE_logTime = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_logTime
+};
+
+const RTCSMIB_VALUE MIBVALUE_logID = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_logID
+};
+
+const RTCSMIB_VALUE MIBVALUE_logValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_logValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_logLevel = 
+{
+    RTCSMIB_NODETYPE_UINT_FN,
+    (void _PTR_)MIB_get_logLevel
+};
+
+const RTCSMIB_VALUE MIBVALUE_logString = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_logString
+};
+
+
+const RTCSMIB_VALUE MIBVALUE_psType = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_psVoltageMax = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_psVoltageMin = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+
+const RTCSMIB_VALUE MIBVALUE_tsTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_tsEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_tsIndex = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_tsIpAddr = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_tsIpAddr
+};
+
+const RTCSMIB_VALUE MIBVALUE_tsCount = 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_tsCount
+};
+
+const RTCSMIB_VALUE MIBVALUE_tsAdd = 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_tsAdd
+};
+
+const RTCSMIB_VALUE MIBVALUE_tsDel = 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_tsDel
+};
+
+const RTCSMIB_VALUE MIBVALUE_msgDiscovery = 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_msgDiscovery
+};
+
+const RTCSMIB_VALUE MIBVALUE_msgAlert = 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_msgAlert
+};
+
+/******************************************************************************
+ * Administration 
+ ******************************************************************************/
+const RTCSMIB_VALUE MIBVALUE_adminOID = 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_productID
+};
+
+const RTCSMIB_VALUE MIBVALUE_adminMAC = 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_adminMAC
+};
+
+const RTCSMIB_VALUE MIBVALUE_adminFactoryReset = 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_adminFactoryReset
+};
+
+const RTCSMIB_VALUE MIBVALUE_adminSystemTime = 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_adminSystemTime
+};
+
+
+const RTCSMIB_VALUE MIBVALUE_adminReset = 
+{
+	RTCSMIB_NODETYPE_DISPSTR_FN,
+	(void _PTR_)MIB_get_adminReset
+};
+
+const RTCSMIB_VALUE MIBVALUE_dbgBTTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_dbgBTEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_dbgBTIndex = 
+{
+    RTCSMIB_NODETYPE_UINT_FN,
+    (void _PTR_)MIB_get_dbgBTIndex
+};
+
+const RTCSMIB_VALUE MIBVALUE_dbgBTTime = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_dbgBTTime
+};
+
+/******************************************************************************
+ * Shell command
+ ******************************************************************************/
+int_32  FTE_SNMPD_SHELL_cmd(int_32 argc, char_ptr argv[] )
+{
+    uint_32  result;
+    boolean  print_usage, shorthelp = FALSE;
+    int_32   return_code = SHELL_EXIT_SUCCESS;
+ 
+    print_usage = Shell_check_help_request(argc, argv, &shorthelp );
+
+    if (!print_usage)  
+    {
+        if (argc == 2)  
+        {
+            if (strcmp(argv[1], "start") == 0)
+            {
+                result = SNMP_init(FTE_NET_SNMP_NAME, FTE_NET_SNMP_PRIO, FTE_NET_SNMP_STACK);
+                if (result ==  0)  
+                {
+                    printf("SNMP Agent Started.\n");
+                    /* Install some MIBs for the SNMP agent */
+#if FTE_NET_SNMP_MIB1213
+                    /* init RFC 1213 MIB */
+                    MIB1213_init();
+#endif
+    
+#if FTE_NET_SNMP_MIBMQX
+                    /* init MQX MIB */
+                    MIBMQX_init();
+#endif
+                } 
+                else  
+                {
+                    printf("Unable to start SNMP Agent, error = 0x%x\n",result);
+                    return_code = SHELL_EXIT_ERROR;
+                }
+            } 
+            else if (strcmp(argv[1], "stop") == 0)  
+            {
+                result = SNMP_stop();
+                if (result ==  0)  
+                {
+                    printf("SNMP Agent Stopped.\n");
+                }
+                else  
+                {
+                    printf("Unable to stop SNMP Agent, error = 0x%x\n",result);
+                    return_code = SHELL_EXIT_ERROR;
+                }
+            } 
+            else  
+            {
+                printf("Error, %s invoked with incorrect option\n", argv[0]);
+                print_usage = TRUE;
+            }
+        } 
+        else if (argc == 3)
+        {
+            if (strcmp(argv[1], "trap") == 0)
+            {
+                if (strcmp(argv[2], "list") == 0)
+                { 
+                    uint_32     i;
+                    
+                    for( i = 0 ; i < FTE_CFG_NET_TRAP_count() ; i++)
+                    {
+                        _ip_address xIP = FTE_CFG_NET_TRAP_getAt(i);
+                        
+                        printf("%d: %d.%d.%d.%d\n", i+1, IPBYTES(xIP));
+                    }
+                }
+            }
+            else  
+            {
+                printf("Error, %s invoked with incorrect option\n", argv[0]);
+                print_usage = TRUE;
+            }
+        }
+        else if (argc == 4)
+        {
+            if (strcmp(argv[1], "trap") == 0)
+            {
+                if (strcmp(argv[2], "add") == 0)
+                {
+                    _ip_address ip;
+                    
+                    if (! fte_parse_ip_address (argv[3], &ip))
+                    {
+                        printf ("Error!, invalid ip address!\n");
+                        
+                        print_usage = TRUE;
+                        return_code = SHELL_EXIT_ERROR;
+                        goto error;
+                    }
+                    
+                    if (FTE_SNMPD_TRAP_add(ip, TRUE) != MQX_OK)
+                    {
+                        return_code = SHELL_EXIT_ERROR;
+                        goto error;
+                    }                    
+                }
+                else if (strcmp(argv[2], "del") == 0)
+                {
+                    _ip_address ip;
+                    
+                    if (! fte_parse_ip_address (argv[3], &ip))
+                    {
+                        printf ("Error!, invalid ip address!\n");
+                        
+                        print_usage = TRUE;
+                        return_code = SHELL_EXIT_ERROR;
+                        goto error;
+                    }
+                    
+                    if (FTE_SNMPD_TRAP_del(ip) != MQX_OK)
+                    {
+                        return_code = SHELL_EXIT_ERROR;
+                        goto error;
+                    }                    
+                }
+                else if (strcmp(argv[2], "send") == 0)
+                {
+                    FTE_SNMPD_TRAP_sendAlert(FTE_ALERT_INFO, TRUE);
+                }
+                else if (strcmp(argv[2], "discovery") == 0)
+                {
+                    _ip_address ip;
+                    
+                    if (! fte_parse_ip_address (argv[3], &ip))
+                    {
+                        printf ("Error!, invalid ip address!\n");
+                        
+                        print_usage = TRUE;
+                        return_code = SHELL_EXIT_ERROR;
+                        goto error;
+                    }
+                    
+                    FTE_SNMPD_TRAP_discovery(ip);
+                }
+                else
+                {
+                    print_usage = TRUE;
+                    return_code = SHELL_EXIT_ERROR;
+                    goto error;
+                }
+            }
+        }
+        else
+        {
+            printf("Error, %s invoked with incorrect number of arguments\n", argv[0]);
+            print_usage = TRUE;
+        }
+    }
+    
+error:    
+    if (print_usage)  
+    {
+        if (shorthelp)  
+        {
+            printf("%s [start | stop]\n", argv[0]);
+        } 
+        else  
+        {
+            printf("Usage: %s [start | stop]\n",argv[0]);
+        }
+    }
+    
+    
+   return return_code;
+} /* Endbody */
+
+
+/* EOF */

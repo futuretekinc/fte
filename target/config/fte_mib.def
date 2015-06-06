@@ -1,0 +1,263 @@
+-- HEADER --------------------------------------------------------------
+-- ---------------------------------------------------------------------
+--
+--  Comments:  This file contains an implementation of the 
+--  FutureTek,Inc. EdgeNode MIB.
+--
+-- ---------------------------------------------------------------------
+-- END -----------------------------------------------------------------
+
+-- Definitions for FTE MIB
+
+-- User's MIB file should start with enterprises company number here.
+
+futuretek               enterprises.42251
+
+%% DisplayString    OCTET
+%% MacAddress       OCTET
+%% IPAddress        OCTET
+
+fte                     futuretek.1
+
+product                 fte.1
+network                 fte.2
+endpoints               fte.3
+servers                 fte.5
+logs                    fte.6
+power                   fte.7
+events                  fte.8
+traps					fte.100
+admin                   fte.65535
+
+epTemperature           endpoints.256
+epHumidity              endpoints.512
+epVoltage               endpoints.768
+epCurrent               endpoints.1024
+epDI                    endpoints.1280
+epDO                    endpoints.1536
+epGAS                   endpoints.1792
+epPower                 endpoints.2048
+epCount                 endpoints.2816
+epPressure              endpoints.3072
+epDevice                endpoints.32512
+epMgmt                  endpoints.65535
+
+netType                 network.1           INTEGER             read-only       mandatory 
+netMacAddr              network.2           MacAddress          read-only       mandatory 
+netIpAddr               network.3           IPAddress           read-only       mandatory 
+netNetMask              network.4           IPAddress           read-only       mandatory 
+netGateway              network.5           IPAddress           read-only       mandatory 
+
+prodID                  product.1           DisplayString       read-only       mandatory 
+prodModel               product.2           DisplayString       read-only       mandatory 
+prodVendor              product.3           DisplayString       read-only       mandatory
+prodHWVer               product.4           DisplayString       read-only       mandatory
+prodSWVer               product.5           DisplayString       read-only       mandatory
+prodDesc                product.6           DisplayString       read-write      mandatory
+
+tempCount               epTemperature.1     INTEGER             read-only       mandatory
+tempTable               epTemperature.2     SEQUENCE            not-accessible  deprecated  
+
+tempEntry               tempTable.1         SEQUENCE            not-accessible  deprecated   tempID
+tempID                  tempEntry.1         DisplayString       read-only       deprecated
+tempType                tempEntry.2         DisplayString       read-only       deprecated
+tempName                tempEntry.3         DisplayString       read-write      deprecated
+tempSN                  tempEntry.4         DisplayString       read-only       deprecated
+tempState               tempEntry.5         DisplayString       read-write      deprecated
+tempValue               tempEntry.6         DisplayString       read-only       deprecated  
+tempLastValue           tempEntry.7         DisplayString       read-only       deprecated  
+tempLastTime            tempEntry.8         DisplayString       read-only       deprecated  
+tempUpdateInterval      tempEntry.9         INTEGER             read-write      mandatory  
+
+humiCount               epHumidity.1        INTEGER             read-only       mandatory
+humiTable               epHumidity.2        SEQUENCE            not-accessible  deprecated  
+humiEntry               humiTable.1         SEQUENCE            not-accessible  deprecated   humiID
+humiID                  humiEntry.1         DisplayString       read-only       deprecated
+humiType                humiEntry.2         DisplayString       read-only       deprecated
+humiName                humiEntry.3         DisplayString       read-write      deprecated
+humiSN                  humiEntry.4         DisplayString       read-only       deprecated
+humiState               humiEntry.5         DisplayString       read-write      deprecated
+humiValue               humiEntry.6         DisplayString       read-only       deprecated  
+humiLastValue           humiEntry.7         DisplayString       read-only       deprecated  
+humiLastTime            humiEntry.8         DisplayString       read-only       deprecated  
+humiUpdateInterval      humiEntry.9         INTEGER             read-write      mandatory  
+
+vltCount                epVoltage.1         INTEGER             read-only       mandatory
+vltTable                epVoltage.2         SEQUENCE            not-accessible  deprecated  
+vltEntry                vltTable.1          SEQUENCE            not-accessible  deprecated   vltID
+vltID                   vltEntry.1          DisplayString       read-only       deprecated
+vltType                 vltEntry.2          DisplayString       read-only       deprecated
+vltName                 vltEntry.3          DisplayString       read-write      deprecated
+vltSN                   vltEntry.4          DisplayString       read-only       deprecated
+vltState                vltEntry.5          DisplayString       read-write      deprecated
+vltValue                vltEntry.6          DisplayString       read-only       deprecated  
+vltLastValue            vltEntry.7          DisplayString       read-only       deprecated  
+vltLastTime             vltEntry.8          DisplayString       read-only       deprecated  
+vltUpdateInterval       vltEntry.9          INTEGER             read-write      deprecated  
+
+currCount               epCurrent.1         INTEGER             read-only       mandatory
+currTable               epCurrent.2         SEQUENCE            not-accessible  deprecated  
+currEntry               currTable.1         SEQUENCE            not-accessible  deprecated   currID
+currID                  currEntry.1         DisplayString       read-only       deprecated
+currType                currEntry.2         DisplayString       read-only       deprecated
+currName                currEntry.3         DisplayString       read-write      deprecated
+currSN                  currEntry.4         DisplayString       read-only       deprecated
+currState               currEntry.5         DisplayString       read-write      deprecated
+currValue               currEntry.6         DisplayString       read-only       deprecated  
+currLastValue           currEntry.7         DisplayString       read-only       deprecated  
+currLastTime            currEntry.8         DisplayString       read-only       deprecated  
+currUpdateInterval      currEntry.9         INTEGER             read-write      deprecated  
+
+diCount                 epDI.1              INTEGER             read-only       mandatory
+diTable                 epDI.2              SEQUENCE            not-accessible  deprecated  
+diEntry                 diTable.1           SEQUENCE            not-accessible  deprecated   diID
+diID                    diEntry.1           DisplayString       read-only       deprecated
+diType                  diEntry.2           DisplayString       read-only       deprecated
+diName                  diEntry.3           DisplayString       read-write      deprecated
+diSN                    diEntry.4           DisplayString       read-only       deprecated
+diState                 diEntry.5           DisplayString       read-write      deprecated
+diValue                 diEntry.6           DisplayString       read-only       deprecated
+diLastValue             diEntry.7           DisplayString       read-only       deprecated
+diLastTime              diEntry.8           DisplayString       read-only       deprecated  
+diInitValue             diEntry.9           DisplayString       read-write      deprecated
+
+doCount                 epDO.1              INTEGER             read-only       mandatory
+doTable                 epDO.2              SEQUENCE            not-accessible  deprecated  
+doEntry                 doTable.1           SEQUENCE            not-accessible  deprecated   doID
+doID                    doEntry.1           DisplayString       read-only       deprecated
+doType                  doEntry.2           DisplayString       read-only       deprecated  
+doName                  doEntry.3           DisplayString       read-write      deprecated
+doSN                    doEntry.4           DisplayString       read-only       deprecated
+doState                 doEntry.5           DisplayString       read-write      deprecated
+doValue                 doEntry.6           DisplayString       read-write      deprecated  
+doLastValue             doEntry.7           DisplayString       read-only       deprecated  
+doLastTime              doEntry.8           DisplayString       read-only       deprecated  
+doInitValue             doEntry.9           DisplayString       read-write      deprecated
+
+pwrCount                epPower.1           INTEGER             read-only       mandatory
+pwrTable                epPower.2           SEQUENCE            not-accessible  deprecated  
+pwrEntry                pwrTable.1          SEQUENCE            not-accessible  deprecated   gasID
+pwrID                   pwrEntry.1          DisplayString       read-only       deprecated
+pwrType                 pwrEntry.2          DisplayString       read-only       deprecated  
+pwrName                 pwrEntry.3          DisplayString       read-write      deprecated
+pwrSN                   pwrEntry.4          DisplayString       read-only       deprecated
+pwrState                pwrEntry.5          DisplayString       read-write      deprecated
+pwrValue                pwrEntry.6          DisplayString       read-only       deprecated  
+pwrLastValue            pwrEntry.7          DisplayString       read-only       deprecated  
+pwrLastTime             pwrEntry.8          DisplayString       read-only       deprecated  
+pwrUpdateInterval       pwrEntry.9          INTEGER             read-write      mandatory  
+
+gasCount                epGAS.1             INTEGER             read-only       mandatory
+gasTable                epGAS.2             SEQUENCE            not-accessible  deprecated  
+gasEntry                gasTable.1          SEQUENCE            not-accessible  deprecated   gasID
+gasID                   gasEntry.1          DisplayString       read-only       deprecated
+gasType                 gasEntry.2          DisplayString       read-only       deprecated  
+gasName                 gasEntry.3          DisplayString       read-write      deprecated
+gasSN                   gasEntry.4          DisplayString       read-only       deprecated
+gasState                gasEntry.5          DisplayString       read-write      deprecated
+gasValue                gasEntry.6          DisplayString       read-only       deprecated  
+gasLastValue            gasEntry.7          DisplayString       read-only       deprecated  
+gasLastTime             gasEntry.8          DisplayString       read-only       deprecated  
+gasUpdateInterval       gasEntry.9          INTEGER             read-write      mandatory  
+gasTotalTrial           gasEntry.1001       INTEGER             read-only       mandatory  
+gasTotalFailed          gasEntry.1002       INTEGER             read-only       mandatory  
+
+cntCount                 epCount.1          INTEGER             read-only       mandatory
+cntTable                 epCount.2          SEQUENCE            not-accessible  deprecated  
+cntEntry                 cntTable.1         SEQUENCE            not-accessible  deprecated   cntID
+cntID                    cntEntry.1         DisplayString       read-only       deprecated
+cntType                  cntEntry.2         DisplayString       read-only       deprecated  
+cntName                  cntEntry.3         DisplayString       read-write      deprecated
+cntSN                    cntEntry.4         DisplayString       read-only       deprecated
+cntState                 cntEntry.5         DisplayString       read-write      deprecated
+cntValue                 cntEntry.6         DisplayString       read-write      deprecated  
+cntLastValue             cntEntry.7         DisplayString       read-only       deprecated  
+cntLastTime              cntEntry.8         DisplayString       read-only       deprecated  
+cntInitValue             cntEntry.9         DisplayString       read-write      deprecated
+
+prsCount                 epPressure.1       INTEGER             read-only       mandatory
+prsTable                 epPressure.2       SEQUENCE            not-accessible  deprecated  
+prsEntry                 prsTable.1         SEQUENCE            not-accessible  deprecated   prsID
+prsID                    prsEntry.1         DisplayString       read-only       deprecated
+prsType                  prsEntry.2         DisplayString       read-only       deprecated  
+prsName                  prsEntry.3         DisplayString       read-write      deprecated
+prsSN                    prsEntry.4         DisplayString       read-only       deprecated
+prsState                 prsEntry.5         DisplayString       read-write      deprecated
+prsValue                 prsEntry.6         DisplayString       read-write      deprecated  
+prsLastValue             prsEntry.7         DisplayString       read-only       deprecated  
+prsLastTime              prsEntry.8         DisplayString       read-only       deprecated  
+prsInitValue             prsEntry.9         DisplayString       read-write      deprecated
+
+devCount                epDevice.1          INTEGER             read-only       deprecated
+devTable                epDevice.2          SEQUENCE            not-accessible  deprecated 
+devEntry                devTable.1          SEQUENCE            not-accessible  deprecated   devID
+devID                   devEntry.1          DisplayString       read-only       deprecated
+devType                 devEntry.2          DisplayString       read-only       deprecated  
+devName                 devEntry.3          DisplayString       read-write      deprecated
+devSN                   devEntry.4         DisplayString       read-only        deprecated
+devState                devEntry.5         DisplayString       read-write       deprecated
+devValue                devEntry.6          DisplayString       read-write      deprecated  
+
+smDiscovery             epMgmt.1            INTEGER             read-write      mandatory
+smDestroyDynamicObject  epMgmt.2            DisplayString       read-write      deprecated
+
+svrTable                servers.1           SEQUENCE            not-accessible  deprecated  
+svrEntry                svrTable.1          SEQUENCE            not-accessible  deprecated   svrIndex
+svrIndex                svrEntry.1          INTEGER             read-only       deprecated
+svrIpAddr               svrEntry.2          IPAddress           read-only       deprecated
+
+logCount                logs.1              INTEGER             read-only       deprecated
+logTable                logs.2              SEQUENCE            not-accessible  deprecated  
+logEntry                logTable.1          SEQUENCE            not-accessible  deprecated   logIndex
+logIndex                logEntry.1          INTEGER             read-only       deprecated
+logTime                 logEntry.2          DisplayString       read-only       deprecated
+logID                   logEntry.3          DisplayString       read-only       deprecated
+logValue                logEntry.4          DisplayString       read-only       deprecated
+logLevel                logEntry.5          INTEGER             read-only       deprecated
+logString               logEntry.6          DisplayString       read-only       deprecated
+
+eventCount              events.1            INTEGER             read-only       mandatory
+eventTable              events.2            SEQUENCE            not-accessible  deprecated  
+eventCreate             events.3
+eventDestroy            events.4
+
+eventEntry              eventTable.1        SEQUENCE            not-accessible  deprecated   eventIndex
+eventIndex              eventEntry.1        INTEGER             read-only       deprecated
+eventEPID               eventEntry.2        DisplayString       read-only       deprecated
+eventLevel              eventEntry.3        DisplayString       read-only       deprecated
+eventType               eventEntry.4        DisplayString       read-only       deprecated
+eventCondition          eventEntry.5        DisplayString       read-write      deprecated
+
+psType                  power.1             INTEGER             read-only       mandatory
+psVoltageMax            power.2             INTEGER             read-only       mandatory
+psVoltageMin            power.3             INTEGER             read-only       mandatory
+
+trapServer              traps.1
+tsCount                 trapServer.1        INTEGER             read-only       deprecated
+tsTable                 trapServer.2        SEQUENCE            not-accessible  deprecated  
+tsAdd                   trapServer.3        DisplayString       read-write      deprecated
+tsDel                   trapServer.4        DisplayString       read-write      deprecated
+
+tsEntry                 tsTable.1           SEQUENCE            not-accessible  deprecated   tsIndex    
+tsIndex                 tsEntry.1           INTEGER             read-only       deprecated
+tsIpAddr                tsEntry.2           IPAddress           read-only       deprecated
+
+trapMsg                 traps.2
+
+msgDiscovery            trapMsg.1           DisplayString       read-only       deprecated
+msgAlert                trapMsg.2           DisplayString       read-only       deprecated
+
+adminOID                admin.1             DisplayString       read-write      mandatory
+adminMAC                admin.2             DisplayString       read-write      mandatory
+adminFactoryReset       admin.3             DisplayString       read-write      mandatory
+adminSystemTime         admin.4             DisplayString       read-write      mandatory
+adminReset              admin.5             DisplayString       read-write      mandatory
+
+adminDebug              admin.100           
+dbgBTTable              adminDebug.1        SEQUENCE            not-accessible  deprecated  
+dbgBTEntry              dbgBTTable.1        SEQUENCE            not-accessible  deprecated   dbgBTIndex
+dbgBTIndex              dbgBTEntry.1        INTEGER             read-only       deprecated
+dbgBTTime               dbgBTEntry.2        DisplayString       read-only       deprecated
+
+%%
+

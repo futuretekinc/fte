@@ -1,0 +1,236 @@
+html
+{
+	font-size: 80%;
+}
+
+h1, h2, h3, h4, h5, h6
+{
+	font-weight: 700;
+	font-family: "klavika-web", "Helvetica Neue", Helvetica, Arial, Geneva, sans-serif !important;
+}
+
+h2
+{
+	font-size: 1.5em;
+	margin: 0 0 0.5em;
+}
+
+h2.title
+{
+	text-align: left;
+}
+
+html, button, input, select, textarea
+{
+	font-family: sans-serif;
+	color: #333;
+}
+
+body
+{
+	-webkit-font-smoothing: antialiased;
+	color: #333;
+	font: 12px/15px "Helvetica Neue", HelveticaNeue, Helvetica, Arial, sans-serif;
+}
+
+menu, ol, ul
+{
+	padding: 0;
+}
+
+*
+{
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
+::selection
+{
+	background: #b3d4fc;
+	text-shadow: none;
+}
+
+.column, .columns
+{
+	float: left;
+	min-height: 1px;
+	padding: 0 25px;
+}
+
+.row
+{
+	max-width: 100%;
+	margin: 0 auto;
+}
+
+.row .row
+{
+	width: auto;
+	max-width: none;
+	min-width: 0;
+	margin: 0 -25px;
+}
+
+.row:before
+{
+	content: "";
+	display: table;
+}
+
+
+.row:after
+{
+	clear: both;
+	content: "";
+	display: table;
+}
+
+h2.logo
+{
+	float: left;
+	margin: 0;
+}
+
+h2.logo a {
+	display: block;
+	-webkit-background-size: cover;
+	max-height: 100%;
+	width:150px;
+	height:88px;
+	overflow:hidden;
+	text-indent:-1000px;
+	/*	background: url(/images/FutureTek_M2M_Logo_150.png) no-repeat;  */
+}
+
+#jb-container {
+	margin: 0px auto;
+	padding: 5px;
+	
+}
+#jb-header {
+	padding: 20px;
+	margin-bottom: 20px;
+	border-bottom: 1px solid #bcbcbc;
+}
+#jb-content {
+	padding: 20px;
+	margin-bottom: 20px;
+	float: left;
+}
+#jb-sidebar {
+	width: 100px;
+	padding: 20px;
+	margin-bottom: 20px;
+	float: left;
+}
+
+#jb-footer {
+	clear: both;
+	padding: 10px;
+	border-top: 1px solid #bcbcbc;
+}
+
+
+#content-wrapper
+{
+	background-color: #fff;
+	-webkit-box-shadow: -3px 0 5px -3px rgba(1, 1, 1, 0.87), 3px 0 5px -3px rgba(1, 1, 1, 0.87);
+	box-shadow: -3px 0 5px -3px rgba(1, 1, 1, 0.87), 3px 0 5px -3px rgba(1, 1, 1, 0.87);
+	padding: 20px 0;
+	border-top: 1px solid #333;
+	border-radius: 10px 10px 10px 10px;
+	position: relative;
+}
+
+#content
+{
+	float: left;
+	width: 80%;
+}
+
+td
+{
+    padding-left: 10px;
+}
+
+td.devinfo_first
+{
+	font-weight: bold;
+	width: 100px;
+	text-align: right;
+}
+
+td.devinfo_2nd
+{
+	width: 100px;
+	padding-left: 10px;
+}
+	
+td.first
+{
+	font-weight: bold;
+	width: 80px;
+	text-align: left;
+}
+
+td.default
+{
+	min-width: 100px;
+	padding-left: 10px;
+    color: #333;
+}
+
+td.value_na
+{
+	min-width: 100px;
+	padding-left: 10px;
+    color: red;
+}
+
+
+select.info_second
+{
+	width: 120px;
+}
+
+td.system_first
+{
+	font-weight: bold;
+	width: 120px;
+	text-align: right;
+}
+
+.menu_item {
+	font-weight: bold;
+	font-size: 1.2em;
+	text-align: left;
+	padding-top: 10px;
+    cursor: pointer;
+	
+}
+
+.title {
+    padding-left: 10px;
+	font-weight: bold;	
+}
+
+input.ctrl_btn
+{
+	width: 100px;	
+}
+
+input.sys_btn
+{
+	width: 100px;	
+}
+
+input.sys_ip
+{
+	width: 120px;	
+}
+
+select.config_second
+{
+	width: 120px;	
+}

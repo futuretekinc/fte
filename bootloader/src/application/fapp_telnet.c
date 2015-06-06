@@ -1,0 +1,290 @@
+/**************************************************************************
+* 
+* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
+*
+***************************************************************************
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of either the GNU General Public License 
+* Version 3 or later (the "GPL"), or the GNU Lesser General Public 
+* License Version 3 or later (the "LGPL").
+*
+* As a special exception, the copyright holders of the FNET project give you
+* permission to link the FNET sources with independent modules to produce an
+* executable, regardless of the license terms of these independent modules,
+* and to copy and distribute the resulting executable under terms of your 
+* choice, provided that you also meet, for each linked independent module,
+* the terms and conditions of the license of that module.
+* An independent module is a module which is not derived from or based 
+* on this library. 
+* If you modify the FNET sources, you may extend this exception 
+* to your version of the FNET sources, but you are not obligated 
+* to do so. If you do not wish to do so, delete this
+* exception statement from your version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*
+* You should have received a copy of the GNU General Public License
+* and the GNU Lesser General Public License along with this program.
+* If not, see <http://www.gnu.org/licenses/>.
+*
+**********************************************************************/ /*!
+*
+* @file fapp_telnet.c
+*
+* @author Andrey Butok
+*
+* @date May-24-2011
+*
+* @version 0.1.25.0
+*
+* @brief FNET Shell Demo implementation.
+*
+***************************************************************************/
+
+#include "fapp.h"
+#include "fapp_prv.h"
+#include "fapp_telnet.h"
+#include "fapp_mem.h"
+
+#include "fnet_netbuf.h"
+
+#if FTE_BL_CFG_SETGET_CMD
+#include "fapp_setget.h"
+#endif
+#if FTE_BL_CFG_DHCP_CMD
+
+#include "fapp_dhcp.h"
+
+#endif
+#if FAPP_CFG_HTTP_CMD || FAPP_CFG_EXP_CMD 
+
+#include "fapp_http.h"
+#include "fapp_fs.h"
+
+#endif
+
+#if FTE_BL_CFG_TFTP_CMD || FTE_BL_CFG_TFTPUP_CMD || FTE_BL_CFG_TFTPS_CMD 
+
+#include "fapp_tftp.h"
+
+#endif
+
+#if FTE_BL_CFG_TELNET_CMD && FNET_CFG_TELNET
+
+#define FAPP_TELNET_PROMPT_STR     FTE_BL_CFG_SHELL_PROMPT
+
+#if FAPP_CFG_TELNET_TEST_CMD
+    void fapp_telnet_test_cmd( fnet_shell_desc_t desc );
+#endif
+
+#if FAPP_CFG_TELNET_CMD_OWN_SHELL
+    void fapp_telnet_exit_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
+
+    /************************************************************************
+    *     The table of the telnet shell commands.
+    *************************************************************************/
+    static const struct fnet_shell_command fapp_telnet_cmd_table [] =
+    {
+        { FNET_SHELL_CMD_TYPE_NORMAL, "help", 0, 0, (void *)fapp_help_cmd,"Display this help message", ""},
+
+    #if FTE_BL_CFG_SETGET_CMD
+        { FNET_SHELL_CMD_TYPE_NORMAL, "set", 0, 2, (void *)fapp_set_cmd,      "Set parameter", "[<parameter> <value>]"},
+        { FNET_SHELL_CMD_TYPE_NORMAL, "get", 0, 1, (void *)fapp_get_cmd,    "Get parameters", "[<parameter>]" },
+    #endif    
+    #if FTE_BL_CFG_INFO_CMD
+        { FNET_SHELL_CMD_TYPE_NORMAL, "info", 0, 0, (void *)fapp_info_cmd,    "Show detailed status", ""},
+    #endif
+    #if FTE_BL_CFG_DHCP_CMD && FNET_CFG_DHCP
+        { FNET_SHELL_CMD_TYPE_NORMAL, "dhcp", 0, 1, (void *)fapp_dhcp_cmd,    "Start DHCP client", "[release]"},
+    #endif
+    #if FAPP_CFG_HTTP_CMD && FNET_CFG_HTTP
+        { FNET_SHELL_CMD_TYPE_NORMAL, "http", 0, 1, (void *)fapp_http_cmd,    "Start HTTP Server", "[release]"},
+    #endif
+    #if FAPP_CFG_EXP_CMD && FNET_CFG_FS
+        { FNET_SHELL_CMD_TYPE_SHELL,  "exp", 0, 1, &fapp_fs_shell,   "File Explorer submenu...", ""},
+    #endif
+    #if FTE_BL_CFG_TFTP_CMD
+        { FNET_SHELL_CMD_TYPE_NORMAL, "tftp", 0, 3, (void *)fapp_tftp_cmd,  "TFTP firmware loader", "[<image name>[<server ip>[<type>]]]"},
+    #endif
+    #if FTE_BL_CFG_TFTPUP_CMD 
+        { FNET_SHELL_CMD_TYPE_NORMAL, "tftpup", 0, 3, (void *)fapp_tftp_cmd,  "TFTP firmware uploader", "[<image name>[<server ip>[<type>]]]"},
+    #endif  
+    #if FTE_BL_CFG_TFTPS_CMD
+        { FNET_SHELL_CMD_TYPE_NORMAL, "tftps", 0, 1, (void *)fapp_tftps_cmd,  "TFTP firmware server", "[release]"},
+    #endif 
+
+    #if FTE_BL_CFG_MEM_CMD
+        { FNET_SHELL_CMD_TYPE_NORMAL, "mem", 0, 0, (void *)fapp_mem_cmd,    "Show memory map", ""},
+    #endif  
+    #if FTE_BL_CFG_ERASE_CMD
+        { FNET_SHELL_CMD_TYPE_NORMAL, "erase", 1, 2, (void *)fapp_mem_erase_cmd,    "Erase flash memory", "all|[0x<erase address> <bytes>]"},
+    #endif 
+    #if FTE_BL_CFG_SAVE_CMD
+        { FNET_SHELL_CMD_TYPE_NORMAL, "save", 0, 0, (void *)fapp_save_cmd,    "Save parameters to the FLASH", ""},
+    #endif 
+    #if FTE_BL_CFG_GO_CMD
+        { FNET_SHELL_CMD_TYPE_NORMAL, "go", 0, 1, (void *)fapp_go_cmd,    "Start application at address", "[0x<address>]"},
+    #endif 
+    #if FTE_BL_CFG_RESET_CMD
+        { FNET_SHELL_CMD_TYPE_NORMAL, "reset", 0, 0, (void *)fapp_reset_cmd,    "Reset the board", ""},
+    #endif   
+        { FNET_SHELL_CMD_TYPE_NORMAL, "exit", 0, 0, (void *)fapp_telnet_exit_cmd,    "Close telnet session", ""},
+#if FAPP_CFG_TELNET_TEST_CMD
+    { FNET_SHELL_CMD_TYPE_NORMAL, "test", 0, 0, (void *)fapp_telnet_test_cmd,    "Test", ""},
+#endif            
+        { FNET_SHELL_CMD_TYPE_END, 0, 0, 0, 0, 0, 0}     
+    };
+#endif
+
+/* Shell command-line buffer.*/
+static char fapp_telnet_cmd_line_buffer[FTE_BL_CFG_SHELL_MAX_LINE_LENGTH];
+
+/************************************************************************
+*     The main shell control data structure.
+*************************************************************************/
+const struct fnet_shell fapp_telnet_shell =
+{
+#if FAPP_CFG_TELNET_CMD_OWN_SHELL /* Owm command table.*/
+    fapp_telnet_cmd_table,                                 
+#else  /* Use same commands as main shell. */  
+    fapp_cmd_table,
+#endif    
+    FAPP_TELNET_PROMPT_STR,     /* prompt_str */
+    FTE_BL_SHELL_init,            /* shell_init */
+};
+
+
+static fnet_telnet_desc_t fapp_telnet_desc = 0; /* Telnet descriptor. */
+
+
+/************************************************************************
+* NAME: fapp_telnet_release
+*
+* DESCRIPTION: Releases TELNET server.
+*************************************************************************/
+void fapp_telnet_release()
+{
+    fnet_telnet_release(fapp_telnet_desc);
+    fapp_telnet_desc = 0;    
+}
+
+/************************************************************************
+* NAME: fapp_telnet_cmd
+*
+* DESCRIPTION: Run Telnet server.
+*************************************************************************/
+int fapp_telnet_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+{
+    fnet_ip_addr_t local_ip;
+    char ip_str[16];
+    struct fnet_telnet_params params;
+    fnet_telnet_desc_t telnet_desc;
+
+    if(argc == 1) /* By default is "init".*/
+    {
+        params.ip_address = FNET_HTONL(INADDR_ANY);             
+        params.port = FNET_HTONS(0);            /* Default port number */
+        params.shell= &fapp_telnet_shell;
+        params.cmd_line_buffer = fapp_telnet_cmd_line_buffer;
+        params.cmd_line_buffer_size = sizeof(fapp_telnet_cmd_line_buffer);
+        
+        /* Init Telnet server */
+        telnet_desc = fnet_telnet_init(&params);
+        if(telnet_desc != FNET_ERR)
+        {
+            local_ip = fnet_netif_get_address(fapp_default_netif);
+            inet_ntoa(*(struct in_addr *)( &local_ip), ip_str);
+            fnet_shell_println( desc, FTE_BL_DELIMITER_STR);
+            fnet_shell_println( desc, "  Telnet server started.");
+            fnet_shell_println( desc, "  Use: telnet %s", ip_str);
+            fnet_shell_println( desc, FTE_BL_DELIMITER_STR);
+            
+            fapp_telnet_desc = telnet_desc;
+        }
+        else
+        {
+            fnet_shell_println( desc, FTE_BL_INIT_ERR, "Telnet");
+            return  -1;
+        }
+       
+    }
+    else if(argc == 2 && fnet_strcasecmp(&FTE_BL_COMMAND_RELEASE[0], argv[1]) == 0) // [release]
+    {
+        fapp_telnet_release();
+    }
+    else
+    {
+        fnet_shell_println(desc, FTE_BL_PARAM_ERR, argv[1]);
+        return  -1;
+    }
+    
+    return  0;
+}
+
+
+/************************************************************************
+* NAME: fapp_telnet_exit_cmd
+*
+* DESCRIPTION: 
+************************************************************************/
+#if FAPP_CFG_TELNET_CMD_OWN_SHELL
+static void fapp_telnet_exit_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
+{
+    FNET_COMP_UNUSED_ARG(desc);
+    FNET_COMP_UNUSED_ARG(argc);
+	FNET_COMP_UNUSED_ARG(argv);
+
+    fnet_telnet_close_session(fapp_telnet_desc);
+}
+#endif
+
+/************************************************************************
+* NAME: fapp_telnet_info
+*
+* DESCRIPTION:
+*************************************************************************/
+void fapp_telnet_info(fnet_shell_desc_t desc)
+{
+    int telnet_enabled = (fnet_telnet_state(fapp_telnet_desc) != FNET_TELNET_STATE_DISABLED);
+    
+    fnet_shell_println(desc, FTE_BL_SHELL_INFO_FORMAT_S, "TELNET server", telnet_enabled ? FTE_BL_SHELL_INFO_ENABLED: FTE_BL_SHELL_INFO_DISABLED);
+}
+
+
+#if FAPP_CFG_TELNET_TEST_CMD
+/************************************************************************
+* NAME: fapp_telnet_test_cmd
+*
+* DESCRIPTION: "test" command. Used to test Telnet sending.
+* For debug needs only
+************************************************************************/
+void fapp_telnet_test_cmd( fnet_shell_desc_t desc )
+{
+	//char szBuf[40];
+	//int i;
+
+	//fnet_strcpy (szBuf, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    //for (i = 0; i < 15000; i++)
+    while(1)
+	{
+		//fnet_shell_printf(desc, "%s", szBuf);
+		fnet_shell_println(desc, FTE_BL_SHELL_INFO_FORMAT_D, "Free Heap", fnet_free_mem_status());
+		fnet_shell_println(desc, FTE_BL_SHELL_INFO_FORMAT_D, "MAX Heap", fnet_malloc_max());
+	}
+}
+#endif
+
+#endif
+
+
+
+
+
+
+
+
+
+
+
