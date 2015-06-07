@@ -120,7 +120,7 @@
 
 #define FTE_BL_CFG_PARAMS_DEVICE_ID         "00"
 /* Default parameters values*/
-#define FTE_BL_CFG_PARAMS_TFTP_SERVER       FNET_GEN_ADDR(192, 168, 2, 1)
+#define FTE_BL_CFG_PARAMS_TFTP_SERVER       FNET_GEN_ADDR(192, 168, 1, 1)
 #define FTE_BL_CFG_PARAMS_BOOT_MODE         FAPP_PARAMS_BOOT_MODE_SCRIPT
 #define FTE_BL_CFG_PARAMS_BOOT_SCRIPT       "diag fw; go;! dhcp;! reset;telnet;! reset"
 

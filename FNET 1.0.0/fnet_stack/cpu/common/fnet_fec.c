@@ -757,48 +757,13 @@ void fnet_fec_phy_discover_addr (fnet_fec_if_t *ethif)
         if (id == 0x0141)
         {
             fnet_uint16 value;
-#if 0
-            ethif->phy_addr = 15;
-            fnet_fec_mii_write(ethif, 0x0A, 0x8000);            
-            for(i = 0 ; i < 1000 ; i++)
-            {
-                fnet_fec_mii_read(ethif, 0x0A, &value);
-                if ((value & 0x8000) == 0)
-                {
-                    break;
-                }
-            }
 
-            ethif->phy_addr = 0;
-            fnet_fec_mii_write(ethif, 0x00, 0x8000);            
-            for(i = 0 ; i < 1000 ; i++)
-            {
-                fnet_fec_mii_read(ethif, 0x00, &value);
-                if ((value & 0x8000) == 0)
-                {
-                    break;
-                }
-            }
-
-            ethif->phy_addr = 1;
-            fnet_fec_mii_write(ethif, 0x00, 0x8000);            
-            for(i = 0 ; i < 1000 ; i++)
-            {
-                fnet_fec_mii_read(ethif, 0x00, &value);
-                if ((value & 0x8000) == 0)
-                {
-                    break;
-                }
-            }
-#endif
-#if 0
             ethif->phy_addr = 8;
             fnet_fec_mii_write(ethif, 0x04, 0x03);
             ethif->phy_addr = 9;
             fnet_fec_mii_write(ethif, 0x04, 0x03);
             ethif->phy_addr = 12;
             fnet_fec_mii_write(ethif, 0x04, 0x03);
-#endif
         }
         
         ethif->phy_addr = FNET_FEC_PHY_ADDRESS;        

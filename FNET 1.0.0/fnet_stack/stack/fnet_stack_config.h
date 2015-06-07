@@ -489,7 +489,7 @@
  * @internal
  ******************************************************************************/
 #ifndef FNET_CFG_DEBUG
-    #define FNET_CFG_DEBUG              (1)
+    #define FNET_CFG_DEBUG              (0)
 #endif
 
 #ifndef FNET_CFG_DEBUG_TIMER  /* It will be printed to the UART '!' sign every second. */
@@ -501,11 +501,11 @@
 #endif
 
 #ifndef FNET_CFG_DEBUG_DHCP
-    #define FNET_CFG_DEBUG_DHCP         (1)
+    #define FNET_CFG_DEBUG_DHCP         (0)
 #endif
 
 #ifndef FNET_CFG_DEBUG_ARP
-    #define FNET_CFG_DEBUG_ARP          (1)
+    #define FNET_CFG_DEBUG_ARP          (0)
 #endif
 
 #ifndef FNET_CFG_DEBUG_MEMPOOL
@@ -537,31 +537,31 @@
 #endif
 
 #ifndef FNET_CFG_DEBUG_TRACE
-    #define FNET_CFG_DEBUG_TRACE        (1)
+    #define FNET_CFG_DEBUG_TRACE        (0)
 #endif
 
 #ifndef FNET_CFG_DEBUG_TRACE_IP
-    #define FNET_CFG_DEBUG_TRACE_IP     (1)
+    #define FNET_CFG_DEBUG_TRACE_IP     (0)
 #endif
 
 #ifndef FNET_CFG_DEBUG_TRACE_IP
-    #define FNET_CFG_DEBUG_TRACE_ICMP   (1)
+    #define FNET_CFG_DEBUG_TRACE_ICMP   (0)
 #endif
 
 #ifndef FNET_CFG_DEBUG_TRACE_ETH
-    #define FNET_CFG_DEBUG_TRACE_ETH    (1)
+    #define FNET_CFG_DEBUG_TRACE_ETH    (0)
 #endif
 
 #ifndef FNET_CFG_DEBUG_TRACE_ARP
-    #define FNET_CFG_DEBUG_TRACE_ARP    (1)
+    #define FNET_CFG_DEBUG_TRACE_ARP    (0)
 #endif
 
 #ifndef FNET_CFG_DEBUG_TRACE_UDP
-    #define FNET_CFG_DEBUG_TRACE_UDP    (1)
+    #define FNET_CFG_DEBUG_TRACE_UDP    (0)
 #endif
 
 #ifndef FNET_CFG_DEBUG_TRACE_TCP
-    #define FNET_CFG_DEBUG_TRACE_TCP    (1)
+    #define FNET_CFG_DEBUG_TRACE_TCP    (0)
 #endif
  
 
