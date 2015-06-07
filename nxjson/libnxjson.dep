@@ -6,64 +6,75 @@
   <configuration>
     <name>Debug</name>
     <outputs>
-      <file>$TOOLKIT_DIR$\inc\c\DLib_Defaults.h</file>
       <file>$PROJ_DIR$\nxjson.c</file>
-      <file>$TOOLKIT_DIR$\inc\c\errno.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\DLib_Defaults.h</file>
       <file>$PROJ_DIR$\nxjson.h</file>
       <file>$TOOLKIT_DIR$\inc\c\stdio.h</file>
-      <file>$PROJ_DIR$\Debug\Obj\nxjson.pbi</file>
-      <file>$TOOLKIT_DIR$\inc\c\DLib_Product_string.h</file>
-      <file>$TOOLKIT_DIR$\inc\c\DLib_Threads.h</file>
-      <file>$TOOLKIT_DIR$\inc\c\ysizet.h</file>
-      <file>$TOOLKIT_DIR$\inc\c\string.h</file>
-      <file>$TOOLKIT_DIR$\inc\c\ycheck.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\errno.h</file>
       <file>$TOOLKIT_DIR$\inc\c\xencoding_limits.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\ycheck.h</file>
       <file>$TOOLKIT_DIR$\inc\c\ystdio.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\string.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\ysizet.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\DLib_Product_string.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\nxjson.pbi</file>
+      <file>$TOOLKIT_DIR$\inc\c\DLib_Threads.h</file>
       <file>$TOOLKIT_DIR$\inc\c\yvals.h</file>
       <file>$TOOLKIT_DIR$\inc\c\stdlib.h</file>
       <file>$TOOLKIT_DIR$\inc\c\DLib_Product.h</file>
       <file>$TOOLKIT_DIR$\inc\c\DLib_Config_Normal.h</file>
       <file>$TOOLKIT_DIR$\inc\c\assert.h</file>
       <file>$PROJ_DIR$\Debug\Obj\nxjson.o</file>
+      <file>$PROJ_DIR$\..\lib\libnxjsond.a</file>
     </outputs>
     <file>
       <name>$PROJ_DIR$\nxjson.c</name>
       <outputs>
         <tool>
-          <name>ICCARM</name>
-          <file> 18</file>
+          <name>BICOMP</name>
+          <file> 11</file>
         </tool>
         <tool>
-          <name>BICOMP</name>
-          <file> 5</file>
+          <name>ICCARM</name>
+          <file> 18</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 14 10 13 0 16 15 11 7 8 4 12 9 6 17 2 3</file>
+          <file> 14 6 13 1 16 15 5 12 9 3 7 8 10 17 4 2</file>
+        </tool>
+        <tool>
+          <name>ICCARM</name>
+          <file> 14 6 13 1 16 15 5 12 9 3 7 8 10 17 4 2</file>
         </tool>
       </inputs>
     </file>
-    <forcedrebuild>
-      <name>[REBUILD_ALL]</name>
-    </forcedrebuild>
+    <file>
+      <name>[ROOT_NODE]</name>
+      <outputs>
+        <tool>
+          <name>IARCHIVE</name>
+          <file> 19</file>
+        </tool>
+      </outputs>
+    </file>
   </configuration>
   <configuration>
     <name>Release</name>
     <outputs>
-      <file>$TOOLKIT_DIR$\inc\c\DLib_Defaults.h</file>
       <file>$PROJ_DIR$\nxjson.c</file>
-      <file>$TOOLKIT_DIR$\inc\c\errno.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\DLib_Defaults.h</file>
       <file>$PROJ_DIR$\nxjson.h</file>
       <file>$TOOLKIT_DIR$\inc\c\stdio.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\errno.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\xencoding_limits.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\ycheck.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\ystdio.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\string.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\ysizet.h</file>
       <file>$TOOLKIT_DIR$\inc\c\DLib_Product_string.h</file>
       <file>$TOOLKIT_DIR$\inc\c\DLib_Threads.h</file>
-      <file>$TOOLKIT_DIR$\inc\c\ysizet.h</file>
-      <file>$TOOLKIT_DIR$\inc\c\string.h</file>
-      <file>$TOOLKIT_DIR$\inc\c\ycheck.h</file>
-      <file>$TOOLKIT_DIR$\inc\c\xencoding_limits.h</file>
-      <file>$TOOLKIT_DIR$\inc\c\ystdio.h</file>
       <file>$TOOLKIT_DIR$\inc\c\yvals.h</file>
       <file>$TOOLKIT_DIR$\inc\c\stdlib.h</file>
       <file>$TOOLKIT_DIR$\inc\c\DLib_Product.h</file>
@@ -76,27 +87,28 @@
       <file>$PROJ_DIR$\Release\Exe\libnxjson.out</file>
       <file>$PROJ_DIR$\Release\Obj\nxjson.pbi</file>
       <file>$PROJ_DIR$\Release\Obj\nxjson.o</file>
+      <file>$PROJ_DIR$\..\lib\libnxjson.a</file>
     </outputs>
     <file>
       <name>$PROJ_DIR$\nxjson.c</name>
       <outputs>
         <tool>
-          <name>ICCARM</name>
-          <file> 23</file>
-        </tool>
-        <tool>
           <name>BICOMP</name>
           <file> 22</file>
+        </tool>
+        <tool>
+          <name>ICCARM</name>
+          <file> 23</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
-          <name>ICCARM</name>
-          <file> 13 9 12 0 15 14 10 6 7 4 11 8 5 16 2 3</file>
+          <name>BICOMP</name>
+          <file> 13 6 12 1 15 14 5 11 9 3 7 8 10 16 4 2</file>
         </tool>
         <tool>
-          <name>BICOMP</name>
-          <file> 13 9 12 0 15 14 10 6 7 4 11 8 5 16 2 3</file>
+          <name>ICCARM</name>
+          <file> 13 6 12 1 15 14 5 11 9 3 7 8 10 16 4 2</file>
         </tool>
       </inputs>
     </file>
@@ -108,6 +120,15 @@
           <file> 20 23 19 17 18</file>
         </tool>
       </inputs>
+    </file>
+    <file>
+      <name>[ROOT_NODE]</name>
+      <outputs>
+        <tool>
+          <name>IARCHIVE</name>
+          <file> 24</file>
+        </tool>
+      </outputs>
     </file>
     <forcedrebuild>
       <name>[MULTI_TOOL]</name>

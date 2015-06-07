@@ -167,7 +167,7 @@
           <state>IAR</state>
           <state>TWR_K60N512</state>
           <state>FTE_BL=1</state>
-          <state>FTE_EB1=1</state>
+          <state>FTE_EB4=1</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -1133,6 +1133,8 @@
           <name>CCDefines</name>
           <state>IAR</state>
           <state>TWR_K60N512</state>
+          <state>FTE_BL=1</state>
+          <state>FTE_EB1=1</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -1706,7 +1708,7 @@
         </option>
         <option>
           <name>IlinkIcfFile</name>
-          <state>$PROJ_DIR$\config files\512KB_Pflash.icf</state>
+          <state>$PROJ_DIR$\config files\bootloader.icf</state>
         </option>
         <option>
           <name>IlinkIcfFileSlave</name>
@@ -2383,9 +2385,6 @@
         <name>$PROJ_DIR$\..\FNET 1.0.0\fnet_stack\stack\fnet_ip.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\fnet_stack\stack\fnet_ip.h</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$\..\FNET 1.0.0\fnet_stack\stack\fnet_ip_prv.h</name>
       </file>
       <file>
@@ -2441,9 +2440,6 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\FNET 1.0.0\fnet_stack\stack\fnet_stack.h</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\..\..\..\fnet_stack\stack\fnet_stack_config.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\FNET 1.0.0\fnet_stack\stack\fnet_stdlib.c</name>

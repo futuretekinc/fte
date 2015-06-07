@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=-829051422
+Checksum=-1357009699
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -52,8 +52,7 @@ Bp1=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\target\source\obj\fte_gus.c}.69.1" 0 0 1 "" 
 Bp2=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\target\source\obj\fte_tascon.c}.86.1" 0 0 1 "" 0 "" 0
 Bp3=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\target\source\obj\fte_tascon.c}.112.1" 0 0 1 "" 0 "" 0
 Bp4=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\target\source\obj\fte_tascon.c}.149.1" 0 0 1 "" 0 "" 0
-Bp5=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\FNET 1.0.0\fnet_stack\stack\fnet_ip.c}.387.5" 0 0 1 "" 0 "" 0
-Count=6
+Count=5
 [Aliases]
 Count=0
 SuppressDialog=0

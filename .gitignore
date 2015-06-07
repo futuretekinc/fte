@@ -38,3 +38,9 @@ Debug/
 *.dSYM/*.o
 *.a
 *.dbgdt
+*.dbgdt
+*.dep
+rtcs/librtcs.dep
+bootloader/bootloader.dep
+bootloader\bootloader.dep
+
