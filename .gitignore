@@ -37,3 +37,4 @@ Debug/
 # Debug files
 *.dSYM/*.o
 *.a
+*.dbgdt
