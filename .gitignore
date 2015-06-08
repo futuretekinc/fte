@@ -2,9 +2,9 @@
 Release/
 Debug/
 *.dep
-*/*.dep
 *.dni
 *.wsdt
+*.tmp
 
 # Object files
 *.o
@@ -38,11 +38,6 @@ Debug/
 
 # Debug files
 *.dSYM/*.o
-*.a
 *.dbgdt
 *.dbgdt
-*.dep
-rtcs/librtcs.dep
-bootloader/bootloader.dep
-bootloader\bootloader.dep
 
