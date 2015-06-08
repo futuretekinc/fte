@@ -4,6 +4,7 @@ Debug/
 *.dep
 */*.dep
 *.dni
+*.wsdt
 
 # Object files
 *.o
