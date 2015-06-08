@@ -74,7 +74,7 @@
 #endif
      
 #if FTE_TASK_TIMER
-    #define FTE_TASK_TIMER_STACK        400
+    #define FTE_TASK_TIMER_STACK        (FTE_TASK_DEFAULT_STACK * 2)
     #define FTE_TASK_TIMER_PRIO         9
 #endif
 

@@ -84,8 +84,8 @@ void fnet_eth_io_init()
   
     FNET_MK_PORT_MemMapPtr pctl;
     FNET_MK_SIM_MemMapPtr  sim  = (FNET_MK_SIM_MemMapPtr)FNET_MK_SIM_BASE_PTR;
-    unsigned long   *pDirReg = (unsigned long   *)0x400FF054;
-    unsigned long   *pOutputReg = (unsigned long   *)0x400FF040;
+    unsigned long   *pDirReg = (unsigned long *)0x400FF054;
+    unsigned long   *pOutputReg = (unsigned long *)0x400FF040;
 #if 1   
     pctl = (FNET_MK_PORT_MemMapPtr)FNET_MK_PORTB_BASE_PTR;    
     pctl->PCR[3]  = 0x00000100;     /* PTB3, GPIO */
@@ -96,8 +96,11 @@ void fnet_eth_io_init()
     fnet_timer_delay(1);
 #endif
 
+
     pctl = (FNET_MK_PORT_MemMapPtr)FNET_MK_PORTA_BASE_PTR;    
+#if 0
     pctl->PCR[5]  = 0x00000400;     /* PTA5, MII0_RXER      */
+#endif
     pctl->PCR[9]  = 0x00000400;     /* PTA9, MII0_RXD3      */
     pctl->PCR[10] = 0x00000400;     /* PTA10, MII0_RXD2      */
     pctl->PCR[11] = 0x00000400;     /* PTA10, MII0_RXCLK     */

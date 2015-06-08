@@ -190,6 +190,7 @@
 
 #if FTE_SHT_SUPPORTED
 #define FTE_SHT_INTERVAL                    10
+#define FTE_SHT_SCL_INTERVAL                0
 #endif
 
 #if FTE_TASCON_HEM12_SUPPORTED || FTE_TASCON_HEM12_06M_SUPPORTED

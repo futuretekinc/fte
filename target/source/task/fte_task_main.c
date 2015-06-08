@@ -18,9 +18,6 @@ void FTE_TASK_main(uint_32 params)
     MQX_TICK_STRUCT     xNextTicks;            
     _int_install_unexpected_isr();
 
-    _timer_create_component(TIMER_DEFAULT_TASK_PRIORITY, 2048);
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, 65541);
-    
     fte_platform_init(); 
 
     FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());

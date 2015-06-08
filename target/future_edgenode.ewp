@@ -2116,9 +2116,6 @@
         <name>$PROJ_DIR$\..\mqx\lib\libbspd.a</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\cyassl-3.3.0\lib\libcyassld.a</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$\..\lib\libemqttd.a</name>
       </file>
       <file>
@@ -2144,9 +2141,6 @@
       </excluded>
       <file>
         <name>$PROJ_DIR$\..\mqx\lib\libbsp.a</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\cyassl-3.3.0\lib\libcyassl.a</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\lib\libemqtt.a</name>
@@ -2313,6 +2307,9 @@
       </group>
       <group>
         <name>ssl</name>
+        <excluded>
+          <configuration>Debug</configuration>
+        </excluded>
         <file>
           <name>$PROJ_DIR$\source\net\ssl\fte_ssl.c</name>
         </file>

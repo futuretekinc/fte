@@ -1,6 +1,7 @@
 #include "fte_target.h"
 #include "fte_config.h"
 #include "fte_log.h"
+#include "fte_time.h"
 #if FTE_SHT_SUPPORTED
 
 static  _mqx_uint   _FTE_SHT_init(FTE_OBJECT_PTR pObj);
@@ -253,7 +254,7 @@ static void _FTE_SHT_restartConvert(_timer_id id, pointer data_ptr, MQX_TICK_STR
 
 void    _sht_delay(uint_32  nDelay)
 {
-    _time_delay(1);
+    _time_delay(0);
 }
 
 void    _sht_sck_hi(FTE_OBJECT_PTR pObj)
@@ -543,6 +544,160 @@ _mqx_uint   _FTE_SHT_statistic(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTICS_PTR pS
     memcpy(pStatistics, &pStatus->xCommon.xStatistics, sizeof(FTE_OBJECT_STATISTICS));
     
     return  MQX_OK;
+}
+
+int_32      FTE_SHT_SHELL_cmd(int_32 argc, char_ptr argv[])
+{ /* Body */
+    boolean              print_usage, shorthelp = FALSE;
+    int_32               return_code = SHELL_EXIT_SUCCESS;
+    
+    print_usage = Shell_check_help_request (argc, argv, &shorthelp);
+
+    if (!print_usage)
+    {
+        uint_32     nID;
+        switch(argc)
+        {
+        case    1:
+            {
+                uint_32 count = FTE_OBJ_count(FTE_OBJ_TYPE_MULTI_SHT, 0, FALSE);
+                uint_32 i;
+
+                printf("%-8s %-16s %-16s %-8s %-16s %-s\n", 
+                        "ID", "TYPE", "NAME", "STATUS", "VALUE", "TIME");
+                for(i = 0 ; i < count ; i++)
+                {
+                    FTE_OBJECT_PTR  pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_UNKNOWN, 0, i, FALSE);
+                    
+                    if (pObj != NULL)
+                    {
+                        printf("%08x %-16s %-16s %8s", 
+                              pObj->pConfig->xCommon.nID, 
+                              FTE_OBJ_typeString(pObj), 
+                              pObj->pConfig->xCommon.pName,
+                              FTE_OBJ_IS_ENABLED(pObj)?"RUN":"STOP");                       
+                        
+                        if (pObj->pStatus->pValue != NULL)
+                        {
+                            TIME_STRUCT xTime;
+                            char        pTimeString[64];
+                            char        pValueString[32];
+                            char        pUnitString[8];
+                            
+                            FTE_VALUE_toString(pObj->pStatus->pValue, pValueString, sizeof(pValueString));
+                            FTE_VALUE_unit(pObj->pStatus->pValue, pUnitString, sizeof(pUnitString));
+                            FTE_VALUE_getTimeStamp(pObj->pStatus->pValue, &xTime);
+                            FTE_TIME_toString(&xTime, pTimeString, sizeof(pTimeString));
+                            printf(" %8s %-7s %s", pValueString, pUnitString, pTimeString);
+                        }
+                        
+                        if (pObj->pAction->f_get_statistic != NULL)
+                        {
+                            FTE_OBJECT_STATISTICS    xStatistics;
+                            uint_32                 nRatio;
+                            
+                            pObj->pAction->f_get_statistic(pObj, &xStatistics);
+                            nRatio = (xStatistics.nTotalTrial - xStatistics.nTotalFail) * 10000 / xStatistics.nTotalTrial;
+                            
+                            printf(" %3d.%02d%%(%d, %d, %d)", nRatio/100, nRatio%100, xStatistics.nTotalTrial, xStatistics.nTotalFail, xStatistics.nPartialFail);
+                        }
+                        printf("\n");
+                    }
+                }
+            }
+            break;
+
+        case    2:
+            {
+                if (!Shell_parse_hexnum(argv[1], &nID))
+                {
+                    print_usage = TRUE;
+                    goto error;
+                }
+
+                FTE_OBJECT_PTR  pObj = FTE_OBJ_get(nID);
+                if (pObj == NULL)
+                {
+                    printf("Object[%08x] not found!\n", nID);
+                    goto error;
+                }
+            
+                if (FTE_OBJ_TYPE(pObj) != FTE_OBJ_TYPE_MULTI_SHT)
+                {
+                    printf("Object type[%08x] mismatch!\n", FTE_OBJ_TYPE(pObj));
+                    goto error;
+                }
+
+                printf("%8s : %08x\n",      "ID",       pObj->pConfig->xCommon.nID);
+                printf("%8s : %d secs\n",   "Interval", ((FTE_SHT_CONFIG_PTR)pObj->pConfig)->nInterval);
+                printf("%8s : %d ms\n",     "Delay",    ((FTE_SHT_CONFIG_PTR)pObj->pConfig)->ulDelay);
+            }                        
+            break;
+            
+        case    4:
+            {
+                if (!Shell_parse_hexnum(argv[1], &nID))
+                {
+                    print_usage = TRUE;
+                    goto error;
+                }
+
+                FTE_OBJECT_PTR  pObj = FTE_OBJ_get(nID);
+                if (pObj == NULL)
+                {
+                    printf("Object[%08x] not found!\n", nID);
+                    goto error;
+                }
+            
+                if (FTE_OBJ_TYPE(pObj) != FTE_OBJ_TYPE_MULTI_SHT)
+                {
+                    printf("Object type[%08x] mismatch!\n", FTE_OBJ_TYPE(pObj));
+                    goto error;
+                }
+
+                if (strcmp(argv[2], "scl") == 0)
+                {
+                    uint_32     ulDelay;
+                    
+                    if (!Shell_parse_uint_32(argv[3], &ulDelay))
+                    {
+                        print_usage = TRUE;
+                        goto error;
+                    }
+
+                    if (ulDelay > FTE_SHT_DELAY_MAX)
+                    {
+                        print_usage = TRUE;
+                        goto error;
+                    }
+                    
+                    ((FTE_SHT_CONFIG_PTR)pObj->pConfig)->ulDelay = ulDelay;
+                    
+                    FTE_OBJ_save(pObj);
+                }
+            }                        
+            break;
+        default:
+            print_usage = TRUE;
+        }
+    }
+                
+error:    
+    if (print_usage || (return_code !=SHELL_EXIT_SUCCESS))
+    {
+        if (shorthelp)
+        {
+            printf ("%s [<id>] [<commands>]\n", argv[0]);
+        }
+        else
+        {
+            printf("Usage : %s [<id>]  [<commands>]\n", argv[0]);
+            printf("  Commands :\n");
+            printf("    scl <ms>\n");
+            printf("        SCL signal interval (0 ms ~ %d ms)\n", FTE_SHT_DELAY_MAX);
+        }
+    }
+    return   return_code;
 }
 
 #endif

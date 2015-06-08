@@ -3,6 +3,9 @@
 
 #define FTE_SHT_FLAG_CONVERT_HUMIDITY    0x0100
 #define FTE_SHT_FLAG_CONVERT_TEMPERATURE 0x0200
+
+#define FTE_SHT_DELAY_MAX                   5
+
 /*****************************************************************************
  * SHT Object Structure Description
  *****************************************************************************/
@@ -12,6 +15,7 @@ typedef struct _fte_sht_config_struct
     uint_32             nSDA;
     uint_32             nSCL;
     uint_32             nInterval;
+    uint_32             ulDelay;
 }   FTE_SHT_CONFIG, _PTR_ FTE_SHT_CONFIG_PTR;
 
 typedef struct  _fte_sht_status_struct
@@ -39,6 +43,6 @@ _mqx_uint       FTE_SHT_attach(FTE_OBJECT_PTR pObj);
 _mqx_uint       FTE_SHT_detach(FTE_OBJECT_PTR pObj);
 uint_32         FTE_SHT_printValue(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 nLen);
 
-int_32          shell_sht(int_32 argc, char_ptr argv[] );
+int_32          FTE_SHT_SHELL_cmd(int_32 argc, char_ptr argv[]);
 
 #endif
