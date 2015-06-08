@@ -690,10 +690,17 @@ _mqx_int _bsp_enet_io_init
     uint_32 device
 )
 {
+    uint_32         ulValue;
     PORT_MemMapPtr pctl;
-    SIM_MemMapPtr  sim  = (SIM_MemMapPtr)SIM_BASE_PTR;
+    SIM_MemMapPtr  sim = (SIM_MemMapPtr)SIM_BASE_PTR;
+    ENET_MemMapPtr pENET = (ENET_MemMapPtr)ENET_BASE_PTR;
 
+    ulValue = pENET->ECR;
+    pENET->ECR |= 0x00000001; 
+    pENET->ECR = ulValue;
+    
     pctl = (PORT_MemMapPtr)PORTA_BASE_PTR;
+    pctl->PCR[ 5] = 0x00000000;     /* PTA5,  disable        */
     pctl->PCR[ 9] = 0x00000400;     /* PTA9,  MII0_RXD3      */
     pctl->PCR[10] = 0x00000400;     /* PTA10, MII0_RXD2      */
     pctl->PCR[11] = 0x00000400;     /* PTA11, MII0_RXCLK     */
