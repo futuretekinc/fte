@@ -69,6 +69,9 @@ const SHELL_COMMAND_STRUCT pSHELLCommands[] =
     { "lcd",        fte_ssd1305_shell_cmd},
 #endif
     { "save",       FTE_CFG_SHELL_cmdSave},
+#if FTE_SHT_SUPPORTED
+    { "sht",        FTE_SHT_SHELL_cmd},
+#endif
 #if FTE_SSL_SUPPORTED
     { "ssl",        FTE_SSL_SHELL_cmd},
 #endif
