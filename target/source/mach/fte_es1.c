@@ -130,7 +130,8 @@ static const FTE_SHT_CONFIG fte_init_sht_config =
     },
     .nSDA       = FTE_DEV_LWGPIO_SHT_SDA,
     .nSCL       = FTE_DEV_LWGPIO_SHT_SCL,
-    .nInterval  = FTE_SHT_INTERVAL
+    .nInterval  = FTE_SHT_INTERVAL,
+    .ulDelay    = FTE_SHT_SCL_INTERVAL
 };
 #endif
 
