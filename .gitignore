@@ -3,6 +3,7 @@ Release/
 Debug/
 *.dep
 */*.dep
+*.dni
 
 # Object files
 *.o
