@@ -74,18 +74,18 @@
 #endif
      
 #if FTE_TASK_TIMER
-    #define FTE_TASK_TIMER_STACK        (FTE_TASK_DEFAULT_STACK * 2)
+    #define FTE_TASK_TIMER_STACK        FTE_TASK_DEFAULT_STACK
     #define FTE_TASK_TIMER_PRIO         9
 #endif
 
 #if FTE_TASK_UCS_RX
-    #define FTE_TASK_UCS_RX_STACK        FTE_TASK_DEFAULT_STACK
-    #define FTE_TASK_UCS_RX_PRIO         9
+    #define FTE_TASK_UCS_RX_STACK       FTE_TASK_DEFAULT_STACK
+    #define FTE_TASK_UCS_RX_PRIO        9
 #endif
 
 #if FTE_TASK_UCS_TX
-    #define FTE_TASK_UCS_TX_STACK        FTE_TASK_DEFAULT_STACK
-    #define FTE_TASK_UCS_TX_PRIO         9
+    #define FTE_TASK_UCS_TX_STACK       FTE_TASK_DEFAULT_STACK
+    #define FTE_TASK_UCS_TX_PRIO        9
 #endif
 
 #if FTE_TASK_OBJECT_MNGT
@@ -230,6 +230,8 @@ void                    fte_state_change_set_cb(void (*cb)(void));
 #include "fte_es15.h"
 #elif defined(FTE_ES16)
 #include "fte_es16.h"
+#elif defined(FTE_ES17)
+#include "fte_es17.h"
 #elif defined(FTE_EH1)
 #include "fte_eh1.h"
 #elif defined(FTE_MN1)

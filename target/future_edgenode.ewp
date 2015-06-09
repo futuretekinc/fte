@@ -2038,6 +2038,9 @@
         <name>$PROJ_DIR$\include\target\fte_es15.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\include\target\fte_es16.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\include\target\fte_es2.h</name>
       </file>
       <file>

@@ -1649,9 +1649,6 @@ FTE_PRODUCT_DESC const *fte_get_product_desc(void)
 
 _mqx_uint   fte_platform_init(void)
 {
-    _timer_create_component(FTE_TASK_TIMER_PRIO, FTE_TASK_TIMER_STACK);
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, 65541);
-
     
     /* Init device drivers */
     for(int i = 0 ; i < sizeof(_pDriverDescripts) / sizeof(FTE_DRIVER_DESCRIPT) ; i++)

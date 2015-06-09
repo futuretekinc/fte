@@ -13,7 +13,7 @@
 #include "fte_time.h" 
 #include "fte_sys.h" 
 #include "fte_dev.h"
-#include "sys/fte_sys_timer.h"
+#include "sys/fte_sys_timer.h" 
 #include "nxjson.h"
 #include "fte_json.h"
 
@@ -799,6 +799,7 @@ uint_32 MIB_set_smDiscovery(pointer param, uchar_ptr varptr, uint_32 varlen)
              
                 if (strcmp(FTE_1WIRE_getFailmyName(xParams.pROMCode[0]), "18B20") == 0)
                 {
+#if FTE_DS18B20_SUPPORTED
                     if (!fte_ds18b20_is_exist_rom_code(xParams.pROMCode) )
                     {
                         FTE_OBJECT_PTR          pObj = fte_ds18b20_create(&xParams);
@@ -811,6 +812,7 @@ uint_32 MIB_set_smDiscovery(pointer param, uchar_ptr varptr, uint_32 varlen)
                         
                         FTE_CFG_OBJ_save(pObj);
                     }
+#endif
                 }
             }
             
