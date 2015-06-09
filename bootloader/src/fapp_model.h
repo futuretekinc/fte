@@ -11,6 +11,7 @@
 #define FTE_BL_MODEL_SENSOR_BOARD_V1    1   // AD7785
 #define FTE_BL_MODEL_SENSOR_BOARD_V2    2   // RS485 + GPIO
 #define FTE_BL_MODEL_SENSOR_BOARD_V3    3   // DI + DO
+#define FTE_BL_MODEL_SENSOR_BOARD_V4    4   // GPIO(SHT + DS18B20)
 
 #define MK_MODEL(arch, mb, nb, sb)  ((((arch) & 0xFF) << 24) | \
                                      (((mb)   & 0xFF) << 16) | \
@@ -49,5 +50,11 @@
                                              FTE_BL_MODEL_MAIN_BOARD_V1,\
                                              FTE_BL_MODEL_NETWORK_BOARD_V2,\
                                              FTE_BL_MODEL_SENSOR_BOARD_V3)
+
+#define FTE_BL_MODEL_7             MK_MODEL(FTE_BL_MODEL_ARCH_V1,\
+                                             FTE_BL_MODEL_MAIN_BOARD_V1,\
+                                             FTE_BL_MODEL_NETWORK_BOARD_V1,\
+                                             FTE_BL_MODEL_SENSOR_BOARD_V4)
+
 
 #endif

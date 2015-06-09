@@ -22,6 +22,9 @@
 #elif FTE_EB6
     #define FTE_BL_CFG_HARDWARE_VERSION     FTE_BL_MODEL_6
     #define FTE_BL_CFG_PARAMS_DEVICE_NAME   "FTE-EB6"
+#elif FTE_EB7
+    #define FTE_BL_CFG_HARDWARE_VERSION     FTE_BL_MODEL_7
+    #define FTE_BL_CFG_PARAMS_DEVICE_NAME   "FTE-EB7"
 #else
 #error "Target model undefined!"
 #endif
@@ -38,6 +41,8 @@
     #define FTE_BL_CFG_PARAMS_DEVICE_NAME   "FTE-EB5"
 #elif FTE_BL_CFG_HARDWARE_VERSION == FTE_BL_MODEL_6
     #define FTE_BL_CFG_PARAMS_DEVICE_NAME   "FTE-EB6"
+#elif FTE_BL_CFG_HARDWARE_VERSION == FTE_BL_MODEL_7
+    #define FTE_BL_CFG_PARAMS_DEVICE_NAME   "FTE-EB7"
 #endif
 #endif
 
