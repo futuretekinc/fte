@@ -695,9 +695,11 @@ _mqx_int _bsp_enet_io_init
     SIM_MemMapPtr  sim = (SIM_MemMapPtr)SIM_BASE_PTR;
     ENET_MemMapPtr pENET = (ENET_MemMapPtr)ENET_BASE_PTR;
 
+#if 0
     ulValue = pENET->ECR;
     pENET->ECR |= 0x00000001; 
     pENET->ECR = ulValue;
+#endif
     
     pctl = (PORT_MemMapPtr)PORTA_BASE_PTR;
     pctl->PCR[ 5] = 0x00000000;     /* PTA5,  disable        */
