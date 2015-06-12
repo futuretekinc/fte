@@ -8,8 +8,9 @@
 #include <sh_rtcs.h>
 #include "nxjson.h"
 #include "fte_json.h"
+#include "fte_ssl.h"
 
-#if 0
+#if 1
 #define MQTT_TRACE(...)    TRACE(DEBUG_NET_MQTT, __VA_ARGS__);
 #else
 #define MQTT_TRACE(...)    
@@ -197,8 +198,8 @@ uint_32 FTE_MQTT_init(FTE_MQTT_CFG_PTR pConfig)
         }
 
         RTCS_task_create("mqtt_io",     FTE_NET_MQTT_PRIO, FTE_NET_MQTT_IO_STACK,   FTE_MQTT_TASK_io,    &_xCTX);    
-        RTCS_task_create("mqtt_recv",   FTE_NET_MQTT_PRIO, FTE_NET_MQTT_RECV_STACK, FTE_MQTT_TASK_recv,  &_xCTX);    
-        RTCS_task_create("mqtt_send",   FTE_NET_MQTT_PRIO, FTE_NET_MQTT_SEND_STACK, FTE_MQTT_TASK_send,  &_xCTX);    
+//        RTCS_task_create("mqtt_recv",   FTE_NET_MQTT_PRIO, FTE_NET_MQTT_RECV_STACK, FTE_MQTT_TASK_recv,  &_xCTX);    
+//        RTCS_task_create("mqtt_send",   FTE_NET_MQTT_PRIO, FTE_NET_MQTT_SEND_STACK, FTE_MQTT_TASK_send,  &_xCTX);    
     }
     
     return  FTE_MQTT_RET_OK;
@@ -291,7 +292,33 @@ void FTE_MQTT_TASK_io(pointer pParams, pointer pCreator)
             }
         }
         
-        _time_delay(1000);
+        while(FTE_LIST_count(&_xSendMsgPool) != 0)
+        {
+            FTE_MQTT_SEND_MSG_PTR pMsg;
+            
+            if (FTE_LIST_popFront(&_xSendMsgPool, (pointer _PTR_)&pMsg) == MQX_OK)
+            {
+                FTE_MQTT_INTERNAL_publish(pCTX, pMsg->pTopic, pMsg->nQoS, pMsg->pMsg);
+                FTE_MEM_free(pMsg);
+
+            }
+            _time_delay(1);
+        }
+        
+        while(FTE_LIST_count(&_xRecvMsgPool) != 0)
+        {
+            FTE_MQTT_MSG_PTR    pMsg;
+            
+            if (FTE_LIST_popFront(&_xRecvMsgPool, (pointer _PTR_)&pMsg) == MQX_OK)
+            {
+                FTE_MQTT_MSG_processing(pCTX, pMsg);
+                FTE_MQTT_MSG_destroy(pMsg);
+            }
+
+            _time_delay(1);
+        }
+        
+        _time_delay(10);
 
     }
 }
@@ -317,6 +344,9 @@ uint_32 FTE_MQTT_connect(FTE_MQTT_CONTEXT_PTR pCTX)
     {
         return ulRet;
     }
+    
+    FTE_SSL_init(pCTX->nSocketID);
+    
     
     // >>>>> CONNECT
     if (mqtt_connect(&pCTX->xBroker) <= 0)
@@ -388,8 +418,15 @@ uint_32 FTE_MQTT_disconnect(FTE_MQTT_CONTEXT_PTR pCTX)
 
 int FTE_MQTT_sendPacket(void* socket_info, void const * buf, unsigned int count)
 {
+#if 0
 	int fd = *((int*)socket_info);
 	return send(fd, (void *)buf, count, 0);
+#else
+    CYASSL* pxSSL = (CYASSL *)socket_info;
+    
+    return  FTE_SSL_send(NULL, buf, count);
+#endif
+    
 }
 
 uint_32 FTE_MQTT_publishDeviceInfo(FTE_MQTT_CONTEXT_PTR pCTX, uint_32 nQoS)
@@ -715,9 +752,10 @@ uint_32  FTE_MQTT_initSocket(FTE_MQTT_CONTEXT_PTR pCTX)
 
 	// MQTT stuffs
     mqtt_set_alive(&pCTX->xBroker, pCTX->pConfig->xBroker.ulKeepalive);
+
     pCTX->xBroker.socket_info = (void*)&pCTX->nSocketID;
     pCTX->xBroker.send = FTE_MQTT_sendPacket;
-    
+
     pCTX->xState = FTE_MQTT_STATE_INITIALIZED;
   
 	return FTE_MQTT_RET_OK;
@@ -728,7 +766,7 @@ int FTE_MQTT_closeSocket(FTE_MQTT_CONTEXT_PTR pCTX)
 {
     if (pCTX->nSocketID != 0)
     {
-        shutdown(pCTX->nSocketID, 0);//FLAG_ABORT_CONNECTION);
+        shutdown(pCTX->nSocketID, 0);
         pCTX->nSocketID = 0;
     }
     
@@ -752,11 +790,17 @@ uint_32 FTE_MQTT_recvPacket(FTE_MQTT_CONTEXT_PTR pCTX, uint_32  ulTimeout)
 	memset(pCTX->pBuff, 0, pCTX->ulBuffSize);
     pCTX->ulRcvdLen = 0;
     
+#if 0
 	if((nRcvdBytes = recv(pCTX->nSocketID, pCTX->pBuff, pCTX->ulBuffSize, 0)) < 2) 
     {
 		return FTE_MQTT_RET_READ_ABOARTED;
 	}
-
+#else
+	if((nRcvdBytes = FTE_SSL_recv(NULL, pCTX->pBuff, pCTX->ulBuffSize)) < 2) 
+    {
+		return FTE_MQTT_RET_READ_ABOARTED;
+	}
+#endif
 	pCTX->ulRcvdLen = nRcvdBytes; // Keep tally of total bytes
 	
 	// now we have the full fixed header in packet_buffer
@@ -767,10 +811,17 @@ uint_32 FTE_MQTT_recvPacket(FTE_MQTT_CONTEXT_PTR pCTX, uint_32  ulTimeout)
 
 	while(pCTX->ulRcvdLen < nPacketLen) // Reading the packet
 	{
+#if 0
 		if((nRcvdBytes = recv(pCTX->nSocketID, &pCTX->pBuff[pCTX->ulRcvdLen], pCTX->ulBuffSize - pCTX->ulRcvdLen, 0)) <= 0)
         {
 			return FTE_MQTT_RET_READ_ABOARTED;
         }
+#else
+		if((nRcvdBytes = FTE_SSL_recv(NULL, &pCTX->pBuff[pCTX->ulRcvdLen], pCTX->ulBuffSize - pCTX->ulRcvdLen)) <= 0)
+        {
+			return FTE_MQTT_RET_READ_ABOARTED;
+        }
+#endif
 		pCTX->ulRcvdLen += nRcvdBytes; // Keep tally of total bytes
 	}
 

@@ -87,10 +87,12 @@ void FTE_TASK_net(uint_32 params)
                     }
                 }
                 
+#if FTE_SNMPD_SUPPORTED
                 if ((IPCFG_STATE_BUSY != xState) && (IPCFG_STATE_UNBOUND != xState))
                 {
                     FTE_SNMPD_TRAP_processing();                
                 }
+#endif
             }
             else 
             {

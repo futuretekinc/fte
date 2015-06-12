@@ -86,7 +86,9 @@ void FTE_SMNG_task(pointer pParams, pointer pCreator)
         {
         case    FTE_SMNG_MSG_TYPE_DISCOVERY_WITH_TRAPS:
             {
+#if FTE_SNMPD_SUPPORTED
                 FTE_SNMPD_TRAP_discovery(xRecvAddr.sin_addr.s_addr);
+#endif
             }
             break;
 

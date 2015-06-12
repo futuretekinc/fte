@@ -51,10 +51,10 @@
 #define FTE_TASK_UCS_TX                 9
 #define FTE_TASK_EVENT                  10
      
-#define FTE_TASK_DEFAULT_STACK          1024
+#define FTE_TASK_DEFAULT_STACK          512
 
 #if FTE_TASK_MAIN
-    #define FTE_TASK_MAIN_STACK         FTE_TASK_DEFAULT_STACK
+    #define FTE_TASK_MAIN_STACK         (FTE_TASK_DEFAULT_STACK * 2)
     #define FTE_TASK_MAIN_PRIO          7
 #endif
      
@@ -64,12 +64,12 @@
     #define FTE_TASK_WATCHDOG_TIME      5000
 #endif
 #if FTE_TASK_NET
-    #define FTE_TASK_NET_STACK          (FTE_TASK_DEFAULT_STACK * 5)
+    #define FTE_TASK_NET_STACK          (FTE_TASK_DEFAULT_STACK * 3)
     #define FTE_TASK_NET_PRIO           9
 #endif
 
 #if FTE_TASK_SHELL
-    #define FTE_TASK_SHELL_STACK        (FTE_TASK_DEFAULT_STACK * 5)
+    #define FTE_TASK_SHELL_STACK        (FTE_TASK_DEFAULT_STACK * 4)
     #define FTE_TASK_SHELL_PRIO         9
 #endif
      
@@ -89,12 +89,12 @@
 #endif
 
 #if FTE_TASK_OBJECT_MNGT
-    #define FTE_TASK_OBJECT_MNGT_STACK  FTE_TASK_DEFAULT_STACK
+    #define FTE_TASK_OBJECT_MNGT_STACK  (FTE_TASK_DEFAULT_STACK * 2)
     #define FTE_TASK_OBJECT_MNGT_PRIO   9
 #endif
      
 #if FTE_TASK_EVENT
-    #define FTE_TASK_EVENT_STACK        FTE_TASK_DEFAULT_STACK
+    #define FTE_TASK_EVENT_STACK        (FTE_TASK_DEFAULT_STACK * 2)
     #define FTE_TASK_EVENT_PRIO         9
 #endif
 /******************************************************************************
@@ -120,7 +120,7 @@
 #define FTE_NET_DEFAULT_GATEWAY_IP      IPADDR(192,168,1,1) 
 
 #define FTE_NET_SMNG_BUFF_SIZE          1024
-#define FTE_NET_SMNG_STACK              (FTE_TASK_DEFAULT_STACK + FTE_NET_SMNG_BUFF_SIZE)
+#define FTE_NET_SMNG_STACK              (FTE_TASK_DEFAULT_STACK * 2 + FTE_NET_SMNG_BUFF_SIZE)
 #define FTE_NET_SMNG_PRIO               9
 #define FTE_NET_SMNG_PORT               1234
 
@@ -133,7 +133,7 @@
 
 #define FTE_NET_SNMP_NAME               "SNMP_agent"
 #define FTE_NET_SNMP_PRIO               3
-#define FTE_NET_SNMP_STACK              (FTE_TASK_DEFAULT_STACK * 2)
+#define FTE_NET_SNMP_STACK              (FTE_TASK_DEFAULT_STACK * 4)
 
 #define FTE_NET_SNMP_TRAP_SPEC          3
 #define FTE_NET_SNMP_TRAP_COUNT         5
@@ -141,24 +141,24 @@
      
 /* Use this define to tell example if only one server should be used for all interfaces */
 #define FTE_NET_HTTP_MAX_SESSION        6
-#define FTE_NET_HTTP_STACK_SIZE         FTE_TASK_DEFAULT_STACK
+#define FTE_NET_HTTP_STACK_SIZE         (FTE_TASK_DEFAULT_STACK * 4)
 #define FTE_NET_HTTP_CGI_BUFF_SIZE      1536
 
 #define FTE_NET_HTTP_INET_AF            AF_INET         
 #define FTE_NET_HTTP_SCOPE_ID           0 /* For any IF. */
 
-#define FTE_NET_MQTT_IO_STACK           0x1000
-#define FTE_NET_MQTT_RECV_STACK         (FTE_TASK_DEFAULT_STACK * 2)
-#define FTE_NET_MQTT_SEND_STACK         (FTE_TASK_DEFAULT_STACK * 2)
+#define FTE_NET_MQTT_IO_STACK           (FTE_TASK_DEFAULT_STACK * 20)
+#define FTE_NET_MQTT_RECV_STACK         (FTE_TASK_DEFAULT_STACK * 1)
+#define FTE_NET_MQTT_SEND_STACK         (FTE_TASK_DEFAULT_STACK * 1)
 #define FTE_NET_MQTT_PRIO               9
-#define FTE_NET_MQTT_PORT               1883
-#define FTE_NET_MQTT_BROKER             IPADDR(192, 168, 1, 1)
+#define FTE_NET_MQTT_PORT               8883
+#define FTE_NET_MQTT_BROKER             IPADDR(10, 0, 1, 18)
 #define FTE_NET_MQTT_KEEPALIVE          60
 #define FTE_NET_MQTT_PUB_TIMEOUT        60
      
 #define FTE_NET_TELNETD_NAME            "telnetd"
 #define FTE_NET_TELNETD_PRIO            8
-#define FTE_NET_TELNETD_STACK           (FTE_TASK_DEFAULT_STACK * 2)
+#define FTE_NET_TELNETD_STACK           (FTE_TASK_DEFAULT_STACK * 4)
 
 /******************************************************************************
  * Object Management Configuration
@@ -198,7 +198,9 @@ void                    fte_state_change_set_cb(void (*cb)(void));
 #include "fte_mem.h"
 #include "fte_sys.h"
 
-#if defined(FTE_ES1)
+#if defined(FTE_ES)
+#include "fte_es.h"
+#elif defined(FTE_ES1)
 #include "fte_es1.h"
 #elif defined(FTE_ES2)
 #include "fte_es2.h"
