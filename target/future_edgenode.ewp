@@ -1965,6 +1965,30 @@
     </group>
     <group>
       <name>net</name>
+      <file>
+        <name>$PROJ_DIR$\include\net\fte_cgi.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\net\fte_http.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\net\fte_json.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\net\fte_mqtt.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\net\fte_smng.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\net\fte_snmp.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\net\fte_ssl.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\net\fte_telnetd.h</name>
+      </file>
     </group>
     <group>
       <name>obj</name>
@@ -2015,6 +2039,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_ep1.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\target\fte_es.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_es1.h</name>
