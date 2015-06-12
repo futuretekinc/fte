@@ -467,6 +467,33 @@ int_32  FTE_SYS_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
                         }
                     }
                 }
+                else if (strcmp(pArgv[1], "monitor") == 0)
+                {
+                    if (strcmp(pArgv[2], "start") == 0)
+                    {
+                        FTE_CFG_SYS_setSystemMonitor(TRUE);
+                        if (!FTE_SYS_LIVE_CHECK_isRun())
+                        {
+                            FTE_SYS_LIVE_CHECK_start();
+                        }
+                    }
+                    else if (strcmp(pArgv[2], "stop") == 0)
+                    {
+                        FTE_CFG_SYS_setSystemMonitor(FALSE);
+                        if (FTE_SYS_LIVE_CHECK_isRun())
+                        {
+                            FTE_SYS_LIVE_CHECK_stop();
+                        }
+                    }
+                    else
+                    {
+                        bPrintUsage = TRUE;
+                    }
+                }
+                else
+                {
+                    bPrintUsage = TRUE;
+                }
             }
         }
     }
@@ -483,6 +510,8 @@ int_32  FTE_SYS_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
             printf("  Commands : \n");
             printf("    keepalive [<seconds>]\n");
             printf("        get/set keepalive\n");            
+            printf("    monitor [start|stop]\n");
+            printf("        auto system check\n");            
         }
     }
 
@@ -632,9 +661,9 @@ _mqx_uint   FTE_SYS_LIVE_CHECK_init(uint_32 ulKeepAliveTime)
     }
     
     return  MQX_ERROR;
-}
+} 
 
-_mqx_uint   FTE_SYS_LIVE_CHECK_run(void)
+_mqx_uint   FTE_SYS_LIVE_CHECK_start(void)
 {
     _time_get_ticks(&_xLastCheckTime);
     _bLiveCheckRunning = TRUE;

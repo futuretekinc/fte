@@ -1554,7 +1554,7 @@ const FTE_SYS_CONFIG fte_default_system_config =
 {
     .xFlags = 
     {
-        .bAutoFailureRecovery = TRUE
+        .bSystemMonitor = TRUE
     },
     .ulAllowFailureCount    = FTE_OBJ_ALLOW_FAILURE_COUNT,
     .ulKeepAliveTime        = FTE_SYS_KEEP_ALIVE_TIME      /* seconds */

@@ -950,15 +950,15 @@ _mqx_uint   FTE_CFG_SYS_set(FTE_SYS_CONFIG const *pConfig)
 }
 
 
-boolean FTE_CFG_SYS_getAutoFailureRecovery(void)
+boolean FTE_CFG_SYS_getSystemMonitor(void)
 {
-    return  _config.xPool.xSystem.xFlags.bAutoFailureRecovery;
+    return  _config.xPool.xSystem.xFlags.bSystemMonitor;
 }
 
-_mqx_uint   FTE_CFG_SYS_setAutoFailureRecovery(boolean bEnable)
+_mqx_uint   FTE_CFG_SYS_setSystemMonitor(boolean bStart)
 {
     FTE_CFG_lock();
-    _config.xPool.xSystem.xFlags.bAutoFailureRecovery = bEnable;    
+    _config.xPool.xSystem.xFlags.bSystemMonitor = bStart;    
     _config.bPoolModified = TRUE;
     FTE_CFG_unlock();
 
@@ -1074,8 +1074,7 @@ int_32  FTE_CFG_SHELL_cmd(int_32 argc, char_ptr argv[])
                        "MAC Address", pMAC[0], pMAC[1], pMAC[2],
                        pMAC[3], pMAC[4], pMAC[5]);
                 
-                printf("\n<System Configurations>\n");
-                printf("%16s : %s\n", "Auto Reset", FTE_CFG_SYS_getAutoFailureRecovery()?"ENABLED":"DISABLED");
+                printf("\n<System Boot Log>\n");
                 for(i = 0 ; i < FTE_LOG_BOOT_TIME_MAX_COUNT ; i++)
                 {
                     if (_config.xPool.pBootTimes[i] == 0)
@@ -1098,7 +1097,6 @@ int_32  FTE_CFG_SHELL_cmd(int_32 argc, char_ptr argv[])
                     xTime.MILLISECONDS = 0;
                     FTE_TIME_toString(&xTime, pBuff, sizeof(pBuff));
                     printf("%-16d : %s\n", i+1, pBuff);
-
                 }
             }
             break;
@@ -1142,7 +1140,6 @@ int_32  FTE_CFG_SHELL_cmd(int_32 argc, char_ptr argv[])
                             _config.bPoolModified = TRUE;
                         }                    
                     }
-                    
                     FTE_CFG_save(FALSE);
                 }
                 else if (strcmp(argv[1], "reset") == 0)
@@ -1152,29 +1149,12 @@ int_32  FTE_CFG_SHELL_cmd(int_32 argc, char_ptr argv[])
             }
             break;
             
-        case    3:
+        default:
             {
-                if (strcmp(argv[1], "auto_reset") == 0)
-                {
-                        if (strcmp(argv[2], "enable") == 0)
-                        {
-                            FTE_CFG_SYS_setAutoFailureRecovery(TRUE);
-                        }
-                        else if (strcmp(argv[2], "disable") == 0)
-                        {
-                            FTE_CFG_SYS_setAutoFailureRecovery(FALSE);
-                        }
-                        else
-                        {
-                            print_usage = TRUE;
-                        }
-                }
-                else
-                {
-                    print_usage = TRUE;
-                }
+                print_usage = TRUE;
             }
         }
+            
     }
     
     if (print_usage || (return_code !=SHELL_EXIT_SUCCESS))

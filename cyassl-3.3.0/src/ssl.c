@@ -5023,6 +5023,7 @@ int CyaSSL_dtls_got_timeout(CYASSL* ssl)
             #endif
             /* get response */
             while (ssl->options.serverState < neededState) {
+                _time_delay(10);
                 if ( (ssl->error = ProcessReply(ssl)) < 0) {
                     CYASSL_ERROR(ssl->error);
                     return SSL_FATAL_ERROR;
@@ -5163,10 +5164,13 @@ int CyaSSL_dtls_got_timeout(CYASSL* ssl)
         case FINISHED_DONE :
             /* get response */
             while (ssl->options.serverState < SERVER_FINISHED_COMPLETE)
+            {
+                _time_delay(10);
                 if ( (ssl->error = ProcessReply(ssl)) < 0) {
                     CYASSL_ERROR(ssl->error);
                     return SSL_FATAL_ERROR;
                 }
+            }
 
             ssl->options.connectState = SECOND_REPLY_DONE;
             CYASSL_MSG("connect state: SECOND_REPLY_DONE");

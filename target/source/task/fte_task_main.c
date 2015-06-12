@@ -18,7 +18,7 @@ void FTE_TASK_main(uint_32 params)
     MQX_TICK_STRUCT     xNextTicks;            
     _int_install_unexpected_isr();
 
-    _timer_create_component(TIMER_DEFAULT_TASK_PRIORITY, 4096);
+    _timer_create_component(TIMER_DEFAULT_TASK_PRIORITY, 1024);
     FTE_TASK_append(FTE_TASK_TYPE_MQX, 65541);
     
     fte_platform_init(); 
@@ -38,9 +38,9 @@ void FTE_TASK_main(uint_32 params)
     fte_platform_run();
     
     FTE_SYS_LIVE_CHECK_init(FTE_CFG_SYS_getKeepAliveTime());
-    if (FTE_CFG_SYS_getAutoFailureRecovery())
+    if (FTE_CFG_SYS_getSystemMonitor())
     {
-        FTE_SYS_LIVE_CHECK_run();
+        FTE_SYS_LIVE_CHECK_start();
     }
     
    _time_get_ticks(&xNextTicks);

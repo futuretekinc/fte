@@ -52,10 +52,10 @@ int_32 FTE_SSL_init(int nSocketID)
     
     CyaSSL_Init();
 
-#if defined(DEBUG_CYASSL)
+#if FTE_SSL_DEBUG
     CyaSSL_Debugging_ON();
 #endif
-
+    
     switch (version) 
     {
     case 0: pxMETHOD = CyaSSLv3_client_method();      break;
@@ -90,7 +90,7 @@ int_32 FTE_SSL_init(int nSocketID)
     }
     CyaSSL_set_fd(pxSSL, nSocketID);
         
-    if (0) 
+    if (1) 
     {
         CyaSSL_set_using_nonblock(pxSSL, 1);
         FTE_SSL_nonBlockingConnect(pxSSL);

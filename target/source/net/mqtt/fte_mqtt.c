@@ -10,7 +10,7 @@
 #include "fte_json.h"
 #include "fte_ssl.h"
 
-#if 1
+#if 0
 #define MQTT_TRACE(...)    TRACE(DEBUG_NET_MQTT, __VA_ARGS__);
 #else
 #define MQTT_TRACE(...)    
@@ -292,33 +292,7 @@ void FTE_MQTT_TASK_io(pointer pParams, pointer pCreator)
             }
         }
         
-        while(FTE_LIST_count(&_xSendMsgPool) != 0)
-        {
-            FTE_MQTT_SEND_MSG_PTR pMsg;
-            
-            if (FTE_LIST_popFront(&_xSendMsgPool, (pointer _PTR_)&pMsg) == MQX_OK)
-            {
-                FTE_MQTT_INTERNAL_publish(pCTX, pMsg->pTopic, pMsg->nQoS, pMsg->pMsg);
-                FTE_MEM_free(pMsg);
-
-            }
-            _time_delay(1);
-        }
-        
-        while(FTE_LIST_count(&_xRecvMsgPool) != 0)
-        {
-            FTE_MQTT_MSG_PTR    pMsg;
-            
-            if (FTE_LIST_popFront(&_xRecvMsgPool, (pointer _PTR_)&pMsg) == MQX_OK)
-            {
-                FTE_MQTT_MSG_processing(pCTX, pMsg);
-                FTE_MQTT_MSG_destroy(pMsg);
-            }
-
-            _time_delay(1);
-        }
-        
-        _time_delay(10);
+        _time_delay(1000);
 
     }
 }
@@ -906,7 +880,6 @@ static uint_32  FTE_MQTT_STATE_CB_connected(FTE_MQTT_CONTEXT_PTR pCTX)
             uint_32 nMsgType;
             
             nMsgType = MQTTParseMessageType(pCTX->pBuff) >> 4;   
-//            MQTT_TRACE("RECV MSG : ID = %d, TYPE = %d\n", mqtt_parse_msg_id(pCTX->pBuff), nMsgType);
             if (nMsgType < _ulMsgCBCount)
             {
                 _pMsgCBs[nMsgType].callback(pCTX);                                
@@ -929,7 +902,35 @@ static uint_32  FTE_MQTT_STATE_CB_connected(FTE_MQTT_CONTEXT_PTR pCTX)
             {
                 FTE_MQTT_PING_send(pCTX);
             }
-        }                    
+        }               
+        
+        
+        while(FTE_LIST_count(&_xSendMsgPool) != 0)
+        {
+            FTE_MQTT_SEND_MSG_PTR pMsg;
+            
+            if (FTE_LIST_popFront(&_xSendMsgPool, (pointer _PTR_)&pMsg) == MQX_OK)
+            {
+                FTE_MQTT_INTERNAL_publish(pCTX, pMsg->pTopic, pMsg->nQoS, pMsg->pMsg);
+                FTE_MEM_free(pMsg);
+
+            }
+            _time_delay(1);
+        }
+        
+        while(FTE_LIST_count(&_xRecvMsgPool) != 0)
+        {
+            FTE_MQTT_MSG_PTR    pMsg;
+            
+            if (FTE_LIST_popFront(&_xRecvMsgPool, (pointer _PTR_)&pMsg) == MQX_OK)
+            {
+                FTE_MQTT_MSG_processing(pCTX, pMsg);
+                FTE_MQTT_MSG_destroy(pMsg);
+            }
+
+            _time_delay(1);
+        }
+        
     }
     
     return  FTE_MQTT_RET_OK;

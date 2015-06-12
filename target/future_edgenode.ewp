@@ -168,7 +168,7 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state>FTE_EH1=1</state>
+          <state>FTE_ES=1</state>
           <state>FTE_V2=1</state>
           <state>FTE_DEBUG=1</state>
           <state>FREESCALE_MQX</state>
@@ -2146,6 +2146,9 @@
         <name>$PROJ_DIR$\..\mqx\lib\libbspd.a</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\cyassl-3.3.0\lib\libcyassld.a</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\lib\libemqttd.a</name>
       </file>
       <file>
@@ -2337,9 +2340,6 @@
       </group>
       <group>
         <name>ssl</name>
-        <excluded>
-          <configuration>Debug</configuration>
-        </excluded>
         <file>
           <name>$PROJ_DIR$\source\net\ssl\fte_ssl.c</name>
         </file>

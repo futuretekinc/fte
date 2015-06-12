@@ -71,8 +71,8 @@ pointer                 FTE_CFG_EVENT_getNext(void);
 FTE_SYS_CONFIG_PTR      FTE_CFG_SYS_get(void);
 _mqx_uint               FTE_CFG_SYS_set(FTE_SYS_CONFIG const *pConfig);
 
-boolean                 FTE_CFG_SYS_getAutoFailureRecovery(void);
-_mqx_uint               FTE_CFG_SYS_setAutoFailureRecovery(boolean bEnable);
+boolean                 FTE_CFG_SYS_getSystemMonitor(void);
+_mqx_uint               FTE_CFG_SYS_setSystemMonitor(boolean bEnable);
 
 boolean                 FTE_CFG_SYS_isEnabledLiveCheck(void);
 uint_32                 FTE_CFG_SYS_getKeepAliveTime(void);
