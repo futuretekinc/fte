@@ -20,10 +20,18 @@ typedef struct _fte_net_config_struct
     FTE_NET_TYPE                nType;
     IPCFG_IP_ADDRESS_DATA       xIPData;
 
+#if FTE_SNMPD_SUPPORTED
     FTE_SNMP_CFG                xSNMP;
+#endif
+#if FTE_HTTPD_SUPPORTED
     FTE_HTTP_CFG                xHTTP;
+#endif
+#if FTE_MQTT_SUPPORTED
     FTE_MQTT_CFG                xMQTT;
+#endif
+#if FTE_TELNETD_SUPPORTED
     FTE_TELNETD_CFG             xTelnetd;
+#endif
     
 }   FTE_NET_CFG, _PTR_ FTE_NET_CFG_PTR;
 

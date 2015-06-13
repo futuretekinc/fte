@@ -1571,6 +1571,7 @@ const FTE_NET_CFG fte_default_net_config =
         .gateway= IPADDR(192,168,1,1)
     },
 
+#if FTE_SNMPD_SUPPORTED
     .xSNMP      =
     {
         .bEnable=   TRUE,
@@ -1581,7 +1582,9 @@ const FTE_NET_CFG fte_default_net_config =
             .pCommunity = "public"
         }
     },
+#endif
 
+#if FTE_HTTPD_SUPPORTED
     .xHTTP      =
     {
         .bEnable=   FALSE,
@@ -1591,7 +1594,9 @@ const FTE_NET_CFG fte_default_net_config =
             {   NULL,                NULL,            HTTPSRV_AUTH_INVALID, NULL} /* Array terminator */
         }
     },
+#endif
 
+#if FTE_MQTT_SUPPORTED
     .xMQTT      =
     {
         .pClientID  = {0,},
@@ -1601,6 +1606,11 @@ const FTE_NET_CFG fte_default_net_config =
             .xIPAddress     = FTE_NET_MQTT_BROKER,
             .usPort         = FTE_NET_MQTT_PORT,
             .ulKeepalive    = FTE_NET_MQTT_KEEPALIVE,
+            .xSSL           = 
+            {
+                .bEnabled   = FTE_NET_MQTT_WITH_SSL,
+                .xMethod    = FTE_NET_MQTT_SSL_METHOD
+            },
             .xAuth          =
             {
                 .bEnabled   = FALSE,
@@ -1609,11 +1619,14 @@ const FTE_NET_CFG fte_default_net_config =
         .ulPubTimeout = FTE_NET_MQTT_PUB_TIMEOUT   
 
     },
+#endif
+#if FTE_TELNETD_SUPPORTED
     .xTelnetd   =
     {
         .pID    = "admin",
         .pPasswd= "admin"
     }
+#endif
 };
 
 static const FTE_SHELL_CONFIG    fte_default_shell_config =

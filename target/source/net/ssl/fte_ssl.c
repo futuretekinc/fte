@@ -10,7 +10,7 @@
 
 #define CLIENT_DEFAULT_VERSION 3
 
-static void     FTE_SSL_nonBlockingConnect(CYASSL* pxSSL);
+static int      FTE_SSL_nonBlockingConnect(CYASSL* pxSSL);
 static void     FTE_SSL_showPeer(CYASSL* pxSSL);
 
 const uint_8 pCACert[] = "-----BEGIN CERTIFICATE-----\n"
@@ -42,13 +42,17 @@ static void FTE_SSL_showPeer(CYASSL* pxSSL)
   (void)pxSSL;
 }
 
-    CYASSL*         pxSSL   = 0;
-
-int_32 FTE_SSL_init(int nSocketID)
+FTE_SSL_CONTEXT_PTR FTE_SSL_init(int nVersion)
 {
-    CYASSL_METHOD*  pxMETHOD= 0;
-    CYASSL_CTX*     pxCTX   = 0;
-    int             version = CLIENT_DEFAULT_VERSION;
+    FTE_SSL_CONTEXT_PTR     pxCTX   = NULL;
+    CYASSL_METHOD*          pxMETHOD= NULL;
+    CYASSL_CTX*             pxSSLCTX= NULL;
+    
+    pxCTX = (FTE_SSL_CONTEXT_PTR)FTE_MEM_allocZero(sizeof(FTE_SSL_CONTEXT));
+    if (pxCTX == NULL)
+    {
+        goto error;
+    }
     
     CyaSSL_Init();
 
@@ -56,7 +60,7 @@ int_32 FTE_SSL_init(int nSocketID)
     CyaSSL_Debugging_ON();
 #endif
     
-    switch (version) 
+    switch (nVersion) 
     {
     case 0: pxMETHOD = CyaSSLv3_client_method();      break;
     case 1: pxMETHOD = CyaTLSv1_client_method();      break;
@@ -67,81 +71,70 @@ int_32 FTE_SSL_init(int nSocketID)
         goto error;
     }
    
-    pxCTX = CyaSSL_CTX_new(pxMETHOD);
-    if (pxCTX == NULL)
+    pxSSLCTX = CyaSSL_CTX_new(pxMETHOD);
+    if (pxSSLCTX == NULL)
     {
         FTE_SSL_ERROR("unable to get CTX");
         goto error;
     }
    
-    if (CyaSSL_CTX_load_verify_buffer(pxCTX, pCACert, sizeof(pCACert), SSL_FILETYPE_PEM) != SSL_SUCCESS)
+    if (CyaSSL_CTX_load_verify_buffer(pxSSLCTX, pCACert, sizeof(pCACert), SSL_FILETYPE_PEM) != SSL_SUCCESS)
     {
         FTE_SSL_ERROR("can't load buffer ca file");
         goto error;
     }
     
-    CyaSSL_CTX_set_cipher_list(pxCTX, "AES256-SHA");
+    CyaSSL_CTX_set_cipher_list(pxSSLCTX, "AES256-SHA");
 
 
-    pxSSL = CyaSSL_new(pxCTX);
-    if (pxSSL == NULL)
+    pxCTX->pxSSL = CyaSSL_new(pxSSLCTX);
+    if (pxCTX->pxSSL == NULL)
     {        
         goto error;
     }
-    CyaSSL_set_fd(pxSSL, nSocketID);
-        
-    if (1) 
-    {
-        CyaSSL_set_using_nonblock(pxSSL, 1);
-        FTE_SSL_nonBlockingConnect(pxSSL);
-    }
-    else 
-    {
-        if (CyaSSL_connect(pxSSL) != SSL_SUCCESS) 
-        {
-            /* see note at top of README */
-            char_ptr pBuff = FTE_MEM_alloc(128);
-            if (pBuff != NULL)
-            {
-                int  nErrNo = CyaSSL_get_error(pxSSL, 0);
-                FTE_SSL_ERROR("SSL_connect failed[%d, %s]\n", nErrNo, CyaSSL_ERR_error_string(nErrNo, pBuff));
-                
-                FTE_MEM_free(pBuff);
-            }
-            goto error;
-        }
-        else
-        {
-            FTE_SSL_showPeer(pxSSL);
-        }
-    }
-        
-    return  RTCS_OK;
+    
+    return  pxCTX;
     
 error:
-    if (pxSSL != NULL)
-    {
-        CyaSSL_free(pxSSL);
-    }
-    
     if (pxCTX != NULL)
     {
-        CyaSSL_CTX_free(pxCTX);
+        if (pxCTX->pxSSL != NULL)
+        {
+            CyaSSL_free(pxCTX->pxSSL);
+            pxCTX->pxSSL = NULL;
+        }
+        
+        FTE_MEM_free(pxCTX);
     }
-    return  RTCS_ERROR;
+    
+    if (pxSSLCTX != NULL)
+    {
+        CyaSSL_CTX_free(pxSSLCTX);
+    }
+    return  NULL;
 }
 
-int FTE_SSL_send(CYASSL* pxSSL2, const void *pMsg, int nMsgLen)
+_mqx_uint   FTE_SSL_connect(FTE_SSL_CONTEXT_PTR pCTX, int nSocketID)
 {
-    return  CyaSSL_write(pxSSL, pMsg, nMsgLen);
+    CyaSSL_set_fd(pCTX->pxSSL, nSocketID);
+        
+    CyaSSL_set_using_nonblock(pCTX->pxSSL, 1);
+    FTE_SSL_nonBlockingConnect(pCTX->pxSSL);
+        
+    return  RTCS_OK;
 }
 
-int FTE_SSL_recv(CYASSL* pxSSL2, void *pBuff, int nBuffLen)
+int FTE_SSL_send(FTE_SSL_CONTEXT_PTR pCTX, const void *pMsg, int nMsgLen)
 {
-    return  CyaSSL_read(pxSSL, pBuff, nBuffLen);
+    return  CyaSSL_write(pCTX->pxSSL, pMsg, nMsgLen);
 }
 
-static void FTE_SSL_nonBlockingConnect(CYASSL* pxSSL)
+int FTE_SSL_recv(FTE_SSL_CONTEXT_PTR pCTX, void *pBuff, int nBuffLen)
+{
+    return  CyaSSL_read(pCTX->pxSSL, pBuff, nBuffLen);
+}
+
+static int FTE_SSL_nonBlockingConnect(CYASSL* pxSSL)
 {
 #ifndef CYASSL_CALLBACKS
     int ret = CyaSSL_connect(pxSSL);
@@ -187,6 +180,8 @@ static void FTE_SSL_nonBlockingConnect(CYASSL* pxSSL)
     }
     if (ret != SSL_SUCCESS)
         printf("SSL_connect failed");
+    
+    return  ret;
 }
 
 int_32 FTE_SSL_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )

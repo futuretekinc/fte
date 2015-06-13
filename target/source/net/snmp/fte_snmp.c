@@ -17,6 +17,8 @@
 #include "nxjson.h"
 #include "fte_json.h"
 
+#if FTE_SNMPD_SUPPORTED
+
 #if ! RTCSCFG_ENABLE_IP4 
   #error This application requires RTCSCFG_ENABLE_IP4 defined non-zero in user_config.h. Please recompile BSP with this option.
 #endif
@@ -4014,5 +4016,6 @@ error:
    return return_code;
 } /* Endbody */
 
+#endif  /* FTE_SNMPD_SUPPORTED */
 
 /* EOF */

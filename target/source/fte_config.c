@@ -378,7 +378,7 @@ success:
     return  MQX_OK;
 }
 
-_mqx_uint FTE_CFG_clear(void)
+_mqx_uint FTE_CFG_clear(void) 
 {
     _mqx_int        i;
 
@@ -825,6 +825,7 @@ _mqx_uint   FTE_CFG_NET_setGatewayIP(_ip_address xIP)
     return  MQX_OK;
 }
 
+#if FTE_SNMPD_SUPPORTED
 uint_32     FTE_CFG_NET_TRAP_count(void)
 {
     return  _config.xPool.xNetwork.xSNMP.xTrap.ulCount;
@@ -928,6 +929,7 @@ boolean FTE_CFG_NET_TRAP_isExist(_ip_address nTrapIP)
     
     return  FALSE;
 }
+#endif
 
 /******************************************************************************
  * System Configuration

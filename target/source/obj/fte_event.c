@@ -377,7 +377,7 @@ _mqx_uint    FTE_EVENT_proc(FTE_EVENT_PTR pEvent, TIME_STRUCT_PTR pTime)
 #if FTE_MQTT_SUPPORTED
             if (FTE_FLAG_IS_SET(pEvent->pConfig->xType, FTE_EVENT_TYPE_MQTT_PUB))
             {
-                FTE_MQTT_publishEPValue(NULL, pObj->pConfig->xCommon.nID, FTE_MQTT_QOS_2);
+                FTE_MQTT_publishEPValue(pObj->pConfig->xCommon.nID, FTE_MQTT_QOS_2);
             }
 #endif
         }

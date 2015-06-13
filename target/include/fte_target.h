@@ -131,7 +131,7 @@
 #define FTE_NET_SNMP_MIB1213            1
 #define FTE_NET_SNMP_MIBMQX             0
 
-#define FTE_NET_SNMP_NAME               "SNMP_agent"
+#define FTE_NET_SNMP_NAME               "snmp"
 #define FTE_NET_SNMP_PRIO               3
 #define FTE_NET_SNMP_STACK              (FTE_TASK_DEFAULT_STACK * 4)
 
@@ -147,16 +147,17 @@
 #define FTE_NET_HTTP_INET_AF            AF_INET         
 #define FTE_NET_HTTP_SCOPE_ID           0 /* For any IF. */
 
-#define FTE_NET_MQTT_IO_STACK           (FTE_TASK_DEFAULT_STACK * 20)
-#define FTE_NET_MQTT_RECV_STACK         (FTE_TASK_DEFAULT_STACK * 1)
-#define FTE_NET_MQTT_SEND_STACK         (FTE_TASK_DEFAULT_STACK * 1)
+#define FTE_NET_MQTT_NAME               "mqtt"
+#define FTE_NET_MQTT_STACK              (FTE_TASK_DEFAULT_STACK * 20)
 #define FTE_NET_MQTT_PRIO               9
 #define FTE_NET_MQTT_PORT               8883
 #define FTE_NET_MQTT_BROKER             IPADDR(10, 0, 1, 18)
 #define FTE_NET_MQTT_KEEPALIVE          60
 #define FTE_NET_MQTT_PUB_TIMEOUT        60
+#define FTE_NET_MQTT_WITH_SSL           TRUE
+#define FTE_NET_MQTT_SSL_METHOD         FTE_SSL_METHOD_TLSV1_2
      
-#define FTE_NET_TELNETD_NAME            "telnetd"
+#define FTE_NET_TELNETD_NAME            "telnet"
 #define FTE_NET_TELNETD_PRIO            8
 #define FTE_NET_TELNETD_STACK           (FTE_TASK_DEFAULT_STACK * 4)
 

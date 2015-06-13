@@ -3,7 +3,12 @@
 #include <shell.h>
 #include "fte_mem.h"
 #include "fte_sys.h"
+
+#if DEBUG_MEM
 #define FTS_MEM_TUPLE_MAX   200
+#else
+#define FTS_MEM_TUPLE_MAX   1
+#endif
 
 typedef struct
 {
@@ -20,6 +25,31 @@ void    fte_mem_init(void)
 }
 
 void *  _FTE_MEM_alloc(uint_32 nSize)
+{
+    return  _mem_alloc_system(nSize);
+}
+
+void *  _FTE_MEM_allocZero(uint_32 nSize)
+{
+    return  _mem_alloc_system_zero(nSize);
+}
+
+void    _FTE_MEM_free(void * pMem)
+{
+    _mem_free(pMem);
+}
+
+uint_32 FTE_MEM_getAllocSize(void)
+{
+    return  nTotalSize;
+}
+
+uint_32 FTE_MEM_allocCount(void)
+{
+    return  nMemTuple;
+}
+
+void *  _FTE_MEM_DEBUG_alloc(const char *pFunc, int nLine, uint_32 nSize)
 {
     FTE_MEM_BLOCK_PTR pBlock = _mem_alloc_system(sizeof(FTE_MEM_BLOCK) + nSize);
     
@@ -42,10 +72,12 @@ void *  _FTE_MEM_alloc(uint_32 nSize)
         FTE_SYS_reset();
     }
     
+    printf("%s[%d] : Size = %d, pMem = %08lx, pFree = %d\n", pFunc, nLine, nSize, pBlock->pMem, _mem_get_free());
+    
     return  pBlock->pMem;
 }
 
-void *  _FTE_MEM_allocZero(uint_32 nSize)
+void *  _FTE_MEM_DEBUG_allocZero(const char *pFunc, int nLine, uint_32 nSize)
 {
     FTE_MEM_BLOCK_PTR pBlock = _mem_alloc_system_zero(sizeof(FTE_MEM_BLOCK) + nSize);
     if (pBlock != NULL)
@@ -67,12 +99,16 @@ void *  _FTE_MEM_allocZero(uint_32 nSize)
         FTE_SYS_reset();
     }
     
+    printf("%s[%d] : Size = %d, pMem = %08lx, pFree = %d\n", pFunc, nLine, nSize, pBlock->pMem, _mem_get_free());
+
     return  pBlock->pMem;
 }
 
-void    _FTE_MEM_free(void * pMem)
+void    _FTE_MEM_DEBUG_free(const char *pFunc, int nLine, void *pMem)
 {
     FTE_MEM_BLOCK_PTR pBlock = (FTE_MEM_BLOCK_PTR)((uint_32)pMem - sizeof(FTE_MEM_BLOCK));
+
+    printf("%s[%d] : pMem = %08lx", pFunc, nLine, pMem);
     
      for(int i = 0 ; i < FTS_MEM_TUPLE_MAX ; i++)
     {
@@ -86,40 +122,8 @@ void    _FTE_MEM_free(void * pMem)
    
     nTotalSize -= sizeof(FTE_MEM_BLOCK) + pBlock->ulSize;   
     _mem_free(pBlock);
-}
-
-uint_32 FTE_MEM_getAllocSize(void)
-{
-    return  nTotalSize;
-}
-
-uint_32 FTE_MEM_allocCount(void)
-{
-    return  nMemTuple;
-}
-
-void *  _FTE_MEM_DEBUG_alloc(const char *pFunc, int nLine, uint_32 nSize)
-{
-    void *pMem = _FTE_MEM_alloc(nSize);
     
-    printf("%s[%d] : Size = %d, pMem = %08lx, pFree = %d\n", pFunc, nLine, nSize, pMem, _mem_get_free());
-    
-    return  pMem;
-}
-
-void *  _FTE_MEM_DEBUG_allocZero(const char *pFunc, int nLine, uint_32 nSize)
-{
-    void *pMem = _FTE_MEM_allocZero(nSize);
-    
-    printf("%s[%d] : Size = %d, pMem = %08lx, pFree = %d\n", pFunc, nLine, nSize, pMem, _mem_get_free());
-    
-    return  pMem;
-}
-
-void    _FTE_MEM_DEBUG_free(const char *pFunc, int nLine, void *pMem)
-{
-    _FTE_MEM_free(pMem);
-    printf("%s[%d] : pMem = %08lx, pFree = %d\n", pFunc, nLine, pMem, _mem_get_free());
+    printf(", pFree = %d\n", _mem_get_free());
 }
 
 
