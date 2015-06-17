@@ -22,6 +22,9 @@ const SHELL_COMMAND_STRUCT pSHELLCommands[] =
     { "ad7785",      FTE_AD7785_SHELL_cmd},
 #endif
     {"bl",  FTE_SYS_BL_cmd},
+    
+    { "cert", FTE_CFG_CERT_SHELL_cmd},
+    
     { "config",     FTE_CFG_SHELL_cmd},
 #if FTE_1WIRE_SUPPORTED
     { "1wire",      FTE_1WIRE_SHELL_cmd},
@@ -71,9 +74,6 @@ const SHELL_COMMAND_STRUCT pSHELLCommands[] =
     { "save",       FTE_CFG_SHELL_cmdSave},
 #if FTE_SHT_SUPPORTED
     { "sht",        FTE_SHT_SHELL_cmd},
-#endif
-#if FTE_SSL_SUPPORTED
-    { "ssl",        FTE_SSL_SHELL_cmd},
 #endif
 #if FTE_SPI_SUPPORTED
     { "spi",        fte_spi_shell_cmd},

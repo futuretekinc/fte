@@ -5023,7 +5023,7 @@ int CyaSSL_dtls_got_timeout(CYASSL* ssl)
             #endif
             /* get response */
             while (ssl->options.serverState < neededState) {
-                _time_delay(10);
+                _time_delay(100);
                 if ( (ssl->error = ProcessReply(ssl)) < 0) {
                     CYASSL_ERROR(ssl->error);
                     return SSL_FATAL_ERROR;
@@ -5165,8 +5165,9 @@ int CyaSSL_dtls_got_timeout(CYASSL* ssl)
             /* get response */
             while (ssl->options.serverState < SERVER_FINISHED_COMPLETE)
             {
-                _time_delay(10);
+                _time_delay(100);
                 if ( (ssl->error = ProcessReply(ssl)) < 0) {
+                    printf("ssl->options.serverState = %08x\n", ssl->options.serverState);
                     CYASSL_ERROR(ssl->error);
                     return SSL_FATAL_ERROR;
                 }

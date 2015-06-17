@@ -11,9 +11,9 @@
 #include "fte_ssl.h"
 
 #if 0
-#define MQTT_TRACE(...)    TRACE(DEBUG_NET_MQTT, __VA_ARGS__);
+#define FTE_MQTT_TRACE(...)    TRACE(DEBUG_NET_MQTT, __VA_ARGS__);
 #else
-#define MQTT_TRACE(...)    
+#define FTE_MQTT_TRACE(...)    
 #endif
 #define FTE_MQTT_MSG_DEV_VALUE_STRING   "MSG_DEV_VALUE"
 #define FTE_MQTT_MSG_DEV_INFO_STRING    "MSG_DEV_INFO"
@@ -60,6 +60,8 @@ static uint_32 FTE_MQTT_publishEP(FTE_MQTT_CONTEXT_PTR pCTX, FTE_MQTT_MSG_TYPE x
 
 
 static void     FTE_MQTT_process(pointer pTraps, pointer pCreator);
+static void     FTE_MQTT_receiver(pointer pParams, pointer pCreator);
+static void     FTE_MQTT_sender(pointer pParams, pointer pCreator);
 
 static uint_32  FTE_MQTT_initSocket(FTE_MQTT_CONTEXT_PTR pCTX);
 static uint_32  FTE_MQTT_connect(FTE_MQTT_CONTEXT_PTR pCTX);
@@ -99,9 +101,13 @@ static _mqx_uint    FTE_MQTT_INTERNAL_publish(FTE_MQTT_CONTEXT_PTR pCTX, char *p
 static uint_32  FTE_MQTT_PING_send(FTE_MQTT_CONTEXT_PTR pCTX);
 static void     FTE_MQTT_PING_timeout(_timer_id, pointer, MQX_TICK_STRUCT_PTR);
 
-static FTE_MQTT_MSG_TYPE    FTE_MQTT_MSG_TYPE_stringToType(char_ptr pString);
 static char_ptr             FTE_MQTT_MSG_TYPE_string(FTE_MQTT_MSG_TYPE xMsgType);
 
+static FTE_MQTT_METHOD_PTR  FTE_MQTT_METHOD_get(char_ptr pString);
+
+static _mqx_uint            FTE_MQTT_METHOD_CB_setProperty(void _PTR_ pParams);
+static _mqx_uint            FTE_MQTT_METHOD_CB_controlActuator(void _PTR_ pParams);
+static _mqx_uint            FTE_MQTT_METHOD_CB_timeSync(void _PTR_ pParams);
 
 const FTE_MQTT_STATE_CALLBACK _pStateCBs[] =
 {
@@ -143,6 +149,9 @@ const FTE_MQTT_MSG_CALLBACK   _pMsgCBs[] =
     {   .ulMsgID = MQTT_MSG_PINGRESP,   .callback = FTE_MQTT_MSG_CB_PINGResponse    },
     {   .ulMsgID = MQTT_MSG_DISCONNECT, .callback = FTE_MQTT_MSG_CB_undefined       }
 };
+
+static FTE_MQTT_METHOD _pThingPlusMethods[];
+
 
 const uint_32   _ulMsgCBCount = sizeof(_pMsgCBs) / sizeof(FTE_MQTT_MSG_CALLBACK);
 
@@ -221,6 +230,8 @@ uint_32 FTE_MQTT_init(FTE_MQTT_CFG_PTR pConfig)
         }
             
         RTCS_task_create(FTE_NET_MQTT_NAME, FTE_NET_MQTT_PRIO, FTE_NET_MQTT_STACK, FTE_MQTT_process, _pxCTX);    
+        RTCS_task_create(FTE_NET_MQTT_RECEIVER_NAME, FTE_NET_MQTT_PRIO, FTE_NET_MQTT_RECEIVER_STACK, FTE_MQTT_receiver, _pxCTX);    
+        RTCS_task_create(FTE_NET_MQTT_SENDER_NAME, FTE_NET_MQTT_PRIO, FTE_NET_MQTT_SENDER_STACK, FTE_MQTT_sender, _pxCTX);    
     }
     
     return  FTE_MQTT_RET_OK;
@@ -234,16 +245,6 @@ void FTE_MQTT_process(pointer pParams, pointer pCreator)
     RTCS_task_resume_creator(pCreator, RTCS_OK);
     FTE_TASK_append(FTE_TASK_TYPE_RTCS, _task_get_id());
 
-    if (pCTX->pConfig->xBroker.xSSL.bEnabled)
-    {
-        pCTX->pxSSL = FTE_SSL_init(pCTX->pConfig->xBroker.xSSL.xMethod);
-        if (pCTX->pxSSL == NULL)
-        {
-            return;
-        }
-    }
-            
-    
     xOldState = pCTX->xState;
     while(1)
     {
@@ -253,7 +254,7 @@ void FTE_MQTT_process(pointer pParams, pointer pCreator)
             _pStateCBs[pCTX->xState].callback(pCTX);
             if (pCTX->xState != xOldState)
             {
-                MQTT_TRACE("STATE CHANGED : %d -> %d\n", xOldState, pCTX->xState);
+                FTE_MQTT_TRACE("STATE CHANGED : %d -> %d\n", xOldState, pCTX->xState);
                 xOldState = pCTX->xState;
             }
         }
@@ -263,35 +264,56 @@ void FTE_MQTT_process(pointer pParams, pointer pCreator)
     }
 }
 
-void FTE_MQTT_PROCESS_recv(FTE_MQTT_CONTEXT_PTR pCTX)
+void FTE_MQTT_receiver(pointer pParams, pointer pCreator)
 {
-    ASSERT(pCTX != NULL);
-    
-    while(FTE_LIST_count(&pCTX->xRecvMsgPool) != 0)
+    FTE_MQTT_CONTEXT_PTR    pCTX = (FTE_MQTT_CONTEXT_PTR)pParams;
+
+    RTCS_task_resume_creator(pCreator, RTCS_OK);
+    FTE_TASK_append(FTE_TASK_TYPE_RTCS, _task_get_id());
+
+    while(1)
     {
-        FTE_MQTT_MSG_PTR    pMsg;
-        
-        if (FTE_LIST_popFront(&pCTX->xRecvMsgPool, (pointer _PTR_)&pMsg) == MQX_OK)
-        {
-            FTE_MQTT_MSG_processing(pCTX, pMsg);
-            FTE_MQTT_MSG_destroy(pMsg);
+        if ((FTE_SYS_STATE_get() & FTE_STATE_CONNECTED) == FTE_STATE_CONNECTED)
+        {        
+            if (FTE_LIST_count(&pCTX->xRecvMsgPool) != 0)
+            {
+                FTE_MQTT_MSG_PTR    pMsg;
+                
+                if (FTE_LIST_popFront(&pCTX->xRecvMsgPool, (pointer _PTR_)&pMsg) == MQX_OK)
+                {
+                    FTE_MQTT_MSG_processing(pCTX, pMsg);
+                    FTE_MQTT_MSG_destroy(pMsg);
+                }
+            }
+
         }
         _time_delay(1);
     }
 }
 
-void FTE_MQTT_PROCESS_send(FTE_MQTT_CONTEXT_PTR pCTX)
+void FTE_MQTT_sender(pointer pParams, pointer pCreator)
 {
-    while(FTE_LIST_count(&pCTX->xSendMsgPool) != 0)
+    FTE_MQTT_CONTEXT_PTR    pCTX = (FTE_MQTT_CONTEXT_PTR)pParams;
+
+    RTCS_task_resume_creator(pCreator, RTCS_OK);
+    FTE_TASK_append(FTE_TASK_TYPE_RTCS, _task_get_id());
+
+    while(1)
     {
-        FTE_MQTT_SEND_MSG_PTR pMsg;
-            
-        if (FTE_LIST_popFront(&pCTX->xSendMsgPool, (pointer _PTR_)&pMsg) == MQX_OK)
-        {
-            FTE_MQTT_INTERNAL_publish(pCTX, pMsg->pTopic, pMsg->nQoS, pMsg->pMsg);
-            FTE_MEM_free(pMsg);
+        if ((FTE_SYS_STATE_get() & FTE_STATE_CONNECTED) == FTE_STATE_CONNECTED)
+        {        
+            if (FTE_LIST_count(&pCTX->xSendMsgPool) != 0)
+            {
+                FTE_MQTT_SEND_MSG_PTR pMsg;
+                    
+                if (FTE_LIST_popFront(&pCTX->xSendMsgPool, (pointer _PTR_)&pMsg) == MQX_OK)
+                {
+                    FTE_MQTT_INTERNAL_publish(pCTX, pMsg->pTopic, pMsg->nQoS, pMsg->pMsg);
+                    FTE_MEM_free(pMsg);
+                }
+            }
         }
-        _time_delay(1);
+        _time_delay(100);
     }
 }
 
@@ -299,12 +321,32 @@ uint_32 FTE_MQTT_connect(FTE_MQTT_CONTEXT_PTR pCTX)
 {
     uint_32 ulRet;
 	struct sockaddr_in socket_address;
-    
+    int     nFlag = 1;
+
     ASSERT(pCTX != NULL);
     
     if (pCTX->xState != FTE_MQTT_STATE_INITIALIZED)
     {
         return  FTE_MQTT_RET_OPERATION_NOT_PERMITTED;
+    }
+
+    if (pCTX->nSocketID != 0)
+    {
+        FTE_MQTT_closeSocket(pCTX);
+    }
+    
+	// Create the socket
+    pCTX->nSocketID = socket(PF_INET, SOCK_STREAM, 0);
+	if(pCTX->nSocketID == RTCS_SOCKET_ERROR)
+    {
+		return FTE_MQTT_RET_ERROR;
+    }
+
+	// Disable Nagle Algorithm
+    ulRet = setsockopt(pCTX->nSocketID, SOL_TCP, OPT_RECEIVE_NOWAIT, (char*)&nFlag, sizeof(nFlag));
+	if ( ulRet != RTCS_OK)
+    {
+        goto error;
     }
     
     // Create the stuff we need to connect
@@ -316,23 +358,28 @@ uint_32 FTE_MQTT_connect(FTE_MQTT_CONTEXT_PTR pCTX)
     ulRet = connect(pCTX->nSocketID, (struct sockaddr*)&socket_address, sizeof(socket_address));
     if((ulRet != RTCS_OK) && (ulRet != RTCSERR_TCP_CONN_RLSD))
     {
-        return ulRet;
+        goto error;
     }
     
-    if (pCTX->pConfig->xBroker.xSSL.bEnabled)
+    if (pCTX->pConfig->xSSL.bEnabled)
     {
+        pCTX->pxSSL = FTE_SSL_create(&pCTX->pConfig->xSSL);
+        if (pCTX->pxSSL == NULL)
+        {
+            goto error;
+        }
+        
         ulRet = FTE_SSL_connect(pCTX->pxSSL, pCTX->nSocketID);
         if (ulRet != RTCS_OK)
         {
-            shutdown(pCTX->nSocketID, 0);            
-            return  ulRet;
+            goto error;
         }
     }    
     
     // >>>>> CONNECT
     if (mqtt_connect(&pCTX->xBroker) <= 0)
     {    
-        return  FTE_MQTT_RET_ERROR;
+        goto error;
     }
     
     pCTX->ulPingTimeout = 0;
@@ -340,6 +387,22 @@ uint_32 FTE_MQTT_connect(FTE_MQTT_CONTEXT_PTR pCTX)
     pCTX->xState = FTE_MQTT_STATE_CONNECTED;
     
     return  FTE_MQTT_RET_OK;
+    
+error:
+    if (pCTX->nSocketID != 0)
+    {
+        shutdown(pCTX->nSocketID, FLAG_ABORT_CONNECTION);
+        pCTX->nSocketID = 0;
+    }
+    
+    if (pCTX->pxSSL != NULL)
+    {
+        FTE_SSL_destroy(pCTX->pxSSL);
+        pCTX->pxSSL = NULL;
+    }
+    
+    return  FTE_MQTT_RET_ERROR;
+    
 }
 
 
@@ -389,6 +452,19 @@ uint_32 FTE_MQTT_disconnect(FTE_MQTT_CONTEXT_PTR pCTX)
     
     mqtt_disconnect(&pCTX->xBroker);
     
+    
+    if (pCTX->nSocketID != 0)
+    {
+        shutdown(pCTX->nSocketID, FLAG_ABORT_CONNECTION);
+        pCTX->nSocketID = 0;
+    }
+    
+    if (pCTX->pxSSL != NULL)
+    {
+        FTE_SSL_destroy(pCTX->pxSSL);
+        pCTX->pxSSL = NULL;
+    }    
+    
     pCTX->xState = FTE_MQTT_STATE_DISCONNECTED;
     
     return  FTE_MQTT_RET_OK;
@@ -400,7 +476,7 @@ int FTE_MQTT_sendPacket(void* pSocketInfo, void const * pBuf, unsigned int ulCou
     
     ASSERT((pCTX != NULL) && (pBuf != NULL));
     
-    if (pCTX->pConfig->xBroker.xSSL.bEnabled)
+    if (pCTX->pConfig->xSSL.bEnabled)
     {
         return  FTE_SSL_send(pCTX->pxSSL, pBuf, ulCount);
     }
@@ -497,7 +573,7 @@ uint_32 FTE_MQTT_publishDevice(FTE_MQTT_CONTEXT_PTR pCTX, FTE_MQTT_MSG_TYPE xMsg
     FTE_JSON_VALUE_snprint(pMsg, ulMsgLen, (FTE_JSON_VALUE_PTR)pJSONObject);
     FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pJSONObject);
     
-    sprintf(pTopic, "info/%s", FTE_SYS_getOIDString());                            
+    sprintf(pTopic, "/v/a/g/%s/status", FTE_SYS_getOIDString());                            
     
     FTE_MQTT_publish(pCTX, nQoS, pTopic, pMsg);
 
@@ -531,7 +607,9 @@ uint_32 FTE_MQTT_publishEPValue(FTE_OBJECT_ID xEPID, uint_32 nQoS)
         return  FTE_MQTT_RET_NOT_INITIALIZED;
     }
     
-    return  FTE_MQTT_publishEP(_pxCTX, FTE_MQTT_MSG_EP_VALUE, xEPID, nQoS);
+    return  FTE_MQTT_TP_publishEPValue(xEPID, nQoS);
+    
+    //return  FTE_MQTT_publishEP(_pxCTX, FTE_MQTT_MSG_EP_VALUE, xEPID, nQoS);
 }
 
 uint_32 FTE_MQTT_publishEP(FTE_MQTT_CONTEXT_PTR pCTX, FTE_MQTT_MSG_TYPE xMsgType, FTE_OBJECT_ID xEPID, uint_32 nQoS)
@@ -612,8 +690,72 @@ uint_32 FTE_MQTT_publishEP(FTE_MQTT_CONTEXT_PTR pCTX, FTE_MQTT_MSG_TYPE xMsgType
     FTE_JSON_VALUE_snprint(pMsg, ulMsgLen, (FTE_JSON_VALUE_PTR)pJSONObject);
     FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pJSONObject);
 
-    sprintf(pTopic, "info/%s", FTE_SYS_getOIDString());
+    sprintf(pTopic, "/v/a/g/%s/s/%08x", FTE_SYS_getOIDString(), xEPID);
+    
     FTE_MQTT_publish(pCTX, nQoS, pTopic, pMsg);
+
+    FTE_MEM_free(pMsg);
+    
+    return  FTE_MQTT_RET_OK;
+error:
+    
+    if (pJSONObject != NULL)
+    {
+        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pJSONObject);
+    }
+    
+    return  FTE_MQTT_RET_ERROR;
+}
+
+uint_32 FTE_MQTT_TP_publishEPValue(FTE_OBJECT_ID xEPID, uint_32 nQoS)
+{
+    char                pTopic[FTE_MQTT_TOPIC_LENGTH];
+    char_ptr            pMsg = NULL;
+    uint_32             ulMsgLen;
+    FTE_OBJECT_PTR      pObj = NULL;
+    FTE_JSON_OBJECT_PTR pJSONObject = NULL;
+    FTE_JSON_VALUE_PTR  pValue = NULL;
+
+    pObj = FTE_OBJ_get(xEPID);
+    if(pObj == NULL)
+    {
+        goto error;
+    }
+
+    pJSONObject = (FTE_JSON_OBJECT_PTR)FTE_JSON_VALUE_createArray(2);
+    if (pJSONObject == NULL)
+    {
+        goto error;
+    }
+
+    pValue = (FTE_JSON_VALUE_PTR)FTE_JSON_VALUE_createNumber(FTE_SYS_getTime());
+    if (pValue == NULL)
+    {
+        goto error;
+    }
+    FTE_JSON_ARRAY_setElement((FTE_JSON_ARRAY_PTR)pJSONObject, pValue);
+
+    pValue = (FTE_JSON_VALUE_PTR)FTE_OBJ_createJSON(pObj, FTE_OBJ_FIELD_EP_VALUE);
+    if (pValue == NULL)
+    {
+        goto error;
+    }
+        
+    FTE_JSON_ARRAY_setElement((FTE_JSON_ARRAY_PTR)pJSONObject, pValue);
+    
+    ulMsgLen = FTE_JSON_VALUE_buffSize((FTE_JSON_VALUE_PTR)pJSONObject) + 1;
+    pMsg = (char_ptr)FTE_MEM_alloc(ulMsgLen);
+    if (pMsg == NULL)
+    {
+        goto error;
+    }
+    
+    FTE_JSON_VALUE_snprint(pMsg, ulMsgLen, (FTE_JSON_VALUE_PTR)pJSONObject);
+    FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pJSONObject);
+
+    sprintf(pTopic, "/v/a/g/%s/s/%08x", FTE_SYS_getOIDString(), xEPID);
+    
+    FTE_MQTT_publish(_pxCTX, nQoS, pTopic, pMsg);
 
     FTE_MEM_free(pMsg);
     
@@ -713,28 +855,6 @@ _mqx_uint     FTE_MQTT_INTERNAL_publish(FTE_MQTT_CONTEXT_PTR pCTX, char *pTopic,
 
 uint_32  FTE_MQTT_initSocket(FTE_MQTT_CONTEXT_PTR pCTX)
 {
-    uint_32 ulRet;
-	int     flag = 1;
-
-    if (pCTX->nSocketID != 0)
-    {
-        FTE_MQTT_closeSocket(pCTX);
-    }
-    
-	// Create the socket
-    pCTX->nSocketID = socket(PF_INET, SOCK_STREAM, 0);
-	if(pCTX->nSocketID == RTCS_SOCKET_ERROR)
-    {
-		return FTE_MQTT_RET_ERROR;
-    }
-
-	// Disable Nagle Algorithm
-    ulRet = setsockopt(pCTX->nSocketID, SOL_TCP, OPT_RECEIVE_NOWAIT, (char*)&flag, sizeof(flag));
-	if ( ulRet != RTCS_OK)
-    {
-		return ulRet;
-    }
-
 	// MQTT stuffs
     mqtt_set_alive(&pCTX->xBroker, pCTX->pConfig->xBroker.ulKeepalive);
 
@@ -749,10 +869,9 @@ uint_32  FTE_MQTT_initSocket(FTE_MQTT_CONTEXT_PTR pCTX)
 
 int FTE_MQTT_closeSocket(FTE_MQTT_CONTEXT_PTR pCTX)
 {
-    if (pCTX->nSocketID != 0)
+    if ((pCTX->xState != FTE_MQTT_STATE_INITIALIZED) && (pCTX->xState != FTE_MQTT_STATE_DISCONNECTED))
     {
-        shutdown(pCTX->nSocketID, 0);
-        pCTX->nSocketID = 0;
+        FTE_MQTT_disconnect(pCTX);
     }
     
     pCTX->xState = FTE_MQTT_STATE_UNINITIALIZED;
@@ -775,7 +894,7 @@ uint_32 FTE_MQTT_recvPacket(FTE_MQTT_CONTEXT_PTR pCTX, uint_32  ulTimeout)
 	memset(pCTX->pBuff, 0, pCTX->ulBuffSize);
     pCTX->ulRcvdLen = 0;
     
-    if (pCTX->pConfig->xBroker.xSSL.bEnabled)
+    if (pCTX->pConfig->xSSL.bEnabled)
     {
         if((nRcvdBytes = FTE_SSL_recv(pCTX->pxSSL, pCTX->pBuff, pCTX->ulBuffSize)) < 2) 
         {
@@ -800,7 +919,7 @@ uint_32 FTE_MQTT_recvPacket(FTE_MQTT_CONTEXT_PTR pCTX, uint_32  ulTimeout)
 
 	while(pCTX->ulRcvdLen < nPacketLen) // Reading the packet
 	{
-        if (pCTX->pConfig->xBroker.xSSL.bEnabled)
+        if (pCTX->pConfig->xSSL.bEnabled)
         {
             if((nRcvdBytes = FTE_SSL_recv(NULL, &pCTX->pBuff[pCTX->ulRcvdLen], pCTX->ulBuffSize - pCTX->ulRcvdLen)) <= 0)
             {
@@ -832,7 +951,7 @@ uint_32 FTE_MQTT_PING_send(FTE_MQTT_CONTEXT_PTR pCTX)
         
     pCTX->xPingTimer = _timer_start_oneshot_at_ticks(FTE_MQTT_PING_timeout, pCTX, TIMER_KERNEL_TIME_MODE, &xTicks);    
 
-    MQTT_TRACE("PING SEND : TIMEOUT = %d ms\n", pCTX->ulPingTimeout * 1000);
+    FTE_MQTT_TRACE("PING SEND : TIMEOUT = %d ms\n", pCTX->ulPingTimeout * 1000);
     
     mqtt_ping(&pCTX->xBroker);
     
@@ -859,7 +978,7 @@ static void   FTE_MQTT_PING_timeout(_timer_id xTimerID, pointer pData, MQX_TICK_
  ******************************************************************************/
 static uint_32  FTE_MQTT_STATE_CB_uninitialized(FTE_MQTT_CONTEXT_PTR pCTX)
 {
-    MQTT_TRACE("MQTT STATE : Uninitialized\n");
+    FTE_MQTT_TRACE("MQTT STATE : Uninitialized\n");
     FTE_MQTT_initSocket(pCTX);
     
     return  FTE_MQTT_RET_OK;
@@ -867,7 +986,7 @@ static uint_32  FTE_MQTT_STATE_CB_uninitialized(FTE_MQTT_CONTEXT_PTR pCTX)
 
 static uint_32  FTE_MQTT_STATE_CB_initialized(FTE_MQTT_CONTEXT_PTR pCTX)
 {
-    MQTT_TRACE("MQTT STATE : Initialized\n");
+    FTE_MQTT_TRACE("MQTT STATE : Initialized\n");
 
     if ((FTE_SYS_STATE_get() & FTE_STATE_CONNECTED) == FTE_STATE_CONNECTED)
     {
@@ -879,19 +998,17 @@ static uint_32  FTE_MQTT_STATE_CB_initialized(FTE_MQTT_CONTEXT_PTR pCTX)
 
 static uint_32  FTE_MQTT_STATE_CB_connected(FTE_MQTT_CONTEXT_PTR pCTX)
 {
-    char            pTopic[FTE_MQTT_TOPIC_LENGTH+1];
+    char    pTopic[FTE_MQTT_TOPIC_LENGTH+1];
     
-    MQTT_TRACE("MQTT STATE : Connected\n");
+    FTE_MQTT_TRACE("MQTT STATE : Connected\n");
 
-    sprintf(pTopic, "breq/#");
+    sprintf(pTopic, "/v/a/g/%s/req", FTE_SYS_getOIDString());
     FTE_MQTT_subscribe(pCTX, pTopic);
     
-    sprintf(pTopic, "req/%s/#", FTE_SYS_getOIDString());
-    FTE_MQTT_subscribe(pCTX, pTopic);
-            
     while(pCTX->xState == FTE_MQTT_STATE_CONNECTED)
     {
         uint_32 ulRet;
+        boolean bExistMsg = TRUE;        
             
         ulRet = FTE_MQTT_recvPacket(pCTX, 1);
         if (ulRet == RTCS_OK)
@@ -925,9 +1042,6 @@ static uint_32  FTE_MQTT_STATE_CB_connected(FTE_MQTT_CONTEXT_PTR pCTX)
                  FTE_MQTT_PING_send(pCTX);
              }
         }
-        
-        FTE_MQTT_PROCESS_send(pCTX);
-        FTE_MQTT_PROCESS_recv(pCTX);
     }
     
     return  FTE_MQTT_RET_OK;
@@ -935,7 +1049,7 @@ static uint_32  FTE_MQTT_STATE_CB_connected(FTE_MQTT_CONTEXT_PTR pCTX)
 
 static uint_32  FTE_MQTT_STATE_CB_disconnected(FTE_MQTT_CONTEXT_PTR pCTX)
 {
-    MQTT_TRACE("MQTT STATE : Disconnected\n");
+    FTE_MQTT_TRACE("MQTT STATE : Disconnected\n");
     
     FTE_MQTT_closeSocket(pCTX);
     
@@ -967,7 +1081,7 @@ static uint_32  FTE_MQTT_MSG_CB_connectionACK(FTE_MQTT_CONTEXT_PTR pCTX)
 
     pCTX->xState = FTE_MQTT_STATE_CONNECTED;
     
-    MQTT_TRACE("MQTT Connected!\n");                        
+    FTE_MQTT_TRACE("MQTT Connected!\n");                        
     
     return  FTE_MQTT_RET_OK;
 }
@@ -975,11 +1089,12 @@ static uint_32  FTE_MQTT_MSG_CB_connectionACK(FTE_MQTT_CONTEXT_PTR pCTX)
 static uint_32  FTE_MQTT_MSG_CB_publish(FTE_MQTT_CONTEXT_PTR pCTX)
 {
     FTE_MQTT_MSG_PTR    pMsg;
-    uint_8              nCmd, nTarget;
+    uint_8              nCmd;
     uint_8              pTopic[FTE_MQTT_TOPIC_LENGTH + 1];
     uint16_t            nTopicLen;
     uint_8 const _PTR_  pData;
-    char_ptr            pTopicParam;
+    char_ptr            pFields[10];
+    uint16_t            nFieldCount;
     uint16_t            nDataLen;    
     
     nTopicLen = mqtt_parse_pub_topic(pCTX->pBuff, pTopic);
@@ -987,52 +1102,32 @@ static uint_32  FTE_MQTT_MSG_CB_publish(FTE_MQTT_CONTEXT_PTR pCTX)
 
     nDataLen = mqtt_parse_pub_msg_ptr(pCTX->pBuff, &pData);
 
-    pTopicParam = strtok((char_ptr)pTopic, "/");
-    if (pTopicParam != NULL)
+    nFieldCount = 0;
+    pFields[nFieldCount] = strtok((char_ptr)pTopic, "/");
+    while((pFields[nFieldCount] != NULL) && (nFieldCount < 10))
     {
-        int i;
-
-        for(i = 0 ; i < 4 &&  pTopicParam != NULL ; i++)
-        {
-            switch(i)
-            {
-            case    0:
-                {
-                    if (strcmp(pTopicParam, "REQ") == 0)
-                    {
-                        nCmd = FTE_MQTT_CMD_REQ;
-                    }
-                    else
-                    {
-                        return  FTE_MQTT_RET_INVALID_TOPIC;
-                    }
-                }
-                break;
-                
-            case    1:
-                {
-                    switch(toupper(pTopicParam[0]))
-                    {
-                    case    'U':    nTarget = FTE_MQTT_TARGET_UID;      break;
-                    case    'A':    nTarget = FTE_MQTT_TARGET_BROADCAST;break;
-                    default:    return  FTE_MQTT_RET_INVALID_TOPIC;
-                    }
-                } 
-                break;
-            case    2:
-                {
-                    if ((nTarget != FTE_MQTT_TARGET_BROADCAST) && (strcmp(pTopicParam, FTE_SYS_getOIDString()) != 0))
-                    {
-                        return  FTE_MQTT_RET_INVALID_TOPIC;
-                    }                    
-                }
-                break;
-            }            
-            pTopicParam = strtok(NULL, "/");
-        }
+        pFields[++nFieldCount] = strtok(NULL, "/");
     }
 
-    if (FTE_MQTT_MSG_create(nCmd, nTarget, (uint_8_ptr)pData, nDataLen, &pMsg) != RTCS_OK)
+    if ((nFieldCount < 5) ||
+        (strcmp(pFields[0], "v") != 0) ||
+        (strcmp(pFields[1], "a") != 0) ||
+        (strcmp(pFields[2], "g") != 0) ||
+        (strcmp(pFields[3], FTE_SYS_getOIDString()) != 0))
+    {
+        return  FTE_MQTT_RET_INVALID_TOPIC;
+    }
+
+    if (strcmp(pFields[4], "req") == 0)
+    {
+        nCmd = FTE_MQTT_CMD_REQ;
+    }
+    else
+    {
+        return  FTE_MQTT_RET_INVALID_TOPIC;
+    }
+
+    if (FTE_MQTT_MSG_create(nCmd, FTE_MQTT_TARGET_UID, (uint_8_ptr)pData, nDataLen, &pMsg) != RTCS_OK)
     {
         return  FTE_MQTT_RET_ERROR;
     }
@@ -1050,7 +1145,7 @@ static uint_32  FTE_MQTT_MSG_CB_publishACK(FTE_MQTT_CONTEXT_PTR pCTX)
    
    ulMsgID = mqtt_parse_msg_id(pCTX->pBuff);
     
-    MQTT_TRACE("%16s : %3d\n", "PUB ACK", ulMsgID);
+    FTE_MQTT_TRACE("%16s : %3d\n", "PUB ACK", ulMsgID);
     ulRet = FTE_MQTT_TRANS_get(pCTX, ulMsgID, &pTrans);
     if (ulRet != FTE_MQTT_RET_OK)
     {
@@ -1071,7 +1166,7 @@ static uint_32  FTE_MQTT_MSG_CB_publishReceived(FTE_MQTT_CONTEXT_PTR pCTX)
     
     ulMsgID = mqtt_parse_msg_id(pCTX->pBuff);
    
-//    MQTT_TRACE("%16s : %3d\n", "PUB RECEIVED", ulMsgID);
+    FTE_MQTT_TRACE("%16s : %3d\n", "PUB RECEIVED", ulMsgID);
     ulRet = FTE_MQTT_TRANS_get(pCTX, ulMsgID, &pTrans);
     if (ulRet != FTE_MQTT_RET_OK)
     {
@@ -1092,7 +1187,7 @@ static uint_32  FTE_MQTT_MSG_CB_publishCompleted(FTE_MQTT_CONTEXT_PTR pCTX)
     
     ulMsgID = mqtt_parse_msg_id(pCTX->pBuff);
 
-//    MQTT_TRACE("%16s : %3d\n", "PUB COMPLETED", ulMsgID);
+    FTE_MQTT_TRACE("%16s : %3d\n", "PUB COMPLETED", ulMsgID);
     
     ulRet = FTE_MQTT_TRANS_get(pCTX, ulMsgID, &pTrans);
     if (ulRet != FTE_MQTT_RET_OK)
@@ -1155,7 +1250,7 @@ _mqx_uint   FTE_MQTT_TRANS_create(FTE_MQTT_CONTEXT_PTR pCTX, FTE_MQTT_TRANS_PTR 
     _mqx_uint           ulRet;
     FTE_MQTT_TRANS_PTR  pTrans;
         
-    MQTT_TRACE("%s : Free Trans Count : %d\n", __func__, FTE_LIST_count(&pCTX->xFreeTransList));
+    FTE_MQTT_TRACE("%s : Free Trans Count : %d\n", __func__, FTE_LIST_count(&pCTX->xFreeTransList));
     if (FTE_LIST_count(&pCTX->xFreeTransList) != 0)
     {
         ulRet = FTE_LIST_popFront(&pCTX->xFreeTransList, (pointer _PTR_)&pTrans);
@@ -1184,7 +1279,7 @@ _mqx_uint   FTE_MQTT_TRANS_destroy(FTE_MQTT_CONTEXT_PTR pCTX, FTE_MQTT_TRANS_PTR
 {
     FTE_LIST_remove(&pCTX->xTransList, pTrans);
     FTE_LIST_pushBack(&pCTX->xFreeTransList, pTrans);
-    MQTT_TRACE("%s : Free Trans Count : %d\n", __func__, FTE_LIST_count(&pCTX->xFreeTransList));
+    FTE_MQTT_TRACE("%s : Free Trans Count : %d\n", __func__, FTE_LIST_count(&pCTX->xFreeTransList));
     
     return  FTE_MQTT_RET_OK;
 }
@@ -1237,7 +1332,7 @@ _mqx_uint   FTE_MQTT_TRANS_checkTimeout(FTE_MQTT_CONTEXT_PTR pCTX, uint_32 ulTim
     FTE_LIST_ITER_init(&xRemoveList, &xIter);
     while((pTrans = FTE_LIST_ITER_getNext(&xIter)) != NULL)
     {
-        MQTT_TRACE("TRANS TIMEMOUT : %d\n", pTrans->nMsgID);
+        FTE_MQTT_TRACE("TRANS TIMEMOUT : %d\n", pTrans->nMsgID);
         FTE_MQTT_TRANS_destroy(pCTX, pTrans);
         pCTX->xStatistics.ulTransTimeout++;
     }
@@ -1286,94 +1381,22 @@ uint_32 FTE_MQTT_MSG_processing(FTE_MQTT_CONTEXT_PTR pCTX, FTE_MQTT_MSG_PTR pMsg
             goto error;
         }
 
-        const nx_json* pTypeItem = nx_json_get(pRoot, FTE_JSON_MSG_TYPE_STRING);
-        if (pTypeItem == NULL)
+        const nx_json* pMethodItem = nx_json_get(pRoot, FTE_JSON_OBJ_METHOD_STRING);
+        if (pMethodItem == NULL)
         {
             goto error;
         }
         
-        switch(FTE_MQTT_MSG_TYPE_stringToType((char_ptr)pTypeItem->text_value))
+        FTE_MQTT_METHOD_PTR pMethod = FTE_MQTT_METHOD_get((char_ptr)pMethodItem->text_value);
+        if (pMethod != NULL)
         {
-        case    FTE_MQTT_MSG_DEV_INFO:
+            const nx_json* pParamItem = nx_json_get(pRoot, FTE_JSON_OBJ_PARAM_STRING);
+            if (pParamItem == NULL)
             {
-                if (pMsg->nTarget == FTE_MQTT_TARGET_BROADCAST)
-                {
-                    FTE_MQTT_publishDeviceInfo(pCTX, FTE_MQTT_QOS_2);
-                }
-                else
-                {
-                    const nx_json*  pObjItem;
-                    uint_32         ulEPID = 0;
-                    
-                    pObjItem = nx_json_get(pRoot, FTE_JSON_OBJ_ID_STRING);
-                    if (pObjItem != NULL)
-                    {
-                        ulEPID = strtoul(pObjItem->text_value, NULL, 16);
-                    }
-                    
-                    if (ulEPID == 0)
-                    {
-                        FTE_MQTT_publishDeviceInfo(pCTX, FTE_MQTT_QOS_2);
-                    }
-                    else
-                    {
-                        FTE_MQTT_publishEP(pCTX, FTE_MQTT_MSG_EP_INFO, ulEPID, FTE_MQTT_QOS_2);
-                    }
-                }
+                goto error;
             }
-            break;
             
-        case    FTE_MQTT_MSG_GET_VALUE:
-            {  
-                if (pMsg->nTarget == FTE_MQTT_TARGET_BROADCAST)
-                {
-                    FTE_MQTT_publishDeviceValue(pCTX, FTE_MQTT_QOS_2);
-                }
-                else
-                {
-                    const nx_json* pObjItem;
-                    uint_32         ulEPID = 0;
-                    
-                    pObjItem = nx_json_get(pRoot, FTE_JSON_OBJ_ID_STRING);
-                    if (pObjItem != NULL)
-                    {
-                        ulEPID = strtoul(pObjItem->text_value, NULL, 16);
-                    }
-                    
-                    if (ulEPID == 0)
-                    {
-                        FTE_MQTT_publishDeviceValue(pCTX, FTE_MQTT_QOS_2);
-                    }
-                    else
-                    {
-                        FTE_MQTT_publishEP(pCTX, FTE_MQTT_MSG_EP_VALUE, ulEPID, FTE_MQTT_QOS_2);
-                    }
-                }
-            }
-            break;
-            
-        case    FTE_MQTT_MSG_SET_VALUE:                
-            {
-                const nx_json* pObjItem;
-                const nx_json* pValueItem;
-                
-                pObjItem    = nx_json_get(pRoot, FTE_JSON_OBJ_ID_STRING);
-                pValueItem  = nx_json_get(pRoot, FTE_JSON_OBJ_VALUE_STRING); // get object's property by key 
-                if ((pObjItem == NULL) || (pValueItem == NULL))
-                {
-                    goto error;
-                }
-                
-                FTE_OBJECT_PTR  pObj = FTE_OBJ_get(strtoul(pObjItem->text_value, NULL, 16));
-                if(pObj == NULL)
-                {
-                    goto error;
-                }
-
-                FTE_OBJ_setValueString(pObj, (char_ptr)pValueItem->text_value);
-                
-            }
-            break;
+            pMethod->fCallback((void _PTR_)pParamItem);
         }
     }
     
@@ -1421,19 +1444,21 @@ struct
     {   FTE_MQTT_MSG_INVALID,   NULL}
 };
 
-FTE_MQTT_MSG_TYPE   FTE_MQTT_MSG_TYPE_stringToType(char_ptr pString)
+FTE_MQTT_METHOD_PTR   FTE_MQTT_METHOD_get(char_ptr pString)
 {
-    uint_32 i;
+    FTE_MQTT_METHOD_PTR pMethod = _pThingPlusMethods;
     
-    for(i = 0 ; _xMsgTypeString[i].xType != FTE_MQTT_MSG_INVALID ; i++)
+    while(pMethod->xMethod != FTE_MQTT_METHOD_INVALID)
     {
-        if (strcmp(_xMsgTypeString[i].pString, pString) == 0)
+        if (strcmp(pMethod->pString, pString) == 0)
         {
-            return  _xMsgTypeString[i].xType;
+            return  pMethod;
         }
+        
+        pMethod++;
     }
     
-    return  FTE_MQTT_MSG_INVALID;
+    return  NULL;
 }
 
 char_ptr   FTE_MQTT_MSG_TYPE_string(FTE_MQTT_MSG_TYPE xMsgType)
@@ -1449,6 +1474,32 @@ char_ptr   FTE_MQTT_MSG_TYPE_string(FTE_MQTT_MSG_TYPE xMsgType)
     }
     
     return  NULL;
+}
+
+/******************************************************************************
+ * Thing+ REQ message callback
+ ******************************************************************************/
+FTE_MQTT_METHOD _pThingPlusMethods[] =
+{
+    {   FTE_MQTT_METHOD_SET_PROPERTY,       "setProperty",      FTE_MQTT_METHOD_CB_setProperty},
+    {   FTE_MQTT_METHOD_CONTROL_ACTUATOR,   "controlActuator",  FTE_MQTT_METHOD_CB_controlActuator},
+    {   FTE_MQTT_METHOD_TIME_SYNC,          "timeSync",         FTE_MQTT_METHOD_CB_timeSync},
+    {   FTE_MQTT_METHOD_INVALID,            NULL,               NULL}
+};
+
+_mqx_uint            FTE_MQTT_METHOD_CB_setProperty(void _PTR_ pParams)
+{
+    return  MQX_OK;
+}
+
+_mqx_uint            FTE_MQTT_METHOD_CB_controlActuator(void _PTR_ pParams)
+{
+    return  MQX_OK;
+}
+
+_mqx_uint            FTE_MQTT_METHOD_CB_timeSync(void _PTR_ pParams)
+{
+    return  MQX_OK;
 }
 
 /******************************************************************************
@@ -1482,8 +1533,17 @@ int_32  FTE_MQTT_SHELL_cmd(int_32 argc, char_ptr argv[])
                 printf("%16s : %s\n",           "AUTHORIZE",_pxCTX->pConfig->xBroker.xAuth.bEnabled?"YES":"NO");
                 if (pConfig->xMQTT.xBroker.xAuth.bEnabled)
                 {
-                    printf("%-15s : %s\n", "USER NAME", _pxCTX->pConfig->xBroker.xAuth.pUserName);
-                    printf("%-15s : %s\n", "PASSWORD",  _pxCTX->pConfig->xBroker.xAuth.pPassword);
+                    printf("%16s : %s\n", "USER NAME", _pxCTX->pConfig->xBroker.xAuth.pUserName);
+                    printf("%16s : %s\n", "PASSWORD",  _pxCTX->pConfig->xBroker.xAuth.pPassword);
+                }
+
+                if (pConfig->xMQTT.xSSL.bEnabled)
+                {
+                    printf("%16s : ENABLED\n","SSL");
+                }
+                else
+                {
+                    printf("%16s : DISABLED\n",     "SSL");
                 }
                 
                 if (_pxCTX != NULL)
@@ -1493,7 +1553,6 @@ int_32  FTE_MQTT_SHELL_cmd(int_32 argc, char_ptr argv[])
                     printf("%16s : %d\n",           "TRANS FREE COUNT", FTE_LIST_count(&_pxCTX->xFreeTransList));
                     printf("%16s : %d\n",           "TRANS TIMEOUT",    _pxCTX->xStatistics.ulTransTimeout);
                 }
-
             }
             break;
             
@@ -1577,6 +1636,23 @@ int_32  FTE_MQTT_SHELL_cmd(int_32 argc, char_ptr argv[])
                     pConfig->xMQTT.xBroker.ulKeepalive = ulKeepalive;
                     FTE_CFG_save(TRUE);
                 }
+                else if (strcmp(argv[1], "ssl") == 0)
+                {
+                     if (! strcmp(argv[2], "enable"))
+                     {
+                         pConfig->xMQTT.xSSL.bEnabled = TRUE;
+                     }
+                     else if (!strcmp(argv[2], "disable"))
+                     {
+                         pConfig->xMQTT.xSSL.bEnabled = FALSE;
+                     }
+                     else
+                    {
+                        printf ("Error! invalid value!\n");
+                        return SHELL_EXIT_ERROR;
+                    }
+                    FTE_CFG_save(TRUE);
+                }
                 else
                 {
                     print_usage = TRUE;
@@ -1630,6 +1706,8 @@ int_32  FTE_MQTT_SHELL_cmd(int_32 argc, char_ptr argv[])
             printf("        Set broker port.\n");
             printf("    keepalive <sec>\n");
             printf("        Set keepalive time.\n");
+            printf("    ssl [on|off]\n");
+            printf("        with SSL\n");
             printf("  Parameters:\n");
             printf("    <ip>      = IPv4 address to use.\n");
             printf("    <topic>   = mqtt topic to publish to.\n");

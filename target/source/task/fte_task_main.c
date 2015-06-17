@@ -57,13 +57,7 @@ void FTE_TASK_main(uint_32 params)
             if (FTE_SYS_LIVE_CHECK_isLive() == FALSE)
             {
                 printf("The network is unstable.\n");
-
-                printf("< Memory Status >\n");
-                printf("%16s : %d\n", "Allocated Memory", FTE_MEM_getAllocSize());
-                printf("%16s : %d\n", "Free Size", _mem_get_free());
-
                 FTE_NET_printStats();
-                
                 FTE_SYS_setUnstable();
             }
         

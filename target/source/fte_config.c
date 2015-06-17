@@ -6,6 +6,7 @@
 #include "fte_time.h"
 #include "fte_sys.h"
 #include <ipcfg.h>
+#include <sh_rtcs.h> 
 
 
 #ifndef FTE_OBJ_MAX_COUNT
@@ -23,6 +24,7 @@
 #define FTE_CFG_POOL_VERSION            0x20150330
 #define FTE_CFG_OBJECT_POOL_VERSION     0x20150330
 #define FTE_CFG_EVENT_POOL_VERSION      0x20150330
+#define FTE_CFG_CERT_POOL_VERSION       0x20150614
 
 void    FTE_CFG_lock(void);
 void    FTE_CFG_unlock(void);
@@ -30,6 +32,9 @@ void    _FTE_CFG_auto_save(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR t
 
 FTE_OBJECT_CONFIG_PTR   FTE_CFG_OBJ_create(FTE_OBJECT_CONFIG_PTR pConfig);
 FTE_CFG_EVENT_PTR       FTE_CFG_EVENT_create(FTE_CFG_EVENT_PTR pConfig);
+_mqx_uint               FTE_CFG_CERT_load(void);
+_mqx_uint               FTE_CFG_CERT_save(void);
+
 void                    FTE_CFG_DBG_setBootTime(void);
 
 typedef struct  _FTE_CFG_POOL_STRUCT
@@ -66,16 +71,34 @@ typedef struct _FTE_CFG_EVENT_POOL_STRUCT
     uint_32             uiEventCount;
     FTE_EVENT_CONFIG    pEvents[(0x800 - sizeof(uint_32) * 4) / sizeof(FTE_EVENT_CONFIG)];
 }   FTE_CFG_EVENT_POOL, _PTR_ FTE_CFG_EVENT_POOL_PTR;
+
+typedef struct _FTE_CFG_CERT_POOL_HEAD_STRUCT
+{
+    uint_32             crc;
+    uint_32             tag;
+    int_32              nID;
+    uint_32             ulCertLen;
+}   FTE_CFG_CERT_POOL_HEAD, _PTR_ FTE_CFG_CERT_POOL_HEAD_PTR;
+
+typedef struct _FTE_CFG_CERT_POOL_STRUCT
+{
+    uint_32             crc;
+    uint_32             tag;
+    int_32              nID;
+    uint_32             ulCertLen;
+    uint_8              pCert[4096 - sizeof(uint_32)*4];
+}   FTE_CFG_CERT_POOL, _PTR_ FTE_CFG_CERT_POOL_PTR;
+
 typedef struct  _FTE_CFG_struct
 {
-    FTE_CFG_DESC const * pDESC;
-    boolean             bPoolModified;
-    FTE_CFG_POOL        xPool;
-    boolean             bObjectPoolModified;
-    FTE_CFG_OBJECT_POOL xObjectPool;
-    boolean             bEventPoolModified;
-    FTE_CFG_EVENT_POOL  xEventPool;
-    uint_32             ulIndex;
+    FTE_CFG_DESC const *    pDESC;
+    boolean                 bPoolModified;
+    FTE_CFG_POOL            xPool;
+    boolean                 bObjectPoolModified;
+    FTE_CFG_OBJECT_POOL     xObjectPool;
+    boolean                 bEventPoolModified;
+    FTE_CFG_EVENT_POOL      xEventPool;
+    uint_32                 ulIndex;
 }   FTE_CONFIG, _PTR_ FTE_CFG_PTR;
 
 static FTE_CONFIG   _config = { .pDESC = NULL, };
@@ -89,7 +112,9 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
     FTE_CFG_POOL_PTR        pPool = NULL;
     FTE_CFG_OBJECT_POOL_PTR pObjectPool = NULL;
     FTE_CFG_EVENT_POOL_PTR  pEventPool = NULL;
-
+    FTE_CFG_CERT_POOL_PTR   pCertPool = NULL;
+    void _PTR_              pBuff = NULL;
+    
     assert(_config.pDESC == NULL && desc != NULL);
     
     if (_lwsem_create(&_xLWSEM, 1) != MQX_OK)
@@ -97,22 +122,28 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
         return  MQX_ERROR;
     }
     
+    pBuff = (void _PTR_)FTE_MEM_allocZero(4096);
+    if (pBuff == NULL)
+    {
+        return  MQX_ERROR;
+    }
+    
     pPool = (FTE_CFG_POOL_PTR)FTE_MEM_allocZero(sizeof(FTE_CFG_POOL));
     if (pPool == NULL)
     {
-        return  MQX_ERROR;
+        goto error;
     }
 
     pObjectPool = (FTE_CFG_OBJECT_POOL_PTR)FTE_MEM_allocZero(sizeof(FTE_CFG_OBJECT_POOL));
     if (pObjectPool == NULL)
     {
-        return  MQX_ERROR;
+        goto error;
     }
 
     pEventPool = (FTE_CFG_EVENT_POOL_PTR)FTE_MEM_allocZero(sizeof(FTE_CFG_EVENT_POOL));
     if (pEventPool == NULL)
     {
-        return  MQX_ERROR;
+        goto error;
     }
 
     memset(&_config, 0, sizeof(_config));
@@ -245,6 +276,7 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
     FTE_MEM_free(pPool);  
     FTE_MEM_free(pObjectPool);
     FTE_MEM_free(pEventPool);    
+    FTE_MEM_free(pBuff);    
 
     _time_init_ticks(&xDTicks, 0);
     _time_add_sec_to_ticks(&xDTicks, 5);
@@ -254,6 +286,35 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
     _timer_start_periodic_at_ticks(_FTE_CFG_auto_save, NULL, TIMER_KERNEL_TIME_MODE, &xTicks, &xDTicks);
 
     return  MQX_OK;
+    
+error:
+
+    if (pPool != NULL)
+    {
+        FTE_MEM_free(pPool);
+    }
+    
+    if (pObjectPool != NULL)
+    {
+        FTE_MEM_free(pObjectPool);
+    }
+    
+    if (pEventPool != NULL)
+    {
+        FTE_MEM_free(pEventPool);
+    }
+        
+    if (pCertPool != NULL)
+    {
+        FTE_MEM_free(pCertPool);
+    }
+        
+    if (pBuff != NULL)
+    {
+        FTE_MEM_free(pBuff);
+    }
+    
+    return  MQX_ERROR;
 }
 
 
@@ -763,6 +824,286 @@ pointer FTE_CFG_EVENT_getNext(void)
     }
     
     return  NULL;
+}
+
+
+/******************************************************************************
+ * Support for Certificate
+ ******************************************************************************/
+static FTE_CFG_CERT_POOL_PTR pCertPool = NULL;
+
+boolean FTE_CFG_CERT_valid(void)
+{
+    if (pCertPool == NULL)
+    {
+        if (FTE_CFG_CERT_load() != MQX_OK)
+        {
+            return  FALSE;
+        }
+    }
+    
+    return  TRUE;
+}
+
+uint_32 FTE_CFG_CERT_size(void)
+{
+    if (pCertPool == NULL)
+    {
+        if (FTE_CFG_CERT_load() != MQX_OK)
+        {
+            return  0;
+        }
+    }
+
+    return  pCertPool->ulCertLen;
+}
+
+uint_32 FTE_CFG_CERT_get(void _PTR_ pBuff, uint_32 ulBuffLen)
+{
+    if (pCertPool == NULL)
+    {
+        if (FTE_CFG_CERT_load() != MQX_OK)
+        {
+            return  0;
+        }
+    }
+    
+    if (ulBuffLen < pCertPool->ulCertLen)
+    {
+        return  0;
+    }
+    
+    memcpy(pBuff, pCertPool->pCert, pCertPool->ulCertLen);
+    
+    return  pCertPool->ulCertLen;
+}
+
+_mqx_uint   FTE_CFG_CERT_load(void)
+{
+    FTE_CFG_CERT_POOL_PTR pTempCertPools = (FTE_CFG_CERT_POOL_PTR)0x7E000;
+    
+    if (_config.pDESC == NULL)
+    {
+        return  MQX_ERROR;
+    }
+    
+    if (pCertPool != NULL)
+    {
+        return  MQX_OK;
+    }
+    
+    for(int i = 0 ; i < 1 ; i++)
+    {
+        if ((pTempCertPools[i].ulCertLen > sizeof(pTempCertPools[i].pCert)) ||
+            (pTempCertPools[i].tag != FTE_CFG_CERT_POOL_VERSION) ||
+            (pTempCertPools[i].crc != fte_crc32(0, (char_ptr)&pTempCertPools[i].tag, sizeof(FTE_CFG_CERT_POOL_HEAD) - sizeof(uint_32) + pTempCertPools[i].ulCertLen)) ||
+            (pTempCertPools[i].nID > (uint_32)MAX_INT_32))
+        {
+            continue;
+        }
+
+        if ((pCertPool == NULL) || (pTempCertPools[i].nID > pCertPool->nID))
+        {
+            pCertPool = &pTempCertPools[i];
+        }
+    }            
+    
+    if (pCertPool == NULL)
+    {
+        return  MQX_ERROR;
+    }
+    
+    return  MQX_OK;
+}
+
+
+_mqx_uint   FTE_CFG_CERT_set(void _PTR_ pCert, uint_32 ulCertLen)
+{
+    FTE_CFG_CERT_POOL_HEAD  xCertHead;
+    
+    if (pCertPool == NULL)
+    {
+        xCertHead.nID = 0;
+    }
+    else
+    {
+        xCertHead.nID = pCertPool->nID;
+    }
+    xCertHead.tag = FTE_CFG_CERT_POOL_VERSION;
+        
+    for(int i = 0 ; i < 2 ; i++)
+    {
+        MQX_FILE_PTR    fp;
+        
+        xCertHead.nID++;
+        xCertHead.crc = fte_crc32(0, (pointer)&xCertHead.tag, sizeof(FTE_CFG_CERT_POOL_HEAD) - sizeof(uint_32));   
+        xCertHead.crc = fte_crc32(xCertHead.crc, pCert, ulCertLen);
+        
+        char    pFileName[32];
+            
+        sprintf(pFileName, "flashx:cert%d", (xCertHead.nID & 0x01));
+            
+        fp = fopen(pFileName, NULL);
+        if (fp == NULL) 
+        {
+            break;
+        }
+        
+        ioctl(fp, FLASH_IOCTL_ENABLE_SECTOR_CACHE, NULL);
+        if ((sizeof(FTE_CFG_CERT_POOL_HEAD) != write(fp, &xCertHead, sizeof(xCertHead))) ||
+            (ulCertLen != write(fp, pCert, ulCertLen)))
+        {
+            fprintf(stderr, "\nError writing to the file. Error code: %d", _io_ferror(fp));
+        }
+
+        fflush(fp);
+        fclose(fp);
+    }       
+
+    return  MQX_OK;
+}
+
+/******************************************************************************
+ * CERT command
+ ******************************************************************************/
+int_32  FTE_CFG_CERT_SHELL_cmd(int_32 argc, char_ptr argv[])
+{
+    boolean     print_usage, shorthelp = FALSE;
+    int_32      return_code = SHELL_EXIT_SUCCESS;
+    uint_32     ulBuffLen = 4096;
+    uint_8_ptr  pBuff = NULL;
+    
+    print_usage = Shell_check_help_request (argc, argv, &shorthelp);
+
+    pBuff = (uint_8_ptr)FTE_MEM_alloc(ulBuffLen);
+    if (pBuff == NULL)
+    {
+        printf("Not enough memory!\n");
+        return  SHELL_EXIT_ERROR;
+    }
+    
+    if (!print_usage)
+    {
+        switch(argc)
+        {
+        case    2:
+            {
+                uint_32 ulLen;
+               
+                if (strcmp(argv[1], "show") == 0)
+                {
+                   ulLen = FTE_CFG_CERT_get(pBuff, ulBuffLen);
+                   if (ulLen == 0)
+                   {
+                        printf("Can't find CERT\n");
+                   }
+                   else
+                   {
+                       printf("%s", pBuff);                   
+                   }
+                }
+            }
+            break;
+            
+        case    4:
+            {
+                uchar_ptr           pData;
+                uint_32             ulDataLen = 0;
+                uint_32             ulLen;
+                _ip_address         xServerIP = 0;
+                TFTP_DATA_STRUCT    xTFTPData;
+
+                if (strcmp(argv[1], "load") == 0)
+                {
+                    if (! Shell_parse_ip_address (argv[2], &xServerIP))
+                    {
+                        printf ("Error in parameter, invalid ip address!\n");
+                        return_code = SHELL_EXIT_ERROR;
+                        break;
+                    }
+                    
+                    xTFTPData.SERVER   = xServerIP;
+                    xTFTPData.FILENAME = argv[3];
+                    xTFTPData.FILEMODE = "octet";
+
+                    if ((*FT_TFTP->OPEN)(&xTFTPData) != 0) 
+                    {
+                        printf("can't open tftp\n");
+                        break;
+                    }
+                    
+                    /*** Repeat until end of file */
+                    while (!(*FT_TFTP->EOFT)()) 
+                    {
+                        pData = (*FT_TFTP->READ)(&ulLen);
+                        if (!pData) 
+                        {
+                            (*FT_TFTP->CLOSE)();
+                        } /* Endif */
+                        
+                        if (ulDataLen + ulLen < ulBuffLen)
+                        {
+                            memcpy(&pBuff[ulDataLen], pData, ulLen);
+                            ulDataLen += ulLen;                        
+                        }
+                        else
+                        {
+                            printf("Buffer too small1\n");
+                            (*FT_TFTP->CLOSE)();
+                        }
+
+                    } /* Endwhile */
+
+                    /*
+                    ** End the file transfer session
+                    */
+                    if ((*FT_TFTP->CLOSE)() != 0) 
+                    {
+                        printf("TFTP close error!\n");
+                        break;
+                    } /* Endif */
+                    
+                    
+                    FTE_CFG_CERT_set(pBuff, ulDataLen);
+                }
+                else
+                {
+                    print_usage = TRUE;
+                }
+                
+            }
+            break;
+            
+        default:
+            print_usage = TRUE;
+        }
+        
+    }
+    
+   
+    if (pBuff != NULL)
+    {
+        FTE_MEM_free(pBuff);
+        pBuff = NULL;
+    }
+    
+    if (print_usage || (return_code !=SHELL_EXIT_SUCCESS))
+    {
+        if (shorthelp)
+        {
+            printf ("%s\n", argv[0]);
+        }
+        else
+        {
+            printf("Usage : %s [<command>]\n", argv[0]);
+            printf("  Commands:\n");
+            printf("    show\n");
+            printf("        show certificate\n");
+            printf("    load <ip> <file_name>\n");
+            printf("        download and save\n");
+        }
+    }
+    return   return_code;
 }
 
 /******************************************************************************

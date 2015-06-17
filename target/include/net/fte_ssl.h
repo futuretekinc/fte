@@ -14,21 +14,23 @@ typedef enum
 
 typedef struct FTE_SSL_CONFIG_STRUCT
 {
+    boolean         bEnabled;
     FTE_SSL_METHOD  nMethod;
     char            pCipher[FTE_SSL_CIPHER_NAME_MAX_LEN+1];
-    uint_8_ptr      pCACert;
-    uint_32         ulCACertSize;    
 }   FTE_SSL_CONFIG, _PTR_ FTE_SSL_CONFIG_PTR;
 
 typedef struct  FTE_SSL_CONTEXT_STRUCT
 {
+    CYASSL_CTX*     pxCTX;
     CYASSL*         pxSSL;
 }   FTE_SSL_CONTEXT, _PTR_ FTE_SSL_CONTEXT_PTR;
 
-FTE_SSL_CONTEXT_PTR FTE_SSL_init(int nSocketID);
+FTE_SSL_CONTEXT_PTR FTE_SSL_create(FTE_SSL_CONFIG_PTR pConfig);
+_mqx_uint   FTE_SSL_destroy(FTE_SSL_CONTEXT_PTR pxCTX);
+
 _mqx_uint   FTE_SSL_connect(FTE_SSL_CONTEXT_PTR pCTX, int nSocketID);
+_mqx_uint   FTE_SSL_disconnect(FTE_SSL_CONTEXT_PTR pxCTX);
 int         FTE_SSL_send(FTE_SSL_CONTEXT_PTR pCTX, const void *pMsg, int nMsgLen);
 int         FTE_SSL_recv(FTE_SSL_CONTEXT_PTR pCTX, void *pBuff, int nBuffLen);
-int_32      FTE_SSL_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] );
 
 #endif

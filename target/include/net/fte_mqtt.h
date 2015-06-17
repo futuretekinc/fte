@@ -66,6 +66,14 @@ typedef enum
 
 typedef enum
 {
+    FTE_MQTT_METHOD_INVALID         = 0,
+    FTE_MQTT_METHOD_SET_PROPERTY    = 1,
+    FTE_MQTT_METHOD_CONTROL_ACTUATOR= 2,
+    FTE_MQTT_METHOD_TIME_SYNC       = 3
+}   FTE_MQTT_METHOD_TYPE, _PTR_ FTE_MQTT_METHOD_TYPE_PTR;
+
+typedef enum
+{
     FTE_MQTT_STATE_UNINITIALIZED = 0,
     FTE_MQTT_STATE_INITIALIZED,
     FTE_MQTT_STATE_CONNECTED,
@@ -77,12 +85,6 @@ typedef struct
     _ip_address     xIPAddress;
     uint_16         usPort;
     uint_32         ulKeepalive;
-    
-    struct
-    {
-        boolean         bEnabled;
-        FTE_SSL_METHOD  xMethod;
-    }   xSSL;
     
     // Autorization Information
     struct
@@ -99,6 +101,7 @@ typedef struct
     boolean                 bEnable;
     // Broker Information
     FTE_MQTT_BROKER_CONFIG  xBroker;    
+    FTE_SSL_CONFIG          xSSL;
     uint_32                 ulPubTimeout;
     
 }   FTE_MQTT_CFG, _PTR_ FTE_MQTT_CFG_PTR;
@@ -134,11 +137,22 @@ typedef struct
     TIME_STRUCT xTime;
 }   FTE_MQTT_TRANS, _PTR_ FTE_MQTT_TRANS_PTR;
 
+typedef _mqx_uint   (*FTE_MQTT_METHOD_CALLBACK)(void _PTR_ pParams);
+
+typedef struct
+{
+    FTE_MQTT_METHOD_TYPE        xMethod;
+    char_ptr                    pString;
+    FTE_MQTT_METHOD_CALLBACK    fCallback;
+}   FTE_MQTT_METHOD, _PTR_ FTE_MQTT_METHOD_PTR;
+
 uint_32 FTE_MQTT_load_default(FTE_MQTT_CFG_PTR pConfig);
 uint_32 FTE_MQTT_init(FTE_MQTT_CFG_PTR pConfig);
 
 uint_32 FTE_MQTT_publishEPInfo(FTE_OBJECT_ID xEPID, uint_32 nQoS);
 uint_32 FTE_MQTT_publishEPValue(FTE_OBJECT_ID xEPID, uint_32 nQoS);
+
+uint_32 FTE_MQTT_TP_publishEPValue(FTE_OBJECT_ID xEPID, uint_32 nQoS);
 
 int_32  FTE_MQTT_SHELL_cmd(int_32 argc, char_ptr argv[]);
 #endif

@@ -74,13 +74,9 @@ const FLASHX_FILE_BLOCK _bsp_flashx_file_blocks[] = {
                     FTE_IMAGE_START_ADDRESS + FTE_IMAGE_SIZE + FTE_DATA_SIZE * 11- 1 },                    
     { "data11",     FTE_IMAGE_START_ADDRESS + FTE_IMAGE_SIZE + FTE_DATA_SIZE * 11, 
                     FTE_IMAGE_START_ADDRESS + FTE_IMAGE_SIZE + FTE_DATA_SIZE * 12- 1 },                    
-    { "data12",     FTE_IMAGE_START_ADDRESS + FTE_IMAGE_SIZE + FTE_DATA_SIZE * 12, 
-                    FTE_IMAGE_START_ADDRESS + FTE_IMAGE_SIZE + FTE_DATA_SIZE * 13- 1 },                    
-    { "data13",     FTE_IMAGE_START_ADDRESS + FTE_IMAGE_SIZE + FTE_DATA_SIZE * 13, 
+    { "cert0",      FTE_IMAGE_START_ADDRESS + FTE_IMAGE_SIZE + FTE_DATA_SIZE * 12, 
                     FTE_IMAGE_START_ADDRESS + FTE_IMAGE_SIZE + FTE_DATA_SIZE * 14- 1 },                    
-    { "data14",     FTE_IMAGE_START_ADDRESS + FTE_IMAGE_SIZE + FTE_DATA_SIZE * 14, 
-                    FTE_IMAGE_START_ADDRESS + FTE_IMAGE_SIZE + FTE_DATA_SIZE * 15- 1 },                    
-    { "data15",     FTE_IMAGE_START_ADDRESS + FTE_IMAGE_SIZE + FTE_DATA_SIZE * 15, 
+    { "cert1",      FTE_IMAGE_START_ADDRESS + FTE_IMAGE_SIZE + FTE_DATA_SIZE * 14, 
                     FTE_IMAGE_START_ADDRESS + FTE_IMAGE_SIZE + FTE_DATA_SIZE * 16- 1 },                    
     { NULL   ,                             0,                           0 }
 };

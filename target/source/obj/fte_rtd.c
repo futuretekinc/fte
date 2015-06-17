@@ -13,7 +13,7 @@ static _mqx_uint    _rtd_get(FTE_OBJECT_PTR pObj, uint_32 *value, TIME_STRUCT *t
 static uint_32      _rtd_get_update_interval(FTE_OBJECT_PTR pObj);
 static _mqx_uint    _rtd_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInterval);
 
-static  FTE_OBJECT_ACTION _rtd_action = 
+static  FTE_OBJECT_ACTION _rtd_action =  
 {
     .f_init         = _rtd_init,
     .f_run          = _rtd_run,

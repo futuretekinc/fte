@@ -172,18 +172,20 @@ typedef uint_32 FTE_OBJECT_ID;
 #define FTE_OBJ_HAVE_SN                 0x01
 #define FTE_OBJ_HAVE_CTRL               0x02
 
-extern  char_ptr FTE_JSON_MSG_TYPE_STRING;
+extern  const char_ptr FTE_JSON_MSG_TYPE_STRING;
 
-extern  char_ptr FTE_JSON_DEV_ID_STRING;
-extern  char_ptr FTE_JSON_DEV_TIME_STRING;
-extern  char_ptr FTE_JSON_DEV_EP_STRING;
-extern  char_ptr FTE_JSON_DEV_EPS_STRING;
+extern  const char_ptr FTE_JSON_DEV_ID_STRING;
+extern  const char_ptr FTE_JSON_DEV_TIME_STRING;
+extern  const char_ptr FTE_JSON_DEV_EP_STRING;
+extern  const char_ptr FTE_JSON_DEV_EPS_STRING;
 
-extern  char_ptr FTE_JSON_OBJ_ID_STRING;
-extern  char_ptr FTE_JSON_OBJ_NAME_STRING;
-extern  char_ptr FTE_JSON_OBJ_VALUE_STRING;
-extern  char_ptr FTE_JSON_OBJ_TIME_STRING;
-extern  char_ptr FTE_JSON_OBJ_STATE_STRING;
+extern  const char_ptr FTE_JSON_OBJ_ID_STRING;
+extern  const char_ptr FTE_JSON_OBJ_NAME_STRING;
+extern  const char_ptr FTE_JSON_OBJ_VALUE_STRING;
+extern  const char_ptr FTE_JSON_OBJ_TIME_STRING;
+extern  const char_ptr FTE_JSON_OBJ_STATE_STRING;
+extern  const char_ptr FTE_JSON_OBJ_METHOD_STRING;
+extern  const char_ptr FTE_JSON_OBJ_PARAM_STRING;
 
 typedef struct _FTE_OBJECT_STATISTICS
 {

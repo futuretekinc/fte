@@ -1554,7 +1554,7 @@ const FTE_SYS_CONFIG fte_default_system_config =
 {
     .xFlags = 
     {
-        .bSystemMonitor = TRUE
+        .bSystemMonitor = FALSE
     },
     .ulAllowFailureCount    = FTE_OBJ_ALLOW_FAILURE_COUNT,
     .ulKeepAliveTime        = FTE_SYS_KEEP_ALIVE_TIME      /* seconds */
@@ -1606,15 +1606,16 @@ const FTE_NET_CFG fte_default_net_config =
             .xIPAddress     = FTE_NET_MQTT_BROKER,
             .usPort         = FTE_NET_MQTT_PORT,
             .ulKeepalive    = FTE_NET_MQTT_KEEPALIVE,
-            .xSSL           = 
-            {
-                .bEnabled   = FTE_NET_MQTT_WITH_SSL,
-                .xMethod    = FTE_NET_MQTT_SSL_METHOD
-            },
             .xAuth          =
             {
                 .bEnabled   = FALSE,
             }
+        },
+        .xSSL           = 
+        {
+            .bEnabled   = FTE_NET_MQTT_WITH_SSL,
+            .nMethod    = FTE_NET_MQTT_SSL_METHOD,
+            .pCipher    = "AES256-SHA"
         },
         .ulPubTimeout = FTE_NET_MQTT_PUB_TIMEOUT   
 
