@@ -1694,10 +1694,10 @@ int_32  FTE_MQTT_SHELL_cmd(int_32 argc, char_ptr argv[])
             printf("  Commands:\n");
             printf("    info\n");
             printf("        Show mqtt information.\n");
-            printf("    connect\n");
-            printf("        connection.\n");
-            printf("    disconnect\n");
-            printf("        disconnection.\n");
+            printf("    start\n");
+            printf("        start mqtt.\n");
+            printf("    stop\n");
+            printf("        stop mqtt.\n");
             printf("    pub <topic> <message>\n");
             printf("        pulish message.\n");
             printf("    host <ip>\n");
@@ -1706,7 +1706,7 @@ int_32  FTE_MQTT_SHELL_cmd(int_32 argc, char_ptr argv[])
             printf("        Set broker port.\n");
             printf("    keepalive <sec>\n");
             printf("        Set keepalive time.\n");
-            printf("    ssl [on|off]\n");
+            printf("    ssl [enable|disable]\n");
             printf("        with SSL\n");
             printf("  Parameters:\n");
             printf("    <ip>      = IPv4 address to use.\n");
