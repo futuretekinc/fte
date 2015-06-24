@@ -2,6 +2,7 @@
 #include <bsp.h>
 #include <shell.h>
 #include <stdlib.h>
+#include "fte_sys.h"
 
 _mqx_uint   FTE_TIME_init(void)
 {
