@@ -1008,7 +1008,6 @@ static uint_32  FTE_MQTT_STATE_CB_connected(FTE_MQTT_CONTEXT_PTR pCTX)
     while(pCTX->xState == FTE_MQTT_STATE_CONNECTED)
     {
         uint_32 ulRet;
-        boolean bExistMsg = TRUE;        
             
         ulRet = FTE_MQTT_recvPacket(pCTX, 1);
         if (ulRet == RTCS_OK)
