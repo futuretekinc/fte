@@ -12,6 +12,7 @@
 #define FTE_GUS_MODEL_GS_DPC_HL             9
 #define FTE_GUS_MODEL_TASCON_HEM12_06M      10
 #define FTE_GUS_MODEL_BOTEM_PN1500          11
+#define FTE_GUS_MODEL_FTLM                  12
 
 #define FTE_GUS_RESPONSE_TIME   500
 
