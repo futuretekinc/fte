@@ -1133,6 +1133,154 @@ static const FTE_GUS_CONFIG fte_init_botem_pn1500_config =
 };
 #endif
 
+#if FTE_FTLM_SUPPORTED
+static const FTE_IFCE_CONFIG ifte_init_ftlm_led0_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "LED0",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_FTLM, 0x0001),
+    .nRegID     = 0,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ftlm_led1_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "LED1",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_FTLM, 0x0001),
+    .nRegID     = 1,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ftlm_led2_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "LED2",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_FTLM, 0x0001),
+    .nRegID     = 2,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ftlm_led3_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "LED3",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_FTLM, 0x0001),
+    .nRegID     = 3,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ftlm_led4_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "LED4",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_FTLM, 0x0001),
+    .nRegID     = 4,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ftlm_led5_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "LED5",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_FTLM, 0x0001),
+    .nRegID     = 5,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ftlm_led6_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "LED6",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_FTLM, 0x0001),
+    .nRegID     = 6,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ftlm_led7_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "LED7",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_FTLM, 0x0001),
+    .nRegID     = 7,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ftlm_led8_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "LED8",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_FTLM, 0x0001),
+    .nRegID     = 8,
+    .nInterval  = 2
+};
+
+static const FTE_OBJECT_CONFIG_PTR xFTLMChildConfigs[] =
+{
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ftlm_led0_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ftlm_led1_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ftlm_led2_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ftlm_led3_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ftlm_led4_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ftlm_led5_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ftlm_led6_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ftlm_led7_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ftlm_led8_config
+};
+
+static const FTE_GUS_CONFIG fte_init_ftlm_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_FTLM, 0x0001),
+        .pName      = "FTLM",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+        .ulChild    = sizeof(xFTLMChildConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR),
+        .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)xFTLMChildConfigs
+    },
+    .nModel     = FTE_GUS_MODEL_FTLM,
+    .nSensorID  = 0x01,
+    .nUCSID     = FTE_DEV_UCS_1,
+    .nInterval  = 2
+};
+#endif
+
 const FTE_OBJECT_CONFIG_PTR pInitObjConfigs[] =
 {
 #if FTE_GPIO_DI_SUPPORTED
@@ -1193,7 +1341,10 @@ const FTE_OBJECT_CONFIG_PTR pInitObjConfigs[] =
 #endif
 
 #if FTE_BOTEM_PN1500_SUPPORTED
-    (FTE_OBJECT_CONFIG_PTR)&fte_init_botem_pn1500_config
+    (FTE_OBJECT_CONFIG_PTR)&fte_init_botem_pn1500_config,
+#endif
+#if FTE_FTLM_SUPPORTED
+    (FTE_OBJECT_CONFIG_PTR)&fte_init_ftlm_config,
 #endif
 };
 

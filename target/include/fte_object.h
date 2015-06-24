@@ -68,6 +68,8 @@
 #define FTE_OBJ_TYPE_FLEXIFORCE         ((FTE_OBJ_CLASS_AI          ) | (0x01 << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_DUST               ((FTE_OBJ_CLASS_AI          ) | (0x02 << FTE_OBJ_TYPE_SHIFT))
 
+#define FTE_OBJ_TYPE_MULTI_VALUE        ((FTE_OBJ_CLASS_AI          ) | (0x81 << FTE_OBJ_TYPE_SHIFT))
+
 #define FTE_OBJ_TYPE_GAS                ((FTE_OBJ_CLASS_GAS         ) | (0x00 << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_CO2                ((FTE_OBJ_CLASS_GAS         ) | (0x01 << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_LPG                ((FTE_OBJ_CLASS_GAS         ) | (0x02 << FTE_OBJ_TYPE_SHIFT))
@@ -95,6 +97,7 @@
 #define FTE_OBJ_TYPE_MULTI_PN1500       ((FTE_OBJ_CLASS_MULTI       ) | (0x06 << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_MULTI_DPC_HL       ((FTE_OBJ_CLASS_MULTI       ) | (0x07 << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_MULTI_HEM12_06M    ((FTE_OBJ_CLASS_MULTI       ) | (0x08 << FTE_OBJ_TYPE_SHIFT))
+#define FTE_OBJ_TYPE_MULTI_FTLM         ((FTE_OBJ_CLASS_MULTI       ) | (0x09 << FTE_OBJ_TYPE_SHIFT))
 
 #define FTE_OBJ_ID_MASK                     0xFFFFFFFF
 typedef uint_32 FTE_OBJECT_ID;
@@ -356,5 +359,6 @@ int_32          FTE_OBJ_SHELL_cmd(int_32 argc, char_ptr argv[]);
 #include "obj/fte_botem.h"
 #include "obj/fte_mst_mex510c.h"
 #include "obj/fte_gs_dpc.h"
+#include "obj/fte_ftlm.h"
 
 #endif

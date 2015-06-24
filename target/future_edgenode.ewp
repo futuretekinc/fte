@@ -168,7 +168,7 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state>FTE_ES=1</state>
+          <state>FTE_ES18=1</state>
           <state>FTE_V2=1</state>
           <state>FTE_DEBUG=1</state>
           <state>FREESCALE_MQX</state>
@@ -2008,6 +2008,9 @@
         <name>$PROJ_DIR$\include\obj\fte_fis.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\include\obj\fte_ftlm.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\include\obj\fte_led.h</name>
       </file>
       <file>
@@ -2066,6 +2069,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_es16.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\target\fte_es18.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_es2.h</name>
@@ -2373,6 +2379,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\source\obj\fte_fis.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\obj\fte_ftlm.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\source\obj\fte_gai.c</name>

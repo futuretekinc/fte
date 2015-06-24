@@ -239,6 +239,8 @@ void                    fte_state_change_set_cb(void (*cb)(void));
 #include "fte_es16.h"
 #elif defined(FTE_ES17)
 #include "fte_es17.h"
+#elif defined(FTE_ES18)
+#include "fte_es18.h"
 #elif defined(FTE_EH1)
 #include "fte_eh1.h"
 #elif defined(FTE_MN1)
