@@ -5,6 +5,9 @@ Debug/
 *.dni
 *.wsdt
 *.tmp
+*.pbxproj
+*.vcproj
+*.vcxproj
 
 # Object files
 *.o

@@ -4,7 +4,7 @@
 #include "sys/fte_sys.h"
 #include <tfs.h>
 #include <ipcfg.h>
-#include <sh_rtcs.h>
+#include <sh_rtcs.h> 
 #include "enet.h"
 #include "phy_mv88e6060.h"
 
@@ -122,6 +122,7 @@ int_32  FTE_NET_getMACAddress(_enet_address address)
     return  RTCS_OK;
 }
 
+#if FTE_SNMPD_SUPPORTED
 int_32  FTE_NET_SERVER_count(void)
 {
     FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
@@ -163,7 +164,7 @@ boolean FTE_NET_SERVER_isExist(_ip_address ip)
     
     return  FALSE;
 }
-
+#endif
 
 int_32  FTE_PHY_SHELL_cmd(int_32 argc, char_ptr argv[] )
 { 

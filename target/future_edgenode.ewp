@@ -168,7 +168,7 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state>FTE_EH1=1</state>
+          <state>FTE_ES=1</state>
           <state>FTE_V2=1</state>
           <state>FTE_DEBUG=1</state>
           <state>FREESCALE_MQX</state>
@@ -1965,6 +1965,30 @@
     </group>
     <group>
       <name>net</name>
+      <file>
+        <name>$PROJ_DIR$\include\net\fte_cgi.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\net\fte_http.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\net\fte_json.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\net\fte_mqtt.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\net\fte_smng.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\net\fte_snmp.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\net\fte_ssl.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\net\fte_telnetd.h</name>
+      </file>
     </group>
     <group>
       <name>obj</name>
@@ -2015,6 +2039,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_ep1.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\target\fte_es.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_es1.h</name>
@@ -2117,6 +2144,9 @@
       </excluded>
       <file>
         <name>$PROJ_DIR$\..\mqx\lib\libbspd.a</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\cyassl-3.3.0\lib\libcyassld.a</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\lib\libemqttd.a</name>
@@ -2310,9 +2340,6 @@
       </group>
       <group>
         <name>ssl</name>
-        <excluded>
-          <configuration>Debug</configuration>
-        </excluded>
         <file>
           <name>$PROJ_DIR$\source\net\ssl\fte_ssl.c</name>
         </file>

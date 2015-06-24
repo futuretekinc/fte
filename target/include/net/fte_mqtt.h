@@ -2,9 +2,10 @@
 #define __FTE_MQTT_H__
 
 #include "fte_target.h"
-#include "fte_list.h"
 #include <rtcs.h>
 #include <libemqtt.h>
+#include "fte_list.h"
+#include "fte_ssl.h"
 
 #ifndef FTE_MQTT_DEFAULT_PORT   
 #define FTE_MQTT_DEFAULT_PORT       1883
@@ -37,6 +38,7 @@
 #define FTE_MQTT_RET_INVALID_PARAMS                 (RTCS_ERROR_BASE|0xF0B)
 #define FTE_MQTT_RET_NOT_ENOUGH_MEMORY              (RTCS_ERROR_BASE|0xF0C)
 #define FTE_MQTT_RET_TCP_CONN_ABORTED               (RTCS_ERROR_BASE|0xF0D)
+#define FTE_MQTT_RET_NOT_INITIALIZED                (RTCS_ERROR_BASE|0xF0E)
 
 #define FTE_MQTT_QOS_0              0
 #define FTE_MQTT_QOS_1              1
@@ -64,6 +66,14 @@ typedef enum
 
 typedef enum
 {
+    FTE_MQTT_METHOD_INVALID         = 0,
+    FTE_MQTT_METHOD_SET_PROPERTY    = 1,
+    FTE_MQTT_METHOD_CONTROL_ACTUATOR= 2,
+    FTE_MQTT_METHOD_TIME_SYNC       = 3
+}   FTE_MQTT_METHOD_TYPE, _PTR_ FTE_MQTT_METHOD_TYPE_PTR;
+
+typedef enum
+{
     FTE_MQTT_STATE_UNINITIALIZED = 0,
     FTE_MQTT_STATE_INITIALIZED,
     FTE_MQTT_STATE_CONNECTED,
@@ -72,16 +82,16 @@ typedef enum
 
 typedef struct
 {
-    _ip_address             xIPAddress;
-    uint_16                 usPort;
-    uint_32                 ulKeepalive;
+    _ip_address     xIPAddress;
+    uint_16         usPort;
+    uint_32         ulKeepalive;
     
     // Autorization Information
     struct
     {
-        uint_32 bEnabled;
-        char    pUserName[FTE_MQTT_USERNAME_LENGTH];
-        char    pPassword[FTE_MQTT_PASSWORD_LENGTH];
+        uint_32     bEnabled;
+        char        pUserName[FTE_MQTT_USERNAME_LENGTH];
+        char        pPassword[FTE_MQTT_PASSWORD_LENGTH];
     }   xAuth; 
 }   FTE_MQTT_BROKER_CONFIG, _PTR_ FTE_MQTT_BROKER_CONFIG_PTR;
 
@@ -91,6 +101,7 @@ typedef struct
     boolean                 bEnable;
     // Broker Information
     FTE_MQTT_BROKER_CONFIG  xBroker;    
+    FTE_SSL_CONFIG          xSSL;
     uint_32                 ulPubTimeout;
     
 }   FTE_MQTT_CFG, _PTR_ FTE_MQTT_CFG_PTR;
@@ -103,6 +114,8 @@ typedef struct
 	mqtt_broker_handle_t    xBroker;
     FTE_LIST                xTransList;
     FTE_LIST                xFreeTransList;
+    FTE_LIST                xRecvMsgPool;
+    FTE_LIST                xSendMsgPool;
     uint_8                  pBuff[FTE_MQTT_RECV_BUFF_SIZE];
     uint_32                 ulBuffSize;
     uint_32                 ulRcvdLen;
@@ -113,6 +126,7 @@ typedef struct
     {
         uint_32                 ulTransTimeout;
     } xStatistics;
+    FTE_SSL_CONTEXT_PTR     pxSSL;
 }   FTE_MQTT_CONTEXT, _PTR_ FTE_MQTT_CONTEXT_PTR;
 
 typedef struct
@@ -123,21 +137,22 @@ typedef struct
     TIME_STRUCT xTime;
 }   FTE_MQTT_TRANS, _PTR_ FTE_MQTT_TRANS_PTR;
 
+typedef _mqx_uint   (*FTE_MQTT_METHOD_CALLBACK)(void _PTR_ pParams);
+
+typedef struct
+{
+    FTE_MQTT_METHOD_TYPE        xMethod;
+    char_ptr                    pString;
+    FTE_MQTT_METHOD_CALLBACK    fCallback;
+}   FTE_MQTT_METHOD, _PTR_ FTE_MQTT_METHOD_PTR;
+
 uint_32 FTE_MQTT_load_default(FTE_MQTT_CFG_PTR pConfig);
 uint_32 FTE_MQTT_init(FTE_MQTT_CFG_PTR pConfig);
-uint_32 FTE_MQTT_subscribe(FTE_MQTT_CONTEXT_PTR pCTX, char *pTopic);
-uint_32 FTE_MQTT_publish(FTE_MQTT_CONTEXT_PTR pCTX, uint_32 nQoS, char *pTopic, char *pMsg);
 
-uint_32 FTE_MQTT_publishDevice(FTE_MQTT_CONTEXT_PTR pCTX, FTE_MQTT_MSG_TYPE xMsgType, uint_32 nQoS);
-uint_32 FTE_MQTT_publishDeviceInfo(FTE_MQTT_CONTEXT_PTR pCTX, uint_32 nQoS);
-uint_32 FTE_MQTT_publishDeviceValue(FTE_MQTT_CONTEXT_PTR pCTX, uint_32 nQoS);
+uint_32 FTE_MQTT_publishEPInfo(FTE_OBJECT_ID xEPID, uint_32 nQoS);
+uint_32 FTE_MQTT_publishEPValue(FTE_OBJECT_ID xEPID, uint_32 nQoS);
 
-uint_32 FTE_MQTT_publishEP(FTE_MQTT_CONTEXT_PTR pCTX, FTE_MQTT_MSG_TYPE xMsgType, FTE_OBJECT_ID xEPID, uint_32 nQoS);
-uint_32 FTE_MQTT_publishEPInfo(FTE_MQTT_CONTEXT_PTR pCTX, FTE_OBJECT_ID xEPID, uint_32 nQoS);
-uint_32 FTE_MQTT_publishEPValue(FTE_MQTT_CONTEXT_PTR pCTX, FTE_OBJECT_ID xEPID, uint_32 nQoS);
-
-FTE_MQTT_MSG_TYPE   FTE_MQTT_MSG_TYPE_stringToType(char_ptr pString);
-char_ptr            FTE_MQTT_MSG_TYPE_string(FTE_MQTT_MSG_TYPE xMsgType);
+uint_32 FTE_MQTT_TP_publishEPValue(FTE_OBJECT_ID xEPID, uint_32 nQoS);
 
 int_32  FTE_MQTT_SHELL_cmd(int_32 argc, char_ptr argv[]);
 #endif

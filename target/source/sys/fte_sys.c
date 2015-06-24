@@ -348,7 +348,7 @@ boolean FTE_SYS_isfactoryResetPushed(void)
     return  _bFactoryResetPushed;
 }
 
-#if 0
+#if 1
 static  uint_32     _hFactoryResetTimer = 0;
 #endif
 
@@ -360,28 +360,31 @@ void _FTE_SYS_INT_CB_factoryReset(void *params)
     FTE_GPIO_INT_setEnable(pGPIO_factoryReset, FALSE);
     FTE_GPIO_getValue(pGPIO_factoryReset, &bValue);
     
-    if (!bValue)
+    if (bValue != _bFactoryResetPushed)
     {
-#if 0
-        if (_hFactoryResetTimer != 0)
+        if (!bValue)
         {
-            _timer_cancel(_hFactoryResetTimer);
-            _hFactoryResetTimer = 0;
-        }        
-#endif
-        _FTE_SYS_factoryResetPushed(FALSE);
-        FTE_GPIO_INT_setPolarity(pGPIO_factoryReset, FTE_LWGPIO_INT_HIGH);
-    }
-    else
-    {
-        _FTE_SYS_factoryResetPushed(TRUE);
-        FTE_GPIO_INT_setPolarity(pGPIO_factoryReset, FTE_LWGPIO_INT_LOW);
+    #if 0
+            if (_hFactoryResetTimer != 0)
+            {
+                _timer_cancel(_hFactoryResetTimer);
+                _hFactoryResetTimer = 0;
+            }        
+    #endif
+            _FTE_SYS_factoryResetPushed(FALSE);
+            FTE_GPIO_INT_setPolarity(pGPIO_factoryReset, FTE_LWGPIO_INT_HIGH);
+        }
+        else
+        {
+            _FTE_SYS_factoryResetPushed(TRUE);
+            FTE_GPIO_INT_setPolarity(pGPIO_factoryReset, FTE_LWGPIO_INT_LOW);
+        }
     }
     FTE_GPIO_INT_setEnable(pGPIO_factoryReset, TRUE);
     
 }
 
-#if 0
+#if 1
 void _FTE_SYS_CB_factoryReset(_timer_id nID, pointer pData, MQX_TICK_STRUCT_PTR pTick)
 {
     if (nID == _hFactoryResetTimer)
@@ -393,14 +396,22 @@ void _FTE_SYS_CB_factoryReset(_timer_id nID, pointer pData, MQX_TICK_STRUCT_PTR 
 
 void     _FTE_SYS_factoryResetPushed(boolean bPushed)
 {
+    static int count = 0;
 #if 0
     MQX_TICK_STRUCT xTicks;
 
+    if (_hFactoryResetTimer != 0)
+    {
+        _timer_cancel(_hFactoryResetTimer);
+        _hFactoryResetTimer = 0;
+    }        
+    
     _time_init_ticks(&xTicks, 0);
     _time_add_msec_to_ticks(&xTicks, FTE_FACTORY_RESET_DETECT_TIME*1000);
 
     _hFactoryResetTimer = _timer_start_oneshot_after_ticks(_FTE_SYS_CB_factoryReset, 0, TIMER_KERNEL_TIME_MODE, &xTicks);
 #endif
+    printf("FRP Pushed[%3d] : %s\n", ++count, bPushed?"TRUE":"FALSE");
     _bFactoryResetPushed = bPushed;
     
 }
@@ -467,6 +478,33 @@ int_32  FTE_SYS_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
                         }
                     }
                 }
+                else if (strcmp(pArgv[1], "monitor") == 0)
+                {
+                    if (strcmp(pArgv[2], "start") == 0)
+                    {
+                        FTE_CFG_SYS_setSystemMonitor(TRUE);
+                        if (!FTE_SYS_LIVE_CHECK_isRun())
+                        {
+                            FTE_SYS_LIVE_CHECK_start();
+                        }
+                    }
+                    else if (strcmp(pArgv[2], "stop") == 0)
+                    {
+                        FTE_CFG_SYS_setSystemMonitor(FALSE);
+                        if (FTE_SYS_LIVE_CHECK_isRun())
+                        {
+                            FTE_SYS_LIVE_CHECK_stop();
+                        }
+                    }
+                    else
+                    {
+                        bPrintUsage = TRUE;
+                    }
+                }
+                else
+                {
+                    bPrintUsage = TRUE;
+                }
             }
         }
     }
@@ -483,6 +521,8 @@ int_32  FTE_SYS_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
             printf("  Commands : \n");
             printf("    keepalive [<seconds>]\n");
             printf("        get/set keepalive\n");            
+            printf("    monitor [start|stop]\n");
+            printf("        auto system check\n");            
         }
     }
 
@@ -632,9 +672,9 @@ _mqx_uint   FTE_SYS_LIVE_CHECK_init(uint_32 ulKeepAliveTime)
     }
     
     return  MQX_ERROR;
-}
+} 
 
-_mqx_uint   FTE_SYS_LIVE_CHECK_run(void)
+_mqx_uint   FTE_SYS_LIVE_CHECK_start(void)
 {
     _time_get_ticks(&_xLastCheckTime);
     _bLiveCheckRunning = TRUE;

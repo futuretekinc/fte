@@ -7,7 +7,7 @@ typedef struct
 {
     struct
     {
-        boolean     bAutoFailureRecovery:1;
+        boolean     bSystemMonitor:1;
     }   xFlags;
     uint_32         ulAllowFailureCount;
     uint_32         ulKeepAliveTime;
@@ -47,7 +47,7 @@ uint_32     FTE_SYS_getTime(void);
 
 _mqx_uint   FTE_SYS_LIVE_CHECK_init(uint_32 ulKeepAliveTime);
 _mqx_uint   FTE_SYS_LIVE_CHECK_touch(void);
-_mqx_uint   FTE_SYS_LIVE_CHECK_run(void);
+_mqx_uint   FTE_SYS_LIVE_CHECK_start(void);
 _mqx_uint   FTE_SYS_LIVE_CHECK_stop(void);
 boolean     FTE_SYS_LIVE_CHECK_isRun(void);
 boolean     FTE_SYS_LIVE_CHECK_isLive(void);

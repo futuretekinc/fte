@@ -1,27 +1,28 @@
 #include "fte_target.h"
 #include "fte_object.h"
-#include "fte_net.h"
+#include "fte_net.h" 
 #include "fte_config.h" 
 #include "fte_log.h" 
 #include "fte_time.h"
 
-char_ptr FTE_JSON_MSG_TYPE_STRING   = "type";
+const char_ptr FTE_JSON_MSG_TYPE_STRING   = "type";
 
-char_ptr FTE_JSON_DEV_ID_STRING     = "id";
-char_ptr FTE_JSON_DEV_TIME_STRING   = "time";
+const char_ptr FTE_JSON_DEV_ID_STRING     = "id";
+const char_ptr FTE_JSON_DEV_TIME_STRING   = "time";
 #if 0
-char_ptr FTE_JSON_DEV_EP_STRING     = "ep";
+const char_ptr FTE_JSON_DEV_EP_STRING     = "ep";
 #else
-char_ptr FTE_JSON_DEV_EP_STRING     = "value";
+const char_ptr FTE_JSON_DEV_EP_STRING     = "value";
 #endif
-char_ptr FTE_JSON_DEV_EPS_STRING    = "eps";
+const char_ptr FTE_JSON_DEV_EPS_STRING    = "eps";
 
-char_ptr FTE_JSON_OBJ_ID_STRING     = "id";
-char_ptr FTE_JSON_OBJ_NAME_STRING   = "name";
-char_ptr FTE_JSON_OBJ_VALUE_STRING  = "value";
-char_ptr FTE_JSON_OBJ_TIME_STRING   = "time";
-char_ptr FTE_JSON_OBJ_STATE_STRING  = "state";
-
+const char_ptr FTE_JSON_OBJ_ID_STRING     = "id";
+const char_ptr FTE_JSON_OBJ_NAME_STRING   = "name";
+const char_ptr FTE_JSON_OBJ_VALUE_STRING  = "value";
+const char_ptr FTE_JSON_OBJ_TIME_STRING   = "time";
+const char_ptr FTE_JSON_OBJ_STATE_STRING  = "state";
+const char_ptr FTE_JSON_OBJ_METHOD_STRING = "method";
+const char_ptr FTE_JSON_OBJ_PARAM_STRING  = "param";
 
 static  FTE_LIST            _xObjList    = { 0, NULL, NULL };
 static  int FTE_OBJ_comaratorID(pointer pObj1, pointer pObj2)

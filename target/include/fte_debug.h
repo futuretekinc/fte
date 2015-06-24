@@ -7,6 +7,7 @@
 #define DEBUG_NET_CGI       0x00000200
 #define DEBUG_NET_SMNG      0x00000400
 #define DEBUG_NET_SNMP      0x00000800
+#define DEBUG_NET_SSL       0x00001000
 
 #define DEBUG_ALL           0xFFFFFFFF
 

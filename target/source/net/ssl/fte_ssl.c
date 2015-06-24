@@ -6,399 +6,206 @@
 #include <ipcfg.h>
 #include <cyassl/ssl.h>
 
-#define HAVE_ANON   1
-
-#define FTE_SSL_ERROR(x)    DEBUG(x)
+#define FTE_SSL_ERR(...)    DEBUG(__VA_ARGS__)
+#define FTE_SSL_MSG(...)    TRACE(DEBUG_NET_SSL, __VA_ARGS__)
 
 #define CLIENT_DEFAULT_VERSION 3
-#define CLIENT_DTLS_DEFAULT_VERSION (-2)
-#define CLIENT_INVALID_VERSION (-99)
 
-static void         FTE_SSL_NonBlockingConnect(CYASSL* ssl);
-static unsigned int FTE_SSL_PSK_CB_client(CYASSL *pSSL, const char *pHint, char *pIdentity, unsigned int ulIDMaxLen, unsigned char *pKey, unsigned int ulKeyMaxLen);
-const char ourCert[] = "-----BEGIN CERTIFICATE-----\n"
-"MIICjjCCAfegAwIBAgIJANLaAegLuRIrMA0GCSqGSIb3DQEBBQUAMGAxCzAJBgNV\n"
-"BAYTAktSMRMwEQYDVQQIDApTb21lLVN0YXRlMRYwFAYDVQQKDA1GdXR1cmVUZWss\n"
-"SW5jMREwDwYDVQQLDAhyZXNlYXJjaDERMA8GA1UEAwwIZnRtLTEwMHMwHhcNMTUw\n"
-"NTA4MDYwNzMyWhcNMjUwNTA1MDYwNzMyWjBgMQswCQYDVQQGEwJLUjETMBEGA1UE\n"
-"CAwKU29tZS1TdGF0ZTEWMBQGA1UECgwNRnV0dXJlVGVrLEluYzERMA8GA1UECwwI\n"
-"cmVzZWFyY2gxETAPBgNVBAMMCGZ0bS0xMDBzMIGfMA0GCSqGSIb3DQEBAQUAA4GN\n"
-"ADCBiQKBgQC83ucjnI+l5s+fQmzE8NqBMC7sFeQdfd+D8y8v/YV8Tywe0XNnRvDd\n"
-"pIIW40gB8AQbZzWN5tgOB5fSYAzcCmGSo3lyFRTnw84wOMfyoNY/YWXVYpkAHPXr\n"
-"0lRv9gx9bDgpCgk424M/lbpLEI8rf8n0iFGzAzNbjCRxS4pWnUSIDwIDAQABo1Aw\n"
-"TjAdBgNVHQ4EFgQUE6RiCyjMQMMET/QbTqDY1sjQ9b8wHwYDVR0jBBgwFoAUE6Ri\n"
-"CyjMQMMET/QbTqDY1sjQ9b8wDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQUFAAOB\n"
-"gQAvjA1vqSYSOErxOx8/agZOV9bkAxvNc3WDYQgkJ5mpapFZvtrcnB6l+Lb3CM6O\n"
-"ynfYkZPxQSqlmR2L5dFaufFrGevIzGMD90IxvucXkf6qQ2BRkpdzU71h987XnsB/\n"
-"oQN0vrIqEADvDDxOXRAR+QczMg3ZlIUU/N7ppigxSWnbvQ==\n"
-"-----END CERTIFICATE-----\n";
-char ourKey[] = "-----BEGIN ENCRYPTED PRIVATE KEY-----\n"
-"MIICxjBABgkqhkiG9w0BBQ0wMzAbBgkqhkiG9w0BBQwwDgQIV/6+IPtS4AsCAggA\n"
-"MBQGCCqGSIb3DQMHBAi9m30XmnsQHwSCAoAUN0O6oGp0DzDxfwAy3s7c39GN9/FP\n"
-"gFhfmQSnRFJ8LsMfmDyP99JPC4xZJc247wn07FknmAUTmppsXao3QBUkLTIie4Hv\n"
-"rig67N3SsMT3uOC01lqc1S5wXfnO7xQLHh/O+dF5qTMRY8tE0e8ueUurEBO4vfRx\n"
-"XF/RGSo8bn6g3h2l081sIBCku5R+4r2PWnq9Aji60NXV/UFZQWpCOpyT3ooADT9T\n"
-"Y2PuzNofr87v7CXANoEL2T3IT9VZAPheiE1nJ1gxZeVWTxW0BRB3frVt+sR9ZlAz\n"
-"opyMgyFI9xaB2UI/k/WQyCbdr4fbwz+p0yxVDjG+WZsGe6kqHaQftVoKLAhe96Co\n"
-"ITBvVpgvXlp/j20UdCpAcJLua7gbth47msDq23jTjI30nz5Pdop7PIMXV1FwTP+i\n"
-"hl5Mfsstr7OH7Y5yvpH2eEcukvzQ9vBbTxoW7eM0VL6nIiEFAtxKRSWnymRpuCFo\n"
-"A1wNo5E1b/H1sEU+4SnBO7UXKftUNDLgrLh55oIbAoMHOqkn10NC0JwS1nH1F1Pr\n"
-"N52e79jY04UTL7M+wzYaY+r/yHuy6klzsd3ES+1ORQmlrpFozWzSnXqR/7QpMlcq\n"
-"hFms/7/7HGc7IE32cIfn/JTdqsLvIpxB58OCNhkHLFQ3yjrzc6AxoOVcFLNFLErD\n"
-"u30+bvWOjqJDgKz7rfUsUilb05pGoAC96k3f20V7hHTjbg8hT4VXVK6FuBNtqKNb\n"
-"LXLR2PonbiFjxH7dQVr7TefyfPD7WuCCqdpD5H2y8b4Fs9YQMJkTasN/bzZlqKO+\n"
-"OW/K+lXdEEf4sGxmMtvMMxG5QCARt7nPyE9tiC0gEShzJj2NEBYv8Gmb\n"
-"-----END ENCRYPTED PRIVATE KEY-----\n";
-
-
-int_32 FTE_SSL_init(void)
+FTE_SSL_CONTEXT_PTR FTE_SSL_create(FTE_SSL_CONFIG_PTR pConfig)
 {
-    CYASSL_METHOD*  method  = 0;
-    CYASSL_CTX*     ctx     = 0;
-    CYASSL*         ssl     = 0;
-   
-    int     version = 3;//CLIENT_INVALID_VERSION;
-    int     doDTLS    = 0;
-    char*   cipherList = NULL;
-    int     fewerPackets  = 0;
-    int     usePsk = 0;
-    int    useClientCert = 1;
-    int    useAnon  = 0;
-    int    atomicUser    = 0;
-    int    pkCallbacks   = 0;
+    FTE_SSL_CONTEXT_PTR     pxCTX   = NULL;
+    CYASSL_METHOD*          pxMETHOD= NULL;
+    uchar_ptr               pCACert;
+    uint_32                 ulCACertLen = 0;
+    ASSERT(pConfig != NULL);
+    
+    pxCTX = (FTE_SSL_CONTEXT_PTR)FTE_MEM_allocZero(sizeof(FTE_SSL_CONTEXT));
+    if (pxCTX == NULL)
+    {
+        FTE_SSL_ERR("Can not allocate memory.\n");
+        goto error;
+    }
+    
+    ulCACertLen = FTE_CFG_CERT_size();
+    if (ulCACertLen == 0)
+    {
+        FTE_SSL_ERR("Certificate does not exist.\n");
+        goto error;
+    }
+    
+    pCACert = (uchar_ptr)FTE_MEM_allocZero(ulCACertLen);
+    if (pCACert == NULL)
+    {
+        FTE_SSL_ERR("Can not allocate memory.\n");
+        goto error;
+    }
+    
+    if (ulCACertLen != FTE_CFG_CERT_get(pCACert, ulCACertLen))
+    {
+        FTE_SSL_ERR("Cannot import the certificate. - buffer too small\n");
+        goto error;
+    }
     
     CyaSSL_Init();
 
-#if defined(DEBUG_CYASSL)
+#if FTE_SSL_DEBUG
     CyaSSL_Debugging_ON();
 #endif
-
-   if (version == CLIENT_INVALID_VERSION) 
-   {
-        if (doDTLS)
-        {
-            version = CLIENT_DTLS_DEFAULT_VERSION;
-        }
-        else
-        {
-            version = CLIENT_DEFAULT_VERSION;
-        }
-    }
-    else 
+    
+    switch (pConfig->nMethod) 
     {
-        if (doDTLS) 
-        {
-            if (version == 3)
-            {
-                version = -2;
-            }
-            else
-            {
-                version = -1;
-            }
-        }
-    }
-        
-    switch (version) 
-    {
-#ifndef NO_OLD_TLS
-    case 0:
-        method = CyaSSLv3_client_method();
-        break;
-            
-            
-#ifndef NO_TLS
-    case 1:
-        method = CyaTLSv1_client_method();
-        break;
-
-    case 2:
-        method = CyaTLSv1_1_client_method();
-        break;
-#endif /* NO_TLS */
-            
-#endif  /* NO_OLD_TLS */
-            
-#ifndef NO_TLS
-    case 3:
-        method = CyaTLSv1_2_client_method();
-        break;
-#endif
-
-#ifdef CYASSL_DTLS
-    case -1:
-        method = CyaDTLSv1_client_method();
-        break;
-
-    case -2:
-        method = CyaDTLSv1_2_client_method();
-        break;
-#endif
-
+    case FTE_SSL_METHOD_SSLV3:  pxMETHOD = CyaSSLv3_client_method();      break;
+    case FTE_SSL_METHOD_TLSV1:  pxMETHOD = CyaTLSv1_client_method();      break;
+    case FTE_SSL_METHOD_TLSV1_1:pxMETHOD = CyaTLSv1_1_client_method();    break;
+    case FTE_SSL_METHOD_TLSV1_2:pxMETHOD = CyaTLSv1_2_client_method();    break;
     default:
-        FTE_SSL_ERROR("Bad SSL version");
+        FTE_SSL_ERR("Bad SSL version[Version : %d]\n", pConfig->nMethod);
         goto error;
     }
    
-    if (method == NULL)
+    pxCTX->pxCTX = CyaSSL_CTX_new(pxMETHOD);
+    if (pxCTX->pxCTX == NULL)
     {
-        FTE_SSL_ERROR("unable to get method");
-    }
-            
-   // CyaSSL_Debugging_ON();
-
-    ctx = CyaSSL_CTX_new(method);
-    if (ctx == NULL)
-    {
-        FTE_SSL_ERROR("unable to get ctx");
-    }
-
-    if (cipherList)
-        if (CyaSSL_CTX_set_cipher_list(ctx, cipherList) != SSL_SUCCESS)
-        {
-            FTE_SSL_ERROR("client can't set cipher list 1");
-        }
-
-    if (fewerPackets)
-    {
-        CyaSSL_CTX_set_group_messages(ctx);
-    }
-
-    if (usePsk) 
-    {
-#ifndef NO_PSK
-        CyaSSL_CTX_set_psk_client_callback(ctx, FTE_SSL_PSK_CB_client);
-        if (cipherList == NULL) 
-        {
-            const char *defaultCipherList;
-            #ifdef HAVE_NULL_CIPHER
-                defaultCipherList = "PSK-NULL-SHA256";
-            #else
-                defaultCipherList = "PSK-AES128-CBC-SHA256";
-            #endif
-            if (CyaSSL_CTX_set_cipher_list(ctx,defaultCipherList) !=SSL_SUCCESS)
-                err_sys("client can't set cipher list 2");
-        }
-#endif
-        //useClientCert = 0;
-    }
-
-    if (useAnon) 
-    {
-#ifdef HAVE_ANON
-        if (cipherList == NULL) 
-        {
-            CyaSSL_CTX_allow_anon_cipher(ctx);
-            if (CyaSSL_CTX_set_cipher_list(ctx,"AES256-SHA") != SSL_SUCCESS)
-                err_sys("client can't set cipher list 4");
-        }
-#endif
-        //useClientCert = 0;
-    }
-    
-    
-#ifdef USER_CA_CB
-    CyaSSL_CTX_SetCACb(ctx, CaCb);
-#endif
-
-#ifdef VERIFY_CALLBACK
-    CyaSSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, myVerify);
-#endif
-    
-    
-    if (useClientCert)
-    {
-        if (CyaSSL_CTX_use_certificate_buffer(ctx, ourCert, sizeof(ourCert),SSL_FILETYPE_PEM) != SSL_SUCCESS)
-        {
-            err_sys("can't load client cert file, check file and run from"
-                    " CyaSSL home dir");
-        }
-
-        if (CyaSSL_CTX_use_PrivateKey_buffer(ctx, ourKey, sizeof(ourKey), SSL_FILETYPE_PEM)
-                                         != SSL_SUCCESS)
-        {
-            err_sys("can't load client private key file, check file and run "
-                    "from CyaSSL home dir");
-        }
-    }
-
-    if (!usePsk && !useAnon) 
-    {
-        if (CyaSSL_CTX_load_verify_buffer(ctx, ourCert, sizeof(ourCert),SSL_FILETYPE_PEM) != SSL_SUCCESS)
-        {
-                err_sys("can't load ca file, Please run from CyaSSL home dir");
-        }
+        FTE_SSL_ERR("unable to get CTX\n");
+        goto error;
     }
    
-    
+    if (CyaSSL_CTX_load_verify_buffer(pxCTX->pxCTX, pCACert, ulCACertLen, SSL_FILETYPE_PEM) != SSL_SUCCESS)
     {
-        int nSocketID = 0;
-        struct sockaddr_in socket_address;
-        uint_32 ulRet;
+        FTE_SSL_ERR("Failed to verify the certificate.\n");
+        goto error;
+    }
+    
+    if (CyaSSL_CTX_set_cipher_list(pxCTX->pxCTX, pConfig->pCipher) != SSL_SUCCESS)
+    {
+        FTE_SSL_ERR("Failed to set cipher.\n");
+        goto error;
+    }
 
-        //double start = current_time();
-        nSocketID = socket(PF_INET, SOCK_STREAM, 0);
 
-        socket_address.sin_family       = AF_INET;
-        socket_address.sin_addr.s_addr  = IPADDR(10,0,1,18);
-        socket_address.sin_port         = 8883;
-
-        // Connect the socket
-        ulRet = connect(nSocketID, (struct sockaddr*)&socket_address, sizeof(socket_address));
-        if((ulRet != RTCS_OK) && (ulRet != RTCSERR_TCP_CONN_RLSD))
+    pxCTX->pxSSL = CyaSSL_new(pxCTX->pxCTX);
+    if (pxCTX->pxSSL == NULL)
+    {        
+        FTE_SSL_ERR("Cannot allocate SSL context.\n");
+        goto error;
+    }
+    
+    FTE_MEM_free(pCACert);
+    
+    return  pxCTX;
+    
+error:
+    if (pCACert != NULL)
+    {
+        FTE_MEM_free(pCACert);
+        pCACert = NULL;
+    }
+    
+    if (pxCTX != NULL)
+    {
+        if (pxCTX->pxSSL != NULL)
         {
-            printf("Connection error!\n");
-            return ulRet;
+            CyaSSL_free(pxCTX->pxSSL);
+            pxCTX->pxSSL = NULL;
         }
+        
+        if (pxCTX->pxCTX != NULL)
+        {
+            CyaSSL_CTX_free(pxCTX->pxCTX);
+        }
+        
+        FTE_MEM_free(pxCTX);
+    }
+    
+    return  NULL;
+}
 
-        ssl = CyaSSL_new(ctx);
-        CyaSSL_set_fd(ssl, nSocketID);
+_mqx_uint   FTE_SSL_destroy(FTE_SSL_CONTEXT_PTR pxCTX)
+{
+    ASSERT(pxCTX != NULL);
+    
+    if (pxCTX->pxSSL != NULL)
+    {
+        CyaSSL_free(pxCTX->pxSSL);
+        pxCTX->pxSSL = NULL;
+    }
+    
+    if (pxCTX->pxCTX != NULL)
+    {
+        CyaSSL_CTX_free(pxCTX->pxCTX);
+        pxCTX->pxCTX = NULL;
+    }
         
-        
-#ifdef ATOMIC_USER
-    if (atomicUser)
-        SetupAtomicUser(ctx, ssl);
+    FTE_MEM_free(pxCTX);
+    
+    return  RTCS_OK;
+}
+
+_mqx_uint   FTE_SSL_connect(FTE_SSL_CONTEXT_PTR pxCTX, int nSocketID)
+{
+    CyaSSL_set_fd(pxCTX->pxSSL, nSocketID);        
+    CyaSSL_set_using_nonblock(pxCTX->pxSSL, TRUE);
+
+#ifndef CYASSL_CALLBACKS
+    int nRet = CyaSSL_connect(pxCTX->pxSSL);
+#else
+    int nRet = CyaSSL_connect_ex(pxCTX->pxSSL, handShakeCB, timeoutCB, timeout);
 #endif
-#ifdef HAVE_PK_CALLBACKS
-    if (pkCallbacks)
-        SetupPkCallbacks(ctx, ssl);
+    int nError = CyaSSL_get_error(pxCTX->pxSSL, 0);
+
+    while (nRet != SSL_SUCCESS && 
+           (nError == SSL_ERROR_WANT_READ || nError == SSL_ERROR_WANT_WRITE)) 
+    {
+        uint_32 ulSelectRet;
+
+        ulSelectRet = RTCS_selectset(&nSocketID, 1, 2000);
+        if (ulSelectRet == RTCS_SOCKET_ERROR) 
+        {
+#ifndef CYASSL_CALLBACKS
+            nRet = CyaSSL_connect(pxCTX->pxSSL);
+#else
+            nRet = CyaSSL_connect_ex(pxCTX->pxSSL,handShakeCB,timeoutCB,timeout);
 #endif
+            nError = CyaSSL_get_error(pxCTX->pxSSL, 0);
+        }
+        else if (ulSelectRet == 0) 
+        {
+            nError = SSL_ERROR_WANT_READ;
+        }
+        else 
+        {
+            nError = SSL_FATAL_ERROR;
+        }
+    }
+    
+    if (nRet != SSL_SUCCESS)
+    {
+        FTE_SSL_ERR("SSL connection failed.");
+        CyaSSL_shutdown(pxCTX->pxSSL);
         
-        CyaSSL_set_using_nonblock(ssl, 1);
-        FTE_SSL_NonBlockingConnect(ssl);
-        printf("SSL connect ok, sending GET...\n");
+        return  RTCS_ERROR;
     }
         
     return  RTCS_OK;
-    
-error:
-    return  RTCS_ERROR;
 }
 
-static void FTE_SSL_NonBlockingConnect(CYASSL* ssl)
+_mqx_uint   FTE_SSL_disconnect(FTE_SSL_CONTEXT_PTR pxCTX)
 {
-#ifndef CYASSL_CALLBACKS
-    int ret = CyaSSL_connect(ssl);
-#else
-    int ret = CyaSSL_connect_ex(ssl, handShakeCB, timeoutCB, timeout);
-#endif
-    int error = CyaSSL_get_error(ssl, 0);
-    int sockfd = (int)CyaSSL_get_fd(ssl);
-    uint_32 select_ret;
-
-    while (ret != SSL_SUCCESS && (error == SSL_ERROR_WANT_READ ||
-                                  error == SSL_ERROR_WANT_WRITE)) {
-        int currTimeout = 1;
-
-        if (error == SSL_ERROR_WANT_READ)
-            printf("... client would read block\n");
-        else
-            printf("... client would write block\n");
-
-#ifdef CYASSL_DTLS
-        currTimeout = CyaSSL_dtls_get_current_timeout(ssl);
-#endif
-        select_ret = RTCS_selectset(&sockfd, 1, currTimeout * 1000);
-
-        if (select_ret == RTCS_SOCKET_ERROR) 
-        {
-            #ifndef CYASSL_CALLBACKS
-                    ret = CyaSSL_connect(ssl);
-            #else
-                ret = CyaSSL_connect_ex(ssl,handShakeCB,timeoutCB,timeout);
-            #endif
-            error = CyaSSL_get_error(ssl, 0);
-        }
-        else if (select_ret == 0) 
-        {
-            error = SSL_ERROR_WANT_READ;
-        }
-        else {
-            error = SSL_FATAL_ERROR;
-        }
-    }
-    if (ret != SSL_SUCCESS)
-        printf("SSL_connect failed");
+    ASSERT(pxCTX != NULL);
+    
+    CyaSSL_shutdown(pxCTX->pxSSL);
+    
+    return  RTCS_OK;
 }
 
-unsigned int FTE_SSL_PSK_CB_client
-(
-    CYASSL          *pSSL, 
-    const char      *pHint,
-    char            *pIdentity, 
-    unsigned int    ulIDMaxLen, 
-    unsigned char   *pKey,
-    unsigned int    ulKeyMaxLen
-)
+int FTE_SSL_send(FTE_SSL_CONTEXT_PTR pxCTX, const void *pMsg, int nMsgLen)
 {
-    (void)pSSL;
-    (void)pHint;
-    (void)ulKeyMaxLen;
-
-    /* identity is OpenSSL testing default for openssl s_client, keep same */
-    strncpy(pIdentity, "Client_identity", ulIDMaxLen);
-
-
-    /* test key in hex is 0x1a2b3c4d , in decimal 439,041,101 , we're using
-       unsigned binary */
-    pKey[0] = 26;
-    pKey[1] = 43;
-    pKey[2] = 60;
-    pKey[3] = 77;
-
-    return 4;   /* length of key in octets or 0 for error */
+    return  CyaSSL_write(pxCTX->pxSSL, pMsg, nMsgLen);
 }
 
-int_32 FTE_SSL_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
+int FTE_SSL_recv(FTE_SSL_CONTEXT_PTR pxCTX, void *pBuff, int nBuffLen)
 {
-    boolean                 bPrintUsage, bShortHelp = FALSE;
-    int_32                  nRet = SHELL_EXIT_SUCCESS;
-    uint_32                 ulEnetDevice = BSP_DEFAULT_ENET_DEVICE;
-    FTE_NET_CFG             xNetCfg;
-    
-    bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
-    
-    switch(nArgc)
-    {
-    case    1:
-        {
-            FTE_SSL_init();
-        }
-        break;
-    }
-    
-        {
-            extern  FTE_LIST    _taskList;
-
-            uint_32             ulCount = 0;
-            FTE_LIST_ITERATOR   xIter;
-            FTE_TASK_INFO_PTR   pTaskInfo;
-            
-            FTE_LIST_ITER_init(&_taskList, &xIter);
-            while((pTaskInfo = (FTE_TASK_INFO_PTR)FTE_LIST_ITER_getNext(&xIter)) != MQX_NULL_TASK_ID)
-            {
-                TASK_TEMPLATE_STRUCT_PTR pTemplate = _task_get_template_ptr(pTaskInfo->xID);
-                if (pTemplate != NULL)
-                {
-                    printf("%2d : %8d %32s %4d\n", ++ulCount, pTaskInfo->xID, pTemplate->TASK_NAME, _task_free_stack(pTaskInfo->xID));
-                }
-            }
-        }
-    
-error:    
-    if (bPrintUsage)  
-    {
-        if (bShortHelp)  
-        {
-            printf("%s <cmd>\n", pArgv[0]);
-        } 
-        else  
-        {
-            printf("Usage: %s <cmd>\n",pArgv[0]);
-        }
-    }
-    
-    return  nRet;
+    return  CyaSSL_read(pxCTX->pxSSL, pBuff, nBuffLen);
 }
 
 int ValidateDate(const uint_8* date, uint_8 format, int dateType)

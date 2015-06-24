@@ -68,11 +68,18 @@ _mqx_uint               FTE_CFG_EVENT_getAt(uint_32 ulIndex, FTE_CFG_EVENT_PTR _
 pointer                 FTE_CFG_EVENT_getFirst(void);
 pointer                 FTE_CFG_EVENT_getNext(void);
 
+boolean                 FTE_CFG_CERT_valid(void);
+uint_32                 FTE_CFG_CERT_size(void);
+uint_32                 FTE_CFG_CERT_get(void _PTR_ pBuff, uint_32 ulBuffLen);
+_mqx_uint               FTE_CFG_CERT_set(void _PTR_ pCert, uint_32 ulCertLen);
+
+int_32                  FTE_CFG_CERT_SHELL_cmd(int_32 argc, char_ptr argv[]);
+                                         
 FTE_SYS_CONFIG_PTR      FTE_CFG_SYS_get(void);
 _mqx_uint               FTE_CFG_SYS_set(FTE_SYS_CONFIG const *pConfig);
 
-boolean                 FTE_CFG_SYS_getAutoFailureRecovery(void);
-_mqx_uint               FTE_CFG_SYS_setAutoFailureRecovery(boolean bEnable);
+boolean                 FTE_CFG_SYS_getSystemMonitor(void);
+_mqx_uint               FTE_CFG_SYS_setSystemMonitor(boolean bEnable);
 
 boolean                 FTE_CFG_SYS_isEnabledLiveCheck(void);
 uint_32                 FTE_CFG_SYS_getKeepAliveTime(void);
