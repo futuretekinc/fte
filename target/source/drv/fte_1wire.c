@@ -269,68 +269,81 @@ _mqx_uint   FTE_1WIRE_write(FTE_1WIRE_PTR p1Wire, uint_8_ptr buff, uint_32 len)
     
     return MQX_OK;
 }
+#define GET_BIT_AT(value,n) ((((uint_8_ptr)value)[n / 8] >> (n % 8)) & 0x01)
+#define SET_BIT_AT(value,n) (((uint_8_ptr)value)[n / 8] |= 1 << (n % 8))
+#define CLR_BIT_AT(value,n) (((uint_8_ptr)value)[n / 8] &= ~(1 << (n % 8)))
 
 _mqx_uint   FTE_1WIRE_search(FTE_1WIRE_PTR p1Wire, FTE_1WIRE_ROM_CODE_PTR pROMCodes, uint_32 nMaxCount)
 {
-    int_32  i;
+    int_32  i, j;
     int_32  nCount = 0;
     boolean bFound;
     uint_8  data;
     uint_8  pROMCode[8];
-    uint_8  pTry[64];
-    uint_8  nRemainCount = 1;
+    uint_8  pComPos[64];
+    uint_8  nComPos = 0;
     
-    FTE_1WIRE_lock(p1Wire);
+    FTE_1WIRE_lock(p1Wire);    
     
-    
-    memset(pTry, 2, sizeof(pTry));
+    memset(pROMCode, 0x00, sizeof(pROMCode));
+    memset(pComPos, 0x00, sizeof(pComPos));
+
     while(1)
     {
         bFound = FALSE;
+  
         FTE_1WIRE_reset(p1Wire);
         FTE_1WIRE_writeByte(p1Wire, 0xF0);
-        memset(pROMCode, 0, sizeof(pROMCode));
         
         for(i = 0 ; i < 64 ; i++)
         {
             FTE_1WIRE_readBits(p1Wire, &data, 2);
+
             switch(data)
             {
             case    0:
                 {
-                    switch(pTry[i])
+                    if (GET_BIT_AT(pROMCode, i) == 0)
                     {
-                    case    2:
+                        if ((nComPos == 0) || (pComPos[nComPos-1] < i))
                         {
-                            pTry[i] = 0;
-                            nRemainCount += 1;
+                            pComPos[nComPos++] = i;
                         }
-                        break;
-                        
-                    case    0:
+                        else
                         {
-                            if (nRemainCount == 1)
+                            SET_BIT_AT(pROMCode, i);
+                            nComPos--;
+#if 0
+                            for(j = i+1 ; j < ((i / 8) + 1) * 8 ; j++)
                             {
-                                pROMCode[i / 8] |= 1 << (i % 8);
-                                pTry[i] = 1;
+                                CLR_BIT_AT(pROMCode, j);
                             }
+                            
+                            for(j = (i / 8) + 1; j < 8 ; j++)
+                            {
+                                pROMCode[j] = 0;
+                            }
+#else
+                            for(j = i+1 ; j < 64 ; j++)
+                            {
+                                CLR_BIT_AT(pROMCode, j);
+                            }
+#endif
                         }
-                        break;
+                        bFound = TRUE;
                     }
                 }
                 break;
                 
             case    1:
+                {
+                    SET_BIT_AT(pROMCode, i);
+                }
+                break;
+                
             case    2:
                 {
-                    if (data & 0x01)
-                    {
-                        pROMCode[i / 8] |= 1 << (i % 8);
-                    }
-                    else
-                    {
-                        pROMCode[i / 8] &= ~(1 << (i % 8));
-                    }
+                    CLR_BIT_AT(pROMCode, i);
                 }
                 break;
                 
@@ -338,23 +351,16 @@ _mqx_uint   FTE_1WIRE_search(FTE_1WIRE_PTR p1Wire, FTE_1WIRE_ROM_CODE_PTR pROMCo
                 goto finished;
             }
             
-            data = (pROMCode[i/8] >> (i % 8)) & 0x01;
-            if (data != 0)
-            {
-                bFound = TRUE;
-            }
+            data = GET_BIT_AT(pROMCode, i);
             FTE_1WIRE_writeBits(p1Wire, &data, 1);            
         }
 
-        
-        if ((nRemainCount > 0) && bFound)
+        if (bFound)
         {
             if (nCount < nMaxCount)
             {
                 memcpy(pROMCodes[nCount++], pROMCode, sizeof(FTE_1WIRE_ROM_CODE));
             }
-            
-            nRemainCount--;
         }
         else
         {
