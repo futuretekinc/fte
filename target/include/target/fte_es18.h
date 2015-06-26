@@ -77,7 +77,7 @@
 #define FTE_MST_MEX510C_SUPPORTED           0
 
 #define FTE_HTTPD_SUPPORTED                 0
-#define FTE_SNMPD_SUPPORTED                 1
+#define FTE_SNMPD_SUPPORTED                 0
 #define FTE_MQTT_SUPPORTED                  1
 #define FTE_SSL_SUPPORTED                   0
 #define FTE_TELNETD_SUPPORTED               1

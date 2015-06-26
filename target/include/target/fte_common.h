@@ -18,7 +18,6 @@
 #define FTE_DEV_LWGPIO_MCP23S08_RESET   (FTE_DEV_TYPE_LWGPIO | 0x0A)
 #define FTE_DEV_LWGPIO_MCP23S08_INT     (FTE_DEV_TYPE_LWGPIO | 0x0B)
 #define FTE_DEV_LWGPIO_MCP23S08_CS      (FTE_DEV_TYPE_LWGPIO | 0x0C)
-#define FTE_DEV_LWGPIO_1WIRE_0          (FTE_DEV_TYPE_LWGPIO | 0x0D)
 #define FTE_DEV_LWGPIO_1WIRE_1          (FTE_DEV_TYPE_LWGPIO | 0x0E)
 #ifdef  FTE_LCD_SUPPORTED
 #define FTE_DEV_LWGPIO_LCD_POWER        (FTE_DEV_TYPE_LWGPIO | 0x0F)
@@ -167,6 +166,12 @@
 #define FTE_UCS_1_BAUDRATE                  19600
 #define FTE_UCS_1_DATABITS                  8
 #define FTE_UCS_1_PARITY                    FTE_UART_PARITY_EVEN
+#define FTE_UCS_1_STOPBITS                  FTE_UART_STOP_BITS_1
+#elif FTE_ELT_AQM100_SUPPORTED
+#define FTE_UCS_1_FULL_DUPLEX               FALSE
+#define FTE_UCS_1_BAUDRATE                  9600
+#define FTE_UCS_1_DATABITS                  8
+#define FTE_UCS_1_PARITY                    FTE_UART_PARITY_NONE
 #define FTE_UCS_1_STOPBITS                  FTE_UART_STOP_BITS_1
 #else
 #define FTE_UCS_1_FULL_DUPLEX               TRUE

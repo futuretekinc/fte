@@ -42,10 +42,10 @@ _mqx_uint   fte_ftlm_request_data(FTE_OBJECT_PTR pObj)
 _mqx_uint   fte_ftlm_receive_data(FTE_OBJECT_PTR pObj)
 {
     FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
+#if 0    
     uint_8      pBuff[128];
     uint_32     nLen, i;
     uint_16     uiCRC;
-#if 0    
     memset(pBuff, 0, sizeof(pBuff));
     
     nLen = FTE_UCS_recv(pStatus->pUCS, pBuff, sizeof(pBuff));
@@ -74,6 +74,8 @@ _mqx_uint   fte_ftlm_receive_data(FTE_OBJECT_PTR pObj)
         FTE_VALUE_setULONG(&pStatus->xCommon.pValue[i], ulValue);
     }
 #else
+    uint_32 i;
+    
     for(i = 0 ; i < 9 ; i++)
     {
         FTE_VALUE_setULONG(&pStatus->xCommon.pValue[i], _time_get_hwticks());

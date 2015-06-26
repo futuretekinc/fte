@@ -1352,7 +1352,7 @@ const FTE_OBJECT_CONFIG_PTR pInitObjConfigs[] =
 static const FTE_EVENT_CONFIG fte_report_di0_config = 
 {
     .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DI, 0x0001),
-    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_MQTT_PUB,
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
     .xLevel     = FTE_EVENT_LEVEL_INFO,
     .xCondition = FTE_EVENT_CONDITION_INTERVAL,
     .xParams    =

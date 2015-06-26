@@ -10,6 +10,7 @@
 #include "fte_json.h"
 #include "fte_ssl.h"
 
+#if FTE_MQTT_SUPPORTED
 #if 0
 #define FTE_MQTT_TRACE(...)    TRACE(DEBUG_NET_MQTT, __VA_ARGS__);
 #else
@@ -355,6 +356,7 @@ uint_32 FTE_MQTT_connect(FTE_MQTT_CONTEXT_PTR pCTX)
     socket_address.sin_port         = pCTX->pConfig->xBroker.usPort;
 
     // Connect the socket
+    _time_delay(100);
     ulRet = connect(pCTX->nSocketID, (struct sockaddr*)&socket_address, sizeof(socket_address));
     if((ulRet != RTCS_OK) && (ulRet != RTCSERR_TCP_CONN_RLSD))
     {
@@ -433,7 +435,7 @@ _mqx_uint   FTE_MQTT_subscribe(FTE_MQTT_CONTEXT_PTR pCTX, char *pTopic)
 
     pTrans->nMsgID  = nMsgID;
     pTrans->nMsgType= MQTT_MSG_SUBSCRIBE;
-    pTrans->nQoS    = FTE_MQTT_QOS_0;
+    pTrans->nQoS    = FTE_MQTT_QOS_1;
     
     FTE_MQTT_TRANS_push(pCTX, pTrans);    
     
@@ -1488,6 +1490,7 @@ FTE_MQTT_METHOD _pThingPlusMethods[] =
 
 _mqx_uint            FTE_MQTT_METHOD_CB_setProperty(void _PTR_ pParams)
 {
+    printf("%s called\n", __func__);
     return  MQX_OK;
 }
 
@@ -1717,3 +1720,4 @@ int_32  FTE_MQTT_SHELL_cmd(int_32 argc, char_ptr argv[])
 }
 
 
+#endif

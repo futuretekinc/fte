@@ -1,7 +1,7 @@
 #ifndef _FTE_1WIRE_H__
 #define _FTE_1WIRE_H__
 
-#define FTE_1WIRE_BAUDRATE  10000
+#define FTE_1WIRE_BAUDRATE  5000
 #define FTE_1WIRE_ROM_CODE_SIZE 8
 
 typedef uint_8  FTE_1WIRE_ROM_CODE[FTE_1WIRE_ROM_CODE_SIZE];
@@ -57,6 +57,7 @@ _mqx_uint   FTE_1WIRE_writeByte(FTE_1WIRE_PTR p1WIRE, uint_8 nData);
 
 uint_32     FTE_1WIRE_DEV_count(FTE_1WIRE_PTR p1WIRE);
 _mqx_uint   FTE_1WIRE_DEV_getROMCode(FTE_1WIRE_PTR p1WIRE, uint_32 nIdx, FTE_1WIRE_ROM_CODE pROMCode);
+_mqx_uint   FTE_1WIRE_DEV_appendROMCode(FTE_1WIRE_PTR p1Wire, FTE_1WIRE_ROM_CODE pROMCode);
 
 char_ptr    FTE_1WIRE_getFailmyName(uint_32 xCode);
 

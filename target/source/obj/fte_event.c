@@ -390,12 +390,12 @@ char_ptr FTE_EVENT_CONDITION_string(uint_32 ulType)
 {
     switch(ulType)
     {
-    case    FTE_EVENT_CONDITION_ABOVE:   return  "MORE THAN";        
-    case    FTE_EVENT_CONDITION_BELOW:   return  "BELOW";        
-    case    FTE_EVENT_CONDITION_INSIDE:  return  "INSIDE";
-    case    FTE_EVENT_CONDITION_OUTSIDE: return  "OUTSIDE";
-    case    FTE_EVENT_CONDITION_INTERVAL:return  "INTERVAL";
-    case    FTE_EVENT_CONDITION_TIME:    return  "FIXED TIME";
+    case    FTE_EVENT_CONDITION_ABOVE:   return  ">";        
+    case    FTE_EVENT_CONDITION_BELOW:   return  "<";        
+    case    FTE_EVENT_CONDITION_INSIDE:  return  "<>";
+    case    FTE_EVENT_CONDITION_OUTSIDE: return  "><";
+    case    FTE_EVENT_CONDITION_INTERVAL:return  "~~";
+    case    FTE_EVENT_CONDITION_TIME:    return  "!!";
     
     default:                        return  "UNKNOWN";
     }
@@ -418,13 +418,71 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                 FTE_EVENT_PTR       pEvent;
                 FTE_LIST_ITERATOR   xIter;
                 uint_32             ulIndex = 0;
+                char                pTypeString[64];
                 
                 FTE_LIST_ITER_init(&_eventList, &xIter);
+                printf("     %8s %16s %10s\n", "ID/GROUP", "TYPE", "CONDITION");
                 while((pEvent = FTE_LIST_ITER_getNext(&xIter)) != 0)
                 {
                     ulIndex++;
                     
-                    printf("%2d : %08lx %-12s\n", ulIndex, pEvent->pConfig->ulEPID, FTE_EVENT_CONDITION_string(pEvent->pConfig->xCondition));
+                    FTE_EVENT_type_string(pEvent->pConfig->xType, pTypeString, sizeof(pTypeString));
+                    printf("%2d : %08lx %16s %-10s", 
+                           ulIndex, pEvent->pConfig->ulEPID, 
+                           FTE_EVENT_CONDITION_string(pEvent->pConfig->xCondition),
+                           pTypeString);
+                    
+                    switch(pEvent->pConfig->xCondition)
+                    {
+                    case    FTE_EVENT_CONDITION_ABOVE:   
+                        {
+                            printf("%8d %8d", 
+                                   pEvent->pConfig->xParams.xLimit.nValue,
+                                   pEvent->pConfig->xParams.xLimit.ulThreshold);
+                        }
+                        break;
+                        
+                    case    FTE_EVENT_CONDITION_BELOW:
+                        {
+                            printf("%8d %8d", 
+                                   pEvent->pConfig->xParams.xLimit.nValue,
+                                   pEvent->pConfig->xParams.xLimit.ulThreshold);
+                        }
+                        break;
+                        
+                    case    FTE_EVENT_CONDITION_INSIDE:
+                        {
+                            printf("%8d %8d %8d", 
+                                   pEvent->pConfig->xParams.xRange.nLower,
+                                   pEvent->pConfig->xParams.xRange.nUpper,
+                                   pEvent->pConfig->xParams.xRange.ulThreshold);
+                        }
+                        break;
+                        
+                    case    FTE_EVENT_CONDITION_OUTSIDE:
+                        {
+                            printf("%8d %8d %8d", 
+                                   pEvent->pConfig->xParams.xRange.nLower,
+                                   pEvent->pConfig->xParams.xRange.nUpper,
+                                   pEvent->pConfig->xParams.xRange.ulThreshold);
+                        }
+                        break;
+                       
+                    case    FTE_EVENT_CONDITION_INTERVAL:
+                        {
+                            printf("%8d", pEvent->pConfig->xParams.ulInterval);
+                        }
+                        break;
+                        
+                    case    FTE_EVENT_CONDITION_TIME:
+                        {
+                            char    pTimeString[64];
+                            FTE_TIME_toString(&pEvent->pConfig->xParams.xTime, pTimeString, sizeof(pTimeString));
+                            printf("%s", pTimeString);
+                        }
+                        break;                        
+                    }
+                    printf("\n");
                 }
 
             }
@@ -543,30 +601,34 @@ _mqx_uint    FTE_EVENT_type_string(uint_32 xType, char_ptr pBuff, int_32 nBuffLe
         nLen = snprintf(pBuff, nBuffLen, "%s", "log");
     }
     
-    if ((xType & FTE_EVENT_TYPE_LOG) == FTE_EVENT_TYPE_SNMP_TRAP)
+#if FTE_MQTT_SUPPORTED
+    if ((xType & FTE_EVENT_TYPE_MQTT_PUB) == FTE_EVENT_TYPE_MQTT_PUB)
     {
         if (nLen != 0)
         {
-            nLen += snprintf(pBuff, nBuffLen - nLen, " | %s", "snmp");
+            nLen += snprintf(&pBuff[nLen], nBuffLen - nLen, " | %s", "mqtt");
         }
         else
         {
-            nLen += snprintf(pBuff, nBuffLen, "%s", "snmp");
-        }
-    }
-    
-    if ((xType & FTE_EVENT_TYPE_LOG) == FTE_EVENT_TYPE_MQTT_PUB)
-    {
-        if (nLen != 0)
-        {
-            nLen += snprintf(pBuff, nBuffLen - nLen, " | %s", "mqtt");
-        }
-        else
-        {
-            nLen += snprintf(pBuff, nBuffLen, "%s", "mqtt");
+            nLen += snprintf(&pBuff[nLen], nBuffLen, "%s", "mqtt");
         }
     } 
-
+#endif
+    
+#if FTE_SNMPD_SUPPORTED
+    if ((xType & FTE_EVENT_TYPE_SNMP_TRAP) == FTE_EVENT_TYPE_SNMP_TRAP)
+    {
+        if (nLen != 0)
+        {
+            nLen += snprintf(&pBuff[nLen], nBuffLen - nLen, " | %s", "snmp");
+        }
+        else
+        {
+            nLen += snprintf(&pBuff[nLen], nBuffLen, "%s", "snmp");
+        }
+    }
+#endif
+    
     if (nLen == 0)
     {
         snprintf(pBuff, nLen, "undefined");

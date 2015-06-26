@@ -64,7 +64,7 @@
     #define FTE_TASK_WATCHDOG_TIME      5000
 #endif
 #if FTE_TASK_NET
-    #define FTE_TASK_NET_STACK          (FTE_TASK_DEFAULT_STACK * 3)
+    #define FTE_TASK_NET_STACK          (FTE_TASK_DEFAULT_STACK * 6)
     #define FTE_TASK_NET_PRIO           9
 #endif
 
@@ -120,7 +120,7 @@
 #define FTE_NET_DEFAULT_GATEWAY_IP      IPADDR(192,168,1,1) 
 
 #define FTE_NET_SMNG_BUFF_SIZE          1024
-#define FTE_NET_SMNG_STACK              (FTE_TASK_DEFAULT_STACK * 2 + FTE_NET_SMNG_BUFF_SIZE)
+#define FTE_NET_SMNG_STACK              (FTE_TASK_DEFAULT_STACK * 4 + FTE_NET_SMNG_BUFF_SIZE)
 #define FTE_NET_SMNG_PRIO               9
 #define FTE_NET_SMNG_PORT               1234
 
@@ -132,7 +132,7 @@
 #define FTE_NET_SNMP_MIBMQX             0
 
 #define FTE_NET_SNMP_NAME               "snmp"
-#define FTE_NET_SNMP_PRIO               3
+#define FTE_NET_SNMP_PRIO               9
 #define FTE_NET_SNMP_STACK              (FTE_TASK_DEFAULT_STACK * 4)
 
 #define FTE_NET_SNMP_TRAP_SPEC          3
