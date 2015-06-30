@@ -345,13 +345,21 @@ _mqx_uint   FTE_1WIRE_search(FTE_1WIRE_PTR p1Wire, FTE_1WIRE_ROM_CODE_PTR pROMCo
                 
             case    1:
                 {
-                    SET_BIT_AT(pROMCode, i);
+                    if (GET_BIT_AT(pROMCode, i) == 0)
+                    {
+                        SET_BIT_AT(pROMCode, i);
+                        bFound = TRUE;
+                    }
                 }
                 break;
                 
             case    2:
                 {
-                    CLR_BIT_AT(pROMCode, i);
+                    if (GET_BIT_AT(pROMCode, i) != 0)
+                    {
+                        CLR_BIT_AT(pROMCode, i);
+                        bFound = TRUE;
+                    }
                 }
                 break;
                 
@@ -363,7 +371,13 @@ _mqx_uint   FTE_1WIRE_search(FTE_1WIRE_PTR p1Wire, FTE_1WIRE_ROM_CODE_PTR pROMCo
             FTE_1WIRE_writeBits(p1Wire, &data, 1);      
         }
 
-        if (bFound)
+        data = 0xFF;
+        for(i = 0 ; i < 8 ; i++)
+        {
+            data &= pROMCode[i];
+        }
+        
+        if (bFound && (data != 0xFF))
         {
             if (nCount < nMaxCount)
             {
