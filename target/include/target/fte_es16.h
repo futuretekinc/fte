@@ -7,11 +7,15 @@
 #define FTE_HUMIDITY_SUPPORTED              0
 #define FTE_CO2_SUPPORTED                   0
 #define FTE_POWER_SUPPORTED                 0
-
 #define FTE_CONSOLE_SUPPORTED               1
 #define FTE_LOG_SUPPORTED                   1
+#if FTE_V2
 #define FTE_PWR_SW_SUPPORTED                1
 #define FTE_FACTORY_RESET_SUPPORTED         1
+#else
+#define FTE_PWR_SW_SUPPORTED                0
+#define FTE_FACTORY_RESET_SUPPORTED         0
+#endif
 
 #define FTE_I2C_SUPPORTED                   0
 #define FTE_SSD1305_SUPPORTED               0

@@ -1124,20 +1124,17 @@ FTE_AD7785_CONFIG   pAD7785Configs[] =
 #endif
 
 #if FTE_1WIRE_SUPPORTED
-#if FTE_DEV_LWGPIO_1WIRE_0
 FTE_1WIRE_CONFIG p1WireConfigs[] =
 {
+#if FTE_DEV_LWGPIO_1WIRE_0
     {
         .nID        = FTE_DEV_TYPE_1WIRE | 0,
         .xGPIO      = FTE_DEV_LWGPIO_1WIRE_0,
         .nMaxDevices= FTE_1WIRE_MAX_DEVICES,
         .xFlags     = FTE_DEV_FLAG_SYSTEM_DEVICE
-    }
-};
+    },
 #endif
 #if FTE_DEV_LWGPIO_1WIRE_1
-FTE_1WIRE_CONFIG p1WireConfigs[] =
-{
     {
         .nID        = FTE_DEV_TYPE_1WIRE | 1,
         .xGPIO      = FTE_DEV_LWGPIO_1WIRE_1,
