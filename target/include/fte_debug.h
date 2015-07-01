@@ -1,6 +1,7 @@
 #ifndef __FTE_DEBUG_H__
 #define __FTE_DEBUG_H__
 
+#define DEBUG_UNKNOWN       0x00000000
 #define DEBUG_OBJECT        0x00000001
 #define DEBUG_EVENT         0x00000002
 #define DEBUG_NET_MQTT      0x00000100

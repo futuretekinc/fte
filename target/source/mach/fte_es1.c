@@ -1405,7 +1405,7 @@ static const FTE_EVENT_CONFIG fte_report_di0_config =
     .xCondition = FTE_EVENT_CONDITION_INTERVAL,
     .xParams    =
     {
-        .ulInterval = 60
+        .ulInterval = 5
     }
 };
 
@@ -1450,7 +1450,7 @@ static const FTE_EVENT_CONFIG fte_report_di1_config =
     .xCondition = FTE_EVENT_CONDITION_INTERVAL,
     .xParams    =
     {
-        .ulInterval = 60
+        .ulInterval = 5
     }
 };
 
@@ -1494,7 +1494,7 @@ static const FTE_EVENT_CONFIG fte_report_do0_config =
     .xCondition = FTE_EVENT_CONDITION_INTERVAL,
     .xParams    =
     {
-        .ulInterval = 60
+        .ulInterval = 5
     }
 };
 
@@ -1540,7 +1540,7 @@ static const FTE_EVENT_CONFIG fte_report_do1_config =
     .xCondition = FTE_EVENT_CONDITION_INTERVAL,
     .xParams    =
     {
-        .ulInterval = 60
+        .ulInterval = 5
     }
 };
 

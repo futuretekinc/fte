@@ -32,11 +32,7 @@
 #endif
 
 /****************************************************************/
-#if 1
-#define SNMP_TRACE(...)  
-#else
 #define SNMP_TRACE(...)  TRACE(DEBUG_NET_SNMP, __VA_ARGS__)
-#endif
 
 #define COUNTER_OVERFLOW    5
 #define COUNTER_DELAY       5000
@@ -91,8 +87,6 @@ _mqx_uint   FTE_SNMPD_init(FTE_SNMP_CFG_PTR pConfig)
 {
     int_32  i, ret;
 
-   TRACE_ON(DEBUG_NET_SNMP);
-    
 #if FTE_NET_SNMP_MIB1213
     /* init RFC 1213 MIB */
     MIB1213_init();
@@ -233,7 +227,7 @@ void FTE_SNMPD_TRAP_processing(void)
                 boolean bNewServer = FALSE;
                 if (!FTE_NET_SERVER_isExist(pCurrentTrapMsg->xParams.xDiscovery.xHostIP))
                 {
-                    SNMP_TRACE("\nAdd new trap server\n");
+                    SNMP_TRACE("\nAdd temporary trap server(%d.%d.%d.%d) for discovery\n", IPBYTES(pCurrentTrapMsg->xParams.xDiscovery.xHostIP));
                     uint_32 error = RTCS_trap_target_add(pCurrentTrapMsg->xParams.xDiscovery.xHostIP);
                     if (error) 
                     {

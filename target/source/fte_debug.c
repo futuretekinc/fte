@@ -61,6 +61,24 @@ _mqx_int    FTE_DEBUG_error(const char _PTR_ pFuncName, int nLine, const char _P
     return   fprintf(stderr, "%s[%d] : %s\n", pFuncName, nLine, _pBuff);
 }
 
+typedef struct
+{
+    char_ptr    pName;
+    uint_32     ulType;
+}   FTE_DEBUG_MODULE_TYPE_NAME, _PTR_ FTE_DEBUG_MODULE_TYPE_NAME_PTR;
+
+static FTE_DEBUG_MODULE_TYPE_NAME  _pModuleTypeName[] =
+{
+    {   .pName = "object",  .ulType = DEBUG_OBJECT  },
+    {   .pName = "event",   .ulType = DEBUG_EVENT   },
+    {   .pName = "mqtt",    .ulType = DEBUG_NET_MQTT},
+    {   .pName = "cgi",     .ulType = DEBUG_NET_CGI },
+    {   .pName = "smng",    .ulType = DEBUG_NET_SMNG},
+    {   .pName = "snmp",    .ulType = DEBUG_NET_SNMP},
+    {   .pName = "ssl",     .ulType = DEBUG_NET_SSL },
+    {   .pName = "all",     .ulType = DEBUG_ALL},
+    {   .pName = NULL,      .ulType = 0}
+};
 
 int_32 FTE_DEBUG_shellCmd(int_32 nArgc, char_ptr pArgv[])
 {
@@ -76,60 +94,31 @@ int_32 FTE_DEBUG_shellCmd(int_32 nArgc, char_ptr pArgv[])
         case    3:
             {
                 if (strcmp(pArgv[0], "trace") == 0)
-                {                    
+                {       
+                    uint_32 ulType = DEBUG_UNKNOWN;
+                    FTE_DEBUG_MODULE_TYPE_NAME_PTR  pTypeName = _pModuleTypeName;
+                    while(pTypeName->pName != NULL)
+                    {
+                        if (strcmp(pArgv[1], pTypeName->pName) == 0)
+                        {
+                            ulType = pTypeName->ulType;
+                            break;
+                        }
+                    }
+
+                    if (ulType == DEBUG_UNKNOWN)
+                    {
+                        bPrintUsage = TRUE;
+                        break;
+                    }
+                    
                     if(strcmp(pArgv[2], "on") == 0)
                     {
-                        if (strcmp(pArgv[1], "object") == 0)
-                        {
-                            FTE_DEBUG_traceOn(DEBUG_OBJECT);
-                        }
-                        else if (strcmp(pArgv[1], "event") == 0)
-                        {
-                            FTE_DEBUG_traceOn(DEBUG_EVENT);
-                        }
-                        else if (strcmp(pArgv[1], "mqtt") == 0)
-                        {
-                            FTE_DEBUG_traceOn(DEBUG_NET_MQTT);
-                        }
-                        else if (strcmp(pArgv[1], "cgi") == 0)
-                        {
-                            FTE_DEBUG_traceOn(DEBUG_NET_CGI);
-                        }
-                        else if (strcmp(pArgv[1], "all") == 0)
-                        {
-                            FTE_DEBUG_traceOn(DEBUG_ALL);
-                        }
-                        else
-                        {
-                            bPrintUsage = TRUE;
-                        }
+                        FTE_DEBUG_traceOn(ulType);
                     }
                     else if(strcmp(pArgv[2], "off") == 0)
                     {
-                        if (strcmp(pArgv[1], "object") == 0)
-                        {
-                            FTE_DEBUG_traceOff(DEBUG_OBJECT);
-                        }
-                        else if (strcmp(pArgv[1], "event") == 0)
-                        {
-                            FTE_DEBUG_traceOff(DEBUG_EVENT);
-                        }
-                        else if (strcmp(pArgv[1], "mqtt") == 0)
-                        {
-                            FTE_DEBUG_traceOff(DEBUG_NET_MQTT);
-                        }
-                        else if (strcmp(pArgv[1], "cgi") == 0)
-                        {
-                            FTE_DEBUG_traceOff(DEBUG_NET_CGI);
-                        }
-                        else if (strcmp(pArgv[1], "all") == 0)
-                        {
-                            FTE_DEBUG_traceOff(DEBUG_ALL);
-                        }
-                        else 
-                        {
-                            bPrintUsage = TRUE;
-                        }
+                        FTE_DEBUG_traceOff(ulType);
                     }
                     else
                     {
