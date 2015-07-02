@@ -317,11 +317,11 @@ _mqx_uint   FTE_1WIRE_search(FTE_1WIRE_PTR p1Wire, FTE_1WIRE_ROM_CODE_PTR pROMCo
                         {
                             pComPos[nComPos++] = i;
                         }
-                        else
+                        else if (pComPos[nComPos-1] == i)
                         {
                             SET_BIT_AT(pROMCode, i);
                             nComPos--;
-#if 0
+
                             for(j = i+1 ; j < ((i / 8) + 1) * 8 ; j++)
                             {
                                 CLR_BIT_AT(pROMCode, j);
@@ -331,12 +331,6 @@ _mqx_uint   FTE_1WIRE_search(FTE_1WIRE_PTR p1Wire, FTE_1WIRE_ROM_CODE_PTR pROMCo
                             {
                                 pROMCode[j] = 0;
                             }
-#else
-                            for(j = i+1 ; j < 64 ; j++)
-                            {
-                                CLR_BIT_AT(pROMCode, j);
-                            }
-#endif
                         }
                         bFound = TRUE;
                     }
