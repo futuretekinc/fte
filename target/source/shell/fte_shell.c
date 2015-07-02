@@ -82,7 +82,7 @@ const SHELL_COMMAND_STRUCT pSHELLCommands[] =
     { "sys",        FTE_SYS_SHELL_cmd},
     { "task",       FTE_TASK_SHELL_cmd},
 #if FTE_DEBUG
-    { "trace",      FTE_DEBUG_shellCmd},
+    { "trace",      FTE_TRACE_SHELL_cmd},
 #endif
 #if FTE_UCS_SUPPORTED
     { "ucs",        FTE_UCS_SHELL_cmd},

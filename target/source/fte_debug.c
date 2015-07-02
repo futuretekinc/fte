@@ -80,7 +80,7 @@ static FTE_DEBUG_MODULE_TYPE_NAME  _pModuleTypeName[] =
     {   .pName = NULL,      .ulType = 0}
 };
 
-int_32 FTE_DEBUG_shellCmd(int_32 nArgc, char_ptr pArgv[])
+int_32 FTE_TRACE_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
 {
     boolean              bPrintUsage, bShortHelp = FALSE;
     int_32               nReturnCode = SHELL_EXIT_SUCCESS;
@@ -91,39 +91,84 @@ int_32 FTE_DEBUG_shellCmd(int_32 nArgc, char_ptr pArgv[])
     {
         switch(nArgc)
         {
-        case    3:
+        case    1:
             {
-                if (strcmp(pArgv[0], "trace") == 0)
-                {       
-                    uint_32 ulType = DEBUG_UNKNOWN;
-                    FTE_DEBUG_MODULE_TYPE_NAME_PTR  pTypeName = _pModuleTypeName;
-                    while(pTypeName->pName != NULL)
+                uint_32 ulType = DEBUG_UNKNOWN;
+                FTE_DEBUG_MODULE_TYPE_NAME_PTR  pTypeName = _pModuleTypeName;
+                while(pTypeName->pName != NULL)
+                {
+                    if ((_ulTraceModule & pTypeName->ulType) == pTypeName->ulType)
                     {
-                        if (strcmp(pArgv[1], pTypeName->pName) == 0)
-                        {
-                            ulType = pTypeName->ulType;
-                            break;
-                        }
-                    }
-
-                    if (ulType == DEBUG_UNKNOWN)
-                    {
-                        bPrintUsage = TRUE;
-                        break;
-                    }
-                    
-                    if(strcmp(pArgv[2], "on") == 0)
-                    {
-                        FTE_DEBUG_traceOn(ulType);
-                    }
-                    else if(strcmp(pArgv[2], "off") == 0)
-                    {
-                        FTE_DEBUG_traceOff(ulType);
+                        printf("%8s : on\n", pTypeName->pName);
                     }
                     else
                     {
-                        bPrintUsage = TRUE;
+                        printf("%8s : off\n", pTypeName->pName);
                     }
+                    
+                    pTypeName++;
+                }
+            }
+            break;
+            
+        case    2:
+            {
+                uint_32 ulType = DEBUG_UNKNOWN;
+                FTE_DEBUG_MODULE_TYPE_NAME_PTR  pTypeName = _pModuleTypeName;
+                while(pTypeName->pName != NULL)
+                {
+                    if (strcmp(pArgv[1], pTypeName->pName) == 0)
+                    {
+                        ulType = pTypeName->ulType;
+                        break;
+                    }
+                    pTypeName++;
+                }
+
+                if (ulType == DEBUG_UNKNOWN)
+                {
+                    bPrintUsage = TRUE;
+                    break;
+                }
+                
+                if ((_ulTraceModule & ulType) == ulType)
+                {
+                    printf("%8s : on\n", pArgv[1]);
+                }
+                else
+                {
+                    printf("%8s : off\n", pArgv[1]);
+                }
+            }
+            break;
+                   
+        case    3:
+            {
+                uint_32 ulType = DEBUG_UNKNOWN;
+                FTE_DEBUG_MODULE_TYPE_NAME_PTR  pTypeName = _pModuleTypeName;
+                while(pTypeName->pName != NULL)
+                {
+                    if (strcmp(pArgv[1], pTypeName->pName) == 0)
+                    {
+                        ulType = pTypeName->ulType;
+                        break;
+                    }
+                    pTypeName++;
+                }
+
+                if (ulType == DEBUG_UNKNOWN)
+                {
+                    bPrintUsage = TRUE;
+                    break;
+                }
+                
+                if(strcmp(pArgv[2], "on") == 0)
+                {
+                    FTE_DEBUG_traceOn(ulType);
+                }
+                else if(strcmp(pArgv[2], "off") == 0)
+                {
+                    FTE_DEBUG_traceOff(ulType);
                 }
                 else
                 {

@@ -511,6 +511,7 @@ _mqx_uint       FTE_VALUE_setTemperature(FTE_VALUE_PTR pObj, int_32 nValue)
 {
     ASSERT(pObj != NULL);
     
+    pObj->bChanged = (pObj->xData.nValue != nValue);
     pObj->xData.nValue  = nValue;
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
@@ -531,6 +532,7 @@ _mqx_uint       FTE_VALUE_setHumidity(FTE_VALUE_PTR pObj, uint_32 ulValue)
 {
     ASSERT(pObj != NULL);
     
+    pObj->bChanged = (pObj->xData.ulValue != ulValue);
     pObj->xData.ulValue  = ulValue;
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
@@ -551,6 +553,7 @@ _mqx_uint       FTE_VALUE_setDIO(FTE_VALUE_PTR pObj, boolean bValue)
 {
     ASSERT(pObj != NULL);
     
+    pObj->bChanged = (pObj->xData.bValue != bValue);
     pObj->xData.bValue  = bValue;
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
@@ -571,6 +574,7 @@ _mqx_uint       FTE_VALUE_setPPM(FTE_VALUE_PTR pObj, uint_32 ulValue)
 {
     ASSERT(pObj != NULL);
     
+    pObj->bChanged = (pObj->xData.ulValue != ulValue);
     pObj->xData.ulValue  = ulValue;
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
@@ -591,6 +595,7 @@ _mqx_uint       FTE_VALUE_setULONG(FTE_VALUE_PTR pObj, uint_32 ulValue)
 {
     ASSERT(pObj != NULL);
     
+    pObj->bChanged = (pObj->xData.ulValue != ulValue);
     pObj->xData.ulValue  = ulValue;
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
@@ -611,6 +616,7 @@ _mqx_uint       FTE_VALUE_setVoltage(FTE_VALUE_PTR pObj, uint_32 ulValue)
 {
     ASSERT(pObj != NULL);
     
+    pObj->bChanged = (pObj->xData.ulValue != ulValue);
     pObj->xData.ulValue  = ulValue;
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
@@ -631,6 +637,7 @@ _mqx_uint       FTE_VALUE_setCurrent(FTE_VALUE_PTR pObj, uint_32 ulValue)
 {
     ASSERT(pObj != NULL);
     
+    pObj->bChanged = (pObj->xData.ulValue != ulValue);
     pObj->xData.ulValue  = ulValue;
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
@@ -651,6 +658,7 @@ _mqx_uint       FTE_VALUE_setPressure(FTE_VALUE_PTR pObj, int_32 nValue)
 {
     ASSERT(pObj != NULL);
     
+    pObj->bChanged = (pObj->xData.nValue != nValue);
     pObj->xData.nValue  = nValue;
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
@@ -671,6 +679,7 @@ _mqx_uint       FTE_VALUE_setPowerKW(FTE_VALUE_PTR pObj, uint_32 ulValue)
 {
     ASSERT(pObj != NULL);
     
+    pObj->bChanged = (pObj->xData.ulValue != ulValue);
     pObj->xData.ulValue  = ulValue;
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
@@ -691,6 +700,7 @@ _mqx_uint       FTE_VALUE_setPowerKWH(FTE_VALUE_PTR pObj, uint_32 ulValue)
 {
     ASSERT(pObj != NULL);
     
+    pObj->bChanged = (pObj->xData.ulValue != ulValue);
     pObj->xData.ulValue  = ulValue;
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
@@ -709,7 +719,8 @@ _mqx_uint       FTE_VALUE_getPressure(FTE_VALUE_PTR pObj, int_32_ptr pnValue)
 _mqx_uint       FTE_VALUE_setLED(FTE_VALUE_PTR pObj, uint_32 xState)
 {
     ASSERT(pObj != NULL);
-    
+
+    pObj->bChanged = (pObj->xData.xState != xState);
     pObj->xData.xState  = xState;
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);

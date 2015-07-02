@@ -4,7 +4,7 @@
 #define FTE_MODEL                           "FTE-ES16"
 
 #define FTE_TEMP_SUPPORTED                  1
-#define FTE_HUMIDITY_SUPPORTED              0
+#define FTE_HUMIDITY_SUPPORTED              1
 #define FTE_CO2_SUPPORTED                   0
 #define FTE_POWER_SUPPORTED                 0
 #define FTE_CONSOLE_SUPPORTED               1
@@ -39,7 +39,7 @@
 #define FTE_GAI_CURRENT0_SUPPORTED          0
 #define FTE_GAI_CURRENT1_SUPPORTED          0
 #define FTE_PRESSURE_SUPPORTED              0
-#define FTE_SHT_SUPPORTED                   0
+#define FTE_SHT_SUPPORTED                   1
 #define FTE_DS18B20_SUPPORTED               1
 #define FTE_DI_SUPPORTED                    1
 #define FTE_DO_SUPPORTED                    1
@@ -51,8 +51,8 @@
 #define FTE_GPIO_DI_SUPPORTED               1
 #define FTE_MULTI_DI_SUPPORTED              0
 #define FTE_MULTI_DO_SUPPORTED              0
-#define FTE_MULTI_TEMP_SUPPORTED            0
-#define FTE_MULTI_HUMI_SUPPORTED            0
+#define FTE_MULTI_TEMP_SUPPORTED            1
+#define FTE_MULTI_HUMI_SUPPORTED            1
 #define FTE_MULTI_CO2_SUPPORTED             0
 #define FTE_MULTI_VOC_SUPPORTED             0
 #define FTE_MULTI_COUNT_SUPPORTED           0

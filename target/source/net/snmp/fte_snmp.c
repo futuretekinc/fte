@@ -235,6 +235,7 @@ void FTE_SNMPD_TRAP_processing(void)
                     } 
                     bNewServer = TRUE;
                 }
+
 #if  FTE_NET_SNMP_TRAP_V1
                 SNMP_trap_userSpec((RTCSMIB_NODE *)&MIBNODE_msgDiscovery , 3, &MIBNODE_futuretek );
 #elif FTE_NET_SNMP_TRAP_V2

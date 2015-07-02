@@ -138,7 +138,7 @@ _mqx_uint   FTE_EVENT_isSatisfied(FTE_EVENT_PTR pEvent, int_32 nValue, boolean *
 _mqx_uint    FTE_EVENT_check(FTE_EVENT_PTR pEvent, struct _FTE_OBJECT_STRUCT _PTR_ pObj)
 {
     FTE_VALUE           xValue;
-    boolean             bState = FALSE;
+    boolean             bChanged = FALSE;
     TIME_STRUCT         xCurrentTime;
     
     if (FTE_FLAG_IS_CLR(pEvent->pConfig->xType, FTE_EVENT_TYPE_ENABLE) || 
@@ -182,16 +182,16 @@ _mqx_uint    FTE_EVENT_check(FTE_EVENT_PTR pEvent, struct _FTE_OBJECT_STRUCT _PT
     case    FTE_EVENT_CONDITION_ABOVE:
         if (pEvent->xState.bOccurred)
         {
-            if (pEvent->pConfig->xParams.xLimit.nValue - pEvent->pConfig->xParams.xLimit.ulThreshold <= xValue.xData.nValue)
+            if (xValue.xData.nValue < pEvent->pConfig->xParams.xLimit.nValue - pEvent->pConfig->xParams.xLimit.ulThreshold)
             {
-                bState = TRUE;
+                bChanged = TRUE;
             }        
         }
         else
         {            
             if (pEvent->pConfig->xParams.xLimit.nValue <= xValue.xData.nValue)
             {
-                bState = TRUE;
+                bChanged = TRUE;
 
             }
         }
@@ -201,16 +201,16 @@ _mqx_uint    FTE_EVENT_check(FTE_EVENT_PTR pEvent, struct _FTE_OBJECT_STRUCT _PT
     case    FTE_EVENT_CONDITION_BELOW:
         if (pEvent->xState.bOccurred)
         {
-            if (pEvent->pConfig->xParams.xLimit.nValue + pEvent->pConfig->xParams.xLimit.ulThreshold >= xValue.xData.nValue)
+            if (pEvent->pConfig->xParams.xLimit.nValue + pEvent->pConfig->xParams.xLimit.ulThreshold < xValue.xData.nValue)
             {
-                bState = TRUE;
+                bChanged = TRUE;
             }        
         }
         else
         {            
             if (pEvent->pConfig->xParams.xLimit.nValue >= xValue.xData.nValue)
             {
-                bState = TRUE;
+                bChanged = TRUE;
 
             }
         }
@@ -219,10 +219,10 @@ _mqx_uint    FTE_EVENT_check(FTE_EVENT_PTR pEvent, struct _FTE_OBJECT_STRUCT _PT
     case    FTE_EVENT_CONDITION_INSIDE:
         if (pEvent->xState.bOccurred)
         {
-            if ((pEvent->pConfig->xParams.xRange.nUpper + pEvent->pConfig->xParams.xRange.ulThreshold >= xValue.xData.nValue) &&
-                (pEvent->pConfig->xParams.xRange.nLower - pEvent->pConfig->xParams.xRange.ulThreshold <= xValue.xData.nValue))
+            if ((pEvent->pConfig->xParams.xRange.nUpper + pEvent->pConfig->xParams.xRange.ulThreshold < xValue.xData.nValue) ||
+                (pEvent->pConfig->xParams.xRange.nLower - pEvent->pConfig->xParams.xRange.ulThreshold > xValue.xData.nValue))
             {
-                bState = TRUE;
+                bChanged = TRUE;
             }
         }
         else
@@ -230,7 +230,7 @@ _mqx_uint    FTE_EVENT_check(FTE_EVENT_PTR pEvent, struct _FTE_OBJECT_STRUCT _PT
             if ((pEvent->pConfig->xParams.xRange.nUpper >= xValue.xData.nValue) &&
                 (pEvent->pConfig->xParams.xRange.nLower <= xValue.xData.nValue))
             {
-                bState = TRUE;
+                bChanged = TRUE;
             }
         }
         break;
@@ -238,51 +238,31 @@ _mqx_uint    FTE_EVENT_check(FTE_EVENT_PTR pEvent, struct _FTE_OBJECT_STRUCT _PT
     case    FTE_EVENT_CONDITION_OUTSIDE:
         if (pEvent->xState.bOccurred)
         {
-            if ((pEvent->pConfig->xParams.xRange.nUpper - pEvent->pConfig->xParams.xRange.ulThreshold < xValue.xData.nValue) ||
-                (pEvent->pConfig->xParams.xRange.nLower + pEvent->pConfig->xParams.xRange.ulThreshold > xValue.xData.nValue))
+            if ((pEvent->pConfig->xParams.xRange.nUpper - pEvent->pConfig->xParams.xRange.ulThreshold > xValue.xData.nValue) &&
+                (pEvent->pConfig->xParams.xRange.nLower + pEvent->pConfig->xParams.xRange.ulThreshold < xValue.xData.nValue))
             {
-                bState = TRUE;
+                bChanged = TRUE;
             }
         }
         else
         {            
-            if ((pEvent->pConfig->xParams.xRange.nUpper < xValue.xData.nValue) ||
-                (pEvent->pConfig->xParams.xRange.nLower > xValue.xData.nValue))
+            if ((pEvent->pConfig->xParams.xRange.nUpper <= xValue.xData.nValue) ||
+                (pEvent->pConfig->xParams.xRange.nLower >= xValue.xData.nValue))
             {
-                bState = TRUE;
+                bChanged = TRUE;
             }
-        }
-        break;
-        
-    case    FTE_EVENT_CONDITION_INTERVAL:
-        {
-            TIME_STRUCT xObjTime;
-            
-            FTE_VALUE_getTimeStamp(pObj->pStatus->pValue, &xObjTime);
-            if (FTE_TIME_diff(&xObjTime, &pEvent->xState.xTimeStamp) >= pEvent->pConfig->xParams.ulInterval)
-            {
-                pEvent->xState.xTimeStamp   = xObjTime;
-                pEvent->xState.bChanged     = TRUE;
-                pEvent->xState.bOccurred    = TRUE;
-            }
-            
-            return  MQX_OK;
         }
         break;
         
     case    FTE_EVENT_CONDITION_CHANGED:
         {
-            if (FTE_OBJ_STATE_isSet(pObj, FTE_OBJ_STATUS_FLAG_CHANGED))
+            if (pObj->pStatus->pValue->bChanged)
             {
-                FTE_VALUE_getTimeStamp(pObj->pStatus->pValue, &pEvent->xState.xTimeStamp);
-                pEvent->xState.bChanged     = TRUE;
-                pEvent->xState.bOccurred    = TRUE;
-                
-                FTE_OBJ_STATE_clear(pObj, FTE_OBJ_STATUS_FLAG_CHANGED);
+                pObj->pStatus->pValue->bChanged = FALSE;
+                bChanged = TRUE;
             }                
-                
-            return  TRUE;
         }
+        break;
 
     default:
         { 
@@ -290,35 +270,16 @@ _mqx_uint    FTE_EVENT_check(FTE_EVENT_PTR pEvent, struct _FTE_OBJECT_STRUCT _PT
         }
     }    
     
-    if (pEvent->pConfig->ulDelayTime != 0)
+    if (bChanged)
     {
-        TIME_STRUCT xObjTime;
+        char    pBuff[32];
+            
+        FTE_VALUE_toString(pObj->pStatus->pValue, pBuff, 32);
+        TRACE(DEBUG_EVENT, "Event : %08x [%s]\n", pEvent->pConfig->ulEPID, pBuff, (pEvent->xState.bOccurred)?"Release":"Occurred");
         
-        pEvent->xState.bStateChanged = (pEvent->xState.bState != bState);
-        pEvent->xState.bState   = bState;
-
-        FTE_VALUE_getTimeStamp(pObj->pStatus->pValue, &xObjTime);
-        
-        if (pEvent->xState.bStateChanged)
-        {
-            pEvent->xState.xTimeStamp = xObjTime;
-        }
-        
-        if ((pEvent->xState.bStateChanged == FALSE) && pEvent->xState.bState != pEvent->xState.bOccurred)
-        {
-            if (FTE_TIME_diff(&xCurrentTime, &pEvent->xState.xTimeStamp) > pEvent->pConfig->ulDelayTime)
-            {
-                pEvent->xState.xTimeStamp   = xObjTime;
-                pEvent->xState.bChanged     = TRUE;
-                pEvent->xState.bOccurred    = pEvent->xState.bState;
-            }
-        }
-    }
-    else
-    {
         FTE_VALUE_getTimeStamp(pObj->pStatus->pValue, &pEvent->xState.xTimeStamp);
-        pEvent->xState.bChanged     = (bState && !pEvent->xState.bOccurred);
-        pEvent->xState.bOccurred    = bState;
+        pEvent->xState.bChanged     = TRUE;
+        pEvent->xState.bOccurred    = ! pEvent->xState.bOccurred;
     }
     
     return  MQX_OK;
@@ -326,6 +287,11 @@ _mqx_uint    FTE_EVENT_check(FTE_EVENT_PTR pEvent, struct _FTE_OBJECT_STRUCT _PT
 
 _mqx_uint    FTE_EVENT_proc(FTE_EVENT_PTR pEvent, TIME_STRUCT_PTR pTime)
 {
+    if (FTE_FLAG_IS_CLR(pEvent->pConfig->xType, FTE_EVENT_TYPE_ENABLE))
+    {
+        return  MQX_OK;
+    }
+    
     if (pEvent->pConfig->xCondition == FTE_EVENT_CONDITION_INTERVAL)
     {
         if (pEvent->xState.xTimeStamp.SECONDS == 0)
@@ -334,8 +300,28 @@ _mqx_uint    FTE_EVENT_proc(FTE_EVENT_PTR pEvent, TIME_STRUCT_PTR pTime)
         }
         else if (pEvent->xState.xTimeStamp.SECONDS < pTime->SECONDS)
         {
-            pEvent->xState.bChanged = TRUE;
-            pEvent->xState.xTimeStamp.SECONDS += pEvent->pConfig->xParams.ulInterval;
+            uint_32 i;
+            
+            for(i = 0 ; i < FTE_LIST_count(&_eventList); i++)
+            {
+                FTE_EVENT_PTR   pEvent2 = (FTE_EVENT_PTR)FTE_LIST_getAt(&_eventList, i);
+                
+                if ( FTE_FLAG_IS_SET(pEvent2->pConfig->xType, FTE_EVENT_TYPE_ENABLE) &&
+                    (pEvent->pConfig->ulEPID == pEvent2->pConfig->ulEPID) && 
+                    (pEvent2->pConfig->xCondition != FTE_EVENT_CONDITION_INTERVAL))
+                {
+                    if (pEvent->xState.xTimeStamp.SECONDS < (pEvent2->xState.xTimeStamp.SECONDS + pEvent->pConfig->xParams.ulInterval))
+                    {
+                        pEvent->xState.xTimeStamp.SECONDS = pEvent2->xState.xTimeStamp.SECONDS + pEvent->pConfig->xParams.ulInterval;
+                    }
+                }
+            }
+
+            if (pEvent->xState.xTimeStamp.SECONDS < pTime->SECONDS)
+            {
+                pEvent->xState.bChanged = TRUE;
+                pEvent->xState.xTimeStamp.SECONDS += pEvent->pConfig->xParams.ulInterval;
+            }
         }            
     }
     
@@ -346,21 +332,6 @@ _mqx_uint    FTE_EVENT_proc(FTE_EVENT_PTR pEvent, TIME_STRUCT_PTR pTime)
         for(int i = 0 ; i < FTE_LIST_count(&pEvent->xState.xObjectList) ; i++)
         {
             pObj = (FTE_OBJECT_PTR)FTE_LIST_getAt(&pEvent->xState.xObjectList, i);
-#if 0
-            if (pEvent->xState.pObj == NULL)
-            {
-                pEvent->xState.pObj = FTE_OBJ_get(pEvent->pConfig->ulEPID);
-                if (pEvent->xState.pObj == NULL)
-                {
-    //                TRACE(DEBUG_EVENT, "%s : Object not found[ulEPID = %08lx]\n", __func__, pEvent->pConfig->ulEPID);
-                    return  MQX_INVALID_HANDLE;
-                }
-            }
-            
-            pObj = pEvent->xState.pObj;
-#endif
-            
-            pEvent->xState.bChanged = FALSE;
             
             if (FTE_FLAG_IS_SET(pEvent->pConfig->xType, FTE_EVENT_TYPE_LOG))
             {
@@ -379,8 +350,10 @@ _mqx_uint    FTE_EVENT_proc(FTE_EVENT_PTR pEvent, TIME_STRUCT_PTR pTime)
             {
                 FTE_MQTT_publishEPValue(pObj->pConfig->xCommon.nID, FTE_MQTT_QOS_2);
             }
-#endif
+#endif            
         }
+        
+        pEvent->xState.bChanged = FALSE;
     }
     
     return  MQX_OK;
@@ -395,9 +368,10 @@ char_ptr FTE_EVENT_CONDITION_string(uint_32 ulType)
     case    FTE_EVENT_CONDITION_INSIDE:  return  "<>";
     case    FTE_EVENT_CONDITION_OUTSIDE: return  "><";
     case    FTE_EVENT_CONDITION_INTERVAL:return  "~~";
+    case    FTE_EVENT_CONDITION_CHANGED: return  "XX";
     case    FTE_EVENT_CONDITION_TIME:    return  "!!";
     
-    default:                        return  "UNKNOWN";
+    default:                            return  "??";
     }
        
 }
@@ -501,7 +475,7 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                         break;
                     }
                     
-                    if ((pEvent = FTE_EVENT_getAt(ulIndex)) != MQX_OK)                        
+                    if ((pEvent = FTE_EVENT_getAt(ulIndex)) != NULL)                        
                     {
                          FTE_OBJECT_PTR pObject = FTE_OBJ_get(pEvent->pConfig->ulEPID);
                          if (pObject != NULL)
@@ -514,7 +488,88 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                         }
                     }                               
                 }
+                else
+                {
+                    FTE_EVENT_PTR           pEvent;
+                    uint_32                 ulIndex;
+                    
+                    if (!Shell_parse_number(pArgv[1], &ulIndex))
+                    {
+                        bPrintUsage = TRUE;
+                        break;
+                    }
+                    
+                    if ((pEvent = FTE_EVENT_getAt(ulIndex - 1)) == NULL)                        
+                    {
+                        printf("Error : Invalid index[%lu]\n", ulIndex);
+                        break;
+                    }
+                    
+                    if (strcmp(pArgv[2], "enable") == 0)
+                    {
+                        if (FTE_FLAG_IS_CLR(pEvent->pConfig->xType, FTE_EVENT_TYPE_ENABLE))
+                        {
+                            pEvent->pConfig->xType = FTE_FLAG_SET(pEvent->pConfig->xType, FTE_EVENT_TYPE_ENABLE);
+                            FTE_CFG_save(TRUE);
+                        }
+                    }
+                    else if (strcmp(pArgv[2], "disable") == 0)
+                    {
+                        if (FTE_FLAG_IS_SET(pEvent->pConfig->xType, FTE_EVENT_TYPE_ENABLE))
+                        {
+                            pEvent->pConfig->xType = FTE_FLAG_CLR(pEvent->pConfig->xType, FTE_EVENT_TYPE_ENABLE);
+                            FTE_CFG_save(TRUE);
+                        }
+                    }
+                     
+                     return  SHELL_EXIT_SUCCESS;                                                    
+                }
             }
+            break;
+            
+        case    4:
+            {
+                FTE_EVENT_PTR           pEvent;
+                uint_32                 ulIndex;
+                
+                if (!Shell_parse_number(pArgv[1], &ulIndex))
+                {
+                    bPrintUsage = TRUE;
+                    break;
+                }
+                
+                if ((pEvent = FTE_EVENT_getAt(ulIndex - 1)) == NULL)                        
+                {
+                    printf("Error : Invalid index[%lu]\n", ulIndex);
+                    break;
+                }
+                
+                if (strcmp(pArgv[2], "interval") == 0)
+                {
+                    uint_32 ulInterval;
+                    
+                    if (pEvent->pConfig->xCondition != FTE_EVENT_CONDITION_INTERVAL)
+                    {
+                        printf("Invalid condition parameter!\n");
+                        bPrintUsage = TRUE;
+                        break;
+                    }
+                    
+                    if ((!Shell_parse_number(pArgv[3], &ulInterval)) || (ulInterval > 60*60*24*31))
+                    {
+                        printf("Invalid interval[%s]!\n", pArgv[3]);
+                        bPrintUsage = TRUE;
+                        break;
+                    }
+                    
+                    pEvent->pConfig->xParams.ulInterval = ulInterval;
+                    FTE_CFG_save(TRUE);
+                }
+                 
+                 return  SHELL_EXIT_SUCCESS;                                                    
+            }
+            break;
+ 
         case    5:
             {
                 if (strcmp(pArgv[1], "add") == 0)
@@ -596,36 +651,31 @@ _mqx_uint    FTE_EVENT_type_string(uint_32 xType, char_ptr pBuff, int_32 nBuffLe
 {
     int nLen = 0;
     
+    if ((xType & FTE_EVENT_TYPE_ENABLE) == FTE_EVENT_TYPE_ENABLE)
+    {
+        nLen = snprintf(pBuff, nBuffLen, "%s", "enable");
+    }
+    else
+    {
+        nLen = snprintf(pBuff, nBuffLen, "%s", "disable");
+    }
+    
     if ((xType & FTE_EVENT_TYPE_LOG) == FTE_EVENT_TYPE_LOG)
     {
-        nLen = snprintf(pBuff, nBuffLen, "%s", "log");
+        nLen += snprintf(&pBuff[nLen], nBuffLen - nLen, " | %s", "log");
     }
     
 #if FTE_MQTT_SUPPORTED
     if ((xType & FTE_EVENT_TYPE_MQTT_PUB) == FTE_EVENT_TYPE_MQTT_PUB)
     {
-        if (nLen != 0)
-        {
-            nLen += snprintf(&pBuff[nLen], nBuffLen - nLen, " | %s", "mqtt");
-        }
-        else
-        {
-            nLen += snprintf(&pBuff[nLen], nBuffLen, "%s", "mqtt");
-        }
+        nLen += snprintf(&pBuff[nLen], nBuffLen - nLen, " | %s", "mqtt");
     } 
 #endif
     
 #if FTE_SNMPD_SUPPORTED
     if ((xType & FTE_EVENT_TYPE_SNMP_TRAP) == FTE_EVENT_TYPE_SNMP_TRAP)
     {
-        if (nLen != 0)
-        {
-            nLen += snprintf(&pBuff[nLen], nBuffLen - nLen, " | %s", "snmp");
-        }
-        else
-        {
-            nLen += snprintf(&pBuff[nLen], nBuffLen, "%s", "snmp");
-        }
+        nLen += snprintf(&pBuff[nLen], nBuffLen - nLen, " | %s", "snmp");
     }
 #endif
     

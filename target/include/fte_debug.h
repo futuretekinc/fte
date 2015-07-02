@@ -33,6 +33,6 @@ _mqx_int    FTE_DEBUG_traceOn(uint_32 ulModule);
 _mqx_int    FTE_DEBUG_traceOff(uint_32 ulModule);
 _mqx_int    FTE_DEBUG_error(const char _PTR_ pFuncName, int nLine, const char _PTR_ fmt_ptr, ... );
 
-int_32 FTE_DEBUG_shellCmd(int_32 nArgc, char_ptr pArgv[]);
+int_32 FTE_TRACE_SHELL_cmd(int_32 nArgc, char_ptr pArgv[]);
 
 #endif

@@ -63,10 +63,10 @@ typedef struct
 typedef struct
 {
     struct _FTE_OBJECT_STRUCT _PTR_ pObj;
-    uint_32                         bState;
-    uint_32                         bStateChanged;
-    uint_32                         bOccurred;    
-    uint_32                         bChanged;
+    uint_8                          bState;
+    uint_8                          bStateChanged;
+    uint_8                          bOccurred;    
+    uint_8                          bChanged;
     TIME_STRUCT                     xTimeStamp;
     FTE_LIST                        xObjectList;
 }   FTE_EVENT_STATE, _PTR_ FTE_EVENT_STATE_PTR;

@@ -1393,6 +1393,16 @@ static const FTE_EVENT_CONFIG fte_release_di0_config =
         }
     }
 };
+
+static const FTE_EVENT_CONFIG fte_changed_di0_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DI, 0x0001),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+
+
 #endif
 
 #if FTE_MCP23S08_SUPPORTED
@@ -1405,7 +1415,7 @@ static const FTE_EVENT_CONFIG fte_report_di0_config =
     .xCondition = FTE_EVENT_CONDITION_INTERVAL,
     .xParams    =
     {
-        .ulInterval = 5
+        .ulInterval = 60
     }
 };
 
@@ -1442,6 +1452,15 @@ static const FTE_EVENT_CONFIG fte_release_di0_config =
     }
 };
 
+static const FTE_EVENT_CONFIG fte_changed_di0_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DI, 0x0001),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+
+
 static const FTE_EVENT_CONFIG fte_report_di1_config = 
 {
     .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DI, 0x0002),
@@ -1450,7 +1469,7 @@ static const FTE_EVENT_CONFIG fte_report_di1_config =
     .xCondition = FTE_EVENT_CONDITION_INTERVAL,
     .xParams    =
     {
-        .ulInterval = 5
+        .ulInterval = 60
     }
 };
 
@@ -1486,6 +1505,14 @@ static const FTE_EVENT_CONFIG fte_release_di1_config =
     }
 };
 
+static const FTE_EVENT_CONFIG fte_changed_di1_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DI, 0x0002),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+
 static const FTE_EVENT_CONFIG fte_report_do0_config = 
 {
     .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DO, 0x0001),
@@ -1494,7 +1521,7 @@ static const FTE_EVENT_CONFIG fte_report_do0_config =
     .xCondition = FTE_EVENT_CONDITION_INTERVAL,
     .xParams    =
     {
-        .ulInterval = 5
+        .ulInterval = 60
     }
 };
 
@@ -1532,6 +1559,14 @@ static const FTE_EVENT_CONFIG fte_release_do0_config =
     }
 };
 
+static const FTE_EVENT_CONFIG fte_changed_do0_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DO, 0x0001),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+
 static const FTE_EVENT_CONFIG fte_report_do1_config = 
 {
     .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DO, 0x0002),
@@ -1540,7 +1575,7 @@ static const FTE_EVENT_CONFIG fte_report_do1_config =
     .xCondition = FTE_EVENT_CONDITION_INTERVAL,
     .xParams    =
     {
-        .ulInterval = 5
+        .ulInterval = 60
     }
 };
 
@@ -1560,6 +1595,13 @@ static const FTE_EVENT_CONFIG fte_occurred_do1_config =
     }
 };
 
+static const FTE_EVENT_CONFIG fte_changed_do1_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DO, 0x0002),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
 
 static const FTE_EVENT_CONFIG fte_release_do1_config = 
 {
@@ -1809,22 +1851,17 @@ const FTE_CFG_EVENT_PTR pInitEventConfigs[] =
 {
 #if FTE_GPIO_DI_SUPPORTED
     (FTE_CFG_EVENT_PTR)&fte_report_di0_config,    
-    (FTE_CFG_EVENT_PTR)&fte_occurred_di0_config,    
-    (FTE_CFG_EVENT_PTR)&fte_release_di0_config,    
+    (FTE_CFG_EVENT_PTR)&fte_changed_di0_config,    
 #endif    
 #if FTE_MCP23S08_SUPPORTED
     (FTE_CFG_EVENT_PTR)&fte_report_di0_config,    
-    (FTE_CFG_EVENT_PTR)&fte_occurred_di0_config,    
-    (FTE_CFG_EVENT_PTR)&fte_release_di0_config,    
+    (FTE_CFG_EVENT_PTR)&fte_changed_di0_config,    
     (FTE_CFG_EVENT_PTR)&fte_report_di1_config,
-    (FTE_CFG_EVENT_PTR)&fte_occurred_di1_config,    
-    (FTE_CFG_EVENT_PTR)&fte_release_di1_config,    
+    (FTE_CFG_EVENT_PTR)&fte_changed_di1_config,    
     (FTE_CFG_EVENT_PTR)&fte_report_do0_config,
-    (FTE_CFG_EVENT_PTR)&fte_occurred_do0_config,    
-    (FTE_CFG_EVENT_PTR)&fte_release_do0_config,    
+    (FTE_CFG_EVENT_PTR)&fte_changed_do0_config,    
     (FTE_CFG_EVENT_PTR)&fte_report_do1_config,
-    (FTE_CFG_EVENT_PTR)&fte_occurred_do1_config,    
-    (FTE_CFG_EVENT_PTR)&fte_release_do1_config,    
+    (FTE_CFG_EVENT_PTR)&fte_changed_do1_config,    
 #endif
 #if FTE_TEMP_SUPPORTED
     (FTE_CFG_EVENT_PTR)&fte_event_temp_config,
@@ -1852,8 +1889,7 @@ const FTE_CFG_EVENT_PTR pInitEventConfigs[] =
 #endif
 #if FTE_BOTEM_PN1500_SUPPORTED
     (FTE_CFG_EVENT_PTR)&fte_report_di0_config,    
-    (FTE_CFG_EVENT_PTR)&fte_occurred_di0_config,    
-    (FTE_CFG_EVENT_PTR)&fte_release_di0_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_di0_config,    
     (FTE_CFG_EVENT_PTR)&fte_changed_count_config
 #endif
 };
