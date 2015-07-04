@@ -19,6 +19,7 @@ typedef struct  _fte_di_status_struct
 {
     FTE_OBJECT_STATUS   xCommon;
     FTE_GPIO_PTR        pGPIO;
+    TIME_STRUCT         xLastOccurredTime;
 }   FTE_DI_STATUS, _PTR_ FTE_DI_STATUS_PTR;
 
 _mqx_uint       FTE_DI_attach(FTE_OBJECT_PTR pObj);
@@ -29,8 +30,8 @@ uint_32         FTE_DI_count(void);
 
 _mqx_uint       FTE_DI_getValue(FTE_OBJECT_ID  nID, uint_32_ptr pValue);
 boolean         FTE_DI_isActive(FTE_OBJECT_ID  nID);
-_mqx_uint       FTE_DI_INT_lock(FTE_OBJECT_ID  nID);
-_mqx_uint       FTE_DI_INT_unlock(FTE_OBJECT_ID  nID);
+_mqx_uint       FTE_DI_INT_lock(FTE_OBJECT_PTR  pObj);
+_mqx_uint       FTE_DI_INT_unlock(FTE_OBJECT_PTR  pObj);
 _mqx_uint       FTE_DI_setPolarity(FTE_OBJECT_PTR pObj, boolean bActiveHI);
 
 
