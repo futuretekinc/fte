@@ -307,7 +307,7 @@ _mqx_uint   FTE_GPIO_setISR(FTE_GPIO_PTR pGPIO, void (*f_isr)(void *), void *pPa
 #if FTE_MCP23S08_SUPPORTED
     case    FTE_DEV_TYPE_MCP23S08:
         {
-            return  fte_mcp23s08_gpio_isr_set((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, f_isr, pParams);
+            return  fte_mcp23s08_gpio_isr_set((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, f_isr, NULL);
         }
         break;
 #endif
