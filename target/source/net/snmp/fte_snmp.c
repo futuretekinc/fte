@@ -241,11 +241,14 @@ void FTE_SNMPD_TRAP_processing(void)
 #elif FTE_NET_SNMP_TRAP_V2
                 SNMPv2_trap_userSpec( (RTCSMIB_NODE *)&MIBNODE_msgDiscovery );
 #endif
+                ++ulRespDiscoveryCount;
+                SNMP_TRACE("Send Discovery trap[%d]\n", ulRespDiscoveryCount);
+                
                 if (bNewServer)
                 {
                     RTCS_trap_target_remove(pCurrentTrapMsg->xParams.xDiscovery.xHostIP);
+                    SNMP_TRACE("\nRemove temporary trap server(%d.%d.%d.%d) for discovery\n", IPBYTES(pCurrentTrapMsg->xParams.xDiscovery.xHostIP));
                 }                
-                ++ulRespDiscoveryCount;
             }
             break;
         }
@@ -258,7 +261,7 @@ void FTE_SNMPD_TRAP_processing(void)
         FTE_MEM_free(pCurrentTrapMsg);
         pCurrentTrapMsg = NULL;
         
-        _time_delay(10);
+        _time_delay(100);
     }
 }
 
