@@ -28,6 +28,7 @@
 #define ERROR(...)              
 #define err_sys(...)            
 #endif
+void        FTE_DEBUG_init(void);
 _mqx_int    FTE_DEBUG_trace(uint_32 ulModule, const char _PTR_ fmt_ptr, ... );
 _mqx_int    FTE_DEBUG_traceOn(uint_32 ulModule);
 _mqx_int    FTE_DEBUG_traceOff(uint_32 ulModule);
