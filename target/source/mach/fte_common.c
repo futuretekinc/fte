@@ -1141,8 +1141,8 @@ FTE_1WIRE_CONFIG p1WireConfigs[] =
         .nMaxDevices= FTE_1WIRE_MAX_DEVICES,
         .xFlags     = FTE_DEV_FLAG_SYSTEM_DEVICE
     }
-};
 #endif
+};
 #endif
 
 #if FTE_MCP23S08_SUPPORTED

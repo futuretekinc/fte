@@ -1,19 +1,21 @@
 #ifndef __FTE_H__
 #define __FTE_H__
 
-#define FTE_ES2                             1
-
 #define FTE_MODEL                           "FTE-ES2"
 
 #define FTE_TEMP_SUPPORTED                  1
 #define FTE_HUMIDITY_SUPPORTED              1
 #define FTE_CO2_SUPPORTED                   0
 #define FTE_POWER_SUPPORTED                 0
-
 #define FTE_CONSOLE_SUPPORTED               1
 #define FTE_LOG_SUPPORTED                   1
+#if FTE_V2
+#define FTE_PWR_SW_SUPPORTED                1
+#define FTE_FACTORY_RESET_SUPPORTED         1
+#else
 #define FTE_PWR_SW_SUPPORTED                0
 #define FTE_FACTORY_RESET_SUPPORTED         0
+#endif
 
 #define FTE_I2C_SUPPORTED                   0
 #define FTE_SSD1305_SUPPORTED               0
@@ -32,6 +34,10 @@
 #define FTE_RTD0_SUPPORTED                  0
 #define FTE_RTD1_SUPPORTED                  0
 #define FTE_GAI_SUPPORTED                   0
+#define FTE_GAI_VOLTAGE0_SUPPORTED          0
+#define FTE_GAI_VOLTAGE1_SUPPORTED          0
+#define FTE_GAI_CURRENT0_SUPPORTED          0
+#define FTE_GAI_CURRENT1_SUPPORTED          0
 #define FTE_PRESSURE_SUPPORTED              0
 #define FTE_SHT_SUPPORTED                   1
 #define FTE_DS18B20_SUPPORTED               1
@@ -50,15 +56,21 @@
 #define FTE_MULTI_CO2_SUPPORTED             0
 #define FTE_MULTI_VOC_SUPPORTED             0
 #define FTE_MULTI_COUNT_SUPPORTED           0
+#define FTE_MULTI_PRESSURE_SUPPORTED        0
+#define FTE_MULTI_VOLTAGE_SUPPORTED         0
+#define FTE_MULTI_CURRENT_SUPPORTED         0
+#define FTE_MULTI_POWER_SUPPORTED           0
 
 // CO2 Sensors
 #define FTE_SH_MV250_SUPPORTED              0
+#define FTE_GS_DPC_HL_SUPPORTED             0
 #define FTE_TRUEYES_AIRQ_SUPPORTED          0
 #define FTE_ELT_AQM100_SUPPORTED            0
 #define FTE_COZIR_AX5000_SUPPORTED          0
 
 // Power Meters
 #define FTE_TASCON_HEM12_SUPPORTED          0
+#define FTE_TASCON_HEM12_06M_SUPPORTED      0
 
 // Multi-Function
 #define FTE_BOTEM_PN1500_SUPPORTED          0
