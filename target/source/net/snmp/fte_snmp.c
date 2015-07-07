@@ -227,7 +227,7 @@ void FTE_SNMPD_TRAP_processing(void)
                 boolean bNewServer = FALSE;
                 if (!FTE_NET_SERVER_isExist(pCurrentTrapMsg->xParams.xDiscovery.xHostIP))
                 {
-                    SNMP_TRACE("\nAdd temporary trap server(%d.%d.%d.%d) for discovery\n", IPBYTES(pCurrentTrapMsg->xParams.xDiscovery.xHostIP));
+                    SNMP_TRACE("Add temporary trap server(%d.%d.%d.%d) for discovery\n", IPBYTES(pCurrentTrapMsg->xParams.xDiscovery.xHostIP));
                     uint_32 error = RTCS_trap_target_add(pCurrentTrapMsg->xParams.xDiscovery.xHostIP);
                     if (error) 
                     {
@@ -247,7 +247,7 @@ void FTE_SNMPD_TRAP_processing(void)
                 if (bNewServer)
                 {
                     RTCS_trap_target_remove(pCurrentTrapMsg->xParams.xDiscovery.xHostIP);
-                    SNMP_TRACE("\nRemove temporary trap server(%d.%d.%d.%d) for discovery\n", IPBYTES(pCurrentTrapMsg->xParams.xDiscovery.xHostIP));
+                    SNMP_TRACE("Remove temporary trap server(%d.%d.%d.%d) for discovery\n", IPBYTES(pCurrentTrapMsg->xParams.xDiscovery.xHostIP));
                 }                
             }
             break;
@@ -296,6 +296,7 @@ _mqx_uint   FTE_SNMPD_TRAP_discovery(_ip_address xHostIP)
     
     ulReqDiscoveryCount ++;
 
+#if 0
     FTE_LIST_ITER_init(&_trapList, &xIter);
     while ((pMsg = FTE_LIST_ITER_getNext(&xIter)) != NULL)
     {
@@ -304,7 +305,7 @@ _mqx_uint   FTE_SNMPD_TRAP_discovery(_ip_address xHostIP)
             return  MQX_OK;
         }
     }    
-    
+#endif
     pMsg = (FTE_TRAP_MSG_PTR)FTE_MEM_allocZero(sizeof(FTE_TRAP_MSG));
     if (pMsg == NULL)
     {
