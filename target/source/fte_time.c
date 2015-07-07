@@ -14,12 +14,20 @@ _mqx_uint   FTE_TIME_init(void)
 uint_32     FTE_TIME_diff(TIME_STRUCT_PTR pTime1, TIME_STRUCT_PTR pTime2)
 {
     MQX_TICK_STRUCT xTick1, xTick2;
-    boolean         bOverflow;
+    boolean         bOverflow = FALSE;
+    int_32          nDiffTime;
     
     _time_to_ticks(pTime1, &xTick1);
     _time_to_ticks(pTime2, &xTick2);
     
-    return  _time_diff_seconds(&xTick1, &xTick2, &bOverflow);
+    nDiffTime = _time_diff_seconds(&xTick1, &xTick2, &bOverflow);
+    
+    if (bOverflow)
+    {
+        nDiffTime = _time_diff_seconds(&xTick2, &xTick1, &bOverflow);
+    }
+    
+    return  nDiffTime;
 }
 
 uint_32 FTE_TIME_toString(TIME_STRUCT *pTime, char_ptr pBuff, uint_32 nBuffLen)
