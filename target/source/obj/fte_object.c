@@ -981,6 +981,67 @@ int_32          FTE_OBJ_SHELL_cmd(int_32 argc, char_ptr argv[])
             }
             break;
             
+        case    2:
+            {
+                uint_32 nID;
+                TIME_STRUCT xTime;
+                char        pTimeString[32];
+                char        pValueString[16];
+                char        pUnitString[8];
+                
+                if (Shell_parse_hexnum(argv[1], &nID) != TRUE)
+                {
+                    printf("Invalid OID[%s]\n", argv[1]);
+                    return_code = SHELL_EXIT_ERROR;
+                    break;
+                }
+                
+                FTE_OBJECT_PTR  pObj = FTE_OBJ_get(nID);                    
+                if (pObj == NULL)
+                {
+                    printf("Invalid OID[%08x]\n", nID);
+                    return_code = SHELL_EXIT_ERROR;
+                    break;
+                }
+                
+                printf("%8s : %08x\n",  "ID",       pObj->pConfig->xCommon.nID);
+                printf("%8s : %s\n",    "Type",     FTE_OBJ_typeString(pObj));
+                printf("%8s : %s\n",    "Name",     pObj->pConfig->xCommon.pName);
+                printf("%8s : %s\n",    "Status",   FTE_OBJ_IS_ENABLED(pObj)?"RUN":"STOP");                       
+                
+                    
+                FTE_VALUE_toString(pObj->pStatus->pValue, pValueString, sizeof(pValueString));
+                FTE_VALUE_unit(pObj->pStatus->pValue, pUnitString, sizeof(pUnitString));
+                FTE_VALUE_getTimeStamp(pObj->pStatus->pValue, &xTime);
+                FTE_TIME_toString(&xTime, pTimeString, sizeof(pTimeString));
+                
+                printf("%8s : %s\n",   "Value", pValueString);
+                printf("%8s : %s\n",    "Unit", pUnitString);
+                printf("%8s : %s\n",    "Time", pTimeString);
+                if (FTE_OBJ_TYPE(pObj) == FTE_OBJ_TYPE_DI)
+                {
+                    FTE_DI_CONFIG_PTR   pConfig = (FTE_DI_CONFIG_PTR)pObj->pConfig;
+                    
+                    printf("%8s : %d secs\n",    "Delay", pConfig->ulDelay);
+                    printf("%8s : %d secs\n",    "Hold", pConfig->ulHold);
+                }
+                
+                if (pObj->pAction->f_get_statistic != NULL)
+                {
+                    FTE_OBJECT_STATISTICS    xStatistics;
+                    uint_32                 nRatio;
+                    
+                    pObj->pAction->f_get_statistic(pObj, &xStatistics);
+                    nRatio = (xStatistics.nTotalTrial - xStatistics.nTotalFail) * 10000 / xStatistics.nTotalTrial;
+                    
+                    printf("%8s : %3d.%02d%%\n", "Rate", nRatio/100, nRatio%100);
+                    printf("%8s : %d\n", "Total",   xStatistics.nTotalTrial);
+                    printf("%8s : %d\n", "Failed",  xStatistics.nTotalFail);
+                    printf("%8s : %d\n", "Partial", xStatistics.nPartialFail);
+                }
+            }
+            break;            
+            
         case    3:
             {
                 uint_32 nID;
@@ -988,12 +1049,16 @@ int_32          FTE_OBJ_SHELL_cmd(int_32 argc, char_ptr argv[])
                 if (Shell_parse_hexnum(argv[1], &nID) != TRUE)
                 {
                     printf("Invalid OID[%s]\n", argv[1]);
+                    return_code = SHELL_EXIT_ERROR;
+                    break;
                 }
                 
                 FTE_OBJECT_PTR  pObj = FTE_OBJ_get(nID);                    
                 if (pObj == NULL)
                 {
                     printf("Invalid OID[%08x]\n", nID);
+                    return_code = SHELL_EXIT_ERROR;
+                    break;
                 }
                 
                 if (strcmp(argv[2], "info") == 0)
@@ -1042,22 +1107,67 @@ int_32          FTE_OBJ_SHELL_cmd(int_32 argc, char_ptr argv[])
         case    4:
             {
                 uint_32  nOID = 0;
+
+                Shell_parse_hexnum(argv[1], &nOID);
                 
-                if (strcmp(argv[1], "set") == 0)
+                FTE_OBJECT_PTR  pObj = FTE_OBJ_get(nOID);                    
+                if (pObj == NULL)
                 {
-                    Shell_parse_hexnum(argv[2], &nOID);
+                    return_code = SHELL_EXIT_ERROR;
+                    break;
+                }
+                
+                if (strcmp(argv[2], "set") == 0)
+                {
+                    FTE_VALUE   xValue;
                     
-                    FTE_OBJECT_PTR  pObj = FTE_OBJ_get(nOID);                    
-                    if (pObj != NULL)
+                    FTE_VALUE_init(&xValue, FTE_OBJ_getValueType(pObj));
+                    if (FTE_VALUE_set(&xValue, argv[3]) == MQX_OK)
                     {
-                        FTE_VALUE   xValue;
-                        
-                        FTE_VALUE_init(&xValue, FTE_OBJ_getValueType(pObj));
-                        if (FTE_VALUE_set(&xValue, argv[3]) == MQX_OK)
-                        {
-                            FTE_OBJ_setValue(pObj, &xValue);
-                        }
+                        FTE_OBJ_setValue(pObj, &xValue);
                     }
+                }
+                else if (strcmp(argv[2], "delay") == 0)
+                {
+                    uint_32  ulDelay;
+                    if (Shell_parse_number(argv[3], &ulDelay) != TRUE)
+                    {
+                        printf("Invalid delay time[%s]\n", argv[3]);
+                        return_code = SHELL_EXIT_ERROR;
+                        break;
+                    }
+                    
+                    if (FTE_OBJ_TYPE(pObj) != FTE_OBJ_TYPE_DI)
+                    {
+                        return_code = SHELL_EXIT_ERROR;
+                        break;
+                    }
+                    
+                    FTE_DI_CONFIG_PTR   pConfig = (FTE_DI_CONFIG_PTR)pObj->pConfig;
+                    
+                    pConfig->ulDelay = ulDelay;
+                    FTE_CFG_OBJ_save(pObj);
+                }
+                else if (strcmp(argv[2], "hold") == 0)
+                {
+                    uint_32  ulHold;
+                    if (Shell_parse_number(argv[3], &ulHold) != TRUE)
+                    {
+                        printf("Invalid hold time[%s]\n", argv[3]);
+                        return_code = SHELL_EXIT_ERROR;
+                        break;
+                    }
+                    
+                    if (FTE_OBJ_TYPE(pObj) != FTE_OBJ_TYPE_DI)
+                    {
+                        return_code = SHELL_EXIT_ERROR;
+                        break;
+                    }
+                    
+                    FTE_DI_CONFIG_PTR   pConfig = (FTE_DI_CONFIG_PTR)pObj->pConfig;
+                    
+                    pConfig->ulHold = ulHold;
+                    FTE_CFG_OBJ_save(pObj);
                 }
             }
             break;

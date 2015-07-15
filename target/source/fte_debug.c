@@ -2,7 +2,7 @@
 #include "fte_time.h"
 
 #if FTE_DEBUG
-
+ 
 static char     _pBuff[1024];
 static uint_32  _ulTraceModule = 0;
 

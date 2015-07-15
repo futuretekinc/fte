@@ -13,13 +13,15 @@ typedef struct _fte_di_config_struct
     FTE_COMMON_CONFIG   xCommon;
     uint_32             nGPIO;
     uint_32             nLED;
+    uint_32             ulDelay;
+    uint_32             ulHold;
 }   FTE_DI_CONFIG, _PTR_ FTE_DI_CONFIG_PTR;
 
 typedef struct  _fte_di_status_struct
 {
     FTE_OBJECT_STATUS   xCommon;
     FTE_GPIO_PTR        pGPIO;
-    TIME_STRUCT         xLastOccurredTime;
+    FTE_VALUE           xPresetValue;
 }   FTE_DI_STATUS, _PTR_ FTE_DI_STATUS_PTR;
 
 _mqx_uint       FTE_DI_attach(FTE_OBJECT_PTR pObj);
@@ -27,6 +29,7 @@ _mqx_uint       FTE_DI_detach (FTE_OBJECT_PTR pObj);
 uint_32         FTE_DI_printValue(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 nLen);
 
 uint_32         FTE_DI_count(void);
+_mqx_uint       FTE_DI_update(void);
 
 _mqx_uint       FTE_DI_getValue(FTE_OBJECT_ID  nID, uint_32_ptr pValue);
 boolean         FTE_DI_isActive(FTE_OBJECT_ID  nID);

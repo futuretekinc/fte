@@ -21,10 +21,10 @@
 #define FTE_EVENT_MAX_COUNT             32
 #endif
 
-#define FTE_CFG_POOL_VERSION            0x20150330
-#define FTE_CFG_OBJECT_POOL_VERSION     0x20150330
-#define FTE_CFG_EVENT_POOL_VERSION      0x20150330
-#define FTE_CFG_CERT_POOL_VERSION       0x20150614
+#define FTE_CFG_POOL_VERSION            0x20150708
+#define FTE_CFG_OBJECT_POOL_VERSION     0x20150708
+#define FTE_CFG_EVENT_POOL_VERSION      0x20150708
+#define FTE_CFG_CERT_POOL_VERSION       0x20150708
 
 void    FTE_CFG_lock(void);
 void    FTE_CFG_unlock(void);

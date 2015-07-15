@@ -68,6 +68,7 @@ typedef struct
     uint_8                          bOccurred;    
     uint_8                          bChanged;
     TIME_STRUCT                     xTimeStamp;
+    TIME_STRUCT                     xChangedTime;
     FTE_LIST                        xObjectList;
 }   FTE_EVENT_STATE, _PTR_ FTE_EVENT_STATE_PTR;
 

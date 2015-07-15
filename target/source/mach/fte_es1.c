@@ -8,6 +8,8 @@ const FTE_DI_CONFIG fte_init_gpio_di0_config =
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE | FTE_OBJ_CONFIG_FLAG_TRAP_DIFF,
     },
     .nGPIO      = FTE_DEV_GPIO_DI_0,
+    .ulDelay    = 0,
+    .ulHold     = 0
 };
 #endif
 

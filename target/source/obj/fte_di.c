@@ -6,6 +6,10 @@
 #include "sys/fte_sys_timer.h"
 #include "fte_time.h"
 
+#ifndef FTE_DIO_REMOVE_GLITCH
+#define FTE_DIO_REMOVE_GLITCH   1
+#endif
+
 static  _mqx_uint   _FTE_DI_init(FTE_OBJECT_PTR pObj);
 static  _mqx_uint   _FTE_DI_run(FTE_OBJECT_PTR pObj);
 static  _mqx_uint   _FTE_DI_stop(FTE_OBJECT_PTR pObj);
@@ -136,67 +140,125 @@ boolean     FTE_DI_isActive(FTE_OBJECT_ID  nID)
     return  pObj->pStatus->pValue->xData.bValue;    
 }
 
+_mqx_uint       FTE_DI_update(void)
+{
+    FTE_OBJECT_PTR      pObj;
+    FTE_LIST_ITERATOR   xIter;
+    
+    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == MQX_OK)
+    {
+        while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
+        {
+            FTE_DI_CONFIG_PTR   pConfig = (FTE_DI_CONFIG_PTR)pObj->pConfig;
+            FTE_DI_STATUS_PTR   pStatus = (FTE_DI_STATUS_PTR)pObj->pStatus;
+            
+            if (pStatus->xCommon.pValue->xData.bValue != pStatus->xPresetValue.xData.bValue)
+            {
+                uint_32     ulDelayTime = 0;
+                uint_32     ulHoldTime = 0;
+                TIME_STRUCT xTime;
+
+                _time_get(&xTime);
+
+                ulDelayTime = FTE_TIME_diff(&pStatus->xPresetValue.xTimeStamp, &xTime);
+                ulHoldTime = FTE_TIME_diff(&pStatus->xCommon
+                                           .pValue->xTimeStamp, &xTime);
+                
+                if (((ulHoldTime == 0) || (ulHoldTime >= pConfig->ulHold)) && ((pConfig->ulDelay == 0) || (ulDelayTime >= pConfig->ulDelay)))
+                {
+                    FTE_VALUE_copy(pStatus->xCommon.pValue, &pStatus->xPresetValue);
+                    
+                    if (pConfig->nLED != 0)
+                    {
+                        FTE_LED_setValue(pConfig->nLED, pStatus->xCommon.pValue->xData.bValue);
+                    }
+
+                    FTE_OBJ_wasUpdated(pObj);
+                }
+            }
+            else if (pStatus->xPresetValue.bChanged)
+            {
+                pStatus->xCommon.pValue->xTimeStamp = pStatus->xPresetValue.xTimeStamp;
+            }
+        }
+    }
+    
+    return  MQX_OK;
+
+}
+
 _mqx_uint   FTE_DI_INT_lock(FTE_OBJECT_PTR pObj)
 {
-    ASSERT (pObj != NULL);
-    
-    return  FTE_GPIO_INT_setEnable(((FTE_DI_STATUS_PTR)pObj->pStatus)->pGPIO, FALSE);    
+    if (pObj != NULL)
+    {
+        return  FTE_GPIO_INT_setEnable(((FTE_DI_STATUS_PTR)pObj->pStatus)->pGPIO, FALSE);    
+    }
+    else
+    {
+        FTE_LIST_ITERATOR   xIter;
+        
+        if (FTE_LIST_ITER_init(&_xObjList, &xIter) == MQX_OK)
+        {
+            while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
+            {
+                FTE_DI_INT_lock(pObj);
+            }
+        }
+        
+        return  MQX_OK;
+    }
 }
 
 _mqx_uint   FTE_DI_INT_unlock(FTE_OBJECT_PTR  pObj)
 {
-    TIME_STRUCT xTime;
-    ASSERT(pObj != NULL);
-    
-    _time_get(&xTime);
-    
-    if (FTE_TIME_diff(&xTime, &((FTE_DI_STATUS_PTR)pObj->pStatus)->xLastOccurredTime) < 1)
+    if (pObj != NULL)
     {
-        return  0;
-    }
-    
-    if (pObj->pStatus->pValue->xData.bValue == TRUE)
-    {
-        FTE_GPIO_INT_setPolarity(((FTE_DI_STATUS_PTR)pObj->pStatus)->pGPIO, FTE_LWGPIO_INT_LOW);
+        FTE_DI_STATUS_PTR   pStatus;
+        TIME_STRUCT xTime;
+        
+        pStatus = (FTE_DI_STATUS_PTR)pObj->pStatus;
+        
+        _time_get(&xTime);
+        
+#if FTE_DIO_REMOVE_GLITCH
+        if (FTE_TIME_diff(&xTime, &pStatus->xPresetValue.xTimeStamp) < 1)
+        {
+            return  0;
+        }
+        
+        if (pStatus->xPresetValue.xData.bValue == TRUE)
+#else
+        if (FTE_TIME_diff(&xTime, &pStatus->xCommon.xValue.xTimeStamp) < 1)
+        {
+            return  0;
+        }
+        
+        if (pStatus->pValue->xData.bValue == TRUE)
+#endif
+        {
+            FTE_GPIO_INT_setPolarity(pStatus->pGPIO, FTE_LWGPIO_INT_LOW);
+        }
+        else
+        {
+            FTE_GPIO_INT_setPolarity(pStatus->pGPIO, FTE_LWGPIO_INT_HIGH);
+        }
+        
+        return  FTE_GPIO_INT_setEnable(pStatus->pGPIO, TRUE);
     }
     else
     {
-        FTE_GPIO_INT_setPolarity(((FTE_DI_STATUS_PTR)pObj->pStatus)->pGPIO, FTE_LWGPIO_INT_HIGH);
-    }
-    
-    return  FTE_GPIO_INT_setEnable(((FTE_DI_STATUS_PTR)pObj->pStatus)->pGPIO, TRUE);
-}
-
-_mqx_uint   fte_di_int_global_lock(void)
-{
-    FTE_OBJECT_PTR      pObj;
-    FTE_LIST_ITERATOR   xIter;
-    
-    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == MQX_OK)
-    {
-        while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
+        FTE_LIST_ITERATOR   xIter;
+        
+        if (FTE_LIST_ITER_init(&_xObjList, &xIter) == MQX_OK)
         {
-            FTE_DI_INT_lock(pObj);
+            while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
+            {
+                FTE_DI_INT_unlock(pObj);
+            }
         }
+        
+        return  MQX_OK;
     }
-    
-    return  MQX_OK;
-}
-
-_mqx_uint   fte_di_int_global_unlock(void)
-{
-    FTE_OBJECT_PTR      pObj;
-    FTE_LIST_ITERATOR   xIter;
-    
-    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == MQX_OK)
-    {
-        while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
-        {
-            FTE_DI_INT_unlock(pObj);
-        }
-    }
-    
-    return  MQX_OK;
 }
 
 /******************************************************************************/
@@ -214,7 +276,8 @@ _mqx_uint   _FTE_DI_init(FTE_OBJECT_PTR pObj)
     }
 
     FTE_VALUE_setDIO(pStatus->xCommon.pValue, nValue);
-
+    FTE_VALUE_setDIO(&pStatus->xPresetValue, nValue);
+    
     if (pConfig->nLED != 0)
     {
         FTE_LED_setValue(pConfig->nLED, pStatus->xCommon.pValue->xData.bValue);
@@ -281,31 +344,34 @@ void _di_int(void *params)
         if (FTE_FLAG_IS_SET(pConfig->xCommon.xFlags, FTE_OBJ_CONFIG_FLAG_ENABLE))
         {
             FTE_DI_STATUS_PTR   pStatus;
-            boolean             flag = FALSE;
+            boolean             bFlag = FALSE;
             
             pStatus  = (FTE_DI_STATUS_PTR)pObj->pStatus;
             
-             FTE_GPIO_INT_getFlag(pStatus->pGPIO, &flag);
+            FTE_GPIO_INT_getFlag(pStatus->pGPIO, &bFlag);
             
-            if (flag)
+            if (bFlag)
             {   
-                boolean             value = FALSE;
+                boolean             bValue = FALSE;
                 
-                FTE_GPIO_getValue(pStatus->pGPIO, &value);
+                FTE_GPIO_getValue(pStatus->pGPIO, &bValue);
                 
-                if (pStatus->xCommon.pValue->xData.bValue != value)
+#if FTE_DIO_REMOVE_GLITCH
+                FTE_VALUE_setDIO(&pStatus->xPresetValue, bValue);
+#else
+                if (pStatus->xCommon.pValue->xData.bValue != bValue)
                 {
-                    FTE_VALUE_setDIO(pStatus->xCommon.pValue, value);
+                    FTE_VALUE_setDIO(pStatus->xCommon.pValue, bValue);
                     
                     if (pConfig->nLED != 0)
                     {
-                        FTE_LED_setValue(pConfig->nLED, value);
+                        FTE_LED_setValue(pConfig->nLED, bValue);
                     }
 
                     FTE_OBJ_wasUpdated(pObj);
                     _time_get(&pStatus->xLastOccurredTime);                    
                 }
-                
+#endif
                 FTE_GPIO_INT_setEnable(pStatus->pGPIO, FALSE);
                 FTE_GPIO_INT_clrFlag(pStatus->pGPIO);
             }
@@ -334,21 +400,25 @@ void _di_int(void *params)
                     
                     if (flag)
                     {       
-                        boolean             value = FALSE;
+                        boolean             bValue = FALSE;
                         
-                        FTE_GPIO_getValue(pStatus->pGPIO, &value);
+                        FTE_GPIO_getValue(pStatus->pGPIO, &bValue);
                         
-                        if (pStatus->xCommon.pValue->xData.bValue != value)
+#if FTE_DIO_REMOVE_GLITCH
+                        FTE_VALUE_setDIO(&pStatus->xPresetValue, bValue);
+#else
+                        if (pStatus->xCommon.pValue->xData.bValue != bValue)
                         {
-                            FTE_VALUE_setDIO(pStatus->xCommon.pValue, value);
+                            FTE_VALUE_setDIO(pStatus->xCommon.pValue, bValue);
                             
                             if (pConfig->nLED != 0)
                             {
-                                FTE_LED_setValue(pConfig->nLED, value);
+                                FTE_LED_setValue(pConfig->nLED, bValue);
                             }
 
                             FTE_OBJ_wasUpdated(pObj);
                         }
+#endif
                             
                         FTE_GPIO_INT_setEnable(pStatus->pGPIO, FALSE);
                         FTE_GPIO_INT_clrFlag(pStatus->pGPIO);
@@ -362,8 +432,8 @@ void _di_int(void *params)
 
 void _FTE_DI_ISR(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
 {
-    //_di_int(NULL);    
-    fte_di_int_global_unlock();
+    _di_int(NULL);    
+    FTE_DI_INT_unlock(NULL);
 }
 
 int_32      FTE_DI_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])

@@ -33,6 +33,8 @@ void FTE_TASK_objectManagement(uint_32 params)
         int_32  nDiffTime; 
         uint_32 ulObjCount = FTE_OBJ_count(0, 0, FALSE);
         
+        FTE_DI_update();
+        
         for(uint_32 i = 0 ; i < ulObjCount ; i++)
         {
             FTE_OBJECT_PTR  pObj = FTE_OBJ_getAt(0, 0, i, FALSE);
