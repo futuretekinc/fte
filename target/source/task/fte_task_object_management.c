@@ -39,7 +39,7 @@ void FTE_TASK_objectManagement(uint_32 params)
         {
             FTE_OBJECT_PTR  pObj = FTE_OBJ_getAt(0, 0, i, FALSE);
             
-            if (FTE_OBJ_STATE_isSet(pObj, FTE_OBJ_STATUS_FLAG_UPDATED))
+            if (FTE_OBJ_STATE_isSet(pObj, FTE_OBJ_STATUS_FLAG_CHANGED))
             {
                 FTE_LIST_ITERATOR xIter;
                
@@ -53,7 +53,7 @@ void FTE_TASK_objectManagement(uint_32 params)
                     }
                }
                
-               FTE_OBJ_STATE_clear(pObj, FTE_OBJ_STATUS_FLAG_UPDATED);
+               FTE_OBJ_STATE_clear(pObj, FTE_OBJ_STATUS_FLAG_CHANGED);
             }
         }
                

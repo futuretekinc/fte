@@ -1,16 +1,16 @@
 #include "fte_target.h"
-#include "fte_i2c.h"
+#include "FTE_I2C.h"
 
 #if FTE_I2C_SUPPORTED
 
 #define MAX_I2C_COUNT   2
 //#define DEBUG_I2C       1
-static _mqx_uint   _fte_i2c_lock(FTE_I2C_PTR pI2C);
-static _mqx_uint   _fte_i2c_unlock(FTE_I2C_PTR pI2C);
+static _mqx_uint   _FTE_I2C_lock(FTE_I2C_PTR pI2C);
+static _mqx_uint   _FTE_I2C_unlock(FTE_I2C_PTR pI2C);
 
-static void _i2c_write_command(MQX_FILE_PTR fd, uint_8 uiCmd);
-static void _i2c_write(MQX_FILE_PTR fd, uint_32 addr, uint_8_ptr pBuff, uint_32 ulLen);      
-static void _i2c_read(MQX_FILE_PTR fd, uint_32 addr, uint_8_ptr pBuff, uint_32 ulLen);
+static void _FTE_I2C_writeCommand(MQX_FILE_PTR fd, uint_8 uiCmd);
+static void _FTE_I2C_write(MQX_FILE_PTR fd, uint_32 addr, uint_8_ptr pBuff, uint_32 ulLen);      
+static void _FTE_I2C_read(MQX_FILE_PTR fd, uint_32 addr, uint_8_ptr pBuff, uint_32 ulLen);
 
 static const   char_ptr channels[MAX_I2C_COUNT] = 
 {
@@ -28,7 +28,7 @@ static FTE_I2C_PTR  _pHead  = NULL;
 static uint_32      _nI2C   = 0;
 
 
-_mqx_uint   fte_i2c_create(FTE_I2C_CONFIG_PTR pConfig)
+_mqx_uint   FTE_I2C_create(FTE_I2C_CONFIG_PTR pConfig)
 {
     FTE_I2C_PTR pI2C;
     
@@ -42,7 +42,7 @@ _mqx_uint   fte_i2c_create(FTE_I2C_CONFIG_PTR pConfig)
 
     pI2C->pConfig           = pConfig;
     pI2C->pChannel          = &_pChannels[pConfig->xPort];
-//    pI2C->callback.CALLBACK = _fte_i2c_set_cs;
+//    pI2C->callback.CALLBACK = _FTE_I2C_set_cs;
 //    pI2C->callback.USERDATA = (pointer)pI2C;    
     pI2C->pNext             = _pHead;
     
@@ -52,7 +52,7 @@ _mqx_uint   fte_i2c_create(FTE_I2C_CONFIG_PTR pConfig)
     return  MQX_OK;
 }
 
-_mqx_uint   fte_i2c_attach(FTE_I2C_PTR pI2C, uint_32 nParent)
+_mqx_uint   FTE_I2C_attach(FTE_I2C_PTR pI2C, uint_32 nParent)
 {
     assert(pI2C != NULL);
     if (pI2C == NULL)
@@ -103,7 +103,7 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint   fte_i2c_detach(FTE_I2C_PTR pI2C)
+_mqx_uint   FTE_I2C_detach(FTE_I2C_PTR pI2C)
 {
     assert(pI2C != NULL);
     if (pI2C == NULL)
@@ -129,17 +129,17 @@ _mqx_uint   fte_i2c_detach(FTE_I2C_PTR pI2C)
     return  MQX_OK;
 }
 
-uint_32     fte_i2c_count(void)
+uint_32     FTE_I2C_count(void)
 {
     return  _nI2C;
 }
 
-FTE_I2C_PTR fte_i2c_get_first(void)
+FTE_I2C_PTR FTE_I2C_get_first(void)
 {
     return  _pHead;
 }
 
-FTE_I2C_PTR fte_i2c_get_next(FTE_I2C_PTR pI2C)
+FTE_I2C_PTR FTE_I2C_get_next(FTE_I2C_PTR pI2C)
 {
     if (pI2C == NULL)
     {
@@ -149,7 +149,7 @@ FTE_I2C_PTR fte_i2c_get_next(FTE_I2C_PTR pI2C)
     return  pI2C->pNext;
 }
 
-FTE_I2C_PTR fte_i2c_get(uint_32 nID)
+FTE_I2C_PTR FTE_I2C_get(uint_32 nID)
 {
     FTE_I2C_PTR pI2C;
     
@@ -167,7 +167,7 @@ FTE_I2C_PTR fte_i2c_get(uint_32 nID)
     return  NULL;
 }
 
-uint_32     fte_i2c_parent_get(FTE_I2C_PTR pI2C)
+uint_32     FTE_I2C_parent_get(FTE_I2C_PTR pI2C)
 {
     assert(pI2C != NULL);
     
@@ -175,7 +175,7 @@ uint_32     fte_i2c_parent_get(FTE_I2C_PTR pI2C)
 }
 
 
-_mqx_uint   fte_i2c_read(FTE_I2C_PTR pI2C, uint_8   nID, uint_8_ptr pBuff, uint_32 ulLen)
+_mqx_uint   FTE_I2C_read(FTE_I2C_PTR pI2C, uint_8   nID, uint_8_ptr pBuff, uint_32 ulLen)
 {
     assert(pI2C != NULL);
     
@@ -184,7 +184,7 @@ _mqx_uint   fte_i2c_read(FTE_I2C_PTR pI2C, uint_8   nID, uint_8_ptr pBuff, uint_
         return  MQX_INVALID_DEVICE;
     }
             
-    _fte_i2c_lock(pI2C);
+    _FTE_I2C_lock(pI2C);
 
     if (I2C_OK != ioctl (pI2C->pChannel->xFD, IO_IOCTL_I2C_SET_DESTINATION_ADDRESS, &nID))
     {
@@ -196,17 +196,17 @@ _mqx_uint   fte_i2c_read(FTE_I2C_PTR pI2C, uint_8   nID, uint_8_ptr pBuff, uint_
         goto error;
     }
   
-    _fte_i2c_unlock(pI2C);
+    _FTE_I2C_unlock(pI2C);
     
     return MQX_OK;
     
 error:  
-    _fte_i2c_unlock(pI2C);
+    _FTE_I2C_unlock(pI2C);
     
     return MQX_ERROR;
 }
 
-_mqx_uint   fte_i2c_write(FTE_I2C_PTR pI2C, uint_8 nID, uint_8_ptr pBuff, uint_32 ulLen)
+_mqx_uint   FTE_I2C_write(FTE_I2C_PTR pI2C, uint_8 nID, uint_8_ptr pBuff, uint_32 ulLen)
 {
     assert(pI2C != NULL);
     
@@ -215,7 +215,7 @@ _mqx_uint   fte_i2c_write(FTE_I2C_PTR pI2C, uint_8 nID, uint_8_ptr pBuff, uint_3
         return  MQX_INVALID_DEVICE;
     }
 
-    _fte_i2c_lock(pI2C);
+    _FTE_I2C_lock(pI2C);
 
     if (I2C_OK != ioctl (pI2C->pChannel->xFD, IO_IOCTL_I2C_SET_DESTINATION_ADDRESS, &nID))
     {
@@ -227,17 +227,17 @@ _mqx_uint   fte_i2c_write(FTE_I2C_PTR pI2C, uint_8 nID, uint_8_ptr pBuff, uint_3
         goto error;
     }
 
-    _fte_i2c_unlock(pI2C);
+    _FTE_I2C_unlock(pI2C);
     
     return MQX_OK;
     
 error:  
-    _fte_i2c_unlock(pI2C);
+    _FTE_I2C_unlock(pI2C);
     
     return MQX_ERROR;
 }
 
-_mqx_uint   fte_i2c_write_byte(FTE_I2C_PTR pI2C, uint_8 nID, uint_8 uiData)
+_mqx_uint   FTE_I2C_write_byte(FTE_I2C_PTR pI2C, uint_8 nID, uint_8 uiData)
 {
     assert(pI2C != NULL);
     
@@ -246,7 +246,7 @@ _mqx_uint   fte_i2c_write_byte(FTE_I2C_PTR pI2C, uint_8 nID, uint_8 uiData)
         return  MQX_INVALID_DEVICE;
     }
 
-    _fte_i2c_lock(pI2C);
+    _FTE_I2C_lock(pI2C);
 
     if (I2C_OK != ioctl (pI2C->pChannel->xFD, IO_IOCTL_I2C_SET_DESTINATION_ADDRESS, &nID))
     {
@@ -258,22 +258,22 @@ _mqx_uint   fte_i2c_write_byte(FTE_I2C_PTR pI2C, uint_8 nID, uint_8 uiData)
         goto error;
     }
 
-    _fte_i2c_unlock(pI2C);
+    _FTE_I2C_unlock(pI2C);
     
     return MQX_OK;
     
 error:  
-    _fte_i2c_unlock(pI2C);
+    _FTE_I2C_unlock(pI2C);
     
     return MQX_ERROR;
 }
 
-_mqx_uint   fte_i2c_set_baudrate(FTE_I2C_PTR pI2C, uint_32 ulBaudrate)
+_mqx_uint   FTE_I2C_set_baudrate(FTE_I2C_PTR pI2C, uint_32 ulBaudrate)
 {
     return  MQX_OK;
 }
 
-_mqx_uint   fte_i2c_get_baudrate(FTE_I2C_PTR pI2C, uint_32 *pulBaudrate)
+_mqx_uint   FTE_I2C_get_baudrate(FTE_I2C_PTR pI2C, uint_32 *pulBaudrate)
 {
     assert(pI2C != NULL);
     
@@ -287,12 +287,12 @@ _mqx_uint   fte_i2c_get_baudrate(FTE_I2C_PTR pI2C, uint_32 *pulBaudrate)
     return  MQX_OK;
 }
 
-_mqx_uint   fte_i2c_set_flags(FTE_I2C_PTR pI2C, uint_32 xFlags)
+_mqx_uint   FTE_I2C_set_flags(FTE_I2C_PTR pI2C, uint_32 xFlags)
 {
     return  MQX_OK;
 }
 
-_mqx_uint   fte_i2c_get_flags(FTE_I2C_PTR pI2C, uint_32 *pxFlags)
+_mqx_uint   FTE_I2C_get_flags(FTE_I2C_PTR pI2C, uint_32 *pxFlags)
 {
     assert(pI2C != NULL);
     if (pI2C == NULL)
@@ -308,7 +308,7 @@ _mqx_uint   fte_i2c_get_flags(FTE_I2C_PTR pI2C, uint_32 *pxFlags)
 /******************************************************************************
  * Static Functions
  ******************************************************************************/
-_mqx_uint   _fte_i2c_lock(FTE_I2C_PTR pI2C)
+_mqx_uint   _FTE_I2C_lock(FTE_I2C_PTR pI2C)
 {
     assert(pI2C != NULL);
     
@@ -324,7 +324,7 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint   _fte_i2c_unlock(FTE_I2C_PTR pI2C)
+_mqx_uint   _FTE_I2C_unlock(FTE_I2C_PTR pI2C)
 {   
     assert(pI2C != NULL);
     
@@ -342,7 +342,7 @@ _mqx_uint   _fte_i2c_unlock(FTE_I2C_PTR pI2C)
 #define I2C_DEVICE_INTERRUPT "ii2c0:"
 #define I2C_EEPROM_BUS_ADDRESS  0x3c
 
-int_32  fte_i2c_shell_cmd(int_32 argc, char_ptr argv[] )
+int_32  FTE_I2C_shell_cmd(int_32 argc, char_ptr argv[] )
 { 
     boolean             print_usage, shorthelp = FALSE;
     int_32              return_code = SHELL_EXIT_SUCCESS;
@@ -380,7 +380,7 @@ int_32  fte_i2c_shell_cmd(int_32 argc, char_ptr argv[] )
                        goto error;
                     }
                     
-                    pI2C = fte_i2c_get(id);
+                    pI2C = FTE_I2C_get(id);
                     if (pI2C == NULL)
                     {
                         goto error;
@@ -411,7 +411,7 @@ int_32  fte_i2c_shell_cmd(int_32 argc, char_ptr argv[] )
                        goto error;
                     }
                     
-                    if (MQX_OK != fte_i2c_read(pI2C, (uint_8 *)&pSendBuff, nCmdLen, pRecvBuff, nRecvLen))
+                    if (MQX_OK != FTE_I2C_read(pI2C, (uint_8 *)&pSendBuff, nCmdLen, pRecvBuff, nRecvLen))
                     {
                        return_code = SHELL_EXIT_ERROR;
                        goto error;
@@ -441,7 +441,7 @@ int_32  fte_i2c_shell_cmd(int_32 argc, char_ptr argv[] )
                        goto error;
                     }
 
-                    pI2C = fte_i2c_get(nID);
+                    pI2C = FTE_I2C_get(nID);
                     
                     if (! Shell_parse_number( argv[3], &nSendLen))
                     {
@@ -460,7 +460,7 @@ int_32  fte_i2c_shell_cmd(int_32 argc, char_ptr argv[] )
                         pSendBuff[i] = nValue;
                     }
                     
-                    if (MQX_OK != fte_i2c_write(pI2C, pSendBuff, nSendLen, NULL, 0))
+                    if (MQX_OK != FTE_I2C_write(pI2C, pSendBuff, nSendLen, NULL, 0))
                     {
                        return_code = SHELL_EXIT_ERROR;
                        goto error;
@@ -493,20 +493,20 @@ int_32  fte_i2c_shell_cmd(int_32 argc, char_ptr argv[] )
 }
 
 
-void fte_i2c_write_command(MQX_FILE_PTR fd, uint_8 uiCmd)
+void FTE_I2C_write_command(MQX_FILE_PTR fd, uint_8 uiCmd)
 {
-          _i2c_write(fd, 1, &uiCmd, 1);
+          _FTE_I2C_write(fd, 1, &uiCmd, 1);
 }
 
 /*FUNCTION****************************************************************
 * 
-* Function Name    : _i2c_write
+* Function Name    : _FTE_I2C_write
 * Returned Value   : void
 * Comments         : 
 *   Writes the provided data buffer 
 *
 *END*********************************************************************/
-void _i2c_write
+void _FTE_I2C_write
    (
       /* [IN] The file pointer for the I2C channel */
       MQX_FILE_PTR  fd,

@@ -60,24 +60,24 @@ typedef struct  _FTE_MCP23S08_STRUCT
     FTE_LWGPIO_PTR                  pLWGPIO_Reset;
 }   FTE_MCP23S08, _PTR_ FTE_MCP23S08_PTR;
 
-FTE_MCP23S08_PTR fte_mcp23s08_get(uint_32 nID);
-FTE_MCP23S08_PTR fte_mcp23s08_get_first(void);
-FTE_MCP23S08_PTR fte_mcp23s08_get_next(FTE_MCP23S08_PTR pObj);
+FTE_MCP23S08_PTR FTE_MCP23S08_get(uint_32 nID);
+FTE_MCP23S08_PTR FTE_MCP23S08_get_first(void);
+FTE_MCP23S08_PTR FTE_MCP23S08_getNext(FTE_MCP23S08_PTR pObj);
 
-_mqx_uint   fte_mcp23s08_create(FTE_MCP23S08_CONFIG_PTR pConfig);
-_mqx_uint   fte_mcp23s08_attach(FTE_MCP23S08_PTR pObj, uint_32 nParentID);
-_mqx_uint   fte_mcp23s08_detach(FTE_MCP23S08_PTR pObj, uint_32 nParentID);
+_mqx_uint   FTE_MCP23S08_create(FTE_MCP23S08_CONFIG_PTR pConfig);
+_mqx_uint   FTE_MCP23S08_attach(FTE_MCP23S08_PTR pObj, uint_32 nParentID);
+_mqx_uint   FTE_MCP23S08_detach(FTE_MCP23S08_PTR pObj, uint_32 nParentID);
 
-_mqx_uint   fte_mcp23s08_reg_get(FTE_MCP23S08_PTR pMCP23S08, uint_32 nReg, uint_32_ptr pValue);
-_mqx_uint   fte_mcp23s08_reg_set(FTE_MCP23S08_PTR pMCP23S08, uint_32 nReg, uint_32     nValue);
+_mqx_uint   FTE_MCP23S08_getReg(FTE_MCP23S08_PTR pMCP23S08, uint_32 nReg, uint_32_ptr pValue);
+_mqx_uint   FTE_MCP23S08_setReg(FTE_MCP23S08_PTR pMCP23S08, uint_32 nReg, uint_32     nValue);
 
-_mqx_uint   fte_mcp23s08_reg_bit_set(FTE_MCP23S08_PTR pMCP23S08, uint_32 nReg, uint_32 nBit, uint_32     nValue);
-_mqx_uint   fte_mcp23s08_reg_bit_get(FTE_MCP23S08_PTR pMCP23S08, uint_32 nReg, uint_32 nBit, uint_32_ptr pValue);
+_mqx_uint   FTE_MCP23S08_setRegBit(FTE_MCP23S08_PTR pMCP23S08, uint_32 nReg, uint_32 nBit, uint_32     nValue);
+_mqx_uint   FTE_MCP23S08_getRegBit(FTE_MCP23S08_PTR pMCP23S08, uint_32 nReg, uint_32 nBit, uint_32_ptr pValue);
 
-_mqx_uint   fte_mcp23s08_reg_bit_int_init(FTE_MCP23S08_PTR pMCP23S08, uint_32 nBit, void (*func)(void *), void *params);
-_mqx_uint   fte_mcp23s08_reg_bit_int_enable(FTE_MCP23S08_PTR pMCP23S08, uint_32 nBit, boolean bEnable);
-_mqx_uint   fte_mcp23s08_reg_bit_int_polarity_set(FTE_MCP23S08_PTR pMCP23S08, uint_32 nBit, uint_32 nPolarity);
+_mqx_uint   FTE_MCP23S08_INT_initRegBit(FTE_MCP23S08_PTR pMCP23S08, uint_32 nBit, void (*func)(void *), void *params);
+_mqx_uint   FTE_MCP23S08_INT_enableRegBit(FTE_MCP23S08_PTR pMCP23S08, uint_32 nBit, boolean bEnable);
+_mqx_uint   FTE_MCP23S08_INT_setPolarityRegBit(FTE_MCP23S08_PTR pMCP23S08, uint_32 nBit, uint_32 nPolarity);
 
-int_32      fte_mcp23s08_shell_cmd(int_32 argc, char_ptr argv[] );
+int_32      FTE_MCP23S08_SHELL_cmd(int_32 argc, char_ptr argv[] );
 
 #endif

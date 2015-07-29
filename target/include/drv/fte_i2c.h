@@ -31,21 +31,21 @@ typedef struct _FTE_I2C_STRUCT
 
 }   FTE_I2C, _PTR_ FTE_I2C_PTR;
 
-_mqx_uint   fte_i2c_create(FTE_I2C_CONFIG_PTR pConfig);
-_mqx_uint   fte_i2c_attach(FTE_I2C_PTR pI2C, uint_32 nParent);
-_mqx_uint   fte_i2c_detach(FTE_I2C_PTR pI2C);
+_mqx_uint   FTE_I2C_create(FTE_I2C_CONFIG_PTR pConfig);
+_mqx_uint   FTE_I2C_attach(FTE_I2C_PTR pI2C, uint_32 nParent);
+_mqx_uint   FTE_I2C_detach(FTE_I2C_PTR pI2C);
 
-uint_32     fte_i2c_count(void);
-FTE_I2C_PTR fte_i2c_get(uint_32 xID);
-uint_32     fte_i2c_parent_get(FTE_I2C_PTR pI2C);
-FTE_I2C_PTR fte_i2c_get_first(void);
-FTE_I2C_PTR fte_i2c_get_next(FTE_I2C_PTR pI2C);
+uint_32     FTE_I2C_count(void);
+FTE_I2C_PTR FTE_I2C_get(uint_32 xID);
+uint_32     FTE_I2C_parent_get(FTE_I2C_PTR pI2C);
+FTE_I2C_PTR FTE_I2C_get_first(void);
+FTE_I2C_PTR FTE_I2C_get_next(FTE_I2C_PTR pI2C);
 
-_mqx_uint   fte_i2c_set_flags(FTE_I2C_PTR pI2C, uint_32 xFlags);                         
-_mqx_uint   fte_i2c_get_flags(FTE_I2C_PTR pI2C, uint_32 *pFlags);
-_mqx_uint   fte_i2c_read(FTE_I2C_PTR pI2C, uint_8   nID, uint_8_ptr pBuff, uint_32 ulLen);
-_mqx_uint   fte_i2c_write(FTE_I2C_PTR pI2C, uint_8 nID, uint_8_ptr pBuff, uint_32 ulLen);
-_mqx_uint   fte_i2c_write_byte(FTE_I2C_PTR pI2C, uint_8 nID, uint_8 uiData);
+_mqx_uint   FTE_I2C_set_flags(FTE_I2C_PTR pI2C, uint_32 xFlags);                         
+_mqx_uint   FTE_I2C_get_flags(FTE_I2C_PTR pI2C, uint_32 *pFlags);
+_mqx_uint   FTE_I2C_read(FTE_I2C_PTR pI2C, uint_8   nID, uint_8_ptr pBuff, uint_32 ulLen);
+_mqx_uint   FTE_I2C_write(FTE_I2C_PTR pI2C, uint_8 nID, uint_8_ptr pBuff, uint_32 ulLen);
+_mqx_uint   FTE_I2C_write_byte(FTE_I2C_PTR pI2C, uint_8 nID, uint_8 uiData);
 
-int_32      fte_i2c_shell_cmd(int_32 argc, char_ptr argv[] );
+int_32      FTE_I2C_shell_cmd(int_32 argc, char_ptr argv[] );
 #endif

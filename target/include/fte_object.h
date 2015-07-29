@@ -189,6 +189,7 @@ extern  const char_ptr FTE_JSON_OBJ_TIME_STRING;
 extern  const char_ptr FTE_JSON_OBJ_STATE_STRING;
 extern  const char_ptr FTE_JSON_OBJ_METHOD_STRING;
 extern  const char_ptr FTE_JSON_OBJ_PARAM_STRING;
+extern  const char_ptr FTE_JSON_OBJ_PARAMS_STRING;
 
 typedef struct _FTE_OBJECT_STATISTICS
 {
@@ -292,6 +293,9 @@ _mqx_uint       FTE_OBJ_setValueString(FTE_OBJECT_PTR pObj, char_ptr pValue);
 _mqx_uint       FTE_OBJ_getValueAt(FTE_OBJECT_PTR pObj, uint_32 ulIdx, FTE_VALUE_PTR pValue);
 FTE_VALUE_TYPE  FTE_OBJ_getValueType(FTE_OBJECT_PTR pObj);
 
+_mqx_uint       FTE_OBJ_getConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 ulBuffLen);
+_mqx_uint       FTE_OBJ_setConfig(FTE_OBJECT_PTR pObj, char_ptr pJSON);
+
 char_ptr        FTE_OBJ_typeString(FTE_OBJECT_PTR pObj);
 
 _mqx_uint       FTE_OBJ_getName(FTE_OBJECT_PTR pObj, char_ptr pName, uint_32 nBuffLen);
@@ -301,6 +305,7 @@ _mqx_uint       FTE_OBJ_getSN(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 nLen)
 
 _mqx_uint       FTE_OBJ_activate(FTE_OBJECT_PTR pObj, boolean bEnable);
 _mqx_uint       FTE_OBJ_wasUpdated(FTE_OBJECT_PTR pObj);
+_mqx_uint       FTE_OBJ_wasChanged(FTE_OBJECT_PTR pObj);
 
 _mqx_uint       FTE_OBJ_start(FTE_OBJECT_PTR pObj);
 _mqx_uint       FTE_OBJ_stop(FTE_OBJECT_PTR pObj);

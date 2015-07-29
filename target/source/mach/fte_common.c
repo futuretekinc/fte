@@ -502,6 +502,39 @@ FTE_LWGPIO_CONFIG   pLWGPIOConfigs[] =
         .nInactive  = LWGPIO_VALUE_HIGH
     },
 #endif
+#if FTE_DEV_LWGPIO_M25P16_CS
+    {
+        .nID        = FTE_DEV_LWGPIO_M25P16_CS,
+        .nLWGPIO    = FTE_GPIO_M25P16_CS,
+        .nMUX       = FTE_GPIO_M25P16_CS_MUX,
+        .nDIR       = LWGPIO_DIR_OUTPUT,
+        .nInit      = LWGPIO_VALUE_HIGH,
+        .nActive    = LWGPIO_VALUE_LOW,
+        .nInactive  = LWGPIO_VALUE_HIGH
+    },
+#endif
+#if FTE_DEV_LWGPIO_M25P16_WP
+    {
+        .nID        = FTE_DEV_LWGPIO_M25P16_WP,
+        .nLWGPIO    = FTE_GPIO_M25P16_WP,
+        .nMUX       = FTE_GPIO_M25P16_WP_MUX,
+        .nDIR       = LWGPIO_DIR_OUTPUT,
+        .nInit      = LWGPIO_VALUE_HIGH,
+        .nActive    = LWGPIO_VALUE_LOW,
+        .nInactive  = LWGPIO_VALUE_HIGH
+    },
+#endif
+#if FTE_DEV_LWGPIO_M25P16_HOLD
+    {
+        .nID        = FTE_DEV_LWGPIO_M25P16_HOLD,
+        .nLWGPIO    = FTE_GPIO_M25P16_HOLD,
+        .nMUX       = FTE_GPIO_M25P16_HOLD_MUX,
+        .nDIR       = LWGPIO_DIR_OUTPUT,
+        .nInit      = LWGPIO_VALUE_HIGH,
+        .nActive    = LWGPIO_VALUE_LOW,
+        .nInactive  = LWGPIO_VALUE_HIGH
+    },
+#endif
 #if FTE_DEV_LWGPIO_SHT_SDA
     {
         .nID        = FTE_DEV_LWGPIO_SHT_SDA,
@@ -1089,6 +1122,14 @@ FTE_SPI_CONFIG      pSPIConfigs[] =
     },
 #endif
 #endif
+#if  FTE_DEV_SPI_2_0
+    {   .nID        = FTE_DEV_SPI_2_0,
+        .xPort      = 2,
+        .xCSGPIO    = FTE_DEV_LWGPIO_M25P16_CS,
+        .nBaudrate  = 500000,
+        .xFlags     = 0
+    },
+#endif
 };
 #endif
 
@@ -1489,9 +1530,9 @@ static const FTE_DRIVER_DESCRIPT    _pDriverDescripts[] =
     {
         .nType      = FTE_DEV_TYPE_MCP23S08,
         .pName      = "MCP23S08",
-        .f_create   = (DRIVER_CREATE_FUNC)fte_mcp23s08_create,
-        .f_attach   = (DRIVER_ATTACH_FUNC)fte_mcp23s08_attach,
-        .f_detach   = (DRIVER_DETACH_FUNC)fte_mcp23s08_detach
+        .f_create   = (DRIVER_CREATE_FUNC)FTE_MCP23S08_create,
+        .f_attach   = (DRIVER_ATTACH_FUNC)FTE_MCP23S08_attach,
+        .f_detach   = (DRIVER_DETACH_FUNC)FTE_MCP23S08_detach
     },
 #endif
 #if FTE_1WIRE_SUPPORTED
@@ -1615,12 +1656,14 @@ const FTE_NET_CFG fte_default_net_config =
                 .bEnabled   = FALSE,
             }
         },
+#if FTE_SSL_SUPPORTED
         .xSSL           = 
         {
             .bEnabled   = FTE_NET_MQTT_WITH_SSL,
             .nMethod    = FTE_NET_MQTT_SSL_METHOD,
             .pCipher    = "AES256-SHA"
         },
+#endif
         .ulPubTimeout = FTE_NET_MQTT_PUB_TIMEOUT   
 
     },
@@ -1636,8 +1679,9 @@ const FTE_NET_CFG fte_default_net_config =
 
 static const FTE_SHELL_CONFIG    fte_default_shell_config =
 {
-    .pUserID = "admin",
-    .pPasswd = "admin"    
+    .pUserID    = "admin",
+    .pPasswd    = "admin",
+    .ulTimeout  = FTE_SHELL_TIMEOUT
 };
 
 const FTE_CFG_DESC  FTE_CFG_desc =
@@ -1649,7 +1693,9 @@ const FTE_CFG_DESC  FTE_CFG_desc =
         "flashx:data2",
         "flashx:data3",
         "flashx:data4",
-        "flashx:data5"
+        "flashx:data5",
+        "flashx:data6",
+        "flashx:data7"
     },
     .pSystem    = &fte_default_system_config,
     .pShell     = &fte_default_shell_config,
@@ -1687,14 +1733,14 @@ _mqx_uint   fte_platform_init(void)
 #if FTE_I2C_SUPPORTED
     for(int i = 0 ; i < sizeof(pI2CConfigs) / sizeof(FTE_I2C_CONFIG) ; i++)
     {
-        fte_i2c_create(&pI2CConfigs[i]);
+        FTE_I2C_create(&pI2CConfigs[i]);
     }
 #endif
 
 #if FTE_SSD1305_SUPPORTED
     for(int i = 0 ; i < sizeof(pSSD1305Configs) / sizeof(FTE_SSD1305_CONFIG) ; i++)
     {
-        fte_ssd1305_create(&pSSD1305Configs[i]);
+        FTE_SSD1305_create(&pSSD1305Configs[i]);
     }
 #endif
 
@@ -1715,12 +1761,12 @@ _mqx_uint   fte_platform_init(void)
 #if FTE_MCP23S08_SUPPORTED
     for(int i = 0 ; i < sizeof(pMCP23S08Configs) / sizeof(FTE_MCP23S08_CONFIG) ; i++)
     {
-        fte_mcp23s08_create(&pMCP23S08Configs[i]);
+        FTE_MCP23S08_create(&pMCP23S08Configs[i]);
     }
 
     for(int i = 0 ; i < sizeof(pMCP23S08GPIOConfigs) / sizeof(FTE_MCP23S08_GPIO_CONFIG) ; i++)
     {
-        fte_mcp23s08_gpio_create(&pMCP23S08GPIOConfigs[i]);
+        FTE_MCP23S08_GPIO_create(&pMCP23S08GPIOConfigs[i]);
     }
 #endif
 
@@ -1741,7 +1787,7 @@ _mqx_uint   fte_platform_init(void)
 #if FTE_UCM_SUPPORTED
     for(int i = 0 ; i < sizeof(pUCMConfigs) / sizeof(FTE_UCM_CONFIG) ; i++)
     {
-        fte_ucm_create(&pUCMConfigs[i]);
+        FTE_UCM_create(&pUCMConfigs[i]);
     }
 #endif
 
@@ -1769,13 +1815,11 @@ _mqx_uint   fte_platform_init(void)
 
     /* Configuration Init & Loading from Flash Memory */
     FTE_CFG_init(&FTE_CFG_desc);
-    
+
     FTE_OBJECT_CONFIG_PTR pConfig = NULL;
 
     FTE_SYS_STATE_setChangeCB(fte_state_change);
     FTE_SYS_powerUp();
-
-    FTE_LOG_init(FTE_LOG_MAX_COUNT);
 
     FTE_EVENT_init();
 

@@ -28,20 +28,20 @@ typedef struct  _FTE_MCP23S08_GPIO_STRUCT
     void                                *pParams;
 }   FTE_MCP23S08_GPIO, _PTR_ FTE_MCP23S08_GPIO_PTR;
 
-_mqx_uint   fte_mcp23s08_gpio_create(FTE_MCP23S08_GPIO_CONFIG_PTR pConfig);
-_mqx_uint   fte_mcp23s08_gpio_attach(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO, uint_32 nParent);
-_mqx_uint   fte_mcp23s08_gpio_detach(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO);
-FTE_MCP23S08_GPIO_PTR   fte_mcp23s08_gpio_get(uint_32 nID);
+_mqx_uint   FTE_MCP23S08_GPIO_create(FTE_MCP23S08_GPIO_CONFIG_PTR pConfig);
+_mqx_uint   FTE_MCP23S08_GPIO_attach(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO, uint_32 nParent);
+_mqx_uint   FTE_MCP23S08_GPIO_detach(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO);
+FTE_MCP23S08_GPIO_PTR   FTE_MCP23S08_GPIO_get(uint_32 nID);
 
-_mqx_uint   fte_mcp23s08_gpio_value_set(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO, uint_32 value);
-_mqx_uint   fte_mcp23s08_gpio_value_get(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO, uint_32 *value);
-_mqx_uint   fte_mcp23s08_gpio_dir_set(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO, FTE_GPIO_DIR nValue);
-_mqx_uint   fte_mcp23s08_gpio_dir_get(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO, FTE_GPIO_DIR_PTR pValue);
+_mqx_uint   FTE_MCP23S08_GPIO_setValue(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO, uint_32 value);
+_mqx_uint   FTE_MCP23S08_GPIO_getValue(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO, uint_32 *value);
+_mqx_uint   FTE_MCP23S08_GPIO_setDIR(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO, FTE_GPIO_DIR nValue);
+_mqx_uint   FTE_MCP23S08_GPIO_getDIR(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO, FTE_GPIO_DIR_PTR pValue);
 
-_mqx_uint   fte_mcp23s08_gpio_int_polarity_set(FTE_MCP23S08_GPIO_PTR pGPIO, uint_32 nPolarity);
-_mqx_uint   fte_mcp23s08_gpio_int_enable(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO, boolean bEnable);
-_mqx_uint   fte_mcp23s08_gpio_int_flag_get(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO, boolean *pFlag);
-_mqx_uint   fte_mcp23s08_gpio_int_flag_clr(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO);
-_mqx_uint   fte_mcp23s08_gpio_isr_set(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO, void (*func)(void *), void *params);
+_mqx_uint   FTE_MCP23S08_GPIO_INT_setPolarity(FTE_MCP23S08_GPIO_PTR pGPIO, uint_32 nPolarity);
+_mqx_uint   FTE_MCP23S08_GPIO_INT_enable(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO, boolean bEnable);
+_mqx_uint   FTE_MCP23S08_GPIO_INT_getFlag(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO, boolean *pFlag);
+_mqx_uint   FTE_MCP23S08_GPIO_INT_clrFlag(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO);
+_mqx_uint   FTE_MCP23S08_GPIO_ISR_set(FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO, void (*func)(void *), void *params);
 
 #endif

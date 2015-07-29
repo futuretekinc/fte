@@ -52,5 +52,5 @@ _mqx_uint   FTE_SPI_read(FTE_SPI_PTR pSPI, uint_8_ptr pCmd, uint_32 nCmdLen, uin
 _mqx_uint   FTE_SPI_write(FTE_SPI_PTR pSPI, uint_8_ptr pCmd, uint_32 nCmdLen, uint_8_ptr pData, uint_32 nDataLen);
 
 
-int_32      fte_spi_shell_cmd(int_32 argc, char_ptr argv[] );
+int_32      FTE_SPI_SHELL_cmd(int_32 argc, char_ptr argv[] );
 #endif

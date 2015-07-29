@@ -36,6 +36,8 @@ _mqx_uint   FTE_EVENT_create(FTE_CFG_EVENT_PTR pConfig, FTE_EVENT_PTR _PTR_ ppEv
 {
     FTE_EVENT_PTR   pEvent;
     
+    ASSERT(pConfig != NULL);
+    
     pEvent = (FTE_EVENT_PTR)FTE_MEM_allocZero(sizeof(FTE_EVENT));
     if (pEvent == NULL)
     {
@@ -53,7 +55,10 @@ _mqx_uint   FTE_EVENT_create(FTE_CFG_EVENT_PTR pConfig, FTE_EVENT_PTR _PTR_ ppEv
 
     fte_sys_lock_disable(pListLockKey);
     
-    *ppEvent = pEvent;
+    if (ppEvent != NULL)
+    {
+        *ppEvent = pEvent;
+    }
     
     return  MQX_OK;
 }
@@ -172,7 +177,7 @@ _mqx_uint    FTE_EVENT_check(FTE_EVENT_PTR pEvent, struct _FTE_OBJECT_STRUCT _PT
 
     _time_get (&xCurrentTime);
     
-    if (pEvent->xState.bOccurred && (FTE_TIME_diff(&xCurrentTime, &pEvent->xState.xTimeStamp) <= pEvent->pConfig->ulHoldTime))
+    if (pEvent->xState.bOccurred && (FTE_TIME_diffMilliseconds(&xCurrentTime, &pEvent->xState.xTimeStamp) <= pEvent->pConfig->ulHoldTime))
     {
         return  MQX_OK;
     }    
@@ -335,7 +340,7 @@ _mqx_uint    FTE_EVENT_proc(FTE_EVENT_PTR pEvent, TIME_STRUCT_PTR pTime)
             
             if (FTE_FLAG_IS_SET(pEvent->pConfig->xType, FTE_EVENT_TYPE_LOG))
             {
-                FTE_LOG_add(pObj->pConfig->xCommon.nID, pObj->pStatus->pValue);
+                FTE_LOG_addEvent(pObj->pConfig->xCommon.nID, pEvent->pConfig->xLevel, pObj->pStatus->pValue);
             }
 
 #if FTE_SNMPD_SUPPORTED
@@ -348,7 +353,7 @@ _mqx_uint    FTE_EVENT_proc(FTE_EVENT_PTR pEvent, TIME_STRUCT_PTR pTime)
 #if FTE_MQTT_SUPPORTED
             if (FTE_FLAG_IS_SET(pEvent->pConfig->xType, FTE_EVENT_TYPE_MQTT_PUB))
             {
-                FTE_MQTT_publishEPValue(pObj->pConfig->xCommon.nID, FTE_MQTT_QOS_2);
+                FTE_MQTT_publishEPValue(pObj->pConfig->xCommon.nID, FTE_MQTT_QOS_1);
             }
 #endif            
         }

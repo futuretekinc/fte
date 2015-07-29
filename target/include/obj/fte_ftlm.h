@@ -1,5 +1,5 @@
 #ifndef _FTE_FTLM_H__
-#define _FTE_BOTEM_H__
+#define _FTE_FTLM_H__
 
 uint_32     fte_ftlm_request_data(FTE_OBJECT_PTR pObj);
 _mqx_uint   fte_ftlm_receive_data(FTE_OBJECT_PTR pObj);
@@ -12,7 +12,7 @@ extern FTE_VALUE_TYPE  FTE_FTLM_valueTypes[];
 #define FTE_FTLM_SENS  {\
         .nModel         = FTE_GUS_MODEL_FTLM,   \
         .pName          = "FTLM",               \
-        .nFieldCount    = 27,                            \
+        .nFieldCount    = 9,                            \
         .pValueTypes    = FTE_FTLM_valueTypes,  \
         .f_request      = fte_ftlm_request_data,\
         .f_received     = fte_ftlm_receive_data,\

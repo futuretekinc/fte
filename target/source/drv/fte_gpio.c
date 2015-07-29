@@ -71,18 +71,18 @@ _mqx_uint   FTE_GPIO_attach(FTE_GPIO_PTR pGPIO, uint_32 nParent)
         {
             FTE_MCP23S08_GPIO_PTR pMCP23S08_GPIO;
             
-            pMCP23S08_GPIO = fte_mcp23s08_gpio_get(pGPIO->pConfig->nDevID);
+            pMCP23S08_GPIO = FTE_MCP23S08_GPIO_get(pGPIO->pConfig->nDevID);
             if (pMCP23S08_GPIO == NULL)
             {
                 goto error;
             }
             
-            if (fte_mcp23s08_gpio_attach(pMCP23S08_GPIO, pGPIO->pConfig->nID) != MQX_OK)
+            if (FTE_MCP23S08_GPIO_attach(pMCP23S08_GPIO, pGPIO->pConfig->nID) != MQX_OK)
             {
                 goto error;
             }
             
-            fte_mcp23s08_gpio_dir_set(pMCP23S08_GPIO, pGPIO->pConfig->nDIR);
+            FTE_MCP23S08_GPIO_setDIR(pMCP23S08_GPIO, pGPIO->pConfig->nDIR);
             
             pGPIO->pPort = (FTE_DRIVER_PTR)pMCP23S08_GPIO;
         }
@@ -126,13 +126,13 @@ _mqx_uint   FTE_GPIO_detach(FTE_GPIO_PTR pGPIO)
         {
             FTE_MCP23S08_GPIO_PTR    pMCP23S08_GPIO;
             
-            pMCP23S08_GPIO = fte_mcp23s08_gpio_get(pGPIO->pConfig->nDevID);
+            pMCP23S08_GPIO = FTE_MCP23S08_GPIO_get(pGPIO->pConfig->nDevID);
             if (pMCP23S08_GPIO == NULL)
             {
                 goto    error;
             }
             
-            fte_mcp23s08_gpio_attach(pMCP23S08_GPIO, pGPIO->pConfig->nID);
+            FTE_MCP23S08_GPIO_attach(pMCP23S08_GPIO, pGPIO->pConfig->nID);
         }
         break;
 #endif
@@ -194,11 +194,11 @@ _mqx_uint   FTE_GPIO_setValue(FTE_GPIO_PTR pGPIO, boolean nValue)
         {
             if (pGPIO->pConfig->nActive == FTE_GPIO_VALUE_HIGH)
             {
-                return  fte_mcp23s08_gpio_value_set((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, nValue);
+                return  FTE_MCP23S08_GPIO_setValue((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, nValue);
             }
             else
             {
-                return  fte_mcp23s08_gpio_value_set((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, !nValue);
+                return  FTE_MCP23S08_GPIO_setValue((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, !nValue);
             }
         }
         break;
@@ -228,7 +228,7 @@ _mqx_uint   FTE_GPIO_getValue(FTE_GPIO_PTR pGPIO, boolean *pValue)
     case    FTE_DEV_TYPE_MCP23S08:
         {
             uint_32 nValue;
-            if (fte_mcp23s08_gpio_value_get((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, &nValue) != MQX_OK)
+            if (FTE_MCP23S08_GPIO_getValue((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, &nValue) != MQX_OK)
             {
                 return  MQX_ERROR;
             }
@@ -279,7 +279,7 @@ _mqx_uint   FTE_GPIO_setDir(FTE_GPIO_PTR pGPIO, FTE_GPIO_DIR nValue)
 #if FTE_MCP23S08_SUPPORTED
     case    FTE_DEV_TYPE_MCP23S08:
         {
-            return  fte_mcp23s08_gpio_dir_set((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, nValue);
+            return  FTE_MCP23S08_GPIO_setDIR((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, nValue);
         }
         break;
 #endif
@@ -307,7 +307,7 @@ _mqx_uint   FTE_GPIO_setISR(FTE_GPIO_PTR pGPIO, void (*f_isr)(void *), void *pPa
 #if FTE_MCP23S08_SUPPORTED
     case    FTE_DEV_TYPE_MCP23S08:
         {
-            return  fte_mcp23s08_gpio_isr_set((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, f_isr, NULL);
+            return  FTE_MCP23S08_GPIO_ISR_set((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, f_isr, NULL);
         }
         break;
 #endif
@@ -355,7 +355,7 @@ _mqx_uint   FTE_GPIO_INT_setPolarity(FTE_GPIO_PTR pGPIO, uint_32 nPolarity)
 #if FTE_MCP23S08_SUPPORTED
     case    FTE_DEV_TYPE_MCP23S08:
         {
-            return  fte_mcp23s08_gpio_int_polarity_set((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, nPolarity);
+            return  FTE_MCP23S08_GPIO_INT_setPolarity((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, nPolarity);
         }
         break;
 #endif
@@ -379,7 +379,7 @@ _mqx_uint    FTE_GPIO_INT_setEnable(FTE_GPIO_PTR pGPIO, boolean nEnable)
 #if FTE_MCP23S08_SUPPORTED
     case    FTE_DEV_TYPE_MCP23S08:
         {
-            return  fte_mcp23s08_gpio_int_enable((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, nEnable);
+            return  FTE_MCP23S08_GPIO_INT_enable((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, nEnable);
         }
         break;
 #endif
@@ -403,7 +403,7 @@ _mqx_uint    FTE_GPIO_INT_getFlag(FTE_GPIO_PTR pGPIO, boolean *pFlag)
 #if FTE_MCP23S08_SUPPORTED
     case    FTE_DEV_TYPE_MCP23S08:
         {
-            return  fte_mcp23s08_gpio_int_flag_get((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, pFlag);
+            return  FTE_MCP23S08_GPIO_INT_getFlag((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, pFlag);
         }
         break;
 #endif
@@ -427,7 +427,7 @@ _mqx_uint    FTE_GPIO_INT_clrFlag(FTE_GPIO_PTR pGPIO)
 #if FTE_MCP23S08_SUPPORTED
     case    FTE_DEV_TYPE_MCP23S08:
         {
-            return  fte_mcp23s08_gpio_int_flag_clr((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort);
+            return  FTE_MCP23S08_GPIO_INT_clrFlag((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort);
         }
         break;
 #endif

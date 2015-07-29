@@ -62,7 +62,11 @@ _mqx_uint   fte_botem_pn1500_receive_data(FTE_OBJECT_PTR pObj)
     FTE_VALUE_getULONG(&pStatus->xCommon.pValue[0], &nPrevPeopleCount);
     if (nPrevPeopleCount != nPeopleCount)
     {
-        FTE_OBJ_STATE_set(pObj, FTE_OBJ_STATUS_FLAG_CHANGED);
+        FTE_OBJ_wasChanged(pObj);
+    }
+    else
+    {
+        FTE_OBJ_wasUpdated(pObj);
     }
     
     FTE_VALUE_setULONG(&pStatus->xCommon.pValue[0], nPeopleCount);

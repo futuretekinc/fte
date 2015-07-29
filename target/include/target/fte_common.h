@@ -25,6 +25,9 @@
 #define FTE_DEV_LWGPIO_LED_1            (FTE_DEV_TYPE_LWGPIO | 0x0F)
 #endif
 #define FTE_DEV_LWGPIO_DI_0             (FTE_DEV_TYPE_LWGPIO | 0x10)
+#define FTE_DEV_LWGPIO_M25P16_CS        (FTE_DEV_TYPE_LWGPIO | 0x11)
+#define FTE_DEV_LWGPIO_M25P16_WP        (FTE_DEV_TYPE_LWGPIO | 0x12)
+#define FTE_DEV_LWGPIO_M25P16_HOLD      (FTE_DEV_TYPE_LWGPIO | 0x13)
 
 #define FTE_DEV_GPIO_RESET              (FTE_DEV_TYPE_GPIO | 0x00)
 #define FTE_DEV_GPIO_AD7785_0_CS        (FTE_DEV_TYPE_GPIO | 0x01)
@@ -60,6 +63,16 @@
 
 #define FTE_DEV_SPI_0_0                 (FTE_DEV_TYPE_SPI | 0)
 #define FTE_DEV_SPI_0_1                 (FTE_DEV_TYPE_SPI | 1)
+#define FTE_DEV_SPI_0_2                 (FTE_DEV_TYPE_SPI | 2)
+#define FTE_DEV_SPI_0_3                 (FTE_DEV_TYPE_SPI | 3)
+#define FTE_DEV_SPI_1_0                 (FTE_DEV_TYPE_SPI | 4)
+#define FTE_DEV_SPI_1_1                 (FTE_DEV_TYPE_SPI | 5)
+#define FTE_DEV_SPI_1_2                 (FTE_DEV_TYPE_SPI | 6)
+#define FTE_DEV_SPI_1_3                 (FTE_DEV_TYPE_SPI | 7)
+#define FTE_DEV_SPI_2_0                 (FTE_DEV_TYPE_SPI | 8)
+#define FTE_DEV_SPI_2_1                 (FTE_DEV_TYPE_SPI | 9)
+#define FTE_DEV_SPI_2_2                 (FTE_DEV_TYPE_SPI | 10)
+#define FTE_DEV_SPI_2_3                 (FTE_DEV_TYPE_SPI | 11)
 
 #define FTE_DEV_AD7785_0                (FTE_DEV_TYPE_AD7785 | 0)
 #define FTE_DEV_AD7785_1                (FTE_DEV_TYPE_AD7785 | 1)
@@ -83,6 +96,10 @@
 
 #define FTE_GPIO_AD7785_0_CS            (GPIO_PORT_C | GPIO_PIN4)
 #define FTE_GPIO_AD7785_1_CS            (GPIO_PORT_C | GPIO_PIN3)
+
+#define FTE_GPIO_M25P16_CS              (GPIO_PORT_B | GPIO_PIN20)
+#define FTE_GPIO_M25P16_WP              (GPIO_PORT_B | GPIO_PIN16)
+#define FTE_GPIO_M25P16_HOLD            (GPIO_PORT_B | GPIO_PIN17)
 
 #define FTE_GPIO_SHT_SDA                (GPIO_PORT_C | GPIO_PIN2)
 #define FTE_GPIO_SHT_SCL                (GPIO_PORT_C | GPIO_PIN1)
@@ -120,6 +137,10 @@
 
 #define FTE_GPIO_AD7785_0_CS_MUX        (LWGPIO_MUX_C4_GPIO)
 #define FTE_GPIO_AD7785_1_CS_MUX        (LWGPIO_MUX_C3_GPIO)
+
+#define FTE_GPIO_M25P16_CS_MUX          (LWGPIO_MUX_B20_GPIO)
+#define FTE_GPIO_M25P16_WP_MUX          (LWGPIO_MUX_B16_GPIO)
+#define FTE_GPIO_M25P16_HOLD_MUX        (LWGPIO_MUX_B17_GPIO)
 
 #define FTE_GPIO_SHT_SDA_MUX            (LWGPIO_MUX_C2_GPIO)
 #define FTE_GPIO_SHT_SCL_MUX            (LWGPIO_MUX_C1_GPIO)
@@ -170,6 +191,12 @@
 #elif FTE_ELT_AQM100_SUPPORTED
 #define FTE_UCS_1_FULL_DUPLEX               FALSE
 #define FTE_UCS_1_BAUDRATE                  9600
+#define FTE_UCS_1_DATABITS                  8
+#define FTE_UCS_1_PARITY                    FTE_UART_PARITY_NONE
+#define FTE_UCS_1_STOPBITS                  FTE_UART_STOP_BITS_1
+#elif FTE_FTLM_SUPPORTED
+#define FTE_UCS_1_FULL_DUPLEX               FALSE
+#define FTE_UCS_1_BAUDRATE                  38400
 #define FTE_UCS_1_DATABITS                  8
 #define FTE_UCS_1_PARITY                    FTE_UART_PARITY_NONE
 #define FTE_UCS_1_STOPBITS                  FTE_UART_STOP_BITS_1

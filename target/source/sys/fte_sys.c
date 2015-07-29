@@ -601,9 +601,9 @@ int_32  FTE_SYS_SHUTDOWN_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
 
 void    fte_sys_lcd_init(void)
 {
-    FTE_SSD1305_PTR    pSSD1305 = fte_ssd1305_get(FTE_DEV_SSD1305_0);
+    FTE_SSD1305_PTR    pSSD1305 = FTE_SSD1305_get(FTE_DEV_SSD1305_0);
 
-    fte_ssd1305_attach(pSSD1305, FTE_DEV_TYPE_ROOT);
+    FTE_SSD1305_attach(pSSD1305, FTE_DEV_TYPE_ROOT);
     
 }
 

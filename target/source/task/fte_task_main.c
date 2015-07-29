@@ -1,6 +1,7 @@
 #include "fte_target.h"
 #include "fte_config.h"
 #include "fte_task.h"
+#include "fte_log.h"
 #include "sys/fte_sys.h"
 #include "sys/fte_sys_msg.h"
 #include <watchdog.h>
@@ -53,7 +54,8 @@ void FTE_TASK_main(uint_32 params)
         boolean bOverflow;
         
         FTE_CFG_save(FALSE);
-
+        FTE_LOG_save();
+        
         if (FTE_SYS_LIVE_CHECK_isRun())
         {
             if (FTE_SYS_LIVE_CHECK_isLive() == FALSE)

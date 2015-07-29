@@ -180,11 +180,14 @@ static void _ifce_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUC
         FTE_VALUE_copy(&xValue, pStatus->xCommon.pValue);
         
         FTE_OBJ_getValueAt(pStatus->pParent, pConfig->nRegID, pStatus->xCommon.pValue);        
-        FTE_OBJ_wasUpdated(pObj);
         
         if (!FTE_VALUE_equal(&xValue, pStatus->xCommon.pValue))
         {
-            FTE_OBJ_STATE_set(pObj, FTE_OBJ_STATUS_FLAG_CHANGED);
+            FTE_OBJ_wasChanged(pObj);
+        }
+        else
+        {
+            FTE_OBJ_wasUpdated(pObj);
         }
     }
     else
@@ -205,7 +208,25 @@ _mqx_uint    _ifce_set(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue)
     {
         if (pStatus->pParent->pAction->f_set_multi != NULL)
         {
-            return  pStatus->pParent->pAction->f_set_multi(pStatus->pParent, pConfig->nRegID, pValue);
+            if (pStatus->pParent->pAction->f_set_multi(pStatus->pParent, pConfig->nRegID, pValue) == MQX_OK)
+            {
+                FTE_VALUE   xValue;
+                
+                FTE_VALUE_copy(&xValue, pStatus->xCommon.pValue);
+                
+                FTE_OBJ_getValueAt(pStatus->pParent, pConfig->nRegID, pStatus->xCommon.pValue);        
+                
+                if (!FTE_VALUE_equal(&xValue, pStatus->xCommon.pValue))
+                {
+                    FTE_OBJ_wasChanged(pObj);
+                }
+                else
+                {
+                    FTE_OBJ_wasUpdated(pObj);
+                }
+                
+                return  MQX_OK;
+            }
         }
     }
 

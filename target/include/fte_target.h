@@ -33,7 +33,7 @@
 #define FTE_MAC_SIZE                    6
 
 #define FTE_LOCATION_MAX_LEN            32
-#define FTE_MTD_MAX_COUNT               6
+#define FTE_MTD_MAX_COUNT               12
 
 #define FTE_LOG_BOOT_TIME_MAX_COUNT     5
 
@@ -346,5 +346,9 @@ void                    fte_state_change_set_cb(void (*cb)(void));
     #define FTE_UCS_1_STOPBITS              FTE_UART_STOP_BITS_1
 #endif
 
+
+#ifndef FTE_SHELL_TIMEOUT
+    #define FTE_SHELL_TIMEOUT               60  /* 60 secs */
+#endif
 #endif
 

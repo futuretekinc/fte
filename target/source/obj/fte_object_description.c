@@ -38,8 +38,8 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_SN,                
         .nConfigSize        = sizeof(FTE_DS18B20_CONFIG),
         .nStatusSize        = sizeof(FTE_DS18B20_STATUS),
-        .f_attach           = fte_ds18b20_attach, 
-        .f_detach           = fte_ds18b20_detach
+        .f_attach           = FTE_DS18B20_attach, 
+        .f_detach           = FTE_DS18B20_detach
 
     },
 #endif
@@ -143,7 +143,7 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
 #if FTE_DI_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_DI,        
-        .pName              = "DIGITAL INPUT",
+        .pName              = "DI",
         .nMaxCount          = FTE_DI_MAX_COUNT,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
@@ -162,7 +162,7 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
 #if FTE_MULTI_DI_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_DI,   
-        .pName              = "DIGITAL INPUT",
+        .pName              = "DI",
         .nMaxCount          = 1,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
@@ -181,7 +181,7 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
 #if FTE_DO_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_DO,        
-        .pName              = "DIGITAL OUTPUT",
+        .pName              = "DO",
         .nMaxCount          = FTE_DO_MAX_COUNT,
         .xFlags             = FTE_OBJ_HAVE_CTRL,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
@@ -201,7 +201,7 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
 #if FTE_MULTI_DO_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_DO,   
-        .pName              = "DITIGAL OUTPUT",
+        .pName              = "DO",
         .nMaxCount          = 1,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 

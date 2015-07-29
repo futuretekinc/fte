@@ -4,6 +4,7 @@
 _mqx_uint   FTE_TIME_init(void);
 
 extern  uint_32     FTE_TIME_diff(TIME_STRUCT *time1, TIME_STRUCT *time);
+extern  uint_32     FTE_TIME_diffMilliseconds(TIME_STRUCT *time1, TIME_STRUCT *time);
 extern  uint_32     FTE_TIME_toString(TIME_STRUCT *time, char_ptr pBuff, uint_32 nBuffLen);
 extern  uint_32     FTE_TIME_toTime(char_ptr pBuff, TIME_STRUCT *pTime);
 

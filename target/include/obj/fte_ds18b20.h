@@ -9,13 +9,13 @@
 /*****************************************************************************
  * DS18B20 Object Structure Description
  *****************************************************************************/
-typedef struct _fte_ds18b20_create_params
+typedef struct _FTE_DS18B20_CREATE_PARAMS_STRUCT
 {
     uint_32             nBUSID;
     FTE_1WIRE_ROM_CODE  pROMCode;
 }   FTE_DS18B20_CREATE_PARAMS, _PTR_ FTE_DS18B20_CREATE_PARAMS_PTR;
 
-typedef struct _fte_ds18b20_config_struct
+typedef struct _FTE_DS18B20_CONFIG_STRUCT
 {
     FTE_COMMON_CONFIG   xCommon;
     uint_32             nBUSID;
@@ -23,7 +23,7 @@ typedef struct _fte_ds18b20_config_struct
     uint_32             nInterval;
 }   FTE_DS18B20_CONFIG, _PTR_ FTE_DS18B20_CONFIG_PTR;
 
-typedef struct  _fte_ds18b20_status_struct
+typedef struct  _FTE_DS18B20_STATUS_STRUCT
 {
     FTE_OBJECT_STATUS   xCommon;
     uint_32             hRepeatTimer;
@@ -32,18 +32,18 @@ typedef struct  _fte_ds18b20_status_struct
     
 }   FTE_DS18B20_STATUS, _PTR_ FTE_DS18B20_STATUS_PTR;
 
-_mqx_uint       fte_ds18b20_preinit(uint_32 nMaxObjects);
-FTE_OBJECT_PTR  fte_ds18b20_create(FTE_DS18B20_CREATE_PARAMS_PTR pParams);
-_mqx_uint       fte_ds18b20_destroy(FTE_OBJECT_PTR pObj);
+_mqx_uint       FTE_DS18B20_preinit(uint_32 nMaxObjects);
+FTE_OBJECT_PTR  FTE_DS18B20_create(FTE_DS18B20_CREATE_PARAMS_PTR pParams);
+_mqx_uint       FTE_DS18B20_destroy(FTE_OBJECT_PTR pObj);
 
-_mqx_uint       fte_ds18b20_attach(FTE_OBJECT_PTR pObj);
-_mqx_uint       fte_ds18b20_detach(FTE_OBJECT_PTR pObj);
+_mqx_uint       FTE_DS18B20_attach(FTE_OBJECT_PTR pObj);
+_mqx_uint       FTE_DS18B20_detach(FTE_OBJECT_PTR pObj);
 
-_mqx_uint       fte_ds18b20_set_rom_code(FTE_OBJECT_PTR pObj, uint_8 pROMCode[8]);
-boolean         fte_ds18b20_is_valid(FTE_OBJECT_PTR pObj);
+_mqx_uint       FTE_DS18B20_setROMCode(FTE_OBJECT_PTR pObj, uint_8 pROMCode[8]);
+boolean         FTE_DS18B20_isValid(FTE_OBJECT_PTR pObj);
 
-boolean         fte_ds18b20_is_exist_rom_code(uint_8 pROMCode[8]);
+boolean         FTE_DS18B20_isExistROMCode(uint_8 pROMCode[8]);
 
-int_32          fte_ds18b20_shell_cmd(int_32 argc, char_ptr argv[] );
+int_32          FTE_DS18B20_SHELL_cmd(int_32 argc, char_ptr argv[] );
 
 #endif

@@ -160,20 +160,20 @@ _mqx_uint       FTE_DI_update(void)
 
                 _time_get(&xTime);
 
-                ulDelayTime = FTE_TIME_diff(&pStatus->xPresetValue.xTimeStamp, &xTime);
-                ulHoldTime = FTE_TIME_diff(&pStatus->xCommon
-                                           .pValue->xTimeStamp, &xTime);
+                ulDelayTime = FTE_TIME_diffMilliseconds(&pStatus->xPresetValue.xTimeStamp, &xTime);
+                ulHoldTime = FTE_TIME_diffMilliseconds(&pStatus->xCommon.pValue->xTimeStamp, &xTime);
                 
                 if (((ulHoldTime == 0) || (ulHoldTime >= pConfig->ulHold)) && ((pConfig->ulDelay == 0) || (ulDelayTime >= pConfig->ulDelay)))
                 {
                     FTE_VALUE_copy(pStatus->xCommon.pValue, &pStatus->xPresetValue);
                     
+                    printf("ulDelayTime = %d\n", ulDelayTime);
                     if (pConfig->nLED != 0)
                     {
                         FTE_LED_setValue(pConfig->nLED, pStatus->xCommon.pValue->xData.bValue);
                     }
 
-                    FTE_OBJ_wasUpdated(pObj);
+                    FTE_OBJ_wasChanged(pObj);
                 }
             }
             else if (pStatus->xPresetValue.bChanged)
@@ -221,14 +221,14 @@ _mqx_uint   FTE_DI_INT_unlock(FTE_OBJECT_PTR  pObj)
         _time_get(&xTime);
         
 #if FTE_DIO_REMOVE_GLITCH
-        if (FTE_TIME_diff(&xTime, &pStatus->xPresetValue.xTimeStamp) < 1)
+        if (FTE_TIME_diffMilliseconds(&xTime, &pStatus->xPresetValue.xTimeStamp) < 200)
         {
             return  0;
         }
         
         if (pStatus->xPresetValue.xData.bValue == TRUE)
 #else
-        if (FTE_TIME_diff(&xTime, &pStatus->xCommon.xValue.xTimeStamp) < 1)
+        if (FTE_TIME_diffMilliseconds(&xTime, &pStatus->xCommon.xValue.xTimeStamp) < 200)
         {
             return  0;
         }
@@ -368,7 +368,7 @@ void _di_int(void *params)
                         FTE_LED_setValue(pConfig->nLED, bValue);
                     }
 
-                    FTE_OBJ_wasUpdated(pObj);
+                    FTE_OBJ_wasChanged(pObj);
                     _time_get(&pStatus->xLastOccurredTime);                    
                 }
 #endif
@@ -416,7 +416,7 @@ void _di_int(void *params)
                                 FTE_LED_setValue(pConfig->nLED, bValue);
                             }
 
-                            FTE_OBJ_wasUpdated(pObj);
+                            FTE_OBJ_wasChanged(pObj);
                         }
 #endif
                             
@@ -432,7 +432,7 @@ void _di_int(void *params)
 
 void _FTE_DI_ISR(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
 {
-    _di_int(NULL);    
+//    _di_int(NULL);    
     FTE_DI_INT_unlock(NULL);
 }
 

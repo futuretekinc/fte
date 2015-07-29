@@ -62,8 +62,8 @@
 #define BSPCFG_ENABLE_I2C1       0
 #define BSPCFG_ENABLE_II2C1      0
 #define BSPCFG_ENABLE_SPI0       1
-#define BSPCFG_ENABLE_SPI1       0
-#define BSPCFG_ENABLE_SPI2       0
+#define BSPCFG_ENABLE_SPI1       1
+#define BSPCFG_ENABLE_SPI2       1
 #define BSPCFG_ENABLE_RTCDEV     1
 #define BSPCFG_ENABLE_PCFLASH    0
 #define BSPCFG_ENABLE_ADC0       0
