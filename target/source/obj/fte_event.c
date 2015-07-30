@@ -400,13 +400,13 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                 char                pTypeString[64];
                 
                 FTE_LIST_ITER_init(&_eventList, &xIter);
-                printf("     %8s %16s %10s\n", "ID/GROUP", "TYPE", "CONDITION");
+                printf("     %8s %-4s %-10s %s\n", "ID/GROUP", "CODE", "TYPE", "CONDITION");
                 while((pEvent = FTE_LIST_ITER_getNext(&xIter)) != 0)
                 {
                     ulIndex++;
                     
                     FTE_EVENT_type_string(pEvent->pConfig->xType, pTypeString, sizeof(pTypeString));
-                    printf("%2d : %08lx %16s %-10s", 
+                    printf("%2d : %08lx %-4s %-10s ", 
                            ulIndex, pEvent->pConfig->ulEPID, 
                            FTE_EVENT_CONDITION_string(pEvent->pConfig->xCondition),
                            pTypeString);
@@ -415,7 +415,7 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                     {
                     case    FTE_EVENT_CONDITION_ABOVE:   
                         {
-                            printf("%8d %8d", 
+                            printf("x > %d(%d)", 
                                    pEvent->pConfig->xParams.xLimit.nValue,
                                    pEvent->pConfig->xParams.xLimit.ulThreshold);
                         }
@@ -423,7 +423,7 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                         
                     case    FTE_EVENT_CONDITION_BELOW:
                         {
-                            printf("%8d %8d", 
+                            printf("x < %d(%d)", 
                                    pEvent->pConfig->xParams.xLimit.nValue,
                                    pEvent->pConfig->xParams.xLimit.ulThreshold);
                         }
@@ -431,8 +431,9 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                         
                     case    FTE_EVENT_CONDITION_INSIDE:
                         {
-                            printf("%8d %8d %8d", 
+                            printf("%d(%d) < x < %d(8d)", 
                                    pEvent->pConfig->xParams.xRange.nLower,
+                                   pEvent->pConfig->xParams.xRange.ulThreshold,
                                    pEvent->pConfig->xParams.xRange.nUpper,
                                    pEvent->pConfig->xParams.xRange.ulThreshold);
                         }
@@ -440,8 +441,9 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                         
                     case    FTE_EVENT_CONDITION_OUTSIDE:
                         {
-                            printf("%8d %8d %8d", 
+                            printf("x < %d(%d) or %d(%d) < x", 
                                    pEvent->pConfig->xParams.xRange.nLower,
+                                   pEvent->pConfig->xParams.xRange.ulThreshold,
                                    pEvent->pConfig->xParams.xRange.nUpper,
                                    pEvent->pConfig->xParams.xRange.ulThreshold);
                         }
@@ -449,7 +451,7 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                        
                     case    FTE_EVENT_CONDITION_INTERVAL:
                         {
-                            printf("%8d", pEvent->pConfig->xParams.ulInterval);
+                            printf("%d", pEvent->pConfig->xParams.ulInterval);
                         }
                         break;
                         
@@ -463,7 +465,7 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                     }
                     printf("\n");
                 }
-
+                printf("   * e : enable, d : disable, l : log, s : snmp, m : mqtt\n");
             }
             break;
             
@@ -715,29 +717,29 @@ _mqx_uint    FTE_EVENT_type_string(uint_32 xType, char_ptr pBuff, int_32 nBuffLe
     
     if ((xType & FTE_EVENT_TYPE_ENABLE) == FTE_EVENT_TYPE_ENABLE)
     {
-        nLen = snprintf(pBuff, nBuffLen, "%s", "enable");
+        nLen = snprintf(pBuff, nBuffLen, "%s", "e");
     }
     else
     {
-        nLen = snprintf(pBuff, nBuffLen, "%s", "disable");
+        nLen = snprintf(pBuff, nBuffLen, "%s", "d");
     }
     
     if ((xType & FTE_EVENT_TYPE_LOG) == FTE_EVENT_TYPE_LOG)
     {
-        nLen += snprintf(&pBuff[nLen], nBuffLen - nLen, " | %s", "log");
+        nLen += snprintf(&pBuff[nLen], nBuffLen - nLen, " l");
     }
     
 #if FTE_MQTT_SUPPORTED
     if ((xType & FTE_EVENT_TYPE_MQTT_PUB) == FTE_EVENT_TYPE_MQTT_PUB)
     {
-        nLen += snprintf(&pBuff[nLen], nBuffLen - nLen, " | %s", "mqtt");
+        nLen += snprintf(&pBuff[nLen], nBuffLen - nLen, " m");
     } 
 #endif
     
 #if FTE_SNMPD_SUPPORTED
     if ((xType & FTE_EVENT_TYPE_SNMP_TRAP) == FTE_EVENT_TYPE_SNMP_TRAP)
     {
-        nLen += snprintf(&pBuff[nLen], nBuffLen - nLen, " | %s", "snmp");
+        nLen += snprintf(&pBuff[nLen], nBuffLen - nLen, " s");
     }
 #endif
     
