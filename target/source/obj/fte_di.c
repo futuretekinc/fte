@@ -167,13 +167,13 @@ _mqx_uint       FTE_DI_update(void)
                 {
                     FTE_VALUE_copy(pStatus->xCommon.pValue, &pStatus->xPresetValue);
                     
-                    printf("ulDelayTime = %d\n", ulDelayTime);
                     if (pConfig->nLED != 0)
                     {
                         FTE_LED_setValue(pConfig->nLED, pStatus->xCommon.pValue->xData.bValue);
                     }
 
                     FTE_OBJ_wasChanged(pObj);
+                    TRACE(DEBUG_DI, "The DI detection applied.[ Interval > %d msecs]\n", ulDelayTime);
                 }
             }
             else if (pStatus->xPresetValue.bChanged)
@@ -236,11 +236,25 @@ _mqx_uint   FTE_DI_INT_unlock(FTE_OBJECT_PTR  pObj)
         if (pStatus->pValue->xData.bValue == TRUE)
 #endif
         {
-            FTE_GPIO_INT_setPolarity(pStatus->pGPIO, FTE_LWGPIO_INT_LOW);
+            if (!FTE_OBJ_FLAG_isSet(pObj, FTE_OBJ_CONFIG_FLAG_REVERSE))
+            {
+                FTE_GPIO_INT_setPolarity(pStatus->pGPIO, FTE_LWGPIO_INT_LOW);
+            }
+            else
+            {
+                FTE_GPIO_INT_setPolarity(pStatus->pGPIO, FTE_LWGPIO_INT_HIGH);
+            }
         }
         else
         {
-            FTE_GPIO_INT_setPolarity(pStatus->pGPIO, FTE_LWGPIO_INT_HIGH);
+            if (!FTE_OBJ_FLAG_isSet(pObj, FTE_OBJ_CONFIG_FLAG_REVERSE))
+            {
+                FTE_GPIO_INT_setPolarity(pStatus->pGPIO, FTE_LWGPIO_INT_HIGH);
+            }
+            else
+            {
+                FTE_GPIO_INT_setPolarity(pStatus->pGPIO, FTE_LWGPIO_INT_LOW);
+            }
         }
         
         return  FTE_GPIO_INT_setEnable(pStatus->pGPIO, TRUE);
@@ -275,6 +289,11 @@ _mqx_uint   _FTE_DI_init(FTE_OBJECT_PTR pObj)
         return  MQX_ERROR;
     }
 
+    if (FTE_OBJ_FLAG_isSet(pObj, FTE_OBJ_CONFIG_FLAG_REVERSE))
+    {
+        nValue = !nValue;
+    }
+    
     FTE_VALUE_setDIO(pStatus->xCommon.pValue, nValue);
     FTE_VALUE_setDIO(&pStatus->xPresetValue, nValue);
     
@@ -355,6 +374,11 @@ void _di_int(void *params)
                 boolean             bValue = FALSE;
                 
                 FTE_GPIO_getValue(pStatus->pGPIO, &bValue);
+                if (FTE_OBJ_FLAG_isSet(pObj, FTE_OBJ_CONFIG_FLAG_REVERSE))
+                {
+                    bValue = !bValue;
+                }
+                
                 
 #if FTE_DIO_REMOVE_GLITCH
                 FTE_VALUE_setDIO(&pStatus->xPresetValue, bValue);
@@ -403,6 +427,11 @@ void _di_int(void *params)
                         boolean             bValue = FALSE;
                         
                         FTE_GPIO_getValue(pStatus->pGPIO, &bValue);
+                        if (FTE_OBJ_FLAG_isSet(pObj, FTE_OBJ_CONFIG_FLAG_REVERSE))
+                        {
+                            bValue = !bValue;
+                        }
+                        
                         
 #if FTE_DIO_REMOVE_GLITCH
                         FTE_VALUE_setDIO(&pStatus->xPresetValue, bValue);
