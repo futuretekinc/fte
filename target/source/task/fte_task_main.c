@@ -2,6 +2,7 @@
 #include "fte_config.h"
 #include "fte_task.h"
 #include "fte_log.h"
+#include "fte_db.h"
 #include "sys/fte_sys.h"
 #include "sys/fte_sys_msg.h"
 #include <watchdog.h>
@@ -26,6 +27,8 @@ void FTE_TASK_main(uint_32 params)
     
     fte_platform_init(); 
 
+    FTE_DB_init();
+    
     FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
 
     
