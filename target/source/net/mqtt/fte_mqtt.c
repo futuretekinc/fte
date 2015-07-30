@@ -1369,6 +1369,7 @@ uint_32 FTE_MQTT_MSG_processing(FTE_MQTT_CONTEXT_PTR pCTX, FTE_MQTT_MSG_PTR pMsg
     
     if (pMsg->nCmd == FTE_MQTT_CMD_REQ)
     {
+        TRACE(DEBUG_NET_MQTT, "%s\n", pMsg->pData);
         pRoot = nx_json_parse_utf8((char_ptr)pMsg->pData);            
         if (pRoot == NULL)
         {

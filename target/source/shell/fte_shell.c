@@ -359,11 +359,14 @@ print_usage:
     {
         if (bShortHelp)
         {
-            fprintf (stdout, "%s\n", pArgv[0]);
+            fprintf (stdout, "%s <variable> <value>\n", pArgv[0]);
         }
         else
         {
-            fprintf (stdout, "Usage: %s\n", pArgv[0]);
+            fprintf (stdout, "Usage: %s <variable> <value>\n", pArgv[0]);
+            fprintf (stdout, "  Parameters:\n");
+            fprintf (stdout, "    %-10s = Shell environment variable.\n", "<variable>" );
+            fprintf (stdout, "    %-10s = value.\n", "<value>" );
         }
     }
     return   nReturnCode;

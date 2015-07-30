@@ -216,7 +216,7 @@ _mqx_uint    _ifce_set(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue)
                 
                 FTE_OBJ_getValueAt(pStatus->pParent, pConfig->nRegID, pStatus->xCommon.pValue);        
                 
-                if (!FTE_VALUE_equal(&xValue, pStatus->xCommon.pValue))
+                if ( pStatus->xCommon.pValue->bChanged || !FTE_VALUE_equal(&xValue, pStatus->xCommon.pValue))
                 {
                     FTE_OBJ_wasChanged(pObj);
                 }
@@ -226,6 +226,10 @@ _mqx_uint    _ifce_set(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue)
                 }
                 
                 return  MQX_OK;
+            }
+            else
+            {
+                DEBUG("f_set_multi failed\n");
             }
         }
     }

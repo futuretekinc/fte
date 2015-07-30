@@ -170,7 +170,7 @@
  ******************************************************************************/
 #define FTE_OBJ_CHECK_FAILURE_COUNT_MAX 64
 #define FTE_OBJ_ALLOW_FAILURE_COUNT     32
-#define FTE_OBJ_EVENT_CHECK_INTERVAL    500 /* milliseconds */
+#define FTE_OBJ_EVENT_CHECK_INTERVAL    200 /* milliseconds */
 #define FTE_OBJ_LIVE_CHECK_INTERVAL     60  /* seconds */
 
 
