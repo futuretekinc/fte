@@ -484,7 +484,7 @@ boolean FTE_OBJ_FLAG_isSet(FTE_OBJECT_PTR pObj, uint_32 flag)
 {
     ASSERT(pObj != NULL);
     
-    return  FTE_FLAG_IS_SET(pObj->pConfig->xCommon.xFlags, FTE_DO_CONFIG_INIT_ON);
+    return  FTE_FLAG_IS_SET(pObj->pConfig->xCommon.xFlags, flag);
 }
 
 _mqx_uint   FTE_OBJ_FLAG_set(FTE_OBJECT_PTR pObj, uint_32 flag)
@@ -558,7 +558,7 @@ FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON(FTE_OBJECT_PTR pObj, uint_32 xOptions)
 
     ASSERT(pObj != NULL);
 
-    pObject = (FTE_JSON_OBJECT_PTR)FTE_JSON_VALUE_createObject(5);
+    pObject = (FTE_JSON_OBJECT_PTR)FTE_JSON_VALUE_createObject(8);
     if (pObject == NULL)
     {
         goto error;
@@ -675,6 +675,47 @@ FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON(FTE_OBJECT_PTR pObj, uint_32 xOptions)
                     
                  default:
                    {
+#if FTE_ES18
+                       uint_32  ulCmd = pObj->pStatus->pValue->xData.ulValue & 0xFF;
+                       uint_32  ulLevel = (pObj->pStatus->pValue->xData.ulValue >> 8) & 0xFF;
+                       uint_32  ulTime = (pObj->pStatus->pValue->xData.ulValue >> 16) & 0xFF;
+                       
+                        pValue = FTE_JSON_VALUE_createNumber(ulCmd);
+                        if (pValue == NULL)
+                        {
+                            goto error;
+                        }
+
+                        if (FTE_JSON_OBJECT_setPair(pObject, "cmd", pValue) != FTE_JSON_RET_OK)
+                        {
+                            FTE_JSON_VALUE_destroy(pValue);
+                            goto error;
+                        }
+
+                        pValue = FTE_JSON_VALUE_createNumber(ulLevel);
+                        if (pValue == NULL)
+                        {
+                            goto error;
+                        }
+
+                        if (FTE_JSON_OBJECT_setPair(pObject, "level", pValue) != FTE_JSON_RET_OK)
+                        {
+                            FTE_JSON_VALUE_destroy(pValue);
+                            goto error;
+                        }
+
+                        pValue = FTE_JSON_VALUE_createNumber(ulTime);
+                        if (pValue == NULL)
+                        {
+                            goto error;
+                        }
+
+                        if (FTE_JSON_OBJECT_setPair(pObject, "time", pValue) != FTE_JSON_RET_OK)
+                        {
+                            FTE_JSON_VALUE_destroy(pValue);
+                            goto error;
+                        }
+#else
                         pValue = FTE_JSON_VALUE_createValue(pObj->pStatus->pValue);
                         if (pValue == NULL)
                         {
@@ -686,6 +727,7 @@ FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON(FTE_OBJECT_PTR pObj, uint_32 xOptions)
                             FTE_JSON_VALUE_destroy(pValue);
                             goto error;
                         }
+#endif
                     }
                 }
                    
@@ -1195,7 +1237,7 @@ int_32          FTE_OBJ_SHELL_cmd(int_32 argc, char_ptr argv[])
                     uint_32  ulDelay;
                     if (Shell_parse_number(argv[3], &ulDelay) != TRUE)
                     {
-                        printf("Invalid delay time[%s]\n", argv[3]);
+                        printf("Invalid parameter[%s]\n", argv[3]);
                         return_code = SHELL_EXIT_ERROR;
                         break;
                     }
@@ -1203,6 +1245,13 @@ int_32          FTE_OBJ_SHELL_cmd(int_32 argc, char_ptr argv[])
                     if (FTE_OBJ_TYPE(pObj) != FTE_OBJ_TYPE_DI)
                     {
                         return_code = SHELL_EXIT_ERROR;
+                        break;
+                    }
+                    
+                    if (ulDelay < FTE_OBJ_EVENT_CHECK_INTERVAL)
+                    {
+                        printf("Delay time is too short. This time must be longer then %d msecs.\n",
+                               FTE_OBJ_EVENT_CHECK_INTERVAL);
                         break;
                     }
                     
@@ -1251,12 +1300,48 @@ int_32          FTE_OBJ_SHELL_cmd(int_32 argc, char_ptr argv[])
                     
                     if (pObj->pAction->f_set_update_interval(pObj, ulSeconds) != MQX_OK)
                     {
-                        printf("Object failed to change the update interval\n");
+                        printf("Object failed to change the update interval\n"); 
                         return_code = SHELL_EXIT_ERROR;
                         break;
                     }
                     
                     FTE_CFG_OBJ_save(pObj);
+                }
+                else if (strcmp(argv[2], "reverse") == 0)
+                {
+                    if (FTE_OBJ_TYPE(pObj) != FTE_OBJ_TYPE_DI)
+                    {
+                        return_code = SHELL_EXIT_ERROR;
+                        break;
+                    }
+
+                    if (strcmp(argv[3], "on") == 0)
+                    {
+                        if (!FTE_OBJ_FLAG_isSet(pObj, FTE_OBJ_CONFIG_FLAG_REVERSE))
+                        {                        
+                            FTE_OBJ_FLAG_set(pObj, FTE_OBJ_CONFIG_FLAG_REVERSE);
+                            pObj->pStatus->pValue->xData.bValue = !pObj->pStatus->pValue->xData.bValue;
+                            
+                            FTE_CFG_OBJ_save(pObj);
+                        }
+
+                    }
+                    else if (strcmp(argv[3], "off") == 0)
+                    {
+                        if (FTE_OBJ_FLAG_isSet(pObj, FTE_OBJ_CONFIG_FLAG_REVERSE))
+                        {                        
+                            FTE_OBJ_FLAG_clear(pObj, FTE_OBJ_CONFIG_FLAG_REVERSE);
+                            pObj->pStatus->pValue->xData.bValue = !pObj->pStatus->pValue->xData.bValue;
+                            
+                            FTE_CFG_OBJ_save(pObj);
+                        }
+                    }
+                    else
+                    {
+                        return_code = SHELL_EXIT_ERROR;
+                        break;
+                    }
+                        
                 }
             }
             break;
