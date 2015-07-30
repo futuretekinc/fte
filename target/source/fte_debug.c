@@ -96,6 +96,7 @@ static FTE_DEBUG_MODULE_TYPE_NAME  _pModuleTypeName[] =
     {   .pName = "smng",    .ulType = DEBUG_NET_SMNG},
     {   .pName = "snmp",    .ulType = DEBUG_NET_SNMP},
     {   .pName = "ssl",     .ulType = DEBUG_NET_SSL },
+    {   .pName = "di",      .ulType = DEBUG_DI },
     {   .pName = "all",     .ulType = DEBUG_ALL},
     {   .pName = NULL,      .ulType = 0}
 };
