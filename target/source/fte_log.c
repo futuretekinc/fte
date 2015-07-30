@@ -11,18 +11,18 @@ typedef struct _FTE_LOG_POOL_STRUCT
     uint_32             ulCount;
     uint_32             ulHead;
     uint_32             ulTail;
-    FTE_LOG             pLogs[(0x800 - sizeof(uint_32) * 6) / sizeof(FTE_LOG)];
+    FTE_LOG             pLogs[(0x1000 - sizeof(uint_32) * 6) / sizeof(FTE_LOG)];
 }   FTE_LOG_POOL, _PTR_ FTE_LOG_POOL_PTR;
 
-#define MAX_LOG_COUNT   ((0x800 - sizeof(uint_32) * 6) / sizeof(FTE_LOG))
+#define MAX_LOG_COUNT   ((0x1000 - sizeof(uint_32) * 6) / sizeof(FTE_LOG))
 #define FTE_LOG_TAG     0x12345678
 
 static  FTE_LOG_POOL        xPool;
 static  boolean             bPoolModified = FALSE;
 static  char *              pMTDs[] = 
 {
-    "flashx:data6",
-    "flashx:data7"
+    "flashx:log0",
+    "flashx:log1"
 };
 
 static  LWSEM_STRUCT        xLWSEM;
@@ -269,6 +269,8 @@ int_32          FTE_LOG_SHELL_cmd(int_32 argc, char_ptr argv[])
                 for(i =  xPool.ulCount - 1 ; i >= 0; i--)
                 {
                     char    pTimeString[64];
+                    char    pLevelString[32];
+                    char    pValueString[16];
                     
                     uint_32 index = (xPool.ulHead + i) % MAX_LOG_COUNT;
                 
@@ -286,11 +288,21 @@ int_32          FTE_LOG_SHELL_cmd(int_32 argc, char_ptr argv[])
                         
                     case    FTE_LOG_TYPE_EVENT:
                         {
+                            FTE_VALUE   xValue;
+                            
+                            xValue.xData.ulValue = xPool.pLogs[index].xParam.xEvent.xValue.ulValue;
+                            xValue.xType = (FTE_VALUE_TYPE)xPool.pLogs[index].xParam.xEvent.xValue.ulType;
+
+                            FTE_EVENT_level_string((FTE_EVENT_LEVEL)xPool.pLogs[index].xParam.xEvent.ulLevel, pLevelString, sizeof(pLevelString));                            
                             FTE_TIME_toString(&xPool.pLogs[index].xTimeStamp, pTimeString, sizeof(pTimeString));
-                            printf("%4d : %s %08x\n", 
+                            FTE_VALUE_toString(&xValue, pValueString, sizeof(pValueString));
+                            
+                            printf("%4d : %s %08x %s(%s)\n", 
                                    xPool.ulCount - i, 
                                    pTimeString, 
-                                   xPool.pLogs[index].xParam.xEvent.ulEPID);
+                                   xPool.pLogs[index].xParam.xEvent.ulEPID,
+                                   pLevelString,
+                                   pValueString);
                         }
                         break;
                     }

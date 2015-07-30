@@ -570,6 +570,62 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                     pEvent->pConfig->xParams.ulInterval = ulInterval;
                     FTE_CFG_save(TRUE);
                 }
+                else if (strcmp(pArgv[2], "enable") == 0)
+                {
+                    uint_32 ulFlag;
+                    
+                    if (strcmp(pArgv[3], "log") == 0)
+                    {
+                        ulFlag = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_LOG;    
+                    }
+                    else if (strcmp(pArgv[3], "snmp") == 0)
+                    {
+                        ulFlag = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP;    
+                    }
+                    else if (strcmp(pArgv[3], "mqtt") == 0)
+                    {
+                        ulFlag = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_MQTT_PUB;    
+                    }
+                    else
+                    {
+                        bPrintUsage = TRUE;
+                        goto error;
+                    }
+                    
+                    if (FTE_FLAG_IS_CLR(pEvent->pConfig->xType, ulFlag))
+                    {
+                        pEvent->pConfig->xType = FTE_FLAG_SET(pEvent->pConfig->xType, ulFlag);
+                        FTE_CFG_save(TRUE);
+                    }
+                }
+                else if (strcmp(pArgv[2], "disable") == 0)
+                {
+                    uint_32 ulFlag;
+                    
+                    if (strcmp(pArgv[3], "log") == 0)
+                    {
+                        ulFlag = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_LOG;    
+                    }
+                    else if (strcmp(pArgv[3], "snmp") == 0)
+                    {
+                        ulFlag = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP;    
+                    }
+                    else if (strcmp(pArgv[3], "mqtt") == 0)
+                    {
+                        ulFlag = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_MQTT_PUB;    
+                    }
+                    else
+                    {
+                        bPrintUsage = TRUE;
+                        goto error;
+                    }
+
+                    if (FTE_FLAG_IS_SET(pEvent->pConfig->xType, ulFlag))
+                    {
+                        pEvent->pConfig->xType = FTE_FLAG_CLR(pEvent->pConfig->xType, ulFlag);
+                        FTE_CFG_save(TRUE);
+                    }
+                }
                  
                  return  SHELL_EXIT_SUCCESS;                                                    
             }
@@ -635,7 +691,8 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
             bPrintUsage = TRUE;
         }
     }
-                    
+                   
+error:
     if (bPrintUsage || (nReturnCode !=SHELL_EXIT_SUCCESS))
     {
         if (bShortHelp)
