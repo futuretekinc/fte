@@ -91,7 +91,7 @@ static void FTE_BL_LED_init(void);
 int fapp_reinit_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
 #endif
 
-int fapp_clr_ret_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
+int fapp_bootscript_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
 
 /************************************************************************
 *     The table of the main shell commands.
@@ -150,8 +150,8 @@ const struct fnet_shell_command fapp_cmd_table [] =
 #if FAPP_CFG_REINIT_CMD   /* Used to test FNET release/init only. */
     { FNET_SHELL_CMD_TYPE_NORMAL, "reinit", 0, 0, (void *)fapp_reinit_cmd,    "Reinit application.", ""},
 #endif
-    { FNET_SHELL_CMD_TYPE_NORMAL, "clr_ret", 0, 0, (void *)fapp_clr_ret_cmd,    "Clear command result.", ""},
     { FNET_SHELL_CMD_TYPE_NORMAL, "diag", 0, 1, (void *)fapp_diag_cmd,    "Firmware diagnostics", "[fw]"},
+    { FNET_SHELL_CMD_TYPE_NORMAL, "set_bs", 0, 0, (void *)fapp_bootscript_cmd,    "Set boot script", ""},
     { FNET_SHELL_CMD_TYPE_END, 0, 0, 0, 0, 0, 0}  
 };
 
@@ -740,13 +740,14 @@ int fapp_reinit_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
 }
 #endif
 
-int fapp_clr_ret_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
+int fapp_bootscript_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
 {
     (void)argc;
 	(void)argv;
+    const char    *pSetArgv[] = { "set", "script", "diag fw;go;! dhcp;telnet;! reset"};
     
-    fnet_shell_clr_ret(desc);
-    
+    fapp_set_cmd( desc, 3, (char **)pSetArgv);
+
     return  0;
 }
 

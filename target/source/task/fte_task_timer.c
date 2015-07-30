@@ -17,6 +17,12 @@ void FTE_TASK_timer(uint_32 params)
 #if FTE_FACTORY_RESET_SUPPORTED
     static  uint_32 ulFactoryResetPushedTime = 0;
 #endif
+    MQX_TICK_STRUCT xBaseTick;
+    MQX_TICK_STRUCT xCurrentTick;
+    int_32          nDiffTime;
+    boolean         bOverflow;
+    
+    _time_get_ticks(&xBaseTick);
     
     FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id()); 
     
@@ -36,10 +42,22 @@ void FTE_TASK_timer(uint_32 params)
         }
         else
         {
-        ulFactoryResetPushedTime = 0;
+            ulFactoryResetPushedTime = 0;
         }
 #endif
-      _time_delay(100);
+        _time_add_msec_to_ticks(&xBaseTick, 100);
+        _time_get_ticks(&xCurrentTick);
+        
+        nDiffTime = _time_diff_milliseconds(&xBaseTick, &xCurrentTick, &bOverflow);
+        if ((0 < nDiffTime) && (nDiffTime <= 100))
+        {
+            _time_delay(nDiffTime);
+        }
+        else
+        {
+            _time_get_ticks(&xBaseTick);
+            _time_delay(100);            
+        }
     }      
 }
 

@@ -4,8 +4,8 @@
 #include "fte_time.h"
 #include "nxjson.h"
 
-_mqx_uint   fte_ftlm_switchCtrl(FTE_OBJECT_PTR pObj, boolean bSwitchON);
-_mqx_uint   fte_ftlm_countReset(FTE_OBJECT_PTR pObj);
+_mqx_uint   FTE_FTLM_switchCtrl(FTE_OBJECT_PTR pObj, boolean bSwitchON);
+_mqx_uint   FTE_FTLM_countReset(FTE_OBJECT_PTR pObj);
 
 FTE_VALUE_TYPE  FTE_FTLM_valueTypes[] =
 {
@@ -17,78 +17,133 @@ FTE_VALUE_TYPE  FTE_FTLM_valueTypes[] =
     FTE_VALUE_TYPE_ULONG, 
     FTE_VALUE_TYPE_ULONG, 
     FTE_VALUE_TYPE_ULONG, 
-    FTE_VALUE_TYPE_ULONG 
+    FTE_VALUE_TYPE_ULONG,
+    FTE_VALUE_TYPE_ULONG, 
+    FTE_VALUE_TYPE_ULONG, 
+    FTE_VALUE_TYPE_ULONG, 
+    FTE_VALUE_TYPE_ULONG, 
+    FTE_VALUE_TYPE_ULONG, 
+    FTE_VALUE_TYPE_ULONG, 
+    FTE_VALUE_TYPE_ULONG, 
+    FTE_VALUE_TYPE_ULONG, 
+    FTE_VALUE_TYPE_ULONG,
+    FTE_VALUE_TYPE_ULONG, 
+    FTE_VALUE_TYPE_ULONG, 
+    FTE_VALUE_TYPE_ULONG, 
+    FTE_VALUE_TYPE_ULONG, 
+    FTE_VALUE_TYPE_ULONG, 
+    FTE_VALUE_TYPE_ULONG, 
+    FTE_VALUE_TYPE_ULONG, 
+    FTE_VALUE_TYPE_ULONG, 
+    FTE_VALUE_TYPE_ULONG,
 };
 
-_mqx_uint   fte_ftlm_request_data(FTE_OBJECT_PTR pObj)
+_mqx_uint   FTE_FTLM_requestData(FTE_OBJECT_PTR pObj)
 {
     FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     FTE_GUS_CONFIG_PTR  pConfig = (FTE_GUS_CONFIG_PTR)pObj->pConfig;
     
-    uint_8  pCMD[] = { 0x01, 0x03, 0x00, 0x65, 0x00, 0x1a, 0x00, 0x00, 0x00};
+    uint_8  pCMD[] = { 0x3a, 0x01, 0x03, 0x00, 0x65, 0x00, 0x1b, 0x00, 0x00, 0x0d, 0x0a, 0x00};
     uint_16 uiCRC;
     
-    uiCRC = fte_crc16(pCMD, 6);
-    pCMD[6] = (uiCRC     ) & 0xFF;
-    pCMD[7] = (uiCRC >> 8) & 0xFF;
+    pCMD[1] = (uint_8)pConfig->nSensorID;
+    uiCRC = fte_crc16(&pCMD[1], 6);
+    pCMD[7] = (uiCRC     ) & 0xFF;
+    pCMD[8] = (uiCRC >> 8) & 0xFF;
 
-    pCMD[0] = (uint_8)pConfig->nSensorID;
     FTE_UCS_clear(pStatus->pUCS);    
     FTE_UCS_send(pStatus->pUCS, pCMD, sizeof(pCMD), TRUE);    
 
     return  MQX_OK; 
 }
-
-_mqx_uint   fte_ftlm_receive_data(FTE_OBJECT_PTR pObj)
+ 
+_mqx_uint   FTE_FTLM_receiveData(FTE_OBJECT_PTR pObj)
 {
-    FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
+    FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
+    FTE_GUS_CONFIG_PTR  pConfig = (FTE_GUS_CONFIG_PTR)pObj->pConfig;
     uint_8      pBuff[128];
     uint_32     nLen, i;
     uint_16     uiCRC;
-#if 0    
     memset(pBuff, 0, sizeof(pBuff));
     
     nLen = FTE_UCS_recv(pStatus->pUCS, pBuff, sizeof(pBuff));
-    if (nLen != 59)
-    {
-        return  MQX_ERROR;
-    }
-
-    if ((pBuff[0] != 0x01))
+    if ((nLen < 4) || (pBuff[0] != 0x3a) || (pBuff[1] != pConfig->nSensorID))// || (pBuff[nLen - 2] != 0x0d) || (pBuff[nLen - 1] != 0x0a) || (nLen != 4 + pBuff[3] + 4))
     {
         return  MQX_ERROR;
     }
     
-    uiCRC = fte_crc16(pBuff, 57);
-    if (uiCRC != (pBuff[57] | ((uint_16)pBuff[58] << 8)))
+    uiCRC = fte_crc16(&pBuff[1], 3 + pBuff[3]);
+    if (uiCRC != (pBuff[4 + pBuff[3]] | ((uint_16)pBuff[4 + pBuff[3] + 1] << 8)))
     {
         return  MQX_ERROR;
-    }
-
-    for(i = 0 ; i < 9 ; i++)
+    } 
+  
+    for(i = 0 ; i < pBuff[3] / 2 / 3 ; i++)
     {
         uint_32 ulValue = 0;
         
-        ulValue = ((uint_32)pBuff[i*6 + 4] << 16) | ((uint_32)pBuff[i*6 + 6] << 8) | ((uint_32)pBuff[i*6 + 8]);
+        ulValue = ((uint_32)pBuff[4 + i*6 + 1]) | ((uint_32)pBuff[4 + i*6 + 3] << 8) | ((uint_32)pBuff[4 + i*6 + 5] << 16) ;
         
         FTE_VALUE_setULONG(&pStatus->xCommon.pValue[i], ulValue);
     }
-#else
-    for(i = 0 ; i < 9 ; i++)
-    {
-        FTE_VALUE_setULONG(&pStatus->xCommon.pValue[i], _time_get_hwticks());
-    }
-#endif
+
     return  MQX_OK;
 }
 
-_mqx_uint   fte_ftlm_set(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_PTR pValue)
+_mqx_uint   FTE_FTLM_set(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_PTR pValue)
 {
+    FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
+    FTE_GUS_CONFIG_PTR  pConfig = (FTE_GUS_CONFIG_PTR)pObj->pConfig;
+    uint_8      pCMD[] = { 0x3a, 0x01, 0x10, 0x00, 0x65, 0x00, 0x3, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0d, 0x0a, 0x00};
+    uint_8      pBuff[128];
+    uint_32     nLen;
+    uint_16     uiCRC;
+    uint_32     ulValue;
+    uint_32     ulTry = 0;
+    if (pStatus->xCommon.nValueCount <= nIndex)
+    {
+        return  MQX_ERROR;
+    }
+    
+    memset(pBuff, 0, sizeof(pBuff));
+   
+    FTE_VALUE_getULONG(pValue, &ulValue);
+    
+    pCMD[1] = (uint_8)pConfig->nSensorID;
+    pCMD[4] = (uint_8)(101 + nIndex*3);
+    pCMD[9] = (uint_8)(ulValue & 0xFF);
+    pCMD[11]= (uint_8)((ulValue >> 8) & 0xFF);
+    pCMD[13]= (uint_8)((ulValue >> 16) & 0xFF);
+    uiCRC = fte_crc16(&pCMD[1], 13);
+    pCMD[14] = (uiCRC     ) & 0xFF;
+    pCMD[15] = (uiCRC >> 8) & 0xFF;
+
+    do
+    {
+        do 
+        {
+            ulTry++;
+            FTE_UCS_clear(pStatus->pUCS);
+            nLen = FTE_UCS_sendAndRecv(pStatus->pUCS, pCMD, sizeof(pCMD), pBuff, sizeof(pBuff), 100, 200);
+        } 
+        while ((ulTry < 3) && ((nLen < 4) || (pBuff[0] != 0x3a) || (pBuff[1] != pConfig->nSensorID)));
+        
+        uiCRC = fte_crc16(&pBuff[1], 6);
+    } 
+    while((ulTry < 3) && (uiCRC != (pBuff[7] | ((uint_16)pBuff[8] << 8))));
+    
+    if (ulTry >= 3)
+    {
+        return  MQX_ERROR;
+    }
+    
+    FTE_VALUE_setULONG(&pStatus->xCommon.pValue[nIndex], ulValue);
+    pStatus->xCommon.pValue[nIndex].bChanged = TRUE;
     return  MQX_OK;
 }
 
 
-_mqx_uint   fte_ftlm_setConfig(FTE_OBJECT_PTR  pObj, char_ptr pString)
+_mqx_uint   FTE_FTLM_setConfig(FTE_OBJECT_PTR  pObj, char_ptr pString)
 {
     if (pObj == NULL)
     {
@@ -110,15 +165,15 @@ _mqx_uint   fte_ftlm_setConfig(FTE_OBJECT_PTR  pObj, char_ptr pString)
     
     if (strcmp(pxCmd->text_value, "switch_on") == 0)
     {
-        fte_ftlm_switchCtrl(pObj, TRUE);
+        FTE_FTLM_switchCtrl(pObj, TRUE);
     }
     else if (strcmp(pxCmd->text_value, "switch_off") == 0)
     {
-        fte_ftlm_switchCtrl(pObj, FALSE);
+        FTE_FTLM_switchCtrl(pObj, FALSE);
     }
     else if (strcmp(pxCmd->text_value, "count_reset") == 0)
     {
-        fte_ftlm_countReset(pObj);
+        FTE_FTLM_countReset(pObj);
     }
     else
     {
@@ -136,7 +191,7 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint   fte_ftlm_getConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 ulBuffLen)
+_mqx_uint   FTE_FTLM_getConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 ulBuffLen)
 {
     FTE_GUS_STATUS_PTR      pStatus;
     FTE_JSON_VALUE_PTR      pJSONObject;
@@ -182,7 +237,7 @@ _mqx_uint   fte_ftlm_getConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 ulBu
     return  MQX_OK;
 }
 
-_mqx_uint   fte_ftlm_switchCtrl(FTE_OBJECT_PTR pObj, boolean bSwitchON)
+_mqx_uint   FTE_FTLM_switchCtrl(FTE_OBJECT_PTR pObj, boolean bSwitchON)
 {
     uint_8  pCMD[16] = { '\0', '[', '0', '0', '0', '0', 'B', 'T'};
     uint_32 nCmdLen = 8;
@@ -205,7 +260,7 @@ _mqx_uint   fte_ftlm_switchCtrl(FTE_OBJECT_PTR pObj, boolean bSwitchON)
     return  MQX_OK;
 }
 
-_mqx_uint   fte_ftlm_countReset(FTE_OBJECT_PTR pObj)
+_mqx_uint   FTE_FTLM_countReset(FTE_OBJECT_PTR pObj)
 {
     uint_8  pCMD[16] = { '\0', '[', '0', '0', '0', '0', 'B', 'T', 'Z', ']', '\0'};
     uint_32 nCmdLen = 11;

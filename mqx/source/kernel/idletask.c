@@ -59,7 +59,7 @@ void _mqx_idle_task
 
     while (1) {
 #if !defined(MQX_ENABLE_IDLE_LOOP) || MQX_ENABLE_IDLE_LOOP
-        if (++kernel_data->IDLE_LOOP.IDLE_LOOP1 == 0) {
+            if (++kernel_data->IDLE_LOOP.IDLE_LOOP1 == 0) {
             if (++kernel_data->IDLE_LOOP.IDLE_LOOP2 == 0) {
                 if (++kernel_data->IDLE_LOOP.IDLE_LOOP3 == 0) {
                 ++kernel_data->IDLE_LOOP.IDLE_LOOP4;

@@ -28,6 +28,7 @@ typedef struct
 {
     FTE_VALUE_TYPE  xType;
     boolean         bValid;
+    boolean         bChanged;
     uint_32         ulFailCount;
     union
     {

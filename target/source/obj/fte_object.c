@@ -23,6 +23,7 @@ const char_ptr FTE_JSON_OBJ_TIME_STRING   = "time";
 const char_ptr FTE_JSON_OBJ_STATE_STRING  = "state";
 const char_ptr FTE_JSON_OBJ_METHOD_STRING = "method";
 const char_ptr FTE_JSON_OBJ_PARAM_STRING  = "param";
+const char_ptr FTE_JSON_OBJ_PARAMS_STRING  = "params";
 
 static  FTE_LIST            _xObjList    = { 0, NULL, NULL };
 static  int FTE_OBJ_comaratorID(pointer pObj1, pointer pObj2)
@@ -304,6 +305,31 @@ char_ptr    FTE_OBJ_typeString(FTE_OBJECT_PTR pObj)
     return  pDesc->pName;
 }
 
+_mqx_uint   FTE_OBJ_getConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 ulBuffLen)
+{
+    ASSERT((pObj != NULL) && (pBuff!= NULL));
+        
+    if (pObj->pAction->f_set_config != NULL)
+    {
+        return  pObj->pAction->f_get_config(pObj, pBuff, ulBuffLen);
+    }
+    
+    return  MQX_ERROR;
+}
+
+_mqx_uint   FTE_OBJ_setConfig(FTE_OBJECT_PTR pObj, char_ptr pJSON)
+{
+    ASSERT((pObj != NULL) && (pJSON != NULL));
+        
+    if (pObj->pAction->f_set_config != NULL)
+    {
+        return  pObj->pAction->f_set_config(pObj, pJSON);
+    }
+    
+    return  MQX_ERROR;
+}
+
+
 _mqx_uint    FTE_OBJ_getSN(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 nLen)
 {
     ASSERT(pObj != NULL);
@@ -392,6 +418,15 @@ _mqx_uint       FTE_OBJ_wasUpdated(FTE_OBJECT_PTR pObj)
     return  MQX_OK;
 }
 
+_mqx_uint       FTE_OBJ_wasChanged(FTE_OBJECT_PTR pObj)
+{
+    ASSERT(pObj != NULL);
+    
+    FTE_OBJ_STATE_set(pObj, FTE_OBJ_STATUS_FLAG_UPDATED | FTE_OBJ_STATUS_FLAG_CHANGED);
+    
+    return  MQX_OK;
+}
+
 _mqx_uint       FTE_OBJ_EVENT_attach(FTE_OBJECT_PTR pObj, FTE_EVENT_PTR pEvent)
 {
     ASSERT(pObj != NULL);
@@ -449,7 +484,7 @@ boolean FTE_OBJ_FLAG_isSet(FTE_OBJECT_PTR pObj, uint_32 flag)
 {
     ASSERT(pObj != NULL);
     
-    return  FTE_FLAG_IS_SET(pObj->pConfig->xCommon.xFlags, FTE_DO_CONFIG_INIT_ON);
+    return  FTE_FLAG_IS_SET(pObj->pConfig->xCommon.xFlags, flag);
 }
 
 _mqx_uint   FTE_OBJ_FLAG_set(FTE_OBJECT_PTR pObj, uint_32 flag)
@@ -523,7 +558,7 @@ FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON(FTE_OBJECT_PTR pObj, uint_32 xOptions)
 
     ASSERT(pObj != NULL);
 
-    pObject = (FTE_JSON_OBJECT_PTR)FTE_JSON_VALUE_createObject(5);
+    pObject = (FTE_JSON_OBJECT_PTR)FTE_JSON_VALUE_createObject(8);
     if (pObject == NULL)
     {
         goto error;
@@ -575,78 +610,125 @@ FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON(FTE_OBJECT_PTR pObj, uint_32 xOptions)
             
         case    FTE_OBJ_FIELD_VALUE:
             {
-                if (FTE_OBJ_TYPE(pObj) != FTE_OBJ_TYPE_MULTI_PN1500)
+                switch(FTE_OBJ_TYPE(pObj))
                 {
-                    pValue = FTE_JSON_VALUE_createValue(pObj->pStatus->pValue);
-                    if (pValue == NULL)
+                case FTE_OBJ_TYPE_MULTI_PN1500:
                     {
-                        goto error;
-                    }
+                        uint_32 ulValue;
+                        boolean bValue;
+                        FTE_JSON_OBJECT_PTR  pValues = (FTE_JSON_OBJECT_PTR)FTE_JSON_VALUE_createObject(3);
+                        if (pValues == NULL)
+                        {
+                            goto error;
+                        }
+                        
+                        FTE_VALUE_getULONG(&pObj->pStatus->pValue[0], &ulValue);
+                        pValue = FTE_JSON_VALUE_createNumber(ulValue);
+                        if (pValue == NULL)
+                        {
+                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+                            goto error;
+                        }
+                        if (FTE_JSON_OBJECT_setPair(pValues, "count", pValue) != FTE_JSON_RET_OK)
+                        {
+                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+                            FTE_JSON_VALUE_destroy(pValue);
+                            goto error;
+                        }
+                        
+                        FTE_VALUE_getULONG(&pObj->pStatus->pValue[1], &ulValue);
+                        pValue = FTE_JSON_VALUE_createNumber(ulValue);
+                        if (pValue == NULL)
+                        {
+                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+                            goto error;
+                        }
+                        if (FTE_JSON_OBJECT_setPair(pValues, "accum", pValue) != FTE_JSON_RET_OK)
+                        {
+                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+                            FTE_JSON_VALUE_destroy(pValue);
+                            goto error;
+                        }
 
-                    if (FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_VALUE_STRING, pValue) != FTE_JSON_RET_OK)
-                    {
-                        FTE_JSON_VALUE_destroy(pValue);
-                        goto error;
+                        FTE_VALUE_getDIO(&pObj->pStatus->pValue[2], &bValue);
+                        pValue = FTE_JSON_VALUE_createNumber(bValue);
+                        if (pValue == NULL)
+                        {
+                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+                            goto error;
+                        }
+                        if (FTE_JSON_OBJECT_setPair(pValues, "switch", pValue) != FTE_JSON_RET_OK)
+                        {
+                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+                            FTE_JSON_VALUE_destroy(pValue);
+                            goto error;
+                        }                    
+                        
+                        if (FTE_JSON_OBJECT_setPair(pObject, "value", (FTE_JSON_VALUE_PTR)pValues) != FTE_JSON_RET_OK)
+                        {
+                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+                            goto error;
+                        }                    
+                        
                     }
-                }
-                else
-                {
-                    uint_32 ulValue;
-                    boolean bValue;
-                    FTE_JSON_OBJECT_PTR  pValues = (FTE_JSON_OBJECT_PTR)FTE_JSON_VALUE_createObject(3);
-                    if (pValues == NULL)
-                    {
-                        goto error;
-                    }
+                    break;
                     
-                    FTE_VALUE_getULONG(&pObj->pStatus->pValue[0], &ulValue);
-                    pValue = FTE_JSON_VALUE_createNumber(ulValue);
-                    if (pValue == NULL)
-                    {
-                        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                        goto error;
-                    }
-                    if (FTE_JSON_OBJECT_setPair(pValues, "count", pValue) != FTE_JSON_RET_OK)
-                    {
-                        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                        FTE_JSON_VALUE_destroy(pValue);
-                        goto error;
-                    }
-                    
-                    FTE_VALUE_getULONG(&pObj->pStatus->pValue[1], &ulValue);
-                    pValue = FTE_JSON_VALUE_createNumber(ulValue);
-                    if (pValue == NULL)
-                    {
-                        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                        goto error;
-                    }
-                    if (FTE_JSON_OBJECT_setPair(pValues, "accum", pValue) != FTE_JSON_RET_OK)
-                    {
-                        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                        FTE_JSON_VALUE_destroy(pValue);
-                        goto error;
-                    }
+                 default:
+                   {
+#if FTE_ES18
+                       uint_32  ulCmd = pObj->pStatus->pValue->xData.ulValue & 0xFF;
+                       uint_32  ulLevel = (pObj->pStatus->pValue->xData.ulValue >> 8) & 0xFF;
+                       uint_32  ulTime = (pObj->pStatus->pValue->xData.ulValue >> 16) & 0xFF;
+                       
+                        pValue = FTE_JSON_VALUE_createNumber(ulCmd);
+                        if (pValue == NULL)
+                        {
+                            goto error;
+                        }
 
-                    FTE_VALUE_getDIO(&pObj->pStatus->pValue[2], &bValue);
-                    pValue = FTE_JSON_VALUE_createNumber(bValue);
-                    if (pValue == NULL)
-                    {
-                        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                        goto error;
+                        if (FTE_JSON_OBJECT_setPair(pObject, "cmd", pValue) != FTE_JSON_RET_OK)
+                        {
+                            FTE_JSON_VALUE_destroy(pValue);
+                            goto error;
+                        }
+
+                        pValue = FTE_JSON_VALUE_createNumber(ulLevel);
+                        if (pValue == NULL)
+                        {
+                            goto error;
+                        }
+
+                        if (FTE_JSON_OBJECT_setPair(pObject, "level", pValue) != FTE_JSON_RET_OK)
+                        {
+                            FTE_JSON_VALUE_destroy(pValue);
+                            goto error;
+                        }
+
+                        pValue = FTE_JSON_VALUE_createNumber(ulTime);
+                        if (pValue == NULL)
+                        {
+                            goto error;
+                        }
+
+                        if (FTE_JSON_OBJECT_setPair(pObject, "time", pValue) != FTE_JSON_RET_OK)
+                        {
+                            FTE_JSON_VALUE_destroy(pValue);
+                            goto error;
+                        }
+#else
+                        pValue = FTE_JSON_VALUE_createValue(pObj->pStatus->pValue);
+                        if (pValue == NULL)
+                        {
+                            goto error;
+                        }
+
+                        if (FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_VALUE_STRING, pValue) != FTE_JSON_RET_OK)
+                        {
+                            FTE_JSON_VALUE_destroy(pValue);
+                            goto error;
+                        }
+#endif
                     }
-                    if (FTE_JSON_OBJECT_setPair(pValues, "switch", pValue) != FTE_JSON_RET_OK)
-                    {
-                        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                        FTE_JSON_VALUE_destroy(pValue);
-                        goto error;
-                    }                    
-                    
-                    if (FTE_JSON_OBJECT_setPair(pObject, "value", (FTE_JSON_VALUE_PTR)pValues) != FTE_JSON_RET_OK)
-                    {
-                        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                        goto error;
-                    }                    
-                    
                 }
                    
             }
@@ -823,9 +905,9 @@ uint_32    FTE_OBJ_1WIRE_discovery(boolean bSave)
          
             if (strcmp(FTE_1WIRE_getFailmyName(xParams.pROMCode[0]), "18B20") == 0)
             {
-                if (!fte_ds18b20_is_exist_rom_code(xParams.pROMCode) )
+                if (!FTE_DS18B20_isExistROMCode(xParams.pROMCode) )
                 {
-                    FTE_OBJECT_PTR          pObj = fte_ds18b20_create(&xParams);
+                    FTE_OBJECT_PTR          pObj = FTE_DS18B20_create(&xParams);
                     if (pObj == NULL)
                     {
                         break;
@@ -937,8 +1019,8 @@ int_32          FTE_OBJ_SHELL_cmd(int_32 argc, char_ptr argv[])
                 uint_32 count = FTE_OBJ_count(FTE_OBJ_TYPE_UNKNOWN, 0, FALSE);
                 uint_32 i;
 
-                printf("%-8s %-16s %-16s %-8s %-16s %-s\n", 
-                        "ID", "TYPE", "NAME", "STATUS", "VALUE", "TIME");
+                printf("%-8s %-16s %-16s %8s %8s %7s %-s\n", 
+                        "ID", "TYPE", "NAME", "STATUS", "VALUE", "       ", "TIME");
                 for(i = 0 ; i < count ; i++)
                 {
                     FTE_OBJECT_PTR  pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_UNKNOWN, 0, i, FALSE);
@@ -976,10 +1058,94 @@ int_32          FTE_OBJ_SHELL_cmd(int_32 argc, char_ptr argv[])
                             printf(" %3d.%02d%%(%d, %d, %d)", nRatio/100, nRatio%100, xStatistics.nTotalTrial, xStatistics.nTotalFail, xStatistics.nPartialFail);
                         }
                         printf("\n");
+                        
                     }
                 }
             }
             break;
+            
+        case    2:
+            {
+                uint_32     nID, i;
+                TIME_STRUCT xTime;
+                char        pTimeString[32];
+                char        pValueString[16];
+                char        pUnitString[8];
+                
+                if (Shell_parse_hexnum(argv[1], &nID) != TRUE)
+                {
+                    printf("Invalid OID[%s]\n", argv[1]);
+                    return_code = SHELL_EXIT_ERROR;
+                    break;
+                }
+                
+                FTE_OBJECT_PTR  pObj = FTE_OBJ_get(nID);                    
+                if (pObj == NULL)
+                {
+                    printf("Invalid OID[%08x]\n", nID);
+                    return_code = SHELL_EXIT_ERROR;
+                    break;
+                }
+                
+                printf("%8s : %08x\n",  "ID",       pObj->pConfig->xCommon.nID);
+                printf("%8s : %s\n",    "Type",     FTE_OBJ_typeString(pObj));
+                printf("%8s : %s\n",    "Name",     pObj->pConfig->xCommon.pName);
+                printf("%8s : %s\n",    "Status",   FTE_OBJ_IS_ENABLED(pObj)?"RUN":"STOP");                       
+                
+                    
+                FTE_VALUE_toString(pObj->pStatus->pValue, pValueString, sizeof(pValueString));
+                FTE_VALUE_unit(pObj->pStatus->pValue, pUnitString, sizeof(pUnitString));
+                FTE_VALUE_getTimeStamp(pObj->pStatus->pValue, &xTime);
+                FTE_TIME_toString(&xTime, pTimeString, sizeof(pTimeString));
+                
+                printf("%8s : %s\n",   "Value", pValueString);
+                printf("%8s : %s\n",    "Unit", pUnitString);
+                printf("%8s : %s\n",    "Time", pTimeString);
+                
+                if (pObj->pAction->f_get_update_interval != NULL)
+                {
+                    printf("%8s : %d secs\n", "Update", pObj->pAction->f_get_update_interval(pObj));
+                }                    
+                    
+                if (FTE_OBJ_TYPE(pObj) == FTE_OBJ_TYPE_DI)
+                {
+                    FTE_DI_CONFIG_PTR   pConfig = (FTE_DI_CONFIG_PTR)pObj->pConfig;
+                    
+                    printf("%8s : %d msecs\n",    "Delay", pConfig->ulDelay);
+                    printf("%8s : %d msecs\n",    "Hold", pConfig->ulHold);
+                }
+                
+                printf("%8s : %d\n", "Event", FTE_LIST_count(&pObj->xEventList));
+                for(i = 0 ; i < FTE_LIST_count(&pObj->xEventList) ; i++)
+                {
+                    FTE_EVENT_PTR pEvent = FTE_LIST_getAt(&pObj->xEventList, i);
+                    if (pEvent != NULL)
+                    {
+                        char                pTypeString[64];
+                        
+                        FTE_EVENT_type_string(pEvent->pConfig->xType, pTypeString, sizeof(pTypeString));
+                        printf("%8d : %08lx %16s %-10s\n", 
+                               i, pEvent->pConfig->ulEPID, 
+                               FTE_EVENT_CONDITION_string(pEvent->pConfig->xCondition),
+                               pTypeString);   
+                    }
+                }                            
+                
+                if (pObj->pAction->f_get_statistic != NULL)
+                {
+                    FTE_OBJECT_STATISTICS    xStatistics;
+                    uint_32                 nRatio;
+                    
+                    pObj->pAction->f_get_statistic(pObj, &xStatistics);
+                    nRatio = (xStatistics.nTotalTrial - xStatistics.nTotalFail) * 10000 / xStatistics.nTotalTrial;
+                    
+                    printf("%8s : %3d.%02d%%\n", "Rate", nRatio/100, nRatio%100);
+                    printf("%8s : %d\n", "Total",   xStatistics.nTotalTrial);
+                    printf("%8s : %d\n", "Failed",  xStatistics.nTotalFail);
+                    printf("%8s : %d\n", "Partial", xStatistics.nPartialFail);
+                }
+            }
+            break;            
             
         case    3:
             {
@@ -988,12 +1154,16 @@ int_32          FTE_OBJ_SHELL_cmd(int_32 argc, char_ptr argv[])
                 if (Shell_parse_hexnum(argv[1], &nID) != TRUE)
                 {
                     printf("Invalid OID[%s]\n", argv[1]);
+                    return_code = SHELL_EXIT_ERROR;
+                    break;
                 }
                 
                 FTE_OBJECT_PTR  pObj = FTE_OBJ_get(nID);                    
                 if (pObj == NULL)
                 {
                     printf("Invalid OID[%08x]\n", nID);
+                    return_code = SHELL_EXIT_ERROR;
+                    break;
                 }
                 
                 if (strcmp(argv[2], "info") == 0)
@@ -1042,22 +1212,136 @@ int_32          FTE_OBJ_SHELL_cmd(int_32 argc, char_ptr argv[])
         case    4:
             {
                 uint_32  nOID = 0;
+
+                Shell_parse_hexnum(argv[1], &nOID);
                 
-                if (strcmp(argv[1], "set") == 0)
+                FTE_OBJECT_PTR  pObj = FTE_OBJ_get(nOID);                    
+                if (pObj == NULL)
                 {
-                    Shell_parse_hexnum(argv[2], &nOID);
+                    return_code = SHELL_EXIT_ERROR;
+                    break;
+                }
+                
+                if (strcmp(argv[2], "set") == 0)
+                {
+                    FTE_VALUE   xValue;
                     
-                    FTE_OBJECT_PTR  pObj = FTE_OBJ_get(nOID);                    
-                    if (pObj != NULL)
+                    FTE_VALUE_init(&xValue, FTE_OBJ_getValueType(pObj));
+                    if (FTE_VALUE_set(&xValue, argv[3]) == MQX_OK)
                     {
-                        FTE_VALUE   xValue;
-                        
-                        FTE_VALUE_init(&xValue, FTE_OBJ_getValueType(pObj));
-                        if (FTE_VALUE_set(&xValue, argv[3]) == MQX_OK)
-                        {
-                            FTE_OBJ_setValue(pObj, &xValue);
+                        FTE_OBJ_setValue(pObj, &xValue);
+                    }
+                }
+                else if (strcmp(argv[2], "delay") == 0)
+                {
+                    uint_32  ulDelay;
+                    if (Shell_parse_number(argv[3], &ulDelay) != TRUE)
+                    {
+                        printf("Invalid parameter[%s]\n", argv[3]);
+                        return_code = SHELL_EXIT_ERROR;
+                        break;
+                    }
+                    
+                    if (FTE_OBJ_TYPE(pObj) != FTE_OBJ_TYPE_DI)
+                    {
+                        return_code = SHELL_EXIT_ERROR;
+                        break;
+                    }
+                    
+                    if (ulDelay < FTE_OBJ_EVENT_CHECK_INTERVAL)
+                    {
+                        printf("Delay time is too short. This time must be longer then %d msecs.\n",
+                               FTE_OBJ_EVENT_CHECK_INTERVAL);
+                        break;
+                    }
+                    
+                    FTE_DI_CONFIG_PTR   pConfig = (FTE_DI_CONFIG_PTR)pObj->pConfig;
+                    
+                    pConfig->ulDelay = ulDelay;
+                    FTE_CFG_OBJ_save(pObj);
+                }
+                else if (strcmp(argv[2], "hold") == 0)
+                {
+                    uint_32  ulHold;
+                    if (Shell_parse_number(argv[3], &ulHold) != TRUE)
+                    {
+                        printf("Invalid hold time[%s]\n", argv[3]);
+                        return_code = SHELL_EXIT_ERROR;
+                        break;
+                    }
+                    
+                    if (FTE_OBJ_TYPE(pObj) != FTE_OBJ_TYPE_DI)
+                    {
+                        return_code = SHELL_EXIT_ERROR;
+                        break;
+                    }
+                    
+                    FTE_DI_CONFIG_PTR   pConfig = (FTE_DI_CONFIG_PTR)pObj->pConfig;
+                    
+                    pConfig->ulHold = ulHold;
+                    FTE_CFG_OBJ_save(pObj);
+                }
+                else if (strcmp(argv[2], "update") == 0)
+                {
+                    uint_32  ulSeconds;
+                    if (Shell_parse_number(argv[3], &ulSeconds) != TRUE)
+                    {
+                        printf("Invalid update interval[%s]\n", argv[3]);
+                        return_code = SHELL_EXIT_ERROR;
+                        break;
+                    }
+
+                    if (pObj->pAction->f_set_update_interval == NULL)
+                    {
+                        printf("Not supported changing the update interval.\n");
+                        return_code = SHELL_EXIT_ERROR;
+                        break;
+                    }
+                    
+                    if (pObj->pAction->f_set_update_interval(pObj, ulSeconds) != MQX_OK)
+                    {
+                        printf("Object failed to change the update interval\n"); 
+                        return_code = SHELL_EXIT_ERROR;
+                        break;
+                    }
+                    
+                    FTE_CFG_OBJ_save(pObj);
+                }
+                else if (strcmp(argv[2], "reverse") == 0)
+                {
+                    if (FTE_OBJ_TYPE(pObj) != FTE_OBJ_TYPE_DI)
+                    {
+                        return_code = SHELL_EXIT_ERROR;
+                        break;
+                    }
+
+                    if (strcmp(argv[3], "on") == 0)
+                    {
+                        if (!FTE_OBJ_FLAG_isSet(pObj, FTE_OBJ_CONFIG_FLAG_REVERSE))
+                        {                        
+                            FTE_OBJ_FLAG_set(pObj, FTE_OBJ_CONFIG_FLAG_REVERSE);
+                            pObj->pStatus->pValue->xData.bValue = !pObj->pStatus->pValue->xData.bValue;
+                            
+                            FTE_CFG_OBJ_save(pObj);
+                        }
+
+                    }
+                    else if (strcmp(argv[3], "off") == 0)
+                    {
+                        if (FTE_OBJ_FLAG_isSet(pObj, FTE_OBJ_CONFIG_FLAG_REVERSE))
+                        {                        
+                            FTE_OBJ_FLAG_clear(pObj, FTE_OBJ_CONFIG_FLAG_REVERSE);
+                            pObj->pStatus->pValue->xData.bValue = !pObj->pStatus->pValue->xData.bValue;
+                            
+                            FTE_CFG_OBJ_save(pObj);
                         }
                     }
+                    else
+                    {
+                        return_code = SHELL_EXIT_ERROR;
+                        break;
+                    }
+                        
                 }
             }
             break;
@@ -1081,6 +1365,10 @@ int_32          FTE_OBJ_SHELL_cmd(int_32 argc, char_ptr argv[])
             printf ("        Show object information.\n");
             printf ("    <id> destroy\n");
             printf ("        Destroy object.\n");
+            printf ("    <id> hold <msecs>\n");
+            printf ("        signal hold time.\n");
+            printf ("    <id> delay <msecs>\n");
+            printf ("        signal delay time.\n");
             printf ("    <type> <op>\n");
             printf ("  Parameters:\n");
             printf ("    <type> = Target object type\n");

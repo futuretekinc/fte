@@ -765,6 +765,13 @@ void fnet_fec_phy_discover_addr (fnet_fec_if_t *ethif)
             ethif->phy_addr = 12;
             fnet_fec_mii_write(ethif, 0x04, 0x03);
         }
+        else if (id == 0x001C)
+        {
+            fnet_fec_mii_write(ethif, 0x1F, 0x0004);
+            fnet_fec_mii_write(ethif, 0x10, 0x4077);
+            fnet_fec_mii_write(ethif, 0x1F, 0x0000);
+        }
+        
         
         ethif->phy_addr = FNET_FEC_PHY_ADDRESS;        
     #endif

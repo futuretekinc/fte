@@ -8,6 +8,7 @@ typedef struct
 {
     char    pUserID[FTE_SHELL_USER_ID_LENGTH+1];
     char    pPasswd[FTE_SHELL_PASSWD_LENGTH+1];
+    uint_32 ulTimeout;
 }   FTE_SHELL_CONFIG, _PTR_ FTE_SHELL_CONFIG_PTR;
 
 _mqx_uint   FTE_SHELL_proc(void);

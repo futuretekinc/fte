@@ -23,7 +23,7 @@
 * $Version : 3.7.2.0$
 * $Date    : Feb-7-2011$
 *
-* Comments:     
+* Comments:     ob
 *
 *   This file contains the main C language entrypoint, starting up the MQX
 *

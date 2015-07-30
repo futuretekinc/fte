@@ -1,8 +1,10 @@
 #ifndef __FTE_DEBUG_H__
 #define __FTE_DEBUG_H__
 
+#define DEBUG_UNKNOWN       0x00000000
 #define DEBUG_OBJECT        0x00000001
 #define DEBUG_EVENT         0x00000002
+#define DEBUG_DI            0x00000004
 #define DEBUG_NET_MQTT      0x00000100
 #define DEBUG_NET_CGI       0x00000200
 #define DEBUG_NET_SMNG      0x00000400
@@ -27,11 +29,12 @@
 #define ERROR(...)              
 #define err_sys(...)            
 #endif
+void        FTE_DEBUG_init(void);
 _mqx_int    FTE_DEBUG_trace(uint_32 ulModule, const char _PTR_ fmt_ptr, ... );
 _mqx_int    FTE_DEBUG_traceOn(uint_32 ulModule);
 _mqx_int    FTE_DEBUG_traceOff(uint_32 ulModule);
 _mqx_int    FTE_DEBUG_error(const char _PTR_ pFuncName, int nLine, const char _PTR_ fmt_ptr, ... );
 
-int_32 FTE_DEBUG_shellCmd(int_32 nArgc, char_ptr pArgv[]);
+int_32 FTE_TRACE_SHELL_cmd(int_32 nArgc, char_ptr pArgv[]);
 
 #endif

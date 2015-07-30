@@ -490,13 +490,13 @@ _mqx_int _bsp_dspi_io_init
             pctl->PCR[2] = PORT_PCR_MUX(2);     /* SPI1.SCK    */
             pctl->PCR[3] = PORT_PCR_MUX(2);     /* SPI1.SIN    */
             pctl->PCR[4] = PORT_PCR_MUX(2);     /* SPI1.PCS0   */
-
             /* Enable clock gate to DSPI1 module */
             sim->SCGC6 |= SIM_SCGC6_SPI1_MASK;
             break;
 
         case 2:
             /* Configure GPIOD for SPI2 peripheral function     */
+#if 0
             pctl = (PORT_MemMapPtr)PORTD_BASE_PTR;
 
             pctl->PCR[11] = PORT_PCR_MUX(2);    /* SPI2.PCS0   */
@@ -504,6 +504,14 @@ _mqx_int _bsp_dspi_io_init
             pctl->PCR[13] = PORT_PCR_MUX(2);    /* SPI2.SOUT   */
             pctl->PCR[14] = PORT_PCR_MUX(2);    /* SPI2.SIN    */
             pctl->PCR[15] = PORT_PCR_MUX(2);    /* SPI2.PCS1   */
+#else
+            pctl = (PORT_MemMapPtr)PORTB_BASE_PTR;
+
+            pctl->PCR[22] = PORT_PCR_MUX(2);     /* SPI2.SOUT   */
+            pctl->PCR[21] = PORT_PCR_MUX(2);     /* SPI2.SCK    */
+            pctl->PCR[23] = PORT_PCR_MUX(2);     /* SPI2.SIN    */
+//          pctl->PCR[20] = PORT_PCR_MUX(2);     /* SPI2.PCS0   */
+#endif
 
             /* Enable clock gate to SPI2 module */
             sim->SCGC3 |= SIM_SCGC3_SPI2_MASK;

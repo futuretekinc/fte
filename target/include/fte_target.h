@@ -33,7 +33,7 @@
 #define FTE_MAC_SIZE                    6
 
 #define FTE_LOCATION_MAX_LEN            32
-#define FTE_MTD_MAX_COUNT               6
+#define FTE_MTD_MAX_COUNT               12
 
 #define FTE_LOG_BOOT_TIME_MAX_COUNT     5
 
@@ -64,7 +64,7 @@
     #define FTE_TASK_WATCHDOG_TIME      5000
 #endif
 #if FTE_TASK_NET
-    #define FTE_TASK_NET_STACK          (FTE_TASK_DEFAULT_STACK * 3)
+    #define FTE_TASK_NET_STACK          (FTE_TASK_DEFAULT_STACK * 6)
     #define FTE_TASK_NET_PRIO           9
 #endif
 
@@ -120,7 +120,7 @@
 #define FTE_NET_DEFAULT_GATEWAY_IP      IPADDR(192,168,1,1) 
 
 #define FTE_NET_SMNG_BUFF_SIZE          1024
-#define FTE_NET_SMNG_STACK              (FTE_TASK_DEFAULT_STACK * 2 + FTE_NET_SMNG_BUFF_SIZE)
+#define FTE_NET_SMNG_STACK              (FTE_TASK_DEFAULT_STACK * 4 + FTE_NET_SMNG_BUFF_SIZE)
 #define FTE_NET_SMNG_PRIO               9
 #define FTE_NET_SMNG_PORT               1234
 
@@ -132,7 +132,7 @@
 #define FTE_NET_SNMP_MIBMQX             0
 
 #define FTE_NET_SNMP_NAME               "snmp"
-#define FTE_NET_SNMP_PRIO               3
+#define FTE_NET_SNMP_PRIO               9
 #define FTE_NET_SNMP_STACK              (FTE_TASK_DEFAULT_STACK * 4)
 
 #define FTE_NET_SNMP_TRAP_SPEC          3
@@ -170,7 +170,7 @@
  ******************************************************************************/
 #define FTE_OBJ_CHECK_FAILURE_COUNT_MAX 64
 #define FTE_OBJ_ALLOW_FAILURE_COUNT     32
-#define FTE_OBJ_EVENT_CHECK_INTERVAL    500 /* milliseconds */
+#define FTE_OBJ_EVENT_CHECK_INTERVAL    200 /* milliseconds */
 #define FTE_OBJ_LIVE_CHECK_INTERVAL     60  /* seconds */
 
 
@@ -346,5 +346,9 @@ void                    fte_state_change_set_cb(void (*cb)(void));
     #define FTE_UCS_1_STOPBITS              FTE_UART_STOP_BITS_1
 #endif
 
+
+#ifndef FTE_SHELL_TIMEOUT
+    #define FTE_SHELL_TIMEOUT               60  /* 60 secs */
+#endif
 #endif
 

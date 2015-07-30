@@ -52,8 +52,8 @@ static const FTE_EVENT_CONFIG ifte_event_temp_config =
             .ulThreshold = 2
         }
     },
-    .ulDelayTime=   1,
-    .ulHoldTime =   60,
+    .ulDelayTime=   1000,
+    .ulHoldTime =   60000,
     .ulAction   = FTE_EVENT_ACTION_LOG | FTE_EVENT_ACTION_SNMP_TRAP | FTE_EVENT_ACTION_MQTT_PUB
 };
 
@@ -92,8 +92,8 @@ static const FTE_EVENT_CONFIG ifte_event_co2_config =
             .ulThreshold = 20
         }
     },
-    .ulDelayTime=   1,
-    .ulHoldTime =   60,
+    .ulDelayTime=   1000,
+    .ulHoldTime =   60000,
     .ulAction   = FTE_EVENT_ACTION_LOG | FTE_EVENT_ACTION_SNMP_TRAP | FTE_EVENT_ACTION_MQTT_PUB
 };
 

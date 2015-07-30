@@ -119,18 +119,19 @@ typedef uint_32 FTE_OBJECT_ID;
 #define FTE_FLAG_SET(flags, field)          ((flags) | (field))
 #define FTE_FLAG_CLR(flags, field)          ((flags) & ~(field))
 
-#define FTE_OBJ_CONFIG_FLAG_ENABLE          0x01
-#define FTE_OBJ_CONFIG_FLAG_DYNAMIC         0x02
-#define FTE_OBJ_CONFIG_FLAG_TRAP            0x10
-#define FTE_OBJ_CONFIG_FLAG_TRAP_DIFF       0x30
-#define FTE_OBJ_CONFIG_FLAG_TRAP_EQUAL      0x50
-#define FTE_OBJ_CONFIG_FLAG_TRAP_CHANGED    0x70
+#define FTE_OBJ_CONFIG_FLAG_ENABLE          0x00000001
+#define FTE_OBJ_CONFIG_FLAG_DYNAMIC         0x00000002
+#define FTE_OBJ_CONFIG_FLAG_TRAP            0x00000010
+#define FTE_OBJ_CONFIG_FLAG_TRAP_DIFF       0x00000030
+#define FTE_OBJ_CONFIG_FLAG_TRAP_EQUAL      0x00000050
+#define FTE_OBJ_CONFIG_FLAG_TRAP_CHANGED    0x00000070
+#define FTE_OBJ_CONFIG_FLAG_REVERSE         0x00000100
 
-#define FTE_OBJ_STATUS_FLAG_VALID           0x01
-#define FTE_OBJ_STATUS_FLAG_WARN            0x02
-#define FTE_OBJ_STATUS_FLAG_ALERT           0x04
-#define FTE_OBJ_STATUS_FLAG_UPDATED         0x08
-#define FTE_OBJ_STATUS_FLAG_CHANGED         0x10
+#define FTE_OBJ_STATUS_FLAG_VALID           0x00000001
+#define FTE_OBJ_STATUS_FLAG_WARN            0x00000002
+#define FTE_OBJ_STATUS_FLAG_ALERT           0x00000004
+#define FTE_OBJ_STATUS_FLAG_UPDATED         0x00000008
+#define FTE_OBJ_STATUS_FLAG_CHANGED         0x00000010
 
 #define FTE_OBJ_FIELD_ID                0x00000001
 #define FTE_OBJ_FIELD_NAME              0x00000004
@@ -189,6 +190,7 @@ extern  const char_ptr FTE_JSON_OBJ_TIME_STRING;
 extern  const char_ptr FTE_JSON_OBJ_STATE_STRING;
 extern  const char_ptr FTE_JSON_OBJ_METHOD_STRING;
 extern  const char_ptr FTE_JSON_OBJ_PARAM_STRING;
+extern  const char_ptr FTE_JSON_OBJ_PARAMS_STRING;
 
 typedef struct _FTE_OBJECT_STATISTICS
 {
@@ -292,6 +294,9 @@ _mqx_uint       FTE_OBJ_setValueString(FTE_OBJECT_PTR pObj, char_ptr pValue);
 _mqx_uint       FTE_OBJ_getValueAt(FTE_OBJECT_PTR pObj, uint_32 ulIdx, FTE_VALUE_PTR pValue);
 FTE_VALUE_TYPE  FTE_OBJ_getValueType(FTE_OBJECT_PTR pObj);
 
+_mqx_uint       FTE_OBJ_getConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 ulBuffLen);
+_mqx_uint       FTE_OBJ_setConfig(FTE_OBJECT_PTR pObj, char_ptr pJSON);
+
 char_ptr        FTE_OBJ_typeString(FTE_OBJECT_PTR pObj);
 
 _mqx_uint       FTE_OBJ_getName(FTE_OBJECT_PTR pObj, char_ptr pName, uint_32 nBuffLen);
@@ -301,6 +306,7 @@ _mqx_uint       FTE_OBJ_getSN(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 nLen)
 
 _mqx_uint       FTE_OBJ_activate(FTE_OBJECT_PTR pObj, boolean bEnable);
 _mqx_uint       FTE_OBJ_wasUpdated(FTE_OBJECT_PTR pObj);
+_mqx_uint       FTE_OBJ_wasChanged(FTE_OBJECT_PTR pObj);
 
 _mqx_uint       FTE_OBJ_start(FTE_OBJECT_PTR pObj);
 _mqx_uint       FTE_OBJ_stop(FTE_OBJECT_PTR pObj);

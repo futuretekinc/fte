@@ -8,7 +8,7 @@
 #include "fte_config.h" 
 #include "fte_net.h"
 #include "fte_object.h"
-#include "fte_log.h"
+#include "fte_log.h" 
 #include "fte_snmp.h" 
 #include "fte_time.h" 
 #include "fte_sys.h" 
@@ -32,11 +32,7 @@
 #endif
 
 /****************************************************************/
-#if 1
-#define SNMP_TRACE(...)  
-#else
 #define SNMP_TRACE(...)  TRACE(DEBUG_NET_SNMP, __VA_ARGS__)
-#endif
 
 #define COUNTER_OVERFLOW    5
 #define COUNTER_DELAY       5000
@@ -91,8 +87,6 @@ _mqx_uint   FTE_SNMPD_init(FTE_SNMP_CFG_PTR pConfig)
 {
     int_32  i, ret;
 
-   TRACE_ON(DEBUG_NET_SNMP);
-    
 #if FTE_NET_SNMP_MIB1213
     /* init RFC 1213 MIB */
     MIB1213_init();
@@ -233,7 +227,7 @@ void FTE_SNMPD_TRAP_processing(void)
                 boolean bNewServer = FALSE;
                 if (!FTE_NET_SERVER_isExist(pCurrentTrapMsg->xParams.xDiscovery.xHostIP))
                 {
-                    SNMP_TRACE("\nAdd new trap server\n");
+                    SNMP_TRACE("Add temporary trap server(%d.%d.%d.%d) for discovery\n", IPBYTES(pCurrentTrapMsg->xParams.xDiscovery.xHostIP));
                     uint_32 error = RTCS_trap_target_add(pCurrentTrapMsg->xParams.xDiscovery.xHostIP);
                     if (error) 
                     {
@@ -241,16 +235,20 @@ void FTE_SNMPD_TRAP_processing(void)
                     } 
                     bNewServer = TRUE;
                 }
+
 #if  FTE_NET_SNMP_TRAP_V1
                 SNMP_trap_userSpec((RTCSMIB_NODE *)&MIBNODE_msgDiscovery , 3, &MIBNODE_futuretek );
 #elif FTE_NET_SNMP_TRAP_V2
                 SNMPv2_trap_userSpec( (RTCSMIB_NODE *)&MIBNODE_msgDiscovery );
 #endif
+                ++ulRespDiscoveryCount;
+                SNMP_TRACE("Send Discovery trap[%d]\n", ulRespDiscoveryCount);
+                
                 if (bNewServer)
                 {
                     RTCS_trap_target_remove(pCurrentTrapMsg->xParams.xDiscovery.xHostIP);
+                    SNMP_TRACE("Remove temporary trap server(%d.%d.%d.%d) for discovery\n", IPBYTES(pCurrentTrapMsg->xParams.xDiscovery.xHostIP));
                 }                
-                ++ulRespDiscoveryCount;
             }
             break;
         }
@@ -263,7 +261,7 @@ void FTE_SNMPD_TRAP_processing(void)
         FTE_MEM_free(pCurrentTrapMsg);
         pCurrentTrapMsg = NULL;
         
-        _time_delay(10);
+        _time_delay(100);
     }
 }
 
@@ -293,11 +291,13 @@ _mqx_uint   FTE_SNMPD_TRAP_sendAlert(uint_32 nOID, boolean bOccurred)
 
 _mqx_uint   FTE_SNMPD_TRAP_discovery(_ip_address xHostIP)
 {
-    FTE_LIST_ITERATOR   xIter;
     FTE_TRAP_MSG_PTR    pMsg;
     
     ulReqDiscoveryCount ++;
 
+#if 0
+    FTE_LIST_ITERATOR   xIter;
+    
     FTE_LIST_ITER_init(&_trapList, &xIter);
     while ((pMsg = FTE_LIST_ITER_getNext(&xIter)) != NULL)
     {
@@ -306,7 +306,7 @@ _mqx_uint   FTE_SNMPD_TRAP_discovery(_ip_address xHostIP)
             return  MQX_OK;
         }
     }    
-    
+#endif
     pMsg = (FTE_TRAP_MSG_PTR)FTE_MEM_allocZero(sizeof(FTE_TRAP_MSG));
     if (pMsg == NULL)
     {
@@ -801,10 +801,10 @@ uint_32 MIB_set_smDiscovery(pointer param, uchar_ptr varptr, uint_32 varlen)
              
                 if (strcmp(FTE_1WIRE_getFailmyName(xParams.pROMCode[0]), "18B20") == 0)
                 {
-#if FTE_DS18B20_SUPPORTED
-                    if (!fte_ds18b20_is_exist_rom_code(xParams.pROMCode) )
+#if FTE_DS18B20_SUPPORTED 
+                    if (!FTE_DS18B20_isExistROMCode(xParams.pROMCode) )
                     {
-                        FTE_OBJECT_PTR          pObj = fte_ds18b20_create(&xParams);
+                        FTE_OBJECT_PTR          pObj = FTE_DS18B20_create(&xParams);
                         if (pObj == NULL)
                         {
                             return  SNMP_ERROR_resourceUnavailable;
@@ -1933,7 +1933,7 @@ char const *MIB_get_srvIpAddr(pointer params)
 
 uint_32 MIB_get_logCount(pointer dummy)
 {
-    return  fte_log_count();
+    return  FTE_LOG_count();
 }
 
 boolean MIB_find_logEntry
@@ -1950,12 +1950,12 @@ boolean MIB_find_logEntry
         logIndex = 1;
     } 
 
-    if (logIndex > fte_log_count())
+    if (logIndex > FTE_LOG_count())
     {
         return  FALSE;
     }
 
-    *instance = (pointer)(fte_log_count() - logIndex + 1);
+    *instance = (pointer)(FTE_LOG_count() - logIndex + 1);
     *(uint_32_ptr)index = logIndex;
                     
     return TRUE;
@@ -1977,7 +1977,7 @@ char const *MIB_get_logTime(pointer pIndex)
         return  _unknown;
     } 
     
-    strcpy(_buff, FTE_VALUE_printTimeStamp(&pLog->xValue));
+    FTE_TIME_toString(&pLog->xTimeStamp, _buff, sizeof(_buff));
     
     return  _buff;
 }
@@ -1992,7 +1992,7 @@ uint_32 MIB_get_logLevel(pointer pIndex)
         return  0;
     }
     
-    return  pLog->nLevel;
+    return  0;
 }
 
 char const *MIB_get_logID(pointer pIndex)
@@ -2005,7 +2005,7 @@ char const *MIB_get_logID(pointer pIndex)
         return  _unknown;
     }
     
-    sprintf(_buff, "%08x", pLog->nID);
+    sprintf(_buff, "");
 
     return  _buff;
 }
@@ -2020,7 +2020,7 @@ char const *MIB_get_logValue(pointer pIndex)
         return  _unknown;
     }
     
-    FTE_VALUE_toString(&pLog->xValue, _buff, sizeof(_buff));
+    sprintf(_buff,"unknown");
     
     return  _buff;
 }
@@ -2350,16 +2350,6 @@ uint_32 MIB_get_dbgBTIndex(pointer dummy)
 
 char const *MIB_get_dbgBTTime(pointer dummy)
 {
-    
-    TIME_STRUCT xTime;
-    uint_32 nIndex = (uint_32)dummy;
-    
-    if (FTE_CFG_DBG_getBootTime(nIndex, &xTime) == MQX_OK)
-    {
-        FTE_TIME_toString(&xTime, _buff, sizeof(_buff));
-        return  _buff;
-    }
-    
     return  _unknown;
 }
 

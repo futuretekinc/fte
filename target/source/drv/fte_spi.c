@@ -341,7 +341,7 @@ _mqx_uint   FTE_SPI_getFlags(FTE_SPI_PTR pSPI, uint_32 *flags)
     return  MQX_OK;
 }
 
-int_32  fte_spi_shell_cmd(int_32 argc, char_ptr argv[] )
+int_32  FTE_SPI_SHELL_cmd(int_32 argc, char_ptr argv[] )
 { 
     boolean              print_usage, shorthelp = FALSE;
     int_32               return_code = SHELL_EXIT_SUCCESS;
@@ -372,7 +372,6 @@ int_32  fte_spi_shell_cmd(int_32 argc, char_ptr argv[] )
                 }
             }
             break;
-            
         default:
             {
                 if (strcmp(argv[2], "read") == 0)
@@ -388,7 +387,7 @@ int_32  fte_spi_shell_cmd(int_32 argc, char_ptr argv[] )
                         goto error;
                     }
                     
-                    if (! Shell_parse_number( argv[1], &id))  
+                    if (! Shell_parse_hexnum( argv[1], &id))  
                     {
                        return_code = SHELL_EXIT_ERROR;
                        goto error;
@@ -449,7 +448,7 @@ int_32  fte_spi_shell_cmd(int_32 argc, char_ptr argv[] )
                         goto error;
                     }
                     
-                    if (! Shell_parse_number( argv[1], &nID))  
+                    if (! Shell_parse_hexnum( argv[1], &nID))  
                     {
                        return_code = SHELL_EXIT_ERROR;
                        goto error;
@@ -479,6 +478,31 @@ int_32  fte_spi_shell_cmd(int_32 argc, char_ptr argv[] )
                        return_code = SHELL_EXIT_ERROR;
                        goto error;
                     }
+                }
+                else if (strcmp(argv[2], "attach") == 0)
+                {
+                    FTE_SPI_PTR pSPI;
+                    uint_32 nID;
+                     
+                    if (argc < 3)
+                    {
+                       return_code = SHELL_EXIT_ERROR;
+                        goto error;
+                    }
+                    
+                    if (! Shell_parse_hexnum( argv[1], &nID))  
+                    {
+                       return_code = SHELL_EXIT_ERROR;
+                       goto error;
+                    }
+
+                    pSPI = FTE_SPI_get(nID);                    
+                    if (pSPI == NULL)
+                    {
+                        goto error;
+                    }
+
+                    FTE_SPI_attach(pSPI, 0);
                 }
                 else
                 {

@@ -3,6 +3,7 @@
 #include "fte_task.h"
 #include "fte_config.h"
 #include "fte_sys_bl.h"
+#include "fte_time.h"
 #include <rtcs.h>
 
 #define FTE_SMNG_MSG_TYPE_DISCOVERY             0x01
@@ -27,6 +28,9 @@ void FTE_SMNG_task(pointer pParams, pointer pCreator)
     sockaddr_in xAnyAddr, xRecvAddr;
     uint_16     nRecvAddrLen;
     uint_32     nLen;
+    _ip_address xLastRequestHost;
+    TIME_STRUCT xLastResponseTime;
+
 
     xAnyAddr.sin_family      = AF_INET;
     xAnyAddr.sin_port        = FTE_NET_SMNG_PORT;
@@ -51,6 +55,8 @@ void FTE_SMNG_task(pointer pParams, pointer pCreator)
     RTCS_task_resume_creator(pCreator, RTCS_OK);
 
     FTE_TASK_append(FTE_TASK_TYPE_RTCS, _task_get_id());
+
+    _time_get(&xLastResponseTime);
 
     while(1)
     {
@@ -86,9 +92,18 @@ void FTE_SMNG_task(pointer pParams, pointer pCreator)
         {
         case    FTE_SMNG_MSG_TYPE_DISCOVERY_WITH_TRAPS:
             {
+                TIME_STRUCT xCurrentTime;
+                
+                _time_get(&xCurrentTime);
+                
+                if ((xLastRequestHost != xRecvAddr.sin_addr.s_addr) || (FTE_TIME_diff(&xCurrentTime, &xLastResponseTime) > 10))
+                {
 #if FTE_SNMPD_SUPPORTED
-                FTE_SNMPD_TRAP_discovery(xRecvAddr.sin_addr.s_addr);
+                    FTE_SNMPD_TRAP_discovery(xRecvAddr.sin_addr.s_addr);
+                    xLastResponseTime = xCurrentTime;
+                    xLastRequestHost = xRecvAddr.sin_addr.s_addr;
 #endif
+                }
             }
             break;
 

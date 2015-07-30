@@ -5,6 +5,7 @@
 #include "fte_crc.h"
 #include "fte_time.h"
 #include "fte_sys.h"
+#include "fte_log.h"
 #include <ipcfg.h>
 #include <sh_rtcs.h> 
 
@@ -21,10 +22,10 @@
 #define FTE_EVENT_MAX_COUNT             32
 #endif
 
-#define FTE_CFG_POOL_VERSION            0x20150330
-#define FTE_CFG_OBJECT_POOL_VERSION     0x20150330
-#define FTE_CFG_EVENT_POOL_VERSION      0x20150330
-#define FTE_CFG_CERT_POOL_VERSION       0x20150614
+#define FTE_CFG_POOL_VERSION            0x20150708
+#define FTE_CFG_OBJECT_POOL_VERSION     0x20150708
+#define FTE_CFG_EVENT_POOL_VERSION      0x20150708
+#define FTE_CFG_CERT_POOL_VERSION       0x20150708
 
 void    FTE_CFG_lock(void);
 void    FTE_CFG_unlock(void);
@@ -50,7 +51,6 @@ typedef struct  _FTE_CFG_POOL_STRUCT
     FTE_SYS_CONFIG      xSystem;
     FTE_SHELL_CONFIG    xShell;
     FTE_NET_CFG         xNetwork;
-    uint_32             pBootTimes[FTE_LOG_BOOT_TIME_MAX_COUNT];
 }   FTE_CFG_POOL, _PTR_ FTE_CFG_POOL_PTR;
 
 typedef struct _FTE_CFG_OBJECT_POOL_STRUCT
@@ -236,7 +236,7 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
             {
                 memcpy(&_config.xEventPool, pEventPool, sizeof(FTE_CFG_EVENT_POOL));
             }
-        }            
+        }     
     }
     
     if (_config.xPool.nID == 0)
@@ -269,6 +269,7 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
         }
     } 
 
+    FTE_LOG_init();
     FTE_CFG_DBG_setBootTime();
     
     FTE_CFG_save(FALSE);
@@ -1362,32 +1363,7 @@ static void _FTE_CFG_auto_save(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_P
 
 void    FTE_CFG_DBG_setBootTime(void)
 {
-    int i;
-    for(i = 0 ; i < FTE_LOG_BOOT_TIME_MAX_COUNT ; i++)
-    {
-        if (_config.xPool.pBootTimes[i] == 0)
-        {
-            _config.xPool.pBootTimes[i] = FTE_SYS_getTime();
-            _config.xPool.pBootTimes[(i + 1) % FTE_LOG_BOOT_TIME_MAX_COUNT] = 0;
-            
-            _config.bPoolModified = TRUE;
-            break;
-        }
-    }    
-}
-    
-
-_mqx_uint           FTE_CFG_DBG_getBootTime(uint_32 ulIndex, TIME_STRUCT_PTR pTime)
-{
-    if (ulIndex < FTE_LOG_BOOT_TIME_MAX_COUNT)
-    {
-        pTime->SECONDS      = _config.xPool.pBootTimes[ulIndex];
-        pTime->MILLISECONDS = 0;
-        
-        return  MQX_OK;
-    }
-
-    return  MQX_ERROR;    
+    FTE_LOG_addSystem(FTE_LOG_SYSTEM_MESSAGE_BOOT);
 }
 
 /******************************************************************************
@@ -1406,8 +1382,6 @@ int_32  FTE_CFG_SHELL_cmd(int_32 argc, char_ptr argv[])
         {
         case    1:
             {
-                int i, nLast = -1;
-                char    pBuff[32];
                 uint_8  pMAC[FTE_MAC_SIZE];
                 
                 FTE_SYS_getMAC(pMAC);
@@ -1416,31 +1390,6 @@ int_32  FTE_CFG_SHELL_cmd(int_32 argc, char_ptr argv[])
                 printf("%16s : %02x:%02x:%02x:%02x:%02x:%02x\n", 
                        "MAC Address", pMAC[0], pMAC[1], pMAC[2],
                        pMAC[3], pMAC[4], pMAC[5]);
-                
-                printf("\n<System Boot Log>\n");
-                for(i = 0 ; i < FTE_LOG_BOOT_TIME_MAX_COUNT ; i++)
-                {
-                    if (_config.xPool.pBootTimes[i] == 0)
-                    {
-                        nLast = i;
-                    }
-                }
-
-                printf("\n< Boot Times >\n");
-                
-                for(i = 0 ; i < FTE_LOG_BOOT_TIME_MAX_COUNT ; i++)
-                {
-                    TIME_STRUCT xTime;
-                    if ((_config.xPool.pBootTimes[(nLast + i + 1) % FTE_LOG_BOOT_TIME_MAX_COUNT] == 0))
-                    {
-                        break;
-                    }
-                    
-                    xTime.SECONDS = _config.xPool.pBootTimes[(nLast + i + 1) % FTE_LOG_BOOT_TIME_MAX_COUNT];
-                    xTime.MILLISECONDS = 0;
-                    FTE_TIME_toString(&xTime, pBuff, sizeof(pBuff));
-                    printf("%-16d : %s\n", i+1, pBuff);
-                }
             }
             break;
             

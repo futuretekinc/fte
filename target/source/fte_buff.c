@@ -7,7 +7,7 @@ static uint_32      _buff_len = 0;
 static uint_8 _PTR_ _buff = NULL;
 
 _mqx_uint fte_buff_init(uint_32 size)
-{
+{ 
     _mqx_uint ret;
     
     /* Create the lightweight semaphore */

@@ -2,9 +2,29 @@
 #include "fte_time.h"
 
 #if FTE_DEBUG
-
+ 
 static char     _pBuff[1024];
 static uint_32  _ulTraceModule = 0;
+
+static MQX_FILE_PTR _debugOut = 0;
+
+_mqx_int    FTE_DEBUG_setHandle(void)
+{
+    pointer   hStdout;
+    
+    hStdout = _io_get_handle(IO_STDOUT);
+    if (hStdout != 0)
+    {
+        _debugOut = hStdout;
+    }
+
+    return  MQX_OK;
+}
+
+void    FTE_DEBUG_init(void)
+{
+    _debugOut = stdout;
+}
 
 _mqx_int    FTE_DEBUG_trace(uint_32  ulModule, const char _PTR_ fmt_ptr, ... )
 {
@@ -14,7 +34,7 @@ _mqx_int    FTE_DEBUG_trace(uint_32  ulModule, const char _PTR_ fmt_ptr, ... )
        uint_32      ulLen = 0;
        TIME_STRUCT  xTime;
        char         pTimeBuff[64];
-       
+
         _time_get(&xTime);
         FTE_TIME_toString(&xTime, pTimeBuff, sizeof(pTimeBuff));   
         ulLen = sprintf(&_pBuff[ulLen], "[%s] ", pTimeBuff);
@@ -23,7 +43,7 @@ _mqx_int    FTE_DEBUG_trace(uint_32  ulModule, const char _PTR_ fmt_ptr, ... )
         _io_vsnprintf(&_pBuff[ulLen], sizeof(_pBuff) - ulLen,  (char _PTR_)fmt_ptr, ap );
         va_end(ap);
        
-       return   fprintf(stderr, "%s", _pBuff);
+       return   fprintf(_debugOut, "%s", _pBuff);
     }
     
     return  0;
@@ -58,11 +78,30 @@ _mqx_int    FTE_DEBUG_error(const char _PTR_ pFuncName, int nLine, const char _P
     _io_vsnprintf(&_pBuff[ulLen], sizeof(_pBuff) - ulLen,  (char _PTR_)fmt_ptr, ap );
     va_end(ap);
    
-    return   fprintf(stderr, "%s[%d] : %s\n", pFuncName, nLine, _pBuff);
+    return   fprintf(_debugOut, "%s[%d] : %s\n", pFuncName, nLine, _pBuff);
 }
 
+typedef struct
+{
+    char_ptr    pName;
+    uint_32     ulType;
+}   FTE_DEBUG_MODULE_TYPE_NAME, _PTR_ FTE_DEBUG_MODULE_TYPE_NAME_PTR;
 
-int_32 FTE_DEBUG_shellCmd(int_32 nArgc, char_ptr pArgv[])
+static FTE_DEBUG_MODULE_TYPE_NAME  _pModuleTypeName[] =
+{
+    {   .pName = "object",  .ulType = DEBUG_OBJECT  },
+    {   .pName = "event",   .ulType = DEBUG_EVENT   },
+    {   .pName = "mqtt",    .ulType = DEBUG_NET_MQTT},
+    {   .pName = "cgi",     .ulType = DEBUG_NET_CGI },
+    {   .pName = "smng",    .ulType = DEBUG_NET_SMNG},
+    {   .pName = "snmp",    .ulType = DEBUG_NET_SNMP},
+    {   .pName = "ssl",     .ulType = DEBUG_NET_SSL },
+    {   .pName = "di",      .ulType = DEBUG_DI },
+    {   .pName = "all",     .ulType = DEBUG_ALL},
+    {   .pName = NULL,      .ulType = 0}
+};
+
+int_32 FTE_TRACE_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
 {
     boolean              bPrintUsage, bShortHelp = FALSE;
     int_32               nReturnCode = SHELL_EXIT_SUCCESS;
@@ -73,68 +112,91 @@ int_32 FTE_DEBUG_shellCmd(int_32 nArgc, char_ptr pArgv[])
     {
         switch(nArgc)
         {
-        case    3:
+        case    1:
             {
-                if (strcmp(pArgv[0], "trace") == 0)
-                {                    
-                    if(strcmp(pArgv[2], "on") == 0)
+                FTE_DEBUG_MODULE_TYPE_NAME_PTR  pTypeName = _pModuleTypeName;
+                while(pTypeName->pName != NULL)
+                {
+                    if ((_ulTraceModule & pTypeName->ulType) == pTypeName->ulType)
                     {
-                        if (strcmp(pArgv[1], "object") == 0)
-                        {
-                            FTE_DEBUG_traceOn(DEBUG_OBJECT);
-                        }
-                        else if (strcmp(pArgv[1], "event") == 0)
-                        {
-                            FTE_DEBUG_traceOn(DEBUG_EVENT);
-                        }
-                        else if (strcmp(pArgv[1], "mqtt") == 0)
-                        {
-                            FTE_DEBUG_traceOn(DEBUG_NET_MQTT);
-                        }
-                        else if (strcmp(pArgv[1], "cgi") == 0)
-                        {
-                            FTE_DEBUG_traceOn(DEBUG_NET_CGI);
-                        }
-                        else if (strcmp(pArgv[1], "all") == 0)
-                        {
-                            FTE_DEBUG_traceOn(DEBUG_ALL);
-                        }
-                        else
-                        {
-                            bPrintUsage = TRUE;
-                        }
-                    }
-                    else if(strcmp(pArgv[2], "off") == 0)
-                    {
-                        if (strcmp(pArgv[1], "object") == 0)
-                        {
-                            FTE_DEBUG_traceOff(DEBUG_OBJECT);
-                        }
-                        else if (strcmp(pArgv[1], "event") == 0)
-                        {
-                            FTE_DEBUG_traceOff(DEBUG_EVENT);
-                        }
-                        else if (strcmp(pArgv[1], "mqtt") == 0)
-                        {
-                            FTE_DEBUG_traceOff(DEBUG_NET_MQTT);
-                        }
-                        else if (strcmp(pArgv[1], "cgi") == 0)
-                        {
-                            FTE_DEBUG_traceOff(DEBUG_NET_CGI);
-                        }
-                        else if (strcmp(pArgv[1], "all") == 0)
-                        {
-                            FTE_DEBUG_traceOff(DEBUG_ALL);
-                        }
-                        else 
-                        {
-                            bPrintUsage = TRUE;
-                        }
+                        printf("%8s : on\n", pTypeName->pName);
                     }
                     else
                     {
-                        bPrintUsage = TRUE;
+                        printf("%8s : off\n", pTypeName->pName);
                     }
+                    
+                    pTypeName++;
+                }
+            }
+            break;
+            
+        case    2:
+            {
+                if (strcmp(pArgv[1], "out") == 0)
+                {
+                    FTE_DEBUG_setHandle();
+                }
+                else
+                {
+                   
+                    uint_32 ulType = DEBUG_UNKNOWN;
+                    FTE_DEBUG_MODULE_TYPE_NAME_PTR  pTypeName = _pModuleTypeName;
+                    while(pTypeName->pName != NULL)
+                    {
+                        if (strcmp(pArgv[1], pTypeName->pName) == 0)
+                        {
+                            ulType = pTypeName->ulType;
+                            break;
+                        }
+                        pTypeName++;
+                    }
+
+                    if (ulType == DEBUG_UNKNOWN)
+                    {
+                        bPrintUsage = TRUE;
+                        break;
+                    }
+                    
+                    if ((_ulTraceModule & ulType) == ulType)
+                    {
+                        printf("%8s : on\n", pArgv[1]);
+                    }
+                    else
+                    {
+                        printf("%8s : off\n", pArgv[1]);
+                    }
+                }
+            }
+            break;
+                   
+        case    3:
+            {
+                uint_32 ulType = DEBUG_UNKNOWN;
+                FTE_DEBUG_MODULE_TYPE_NAME_PTR  pTypeName = _pModuleTypeName;
+                while(pTypeName->pName != NULL)
+                {
+                    if (strcmp(pArgv[1], pTypeName->pName) == 0)
+                    {
+                        ulType = pTypeName->ulType;
+                        break;
+                    }
+                    pTypeName++;
+                }
+
+                if (ulType == DEBUG_UNKNOWN)
+                {
+                    bPrintUsage = TRUE;
+                    break;
+                }
+                
+                if(strcmp(pArgv[2], "on") == 0)
+                {
+                    FTE_DEBUG_traceOn(ulType);
+                }
+                else if(strcmp(pArgv[2], "off") == 0)
+                {
+                    FTE_DEBUG_traceOff(ulType);
                 }
                 else
                 {

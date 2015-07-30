@@ -396,7 +396,6 @@ void _FTE_SYS_CB_factoryReset(_timer_id nID, pointer pData, MQX_TICK_STRUCT_PTR 
 
 void     _FTE_SYS_factoryResetPushed(boolean bPushed)
 {
-    static int count = 0;
 #if 0
     MQX_TICK_STRUCT xTicks;
 
@@ -411,7 +410,6 @@ void     _FTE_SYS_factoryResetPushed(boolean bPushed)
 
     _hFactoryResetTimer = _timer_start_oneshot_after_ticks(_FTE_SYS_CB_factoryReset, 0, TIMER_KERNEL_TIME_MODE, &xTicks);
 #endif
-    printf("FRP Pushed[%3d] : %s\n", ++count, bPushed?"TRUE":"FALSE");
     _bFactoryResetPushed = bPushed;
     
 }
@@ -437,12 +435,12 @@ int_32  FTE_SYS_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
                 uint_32             ulDiffTime;
                 
                 printf("<Live Check>\n");
-                printf("%16s : %s\n",           "State", FTE_SYS_LIVE_CHECK_isRun()?"RUNNING":"STOP");
-                printf("%16s : %d seconds\n",   "Keepalive", FTE_CFG_SYS_getKeepAliveTime());
+                printf("%16s : %s\n", "State", FTE_SYS_LIVE_CHECK_isRun()?"RUNNING":"STOP");
+                printf("%16s : %d seconds\n", "Keepalive", FTE_CFG_SYS_getKeepAliveTime());
                 pLastCheckTime = FTE_SYS_LIVE_CHECK_lastCheckTime();
                 _ticks_to_time(pLastCheckTime, &xTime);
                 FTE_TIME_toString(&xTime, pBuff, sizeof(pBuff));
-                printf("%16s : %s\n",   "Touch Time", pBuff);
+                printf("%16s : %s\n", "Touch Time", pBuff);
                 
                 _time_get_ticks(&xCurrentTime);
                 ulDiffTime = _time_diff_seconds(&xCurrentTime, pLastCheckTime, &bOverflow);
@@ -601,9 +599,9 @@ int_32  FTE_SYS_SHUTDOWN_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
 
 void    fte_sys_lcd_init(void)
 {
-    FTE_SSD1305_PTR    pSSD1305 = fte_ssd1305_get(FTE_DEV_SSD1305_0);
+    FTE_SSD1305_PTR    pSSD1305 = FTE_SSD1305_get(FTE_DEV_SSD1305_0);
 
-    fte_ssd1305_attach(pSSD1305, FTE_DEV_TYPE_ROOT);
+    FTE_SSD1305_attach(pSSD1305, FTE_DEV_TYPE_ROOT);
     
 }
 

@@ -191,6 +191,24 @@ _mqx_uint   FTE_1WIRE_DEV_getROMCode(FTE_1WIRE_PTR p1Wire, uint_32 nIdx, FTE_1WI
     return  MQX_OK;
 }
 
+_mqx_uint   FTE_1WIRE_DEV_appendROMCode(FTE_1WIRE_PTR p1Wire, FTE_1WIRE_ROM_CODE pROMCode)
+{
+    assert(p1Wire != NULL);    
+    if (p1Wire == NULL)
+    {
+        return  MQX_INVALID_DEVICE;
+    }
+    
+    if (p1Wire->nROMCodes >= p1Wire->pConfig->nMaxDevices)
+    {
+        return  MQX_ERROR;
+    }
+
+    memcpy(p1Wire->pROMCodes[p1Wire->nROMCodes++], pROMCode, sizeof(FTE_1WIRE_ROM_CODE));
+    
+    return  MQX_OK;
+}
+
 _mqx_uint   FTE_1WIRE_read(FTE_1WIRE_PTR p1Wire, uint_8_ptr buff, uint_32 buff_len)
 {
     uint_32 i, j;
@@ -206,7 +224,7 @@ _mqx_uint   FTE_1WIRE_read(FTE_1WIRE_PTR p1Wire, uint_8_ptr buff, uint_32 buff_l
         for(j = 0 ; j < 8 ; j++)
         {
             boolean bit = 0;
-            
+            _int_disable();
             FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_OUTPUT);
             fte_udelay(2);
             FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_INPUT);
@@ -217,22 +235,10 @@ _mqx_uint   FTE_1WIRE_read(FTE_1WIRE_PTR p1Wire, uint_8_ptr buff, uint_32 buff_l
                 buff[i] |= 1 << j;
             }
             fte_udelay(FTE_1WIRE_TIME_SLOT - 7);
+            _int_enable();
         }
     }
 
-#ifdef  DEBUG_1WIRE
-    for(i = 0 ; i < cmd_len ; i++)
-    {
-        printf("%02x ", cmd[i]);
-    }
-    printf("-> ");
-    
-    for(i = 0 ; i < buff_len ; i++)
-    {
-        printf("%02x ", buff[i]);
-    }
-#endif
-    
     return MQX_OK;
 }
 
@@ -249,8 +255,9 @@ _mqx_uint   FTE_1WIRE_write(FTE_1WIRE_PTR p1Wire, uint_8_ptr buff, uint_32 len)
     {
         for(j = 0 ; j < 8 ; j++)
         {
+            _int_disable();
             FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_OUTPUT);
-            fte_udelay(10);
+            fte_udelay(5);
             if (((buff[i] >> j) & 0x01) == 0)
             {
                 fte_udelay(FTE_1WIRE_TIME_SLOT - 20);
@@ -261,7 +268,8 @@ _mqx_uint   FTE_1WIRE_write(FTE_1WIRE_PTR p1Wire, uint_8_ptr buff, uint_32 len)
                 FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_INPUT);
                 fte_udelay(FTE_1WIRE_TIME_SLOT - 20);
             }
-            fte_udelay(10);
+            _int_enable();
+            fte_udelay(15);
         }
     }
     
@@ -269,67 +277,82 @@ _mqx_uint   FTE_1WIRE_write(FTE_1WIRE_PTR p1Wire, uint_8_ptr buff, uint_32 len)
     
     return MQX_OK;
 }
+#define GET_BIT_AT(value,n) ((((uint_8_ptr)value)[n / 8] >> (n % 8)) & 0x01)
+#define SET_BIT_AT(value,n) (((uint_8_ptr)value)[n / 8] |= 1 << (n % 8))
+#define CLR_BIT_AT(value,n) (((uint_8_ptr)value)[n / 8] &= ~(1 << (n % 8)))
 
 _mqx_uint   FTE_1WIRE_search(FTE_1WIRE_PTR p1Wire, FTE_1WIRE_ROM_CODE_PTR pROMCodes, uint_32 nMaxCount)
 {
-    int_32  i;
+    int_32  i, j;
     int_32  nCount = 0;
     boolean bFound;
     uint_8  data;
     uint_8  pROMCode[8];
-    uint_8  pTry[64];
-    uint_8  nRemainCount = 1;
+    uint_8  pComPos[64];
+    uint_8  nComPos = 0;
     
-    FTE_1WIRE_lock(p1Wire);
+    FTE_1WIRE_lock(p1Wire);    
     
-    
-    memset(pTry, 2, sizeof(pTry));
+    memset(pROMCode, 0x00, sizeof(pROMCode));
+    memset(pComPos, 0x00, sizeof(pComPos));
+
     while(1)
     {
         bFound = FALSE;
+  
         FTE_1WIRE_reset(p1Wire);
         FTE_1WIRE_writeByte(p1Wire, 0xF0);
-        memset(pROMCode, 0, sizeof(pROMCode));
         
         for(i = 0 ; i < 64 ; i++)
         {
             FTE_1WIRE_readBits(p1Wire, &data, 2);
+
             switch(data)
             {
             case    0:
                 {
-                    switch(pTry[i])
+                    if (GET_BIT_AT(pROMCode, i) == 0)
                     {
-                    case    2:
+                        if ((nComPos == 0) || (pComPos[nComPos-1] < i))
                         {
-                            pTry[i] = 0;
-                            nRemainCount += 1;
+                            pComPos[nComPos++] = i;
                         }
-                        break;
-                        
-                    case    0:
+                        else if (pComPos[nComPos-1] == i)
                         {
-                            if (nRemainCount == 1)
+                            SET_BIT_AT(pROMCode, i);
+                            nComPos--;
+
+                            for(j = i+1 ; j < ((i / 8) + 1) * 8 ; j++)
                             {
-                                pROMCode[i / 8] |= 1 << (i % 8);
-                                pTry[i] = 1;
+                                CLR_BIT_AT(pROMCode, j);
+                            }
+                            
+                            for(j = (i / 8) + 1; j < 8 ; j++)
+                            {
+                                pROMCode[j] = 0;
                             }
                         }
-                        break;
+                        bFound = TRUE;
                     }
                 }
                 break;
                 
             case    1:
+                {
+                    if (GET_BIT_AT(pROMCode, i) == 0)
+                    {
+                        SET_BIT_AT(pROMCode, i);
+                        bFound = TRUE;
+                    }
+                }
+                break;
+                
             case    2:
                 {
-                    if (data & 0x01)
+                    if (GET_BIT_AT(pROMCode, i) != 0)
                     {
-                        pROMCode[i / 8] |= 1 << (i % 8);
-                    }
-                    else
-                    {
-                        pROMCode[i / 8] &= ~(1 << (i % 8));
+                        CLR_BIT_AT(pROMCode, i);
+                        bFound = TRUE;
                     }
                 }
                 break;
@@ -338,30 +361,29 @@ _mqx_uint   FTE_1WIRE_search(FTE_1WIRE_PTR p1Wire, FTE_1WIRE_ROM_CODE_PTR pROMCo
                 goto finished;
             }
             
-            data = (pROMCode[i/8] >> (i % 8)) & 0x01;
-            if (data != 0)
-            {
-                bFound = TRUE;
-            }
-            FTE_1WIRE_writeBits(p1Wire, &data, 1);            
+            data = GET_BIT_AT(pROMCode, i);
+            FTE_1WIRE_writeBits(p1Wire, &data, 1);      
         }
 
+        data = 0xFF;
+        for(i = 0 ; i < 8 ; i++)
+        {
+            data &= pROMCode[i];
+        }
         
-        if ((nRemainCount > 0) && bFound)
+        if (bFound && (data != 0xFF))
         {
             if (nCount < nMaxCount)
             {
                 memcpy(pROMCodes[nCount++], pROMCode, sizeof(FTE_1WIRE_ROM_CODE));
             }
-            
-            nRemainCount--;
         }
         else
         {
             break;
         }
         
-        _time_delay(1);
+        _time_delay(10);
     }        
     
 finished:
@@ -386,8 +408,23 @@ void    _fte_1wire_print_info(void)
                    p1Wire->pConfig->xGPIO, 
                    p1Wire->pConfig->nMaxDevices, 
                    p1Wire->nROMCodes);
+            
+            for(int i = 0 ; i < FTE_1WIRE_DEV_count(p1Wire) ; i++)
+            {
+                FTE_1WIRE_ROM_CODE pROMCode;
+                
+                FTE_1WIRE_DEV_getROMCode(p1Wire, i, pROMCode);
+                printf("%8d : %02x %02x %02x %02x %02x %02x %02x %02x \n",
+                       i, 
+                       pROMCode[0], pROMCode[1], pROMCode[2], pROMCode[3],
+                       pROMCode[4], pROMCode[5], pROMCode[6], pROMCode[7]);
+            }
+            
         }
+        
         p1Wire = p1Wire->pNext;
+        
+        
     }                       
 }
 
@@ -526,6 +563,83 @@ int_32  FTE_1WIRE_SHELL_cmd(int_32 argc, char_ptr argv[] )
         }
         break;
         
+    case    4:
+        {
+            if (strcmp(argv[1], "add") == 0)
+            {
+                FTE_1WIRE_PTR   p1Wire;
+                uint_32 nID;
+                
+                uint_8  pROMCode[8];
+                
+                if (! Shell_parse_hexnum( argv[2], &nID))  
+                {
+                    return_code = SHELL_EXIT_ERROR;
+                    goto error;
+                }
+            
+                p1Wire = FTE_1WIRE_get(nID);
+                if( p1Wire == NULL)
+                {
+                    return_code = SHELL_EXIT_ERROR;
+                    goto error;
+                }
+                
+                
+                if (strlen(argv[3]) != 16)
+                {
+                    printf("Invalid ROM Code\n");
+                    goto error;
+                }
+                
+                for(int i = 0 ; i < 8 ; i++)
+                {
+                    uint_8  nHI, nLO;
+                    
+                    if ('0' <= argv[3][i*2] && argv[3][i*2] <= '9')
+                    {
+                        nHI = argv[3][i*2] - '0';
+                    }
+                    else if ('A' <= argv[3][i*2] && argv[3][i*2] <= 'F')
+                    {
+                        nHI = argv[3][i*2] - 'A' + 10;
+                    }
+                    else if ('a' <= argv[3][i*2] && argv[3][i*2] <= 'f')
+                    {
+                        nHI = argv[3][i*2] - 'a' + 10;
+                    }
+                    else
+                    {
+                        printf("Invalid ROM Code\n");
+                        goto error;
+                    }
+                    
+                    if ('0' <= argv[3][i*2+1] && argv[3][i*2+1] <= '9')
+                    {
+                        nLO = argv[3][i*2+1] - '0';
+                    }
+                    else if ('A' <= argv[3][i*2+1] && argv[3][i*2+1] <= 'F')
+                    {
+                        nLO = argv[3][i*2+1] - 'A' + 10;
+                    }
+                    else if ('a' <= argv[3][i*2+1] && argv[3][i*2+1] <= 'f')
+                    {
+                        nLO = argv[3][i*2+1] - 'a' + 10;
+                    }
+                    else
+                    {
+                        printf("Invalid ROM Code\n");
+                        goto error;
+                    }
+                    
+                    pROMCode[i] = (nHI << 4) | nLO;
+                }
+                FTE_1WIRE_DEV_appendROMCode(p1Wire, pROMCode);               
+                
+            }
+        }
+        break;
+        
     default:
         print_usage = TRUE;    
     }
@@ -592,37 +706,41 @@ _mqx_uint   FTE_1WIRE_writeBits(FTE_1WIRE_PTR p1Wire, uint_8_ptr data, uint_32 b
     {
         for(int j = 0 ; j < 8 ; j++)
         {
+            _int_disable();
             FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_OUTPUT);
-            fte_udelay(10);
+            fte_udelay(2);
             if (((data[i] >> j) & 0x01) == 0)
             {
-                fte_udelay(FTE_1WIRE_TIME_SLOT - 20);
+                fte_udelay(100);
                 FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_INPUT);
             }
             else
             {
                 FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_INPUT);
-                fte_udelay(FTE_1WIRE_TIME_SLOT - 20);
+                fte_udelay(100);
             }
-            fte_udelay(10);
+            _int_enable();
+        fte_udelay(FTE_1WIRE_TIME_SLOT - 100);
         }
     }
     
     for(int j = 0 ; j < bit_len % 8 ; j++)
     {
-        FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_OUTPUT);
-        fte_udelay(10);
+       _int_disable();
+       FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_OUTPUT);
+        fte_udelay(2);
         if (((data[i] >> j) & 0x01) == 0)
         {
-            fte_udelay(FTE_1WIRE_TIME_SLOT - 20);
+                fte_udelay(100);
             FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_INPUT);
         }
         else
         {
             FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_INPUT);
-            fte_udelay(FTE_1WIRE_TIME_SLOT - 20);
+            fte_udelay(100);
         }
-        fte_udelay(10);
+        _int_disable();
+        fte_udelay(FTE_1WIRE_TIME_SLOT - 100);
     }
     return MQX_OK;
 }
@@ -641,6 +759,7 @@ _mqx_uint   FTE_1WIRE_readBits(FTE_1WIRE_PTR p1Wire, uint_8_ptr data, uint_32 bi
         {
             boolean bit = 0;
             
+            _int_disable();
             FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_OUTPUT);
             fte_udelay(2);
             FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_INPUT);
@@ -650,6 +769,7 @@ _mqx_uint   FTE_1WIRE_readBits(FTE_1WIRE_PTR p1Wire, uint_8_ptr data, uint_32 bi
             {
                 buff |= 1 << j;
             }
+            _int_enable();
             fte_udelay(FTE_1WIRE_TIME_SLOT - 7);
         }
         
@@ -661,6 +781,7 @@ _mqx_uint   FTE_1WIRE_readBits(FTE_1WIRE_PTR p1Wire, uint_8_ptr data, uint_32 bi
     {
         boolean bit = 0;
         
+        _int_disable();
         FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_OUTPUT);
         fte_udelay(2);
         FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_INPUT);
@@ -670,6 +791,7 @@ _mqx_uint   FTE_1WIRE_readBits(FTE_1WIRE_PTR p1Wire, uint_8_ptr data, uint_32 bi
         {
             buff |= 1 << j;
         }
+        _int_enable();
         fte_udelay(FTE_1WIRE_TIME_SLOT - 7);
     }
     data[i] = buff;
