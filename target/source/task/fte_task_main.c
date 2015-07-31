@@ -27,8 +27,6 @@ void FTE_TASK_main(uint_32 params)
     
     fte_platform_init(); 
 
-    FTE_DB_init();
-    
     FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
 
     

@@ -13,6 +13,7 @@
 #include "shell.h"
 #include "sh_prv.h"
 #include "io.h"
+#include "fte_db.h"
 
 uint_32     FTE_SHELL_getPasswd(MQX_FILE_PTR pFile, char_ptr pPasswd, uint_32 ulMaxLen, uint_32 ulTimeout);
 int_32      FTE_SHELL_cmdPasswd(int_32 nArgc, char_ptr pArgv[]);
@@ -36,6 +37,7 @@ const SHELL_COMMAND_STRUCT pSHELLCommands[] =
     { "1wire",      FTE_1WIRE_SHELL_cmd},
 #endif
     { "date",       FTE_TIME_SHELL_cmd},
+    { "db",         FTE_DB_SHELL_cmd},
 #if FTE_DO_SUPPORTED
     { "do",         FTE_DO_SHELL_cmd},
 #endif
