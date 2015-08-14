@@ -233,6 +233,8 @@ typedef struct _fte_object_action_struct
     _mqx_uint       (*f_get_statistic)(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTICS_PTR pStat);
     _mqx_uint       (*f_attach_child)(FTE_OBJECT_PTR pSelf, uint_32 nChild);
     _mqx_uint       (*f_detach_child)(FTE_OBJECT_PTR pSelf, uint_32 nChild);
+    _mqx_uint       (*f_get_child_count)(FTE_OBJECT_PTR pSelf, uint_32_ptr pulCount);
+    _mqx_uint       (*f_get_child)(FTE_OBJECT_PTR pSelf, uint_32 ulIndex, FTE_OBJECT_ID _PTR_ pxID);
     _mqx_uint       (*f_set_config)(FTE_OBJECT_PTR pSelf, char_ptr pJSON);
     _mqx_uint       (*f_get_config)(FTE_OBJECT_PTR pSelf, char_ptr pBuff, uint_32 ulBuffLen);
     
