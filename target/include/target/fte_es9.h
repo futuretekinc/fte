@@ -3,8 +3,8 @@
 
 #define FTE_MODEL                           "FTE-ES9"
 
-#define FTE_TEMP_SUPPORTED                  0
-#define FTE_HUMIDITY_SUPPORTED              0
+#define FTE_TEMP_SUPPORTED                  1
+#define FTE_HUMIDITY_SUPPORTED              1
 #define FTE_CO2_SUPPORTED                   0
 #define FTE_POWER_SUPPORTED                 0
 
@@ -19,7 +19,7 @@
 
 #define FTE_SPI_SUPPORTED                   0
 #define FTE_AD7785_SUPPORTED                0
-#define FTE_1WIRE_SUPPORTED                 0
+#define FTE_1WIRE_SUPPORTED                 1
 #define FTE_MCP23S08_SUPPORTED              0
 #define FTE_UCS_SUPPORTED                   1
 #define FTE_UCM_SUPPORTED                   0
@@ -35,20 +35,20 @@
 #define FTE_GAI_CURRENT0_SUPPORTED          0
 #define FTE_GAI_CURRENT1_SUPPORTED          0
 #define FTE_PRESSURE_SUPPORTED              0
-#define FTE_SHT_SUPPORTED                   0
-#define FTE_DS18B20_SUPPORTED               0
-#define FTE_DI_SUPPORTED                    0
+#define FTE_SHT_SUPPORTED                   1
+#define FTE_DS18B20_SUPPORTED               1
+#define FTE_DI_SUPPORTED                    1
 #define FTE_DO_SUPPORTED                    1
 #define FTE_RL_SUPPORTED                    0
 #define FTE_LED_SUPPORTED                   1
 #define FTE_SRF_SUPPORTED                   0
 #define FTE_FIS_SUPPORTED                   0
 #define FTE_FIS3061_SUPPORTED               0
-#define FTE_GPIO_DI_SUPPORTED               0
+#define FTE_GPIO_DI_SUPPORTED               1
 #define FTE_MULTI_DI_SUPPORTED              1
 #define FTE_MULTI_DO_SUPPORTED              1
-#define FTE_MULTI_TEMP_SUPPORTED            0
-#define FTE_MULTI_HUMI_SUPPORTED            0
+#define FTE_MULTI_TEMP_SUPPORTED            1
+#define FTE_MULTI_HUMI_SUPPORTED            1
 #define FTE_MULTI_CO2_SUPPORTED             0
 #define FTE_MULTI_VOC_SUPPORTED             0
 #define FTE_MULTI_COUNT_SUPPORTED           1
@@ -82,14 +82,14 @@
 
 #define FTE_MULTI_SUPPORTED                 1
 
-#define FTE_DI_MAX_COUNT                    0
+#define FTE_DI_MAX_COUNT                    1
 #define FTE_DO_MAX_COUNT                    5
 #define FTE_RL_MAX_COUNT                    0
 #define FTE_LED_MAX_COUNT                   1
 #define FTE_PT100_MAX_COUNT                 0
-#define FTE_DS18B20_MAX_COUNT               0
-#define FTE_SHT_MAX_COUNT                   0
-#define FTE_1WIRE_MAX_DEVICES               0
+#define FTE_DS18B20_MAX_COUNT               10
+#define FTE_SHT_MAX_COUNT                   1
+#define FTE_1WIRE_MAX_DEVICES               10
 
 #define FTE_DEBUG                           1
 

@@ -152,7 +152,7 @@
 #define FTE_NET_MQTT_SENDER_NAME        "mqtt_sender"
 #define FTE_NET_MQTT_SENDER_STACK       (FTE_TASK_DEFAULT_STACK * 2)
 #define FTE_NET_MQTT_RECEIVER_NAME      "mqtt_receiver"
-#define FTE_NET_MQTT_RECEIVER_STACK     (FTE_TASK_DEFAULT_STACK * 2)
+#define FTE_NET_MQTT_RECEIVER_STACK     (FTE_TASK_DEFAULT_STACK * 3)
 #define FTE_NET_MQTT_PRIO               9
 #define FTE_NET_MQTT_PORT               8883
 #define FTE_NET_MQTT_BROKER             IPADDR(10, 0, 1, 18)

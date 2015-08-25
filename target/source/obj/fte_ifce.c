@@ -1,6 +1,6 @@
 #include "fte_target.h"
 #include "fte_config.h"
-#include "fte_log.h"
+#include "fte_log.h" 
 #include "fte_time.h"
 
 #if 1 //FTE_IFCE_SUPPORTED
@@ -43,7 +43,7 @@ _mqx_uint   fte_ifce_attach(FTE_OBJECT_PTR pObj)
         goto error;
     }
  */ 
-    
+     
     switch(FTE_OBJ_CLASS(pObj))
     {
     case    FTE_OBJ_CLASS_TEMPERATURE: 
@@ -78,12 +78,13 @@ _mqx_uint   fte_ifce_attach(FTE_OBJECT_PTR pObj)
     pObj->pAction = (FTE_OBJECT_ACTION_PTR)&_ifce_action;
     
     pStatus->pParent = pParent;    
-    /*
-    if (pParent->pAction->f_attach_child(pParent, pConfig->nID) != MQX_OK)
+    if ((pParent != NULL) && (pParent->pAction->f_attach_child != NULL))
     {
-        goto error;
+        if (pParent->pAction->f_attach_child(pParent, pConfig->xCommon.nID) != MQX_OK)
+        {
+            goto error;
+        }
     }
-    */
     
     _ifce_init(pObj);
 

@@ -2,7 +2,7 @@
 #define _FTE_ELT_H__
 
 #ifndef FTE_ELT_AQM100_INTERVAL
-#define FTE_ELT_AQM100_INTERVAL             5
+#define FTE_ELT_AQM100_INTERVAL             10
 #endif
 
 #ifndef FTE_ELT_AQM100_REPONSE_TIME         

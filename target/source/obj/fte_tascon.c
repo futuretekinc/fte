@@ -705,6 +705,8 @@ int_32  FTE_TASCON_HEM12_SHELL_cmd(int_32 argc, char_ptr argv[])
             printf ("  Commands:\n");
             printf ("    <id> info\n");
             printf ("        Show object information.\n");
+            printf ("    <id> set_addr <address>\n");
+            printf ("        Set HEM12 Device Address\n");
         }
     }
     return   return_code;
