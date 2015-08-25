@@ -94,6 +94,8 @@
 
 #define FTE_DEV_SRF_1                   (FTE_DEV_TYPE_SRF | 1)
 
+#define FTE_DEV_M25P16_0                (FTE_DEV_TYPE_M25P16 | 1)
+
 #define FTE_GPIO_AD7785_0_CS            (GPIO_PORT_C | GPIO_PIN4)
 #define FTE_GPIO_AD7785_1_CS            (GPIO_PORT_C | GPIO_PIN3)
 

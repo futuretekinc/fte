@@ -1270,6 +1270,20 @@ const FTE_UCM_CONFIG pUCMConfigs[] =
 };
 #endif
 
+#if FTE_M25P16_SUPPORTED
+FTE_M25P16_CONFIG pM25P16Configs[] =
+{
+    {
+        .nID        = FTE_DEV_M25P16_0,
+        .pName      = "M25P16",
+        .xSPI       = FTE_DEV_SPI_2_0,
+        .xSlaveAddr = 0x00,
+        .xGPIOHold  = FTE_DEV_LWGPIO_M25P16_HOLD,
+        .xGPIOWP    = FTE_DEV_LWGPIO_M25P16_WP
+    }
+};
+#endif
+
 #if FTE_SRF_SUPPORTED
 const FTE_SRF_CONFIG pSRFConfigs[] =
 {
@@ -1562,6 +1576,15 @@ static const FTE_DRIVER_DESCRIPT    _pDriverDescripts[] =
         .f_detach   = (DRIVER_DETACH_FUNC)fte_ucm_detach
     },
 #endif
+#if FTE_M25P16_SUPPORTED
+    {
+        .nType      = FTE_DEV_TYPE_M25P16,
+        .pName      = "M25P16",
+        .f_create   = (DRIVER_CREATE_FUNC)FTE_M25P16_create,
+        .f_attach   = (DRIVER_ATTACH_FUNC)FTE_M25P16_attach,
+        .f_detach   = (DRIVER_DETACH_FUNC)FTE_M25P16_detach
+    },
+#endif
 };
 
 
@@ -1788,6 +1811,13 @@ _mqx_uint   fte_platform_init(void)
     for(int i = 0 ; i < sizeof(pUCMConfigs) / sizeof(FTE_UCM_CONFIG) ; i++)
     {
         FTE_UCM_create(&pUCMConfigs[i]);
+    }
+#endif
+
+#if FTE_M25P16_SUPPORTED
+    for(int i = 0 ; i < sizeof(pM25P16Configs) / sizeof(FTE_M25P16_CONFIG) ; i++)
+    {
+        FTE_M25P16_create(&pM25P16Configs[i]);
     }
 #endif
 
