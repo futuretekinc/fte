@@ -4,6 +4,8 @@
 #include "fte_time.h"
 #include "nxjson.h"
 
+#define FTE_TASCON_PACKET_DEBUG 0
+
 static uint_8  FTE_TASCON_HEM12_CRC(uint_8_ptr pData, uint_32 ulDataLen)
 {
     uint_8  uiCS = 0;
@@ -475,8 +477,25 @@ _mqx_uint   FTE_TASCON_HEM12_06M_request(FTE_OBJECT_PTR pObj)
     
         FTE_TASCON_HEM12_06M_FRAME_create(pConfig->pSensorID, pStatus->nField, pReqBuff, sizeof(pReqBuff), &ulReqLen);    
         FTE_UCS_clear(pStatus->xGUS.pUCS);    
+#if FTE_TASCON_PACKET_DEBUG
+        int i;
+        printf("SEND : ");
+        for(i = 0 ; i < ulReqLen ; i++)
+        {
+            printf("%02x ", pReqBuff[i]);
+        }
+        printf("\n");
+#endif
         ulLen = FTE_UCS_sendAndRecv(pStatus->xGUS.pUCS, pReqBuff, ulReqLen, pBuff, sizeof(pBuff), 100, 1000);            
 
+#if FTE_TASCON_PACKET_DEBUG
+        printf("RECV : ");
+        for(i = 0 ; i < ulLen ; i++)
+        {
+            printf("%02x ", pBuff[i]);
+        }
+        printf("\n");
+#endif   
         switch(pStatus->nField)
         {
         case    FTE_HEM12_FIELD_VOLTAGE:
