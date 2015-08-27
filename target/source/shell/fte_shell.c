@@ -521,7 +521,7 @@ _mqx_int    FTE_SHELL_fgetc(MQX_FILE_PTR pFile, _mqx_int_ptr pChar, uint_32 ulTi
                 return  MQX_ETIMEDOUT;
             }
             
-            _time_delay(0);
+            _time_delay(1);
         }
     }
 
