@@ -1625,7 +1625,8 @@ const FTE_SYS_CONFIG fte_default_system_config =
         .bSystemMonitor = FALSE
     },
     .ulAllowFailureCount    = FTE_OBJ_ALLOW_FAILURE_COUNT,
-    .ulKeepAliveTime        = FTE_SYS_KEEP_ALIVE_TIME      /* seconds */
+    .ulKeepAliveTime        = FTE_SYS_KEEP_ALIVE_TIME,                  /* seconds */
+    .ulAutoSaveInterval     = FTE_SYS_AUTO_SAVE_INTERVAL                /* milliseconds */
 };
 
 const FTE_NET_CFG fte_default_net_config =

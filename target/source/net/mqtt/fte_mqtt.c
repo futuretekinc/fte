@@ -924,12 +924,12 @@ uint_32 FTE_MQTT_PING_send(FTE_MQTT_CONTEXT_PTR pCTX)
         
     pCTX->ulPingTimeout++;
     
-    _time_get_ticks(&xTicks);
-    _time_add_msec_to_ticks(&xTicks, pCTX->ulPingTimeout * 1000);
+    _time_get_elapsed_ticks(&xTicks);
+    _time_add_sec_to_ticks(&xTicks, pCTX->ulPingTimeout);
         
-    pCTX->xPingTimer = _timer_start_oneshot_at_ticks(FTE_MQTT_PING_timeout, pCTX, TIMER_KERNEL_TIME_MODE, &xTicks);    
+    pCTX->xPingTimer = _timer_start_oneshot_at_ticks(FTE_MQTT_PING_timeout, pCTX, TIMER_ELAPSED_TIME_MODE, &xTicks);    
 
-    FTE_MQTT_TRACE("PING SEND : TIMEOUT = %d ms\n", pCTX->ulPingTimeout * 1000);
+    FTE_MQTT_TRACE("PING SEND : TIMEOUT = %d secs\n", pCTX->ulPingTimeout);
     
     mqtt_ping(&pCTX->xBroker);
     

@@ -631,7 +631,7 @@ uint_32         FTE_OBJ_runLoop(FTE_OBJECT_PTR pObj, TIMER_NOTIFICATION_TICK_FPT
 
     _time_init_ticks(&xTicks, 0);
     _time_add_msec_to_ticks(&xTicks, nInterval);
-    return  _timer_start_periodic_every_ticks(f_callback, pObj, TIMER_KERNEL_TIME_MODE, &xTicks);    
+    return  _timer_start_periodic_every_ticks(f_callback, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks);    
 }
         
 uint_32         FTE_OBJ_runMeasurement(FTE_OBJECT_PTR pObj, TIMER_NOTIFICATION_TICK_FPTR f_callback, uint_32 nTimeout)
@@ -640,7 +640,7 @@ uint_32         FTE_OBJ_runMeasurement(FTE_OBJECT_PTR pObj, TIMER_NOTIFICATION_T
 
     _time_init_ticks(&xTicks, 0);
     _time_add_msec_to_ticks(&xTicks, nTimeout);
-    return  _timer_start_oneshot_after_ticks(f_callback, pObj, TIMER_KERNEL_TIME_MODE, &xTicks);    
+    return  _timer_start_oneshot_after_ticks(f_callback, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks);    
 }
         
 

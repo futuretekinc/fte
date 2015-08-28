@@ -53,7 +53,6 @@ const SHELL_COMMAND_STRUCT pSHELLCommands[] =
 #if FTE_I2C_SUPPORTED
     { "i2c",        FTE_I2C_SHELL_cmd },
 #endif
-    { "ipconfig",   Shell_ipconfig },    
     { "ifconfig",   FTE_NET_SHELL_cmd },
 #if FTE_LOG_SUPPORTED
     { "log",        FTE_LOG_SHELL_cmd},
@@ -507,14 +506,14 @@ _mqx_int    FTE_SHELL_fgetc(MQX_FILE_PTR pFile, _mqx_int_ptr pChar, uint_32 ulTi
     if (_io_fstatus(pFile) != TRUE)
     {        
         MQX_TICK_STRUCT xStartTick;
-        _time_get_ticks(&xStartTick);
+        _time_get_elapsed_ticks(&xStartTick);
         
         while(_io_fstatus(pFile) != TRUE)
         {
             MQX_TICK_STRUCT xCurrentTick;
             boolean     bOverflow = FALSE;
             
-            _time_get_ticks(&xCurrentTick);
+            _time_get_elapsed_ticks(&xCurrentTick);
             
             if ((ulTimeout != 0) && (_time_diff_seconds(&xCurrentTick, &xStartTick, &bOverflow) > ulTimeout))
             {

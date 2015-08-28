@@ -171,15 +171,14 @@ _mqx_uint   _rtd_run(FTE_OBJECT_PTR pObj)
     
     _time_init_ticks(&xDTicks, 0);
     _time_add_sec_to_ticks(&xDTicks, pConfig->nInterval);
-    _time_get_ticks(&xTicks);
+    _time_get_elapsed_ticks(&xTicks);
     _time_add_sec_to_ticks(&xTicks, 1);
     
-    pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(_rtd_restart_convert, pObj, TIMER_KERNEL_TIME_MODE, &xTicks, &xDTicks);
+    pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(_rtd_restart_convert, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);
     fte_ad7785_set_op_mode(pStatus->pADC, FTE_AD7785_OP_MODE_SINGLE);
 
-    _time_init_ticks(&xDTicks, 0);
-    _time_add_msec_to_ticks(&xDTicks, 500);    
-    pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_rtd_done, pObj, TIMER_KERNEL_TIME_MODE, &xDTicks);
+    _time_init_ticks(&xDTicks, _time_get_ticks_per_sec());
+    pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_rtd_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
 
     
     return  MQX_OK;
@@ -266,9 +265,8 @@ static void _rtd_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT
     {
         fte_ad7785_set_op_mode(pStatus->pADC, FTE_AD7785_OP_MODE_SINGLE);
         
-        _time_init_ticks(&xDTicks, 0);
-        _time_add_msec_to_ticks(&xDTicks, 500);    
-        pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_rtd_done, pObj, TIMER_KERNEL_TIME_MODE, &xDTicks);
+        _time_init_ticks(&xDTicks, _time_get_ticks_per_sec());
+        pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_rtd_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
     }
     else
     {

@@ -683,9 +683,9 @@ _mqx_uint   _FTE_MCP23S08_TIMER_start(FTE_MCP23S08_PTR pMCP23S08)
     
     _time_init_ticks(&xDTicks, 0);
     _time_add_msec_to_ticks(&xDTicks, FTE_MCP23S08_UPDATE_TIME);
-    _time_get_ticks(&xTicks);
-    _time_add_msec_to_ticks(&xTicks, 500);
-    pMCP23S08->xTimerID = _timer_start_periodic_at_ticks(_FTE_MCP23S08_TIMER_done, pMCP23S08, TIMER_KERNEL_TIME_MODE, &xTicks, &xDTicks);    
+    _time_get_elapsed_ticks(&xTicks);
+    _time_add_sec_to_ticks(&xTicks, 1);
+    pMCP23S08->xTimerID = _timer_start_periodic_at_ticks(_FTE_MCP23S08_TIMER_done, pMCP23S08, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);    
     if (pMCP23S08->xTimerID != 0)
     {
         return MQX_OK;

@@ -26,7 +26,7 @@ void FTE_TASK_objectManagement(uint_32 params)
         TRACE(DEBUG_OBJECT, "New object found![%d]\n", ulNewObject);
     }
 #endif
-   _time_get_ticks(&xNextTicks);
+   _time_get_elapsed_ticks(&xNextTicks);
     
     while(1)
     {
@@ -57,7 +57,7 @@ void FTE_TASK_objectManagement(uint_32 params)
             }
         }
                
-        _time_get_ticks(&xTicks);        
+        _time_get_elapsed_ticks(&xTicks);        
         
         if (++ulLoopCount > (FTE_OBJ_LIVE_CHECK_INTERVAL * 1000) / FTE_OBJ_EVENT_CHECK_INTERVAL)
         {

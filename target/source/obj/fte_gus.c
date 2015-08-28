@@ -260,7 +260,7 @@ _mqx_uint _gus_startMeasurement(FTE_OBJECT_PTR pObj)
     ASSERT((pObj != NULL) && (pObj->pStatus != NULL));
     FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
         
-    _time_get_ticks(&pStatus->xCommon.xStartTicks);
+    _time_get_elapsed_ticks(&pStatus->xCommon.xStartTicks);
     
     if (pStatus->pModelInfo->f_request != NULL)
     {
@@ -284,13 +284,16 @@ void _gus_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
 {
     FTE_OBJECT_PTR        pObj = (FTE_OBJECT_PTR)data_ptr;
     FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
-    
-    if (pStatus->pModelInfo->f_received(pObj) != MQX_OK)
-    {
-        FT_OBJ_STAT_incFailed(&pStatus->xCommon.xStatistics);
-        goto error;
-    }
 
+    if (pStatus->pModelInfo->f_received != NULL)
+    {
+        if (pStatus->pModelInfo->f_received(pObj) != MQX_OK)
+        {
+            FT_OBJ_STAT_incFailed(&pStatus->xCommon.xStatistics);
+            goto error;
+        }
+    }
+    
     FT_OBJ_STAT_incSucceed(&pStatus->xCommon.xStatistics);
     pStatus->nTrial = 0;
 

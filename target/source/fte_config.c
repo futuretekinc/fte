@@ -280,11 +280,11 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
     FTE_MEM_free(pBuff);    
 
     _time_init_ticks(&xDTicks, 0);
-    _time_add_sec_to_ticks(&xDTicks, 5);
-    _time_get_ticks(&xTicks);
+    _time_add_msec_to_ticks(&xDTicks, _config.xPool.xSystem.ulAutoSaveInterval);
+    _time_get_elapsed_ticks(&xTicks);
     _time_add_sec_to_ticks(&xTicks, 1);
     
-    _timer_start_periodic_at_ticks(_FTE_CFG_auto_save, NULL, TIMER_KERNEL_TIME_MODE, &xTicks, &xDTicks);
+    _timer_start_periodic_at_ticks(_FTE_CFG_auto_save, NULL, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);
 
     return  MQX_OK;
     
@@ -1092,16 +1092,19 @@ int_32  FTE_CFG_CERT_SHELL_cmd(int_32 argc, char_ptr argv[])
     {
         if (shorthelp)
         {
-            printf ("%s\n", argv[0]);
+            printf ("%s [<command>]\n", argv[0]);
         }
         else
         {
             printf("Usage : %s [<command>]\n", argv[0]);
             printf("  Commands:\n");
             printf("    show\n");
-            printf("        show certificate\n");
+            printf("        show certificate.\n");
             printf("    load <ip> <file_name>\n");
-            printf("        download and save\n");
+            printf("        download and save.\n");
+            printf("  Parameters:\n");
+            printf("      <ip>        = TFTP server IP address.\n");
+            printf("      <file_name> = Certificate file name.\n");
         }
     }
     return   return_code;

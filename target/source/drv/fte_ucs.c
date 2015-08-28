@@ -464,7 +464,7 @@ uint_32 FTE_UCS_sendAndRecv(FTE_UCS_PTR pUCS, uint_8_ptr pData, uint_32 nDataLen
 
     _FTE_UCS_lock(pUCS);    
     
-    _time_get_ticks(&xStart);
+    _time_get_elapsed_ticks(&xStart);
     
     FTE_UCS_clear(pUCS);
     
@@ -480,7 +480,7 @@ uint_32 FTE_UCS_sendAndRecv(FTE_UCS_PTR pUCS, uint_8_ptr pData, uint_32 nDataLen
     while (FTE_UCS_recvdLen(pUCS) < nBuffLen)
     {
         _time_delay(1);
-        _time_get_ticks(&xCurrent);
+        _time_get_elapsed_ticks(&xCurrent);
         if (_time_diff_milliseconds(&xCurrent, &xStart, &bOverflow) > nTimeout)
         {
             break;
@@ -503,7 +503,7 @@ boolean FTE_UCS_waitForSendCompletion(FTE_UCS_PTR pUCS, uint_32 nTimeout)
     MQX_TICK_STRUCT xStart, xCurrent;
     boolean bOverflow;
 
-    _time_get_ticks(&xStart);
+    _time_get_elapsed_ticks(&xStart);
 
     _FTE_UCS_lock(pUCS);    
     do
@@ -514,7 +514,7 @@ boolean FTE_UCS_waitForSendCompletion(FTE_UCS_PTR pUCS, uint_32 nTimeout)
             return  TRUE;
         }
 
-        _time_get_ticks(&xCurrent);
+        _time_get_elapsed_ticks(&xCurrent);
     } while(_time_diff_milliseconds(&xCurrent, &xStart, &bOverflow) < nTimeout);
 
     _FTE_UCS_unlock(pUCS);

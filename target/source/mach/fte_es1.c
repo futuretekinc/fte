@@ -219,7 +219,7 @@ static const FTE_HEM12_06M_CONFIG fte_init_tascon_hem12_06m_0_config =
     .xCommon    =
     {
         .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12_06M, 0),
-        .pName      = "HEM12-AGU",
+        .pName      = "AGU-HA",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
         .ulChild    = sizeof(fte_init_tascon_hem12_06m_child_configs) / sizeof(FTE_OBJECT_CONFIG_PTR),
         .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)fte_init_tascon_hem12_06m_child_configs
@@ -235,7 +235,7 @@ static const FTE_HEM12_06M_CONFIG fte_init_tascon_hem12_06m_1_config =
     .xCommon    =
     {
         .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12_06M, 0),
-        .pName      = "HEM12-AGU",
+        .pName      = "AGU-HA",
         .xFlags     = 0, 
         .ulChild    = sizeof(fte_init_tascon_hem12_06m_child_configs) / sizeof(FTE_OBJECT_CONFIG_PTR),
         .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)fte_init_tascon_hem12_06m_child_configs
@@ -251,7 +251,7 @@ static const FTE_HEM12_06M_CONFIG fte_init_tascon_hem12_06m_2_config =
     .xCommon    =
     {
         .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12_06M, 0),
-        .pName      = "HEM12-AGU",
+        .pName      = "AGU-HA",
         .xFlags     = 0, 
         .ulChild    = sizeof(fte_init_tascon_hem12_06m_child_configs) / sizeof(FTE_OBJECT_CONFIG_PTR),
         .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)fte_init_tascon_hem12_06m_child_configs

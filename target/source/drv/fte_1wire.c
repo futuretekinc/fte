@@ -830,10 +830,10 @@ _mqx_uint   fte_1wire_auto_recovery_start(void)
 
     _time_init_ticks(&xDTicks, 0);
     _time_add_sec_to_ticks(&xDTicks, 300);
-    _time_get_ticks(&xTicks);
+    _time_get_elapsed_ticks(&xTicks);
     _time_add_sec_to_ticks(&xTicks, 1);
     
-    _n1WireRecoveryTimerID = _timer_start_periodic_at_ticks(_FTE_1WIRE_autoRecoveryRun, NULL, TIMER_KERNEL_TIME_MODE, &xTicks, &xDTicks);
+    _n1WireRecoveryTimerID = _timer_start_periodic_at_ticks(_FTE_1WIRE_autoRecoveryRun, NULL, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);
     
     return  MQX_OK;
 }
