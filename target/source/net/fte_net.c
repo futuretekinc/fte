@@ -393,11 +393,18 @@ error:
     {
         if (bShortHelp)  
         {
-            printf("%s <cmd>\n", pArgv[0]);
+            printf("%s [<command>]\n", pArgv[0]);
         } 
         else  
         {
-            printf("Usage: %s <cmd>\n",pArgv[0]);
+            printf("Usage: %s [<command>]\n",pArgv[0]);
+            printf("  Commands:\n");
+            printf("    static <IP> <Netmask> <Gateway>\n");
+            printf("        Static IP configuration.\n");
+            printf("    dhcp\n");
+            printf("        Dynamic IP configuration.\n");
+            printf("    stat\n");
+            printf("        Statistics informations.\n");
         }
     }
     
@@ -409,7 +416,7 @@ void    FTE_NET_printStats(void)
     IP_STATS_PTR    pStats = IP_stats();
     if (pStats != NULL)
     {
-        printf("\n<Network Status>\n");
+        printf("\n<Network Statistics>\n");
         printf("\n< RX STAT >\n");
         printf("%16s : %d\n", "Total",      pStats->COMMON.ST_RX_TOTAL);
         printf("%16s : %d\n", "Missed",     pStats->COMMON.ST_RX_MISSED);
