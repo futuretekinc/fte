@@ -303,6 +303,7 @@
         <option>
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$/../../../../</state>
+          <state>$PROJ_DIR$/../../../../../config</state>
           <state>$PROJ_DIR$/../../../../../mqx/include</state>
           <state>$PROJ_DIR$/../../../../../mqx/include/bsp</state>
           <state>$PROJ_DIR$/../../../../../mqx/include/common</state>
