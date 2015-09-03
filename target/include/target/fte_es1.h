@@ -16,7 +16,7 @@
 #define FTE_FACTORY_RESET_SUPPORTED         0
 
 #define FTE_I2C_SUPPORTED                   1
-#define FTE_SSD1305_SUPPORTED               1
+#define FTE_SSD1305_SUPPORTED               0
 #define FTE_LCD_SUPPORTED                   0
 
 #define FTE_SPI_SUPPORTED                   1
@@ -31,7 +31,13 @@
 #define FTE_RTD_SUPPORTED                   1
 #define FTE_RTD0_SUPPORTED                  1
 #define FTE_RTD1_SUPPORTED                  0
+
 #define FTE_GAI_SUPPORTED                   0
+#define FTE_GAI_VOLTAGE0_SUPPORTED          0
+#define FTE_GAI_VOLTAGE1_SUPPORTED          0
+#define FTE_GAI_CURRENT0_SUPPORTED          0
+#define FTE_GAI_CURRENT1_SUPPORTED          0
+
 #define FTE_PRESSURE_SUPPORTED              0
 #define FTE_SHT_SUPPORTED                   1
 #define FTE_DS18B20_SUPPORTED               0
@@ -45,8 +51,8 @@
 #define FTE_GPIO_DI_SUPPORTED               0
 #define FTE_MULTI_DI_SUPPORTED              0
 #define FTE_MULTI_DO_SUPPORTED              0
-#define FTE_MULTI_TEMP_SUPPORTED            0
-#define FTE_MULTI_HUMI_SUPPORTED            0
+#define FTE_MULTI_TEMP_SUPPORTED            1
+#define FTE_MULTI_HUMI_SUPPORTED            1
 #define FTE_MULTI_CO2_SUPPORTED             1
 #define FTE_MULTI_VOC_SUPPORTED             0
 #define FTE_MULTI_COUNT_SUPPORTED           0

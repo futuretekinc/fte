@@ -18,7 +18,7 @@ static  FTE_OBJECT_ACTION _rtd_action =
     .f_init         = _rtd_init,
     .f_run          = _rtd_run,
     .f_stop         = _rtd_stop,
-    .f_get          = _rtd_get,
+    //.f_get          = _rtd_get,
     .f_set          = NULL,
     .f_get_update_interval = _rtd_get_update_interval,
     .f_set_update_interval = _rtd_set_update_interval
@@ -40,13 +40,20 @@ _mqx_uint   fte_rtd_attach(FTE_OBJECT_PTR pObj)
     FTE_RTD_STATUS_PTR  pStatus = (FTE_RTD_STATUS_PTR)pObj->pStatus;
     FTE_AD7785_PTR      pADC = NULL;
     
-    pADC = fte_ad7785_get(pConfig->nDevID);
+    pADC = FTE_AD7785_get(pConfig->nDevID);
     if (pADC == FALSE)
     {
         goto error;
     }
     
-    if (fte_ad7785_attach(pADC, pConfig->nID) != MQX_OK)
+    if (FTE_AD7785_attach(pADC, pConfig->xCommon.nID) != MQX_OK)
+    {
+        goto error;
+    }
+    
+    pStatus->xCommon.nValueCount = 1;
+    pStatus->xCommon.pValue = FTE_VALUE_createTemperature();
+    if (pStatus->xCommon.pValue == NULL)
     {
         goto error;
     }
@@ -57,7 +64,7 @@ _mqx_uint   fte_rtd_attach(FTE_OBJECT_PTR pObj)
     
     if (_rtd_init(pObj) != MQX_OK)
     {
-        fte_ad7785_detach(pADC);
+        FTE_AD7785_detach(pADC);
         pStatus->pADC = NULL;
         
         goto error;
@@ -71,7 +78,7 @@ error:
     
     if (pStatus != NULL)
     {
-        fte_ad7785_detach(pADC);
+        FTE_AD7785_detach(pADC);
         pObj->pStatus = NULL;
     }
     
@@ -94,12 +101,12 @@ _mqx_uint fte_rtd_detach(FTE_OBJECT_PTR pObj)
 error:    
     return  MQX_ERROR;
 }
-
+/*
 uint_32 FTE_RTD_printValue(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 nLen)
 {
     ASSERT((pObj != NULL) && FTE_OBJ_CLASS(pObj) == FTE_OBJ_CLASS_TEMPERATURE));
 
-    if (((FTE_RTD_STATUS_PTR)pObj->pStatus)->nValue >= 0)
+    if (((FTE_RTD_STATUS_PTR)pObj->pStatus)->xCommon.nValue >= 0)
     {
         return  snprintf(pBuff, nLen, "%d.%02d", 
                          ((FTE_RTD_STATUS_PTR)pObj->pStatus)->nValue / 100, 
@@ -112,7 +119,7 @@ uint_32 FTE_RTD_printValue(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 nLen)
         return  snprintf(pBuff, nLen, "-%d.%02d", nValue / 100, nValue % 100);
     }
 }
-
+*/
 _mqx_uint   _rtd_init(FTE_OBJECT_PTR pObj)
 {
     assert(pObj != NULL);
@@ -120,27 +127,27 @@ _mqx_uint   _rtd_init(FTE_OBJECT_PTR pObj)
     uint_32 setValue, getValue;
     FTE_RTD_STATUS_PTR  pStatus = (FTE_RTD_STATUS_PTR)pObj->pStatus;
 
-    fte_ad7785_get_config(pStatus->pADC, &getValue);
+    FTE_AD7785_getConfig(pStatus->pADC, &getValue);
     setValue = getValue | (FTE_AD7785_CONFIG_UNIPOLAR_MODE << FTE_AD7785_CONFIG_POL_SHIFT);
     setValue = (setValue & ~FTE_AD7785_CONFIG_GAIN_MASK) | (FTE_AD7785_CONFIG_GAIN_32 << FTE_AD7785_CONFIG_GAIN_SHIFT);
     setValue = (setValue & ~FTE_AD7785_CONFIG_REF_MASK) | (FTE_AD7785_CONFIG_REF_EXTR << FTE_AD7785_CONFIG_REF_SHIFT);
     setValue = (setValue & ~FTE_AD7785_CONFIG_BUF_MASK) | (FTE_AD7785_CONFIG_BUF_MODE << FTE_AD7785_CONFIG_BUF_SHIFT);
     setValue = (setValue & ~FTE_AD7785_CONFIG_CHANNEL_MASK) | (FTE_AD7785_CONFIG_CHANNEL_2 << FTE_AD7785_CONFIG_CHANNEL_SHIFT);
-    fte_ad7785_set_config(pStatus->pADC, setValue);
-    fte_ad7785_get_config(pStatus->pADC, &getValue);
+    FTE_AD7785_setConfig(pStatus->pADC, setValue);
+    FTE_AD7785_getConfig(pStatus->pADC, &getValue);
     if (setValue != getValue)
     {
         goto error;
     }
 
-    fte_ad7785_set_iout(pStatus->pADC, FTE_AD7785_IOUT_DIR_DIRECT);
-    fte_ad7785_get_iout(pStatus->pADC, &getValue);
+    FTE_AD7785_setIOut(pStatus->pADC, FTE_AD7785_IOUT_DIR_DIRECT);
+    FTE_AD7785_getIOut(pStatus->pADC, &getValue);
     if (getValue != FTE_AD7785_IOUT_DIR_DIRECT)
     {
         goto error;
     }
-    fte_ad7785_set_current(pStatus->pADC, FTE_AD7785_IOUT_CURRENT_210UA);    
-    fte_ad7785_get_current(pStatus->pADC, &getValue);    
+    FTE_AD7785_setCurrent(pStatus->pADC, FTE_AD7785_IOUT_CURRENT_210UA);    
+    FTE_AD7785_getCurrent(pStatus->pADC, &getValue);    
     if (getValue != FTE_AD7785_IOUT_CURRENT_210UA)
     {
         goto error;
@@ -175,7 +182,7 @@ _mqx_uint   _rtd_run(FTE_OBJECT_PTR pObj)
     _time_add_sec_to_ticks(&xTicks, 1);
     
     pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(_rtd_restart_convert, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);
-    fte_ad7785_set_op_mode(pStatus->pADC, FTE_AD7785_OP_MODE_SINGLE);
+    FTE_AD7785_setOPMode(pStatus->pADC, FTE_AD7785_OP_MODE_SINGLE);
 
     _time_init_ticks(&xDTicks, _time_get_ticks_per_sec());
     pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_rtd_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
@@ -202,7 +209,7 @@ _mqx_uint   _rtd_stop(FTE_OBJECT_PTR pObj)
         pStatus->hConvertTimer = 0;
     }
     
-    fte_ad7785_set_op_mode(pStatus->pADC, FTE_AD7785_OP_MODE_PWR_DOWN);
+    FTE_AD7785_setOPMode(pStatus->pADC, FTE_AD7785_OP_MODE_PWR_DOWN);
     
     return  MQX_OK;
     
@@ -214,12 +221,12 @@ static void _rtd_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_p
     FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)data_ptr;
     FTE_RTD_STATUS_PTR  pStatus = (FTE_RTD_STATUS_PTR)pObj->pStatus;
 
-    if (fte_ad7785_get_raw_data(pStatus->pADC, &data) == MQX_OK)
+    if (FTE_AD7785_getRawData(pStatus->pADC, &data) == MQX_OK)
     {
         uint_32 index, value;
         int_32  temp;
         
-        value = (uint_32)((float)(data >> 4) / (float)(1 << FTE_AD7785_CONFIG_GAIN_32) / 0x100000 * 4990 * 100);
+        value = (uint_32)((float)(data) / (float)(1 << FTE_AD7785_CONFIG_GAIN_32) / 0x100000 * 4990 * 100);
             
         index = value / 1000;
     
@@ -234,24 +241,21 @@ static void _rtd_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_p
         
         if (FTE_RTD_LOW_BOUND <= temp && temp <= FTE_RTD_HIGH_BOUND)
         {
-            _time_get (&pStatus->xTimeStamp);
-            pStatus->nValue = temp;
-            pStatus->xFlags = FTE_FLAG_SET(pStatus->xFlags, FTE_OBJ_STATUS_FLAG_VALID);
-            
-            if (FTE_FLAG_IS_SET(pObj->pConfig->xFlags, FTE_OBJ_CONFIG_FLAG_TRAP))
-            {
-                FTE_LOG_add(&pStatus->xTimeStamp, pObj->pConfig->nID, pStatus->nValue);
-            }
+            FTE_VALUE_setTemperature(pStatus->xCommon.pValue, temp);
+            FT_OBJ_STAT_incSucceed(&pStatus->xCommon.xStatistics);
+
         }
         else
         {
-            pStatus->xFlags = FTE_FLAG_CLR(pStatus->xFlags, FTE_OBJ_STATUS_FLAG_VALID);
+            FTE_VALUE_setValid(pStatus->xCommon.pValue, FALSE);
+            FT_OBJ_STAT_incFailed(&pStatus->xCommon.xStatistics);
             _rtd_init(pObj);
         }
     }
     else
     {
-        pStatus->xFlags = FTE_FLAG_CLR(pStatus->xFlags, FTE_OBJ_STATUS_FLAG_VALID);
+            FTE_VALUE_setValid(pStatus->xCommon.pValue, FALSE);
+            FT_OBJ_STAT_incFailed(&pStatus->xCommon.xStatistics);
     }
 }
 
@@ -263,7 +267,7 @@ static void _rtd_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT
 
     if (FTE_OBJ_IS_ENABLED(pObj))
     {
-        fte_ad7785_set_op_mode(pStatus->pADC, FTE_AD7785_OP_MODE_SINGLE);
+        FTE_AD7785_setOPMode(pStatus->pADC, FTE_AD7785_OP_MODE_SINGLE);
         
         _time_init_ticks(&xDTicks, _time_get_ticks_per_sec());
         pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_rtd_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
@@ -275,6 +279,7 @@ static void _rtd_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT
     }
 }
 
+#if 0
 _mqx_uint    _rtd_get(FTE_OBJECT_PTR pObj, uint_32 *value, TIME_STRUCT *time_stamp)
 {
     assert(pObj != NULL && value != NULL);
@@ -294,7 +299,7 @@ _mqx_uint    _rtd_get(FTE_OBJECT_PTR pObj, uint_32 *value, TIME_STRUCT *time_sta
 
     return  MQX_ERROR;
 }
-
+#endif
 uint_32      _rtd_get_update_interval(FTE_OBJECT_PTR pObj)
 {
     FTE_RTD_CONFIG_PTR  pConfig = (FTE_RTD_CONFIG_PTR)pObj->pConfig;

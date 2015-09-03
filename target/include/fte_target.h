@@ -198,6 +198,11 @@ void                    fte_state_disconnected(void);
 uint_32                 fte_state_get(void);
 void                    fte_state_change_set_cb(void (*cb)(void));
 
+#ifndef FTE_SHELL_TIMEOUT
+    #define FTE_SHELL_TIMEOUT               60  /* 60 secs */
+#endif
+
+
 #include "fte_drv.h"
 #include "fte_object.h"
 #include "fte_utils.h"
@@ -349,8 +354,5 @@ void                    fte_state_change_set_cb(void (*cb)(void));
 #endif
 
 
-#ifndef FTE_SHELL_TIMEOUT
-    #define FTE_SHELL_TIMEOUT               60  /* 60 secs */
-#endif
 #endif
 

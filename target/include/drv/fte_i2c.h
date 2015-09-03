@@ -47,5 +47,5 @@ _mqx_uint   FTE_I2C_read(FTE_I2C_PTR pI2C, uint_8   nID, uint_8_ptr pBuff, uint_
 _mqx_uint   FTE_I2C_write(FTE_I2C_PTR pI2C, uint_8 nID, uint_8_ptr pBuff, uint_32 ulLen);
 _mqx_uint   FTE_I2C_write_byte(FTE_I2C_PTR pI2C, uint_8 nID, uint_8 uiData);
 
-int_32      FTE_I2C_shell_cmd(int_32 argc, char_ptr argv[] );
+int_32      FTE_I2C_SHELL_cmd(int_32 argc, char_ptr argv[] );
 #endif
