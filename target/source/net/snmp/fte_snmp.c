@@ -64,6 +64,11 @@ typedef struct
         {
             _ip_address xHostIP;
         }   xDiscovery;
+        
+        struct
+        {
+            _ip_address xServerIP;
+        }   xManagement;
     }   xParams;
     char_ptr    pBuff;
 }   FTE_TRAP_MSG, _PTR_ FTE_TRAP_MSG_PTR;
@@ -155,7 +160,8 @@ _mqx_uint   FTE_SNMPD_TRAP_add(_ip_address target, boolean bStatic)
         return  MQX_OK;
     }
     
-    RTCS_trap_target_add(target);
+    FTE_SNMPD_TRAP_addServer(target);
+    
     if (bStatic)
     {
         return  FTE_CFG_NET_TRAP_addIP(target);
@@ -173,8 +179,8 @@ _mqx_uint   FTE_SNMPD_TRAP_del(_ip_address target)
     while ((pServer = FTE_LIST_ITER_getNext(&xIter)) != NULL)
     {
         if (pServer->xIP == target)
-        {            
-            RTCS_trap_target_remove(target);
+        {  
+            FTE_SNMPD_TRAP_delServer(target);
             if (pServer->bStatic)
             {
                 FTE_CFG_NET_TRAP_delIP(target);
@@ -251,6 +257,32 @@ void FTE_SNMPD_TRAP_processing(void)
                 }                
             }
             break;
+            
+        case    FTE_NET_SNMP_TRAP_TYPE_ADD:
+            {
+                if (!FTE_NET_SERVER_isExist(pCurrentTrapMsg->xParams.xManagement.xServerIP))
+                {
+                    uint_32 error = RTCS_trap_target_add(pCurrentTrapMsg->xParams.xManagement.xServerIP);
+                    if (error) 
+                    {
+                        SNMP_TRACE("\nFailed to add target trap, error = %X", error);
+                    } 
+                }
+            }
+            break;
+            
+        case    FTE_NET_SNMP_TRAP_TYPE_DEL:
+            {
+                if (FTE_NET_SERVER_isExist(pCurrentTrapMsg->xParams.xManagement.xServerIP))
+                {
+                    uint_32 error = RTCS_trap_target_remove(pCurrentTrapMsg->xParams.xManagement.xServerIP);
+                    if (error) 
+                    {
+                        SNMP_TRACE("\nFailed to remove target trap, error = %X", error);
+                    } 
+                }
+            }
+            break;
         }
         
         if (pCurrentTrapMsg->pBuff != NULL)
@@ -325,6 +357,48 @@ _mqx_uint   FTE_SNMPD_TRAP_discovery(_ip_address xHostIP)
 
     return  MQX_OK;
 }        
+
+_mqx_uint   FTE_SNMPD_TRAP_addServer(_ip_address xServerIP)
+{
+    FTE_TRAP_MSG_PTR    pMsg = (FTE_TRAP_MSG_PTR)FTE_MEM_allocZero(sizeof(FTE_TRAP_MSG));
+    if (pMsg == NULL)
+    {
+        return   MQX_ERROR;
+    }
+        
+    pMsg->xType                         = FTE_NET_SNMP_TRAP_TYPE_ADD;
+    pMsg->xParams.xManagement.xServerIP = xServerIP;
+
+    if (FTE_LIST_pushBack(&_trapList, pMsg) != MQX_OK)
+    {
+        DEBUG("Not enough memory!\n");
+        FTE_MEM_free(pMsg);
+        return  MQX_ERROR;
+    }
+
+   return   MQX_OK;
+}
+
+_mqx_uint   FTE_SNMPD_TRAP_delServer(_ip_address xServerIP)
+{
+    FTE_TRAP_MSG_PTR    pMsg = (FTE_TRAP_MSG_PTR)FTE_MEM_allocZero(sizeof(FTE_TRAP_MSG));
+    if (pMsg == NULL)
+    {
+        return   MQX_ERROR;
+    }
+        
+    pMsg->xType                         = FTE_NET_SNMP_TRAP_TYPE_DEL;
+    pMsg->xParams.xManagement.xServerIP = xServerIP;
+
+    if (FTE_LIST_pushBack(&_trapList, pMsg) != MQX_OK)
+    {
+        DEBUG("Not enough memory!\n");
+        FTE_MEM_free(pMsg);
+        return  MQX_ERROR;
+    }
+
+   return   MQX_OK;
+}
 
 
 /*******************************************************************************
