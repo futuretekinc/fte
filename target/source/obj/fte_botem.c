@@ -5,7 +5,11 @@
 #include "nxjson.h"
 
 _mqx_uint   fte_botem_pn1500_switchCtrl(FTE_OBJECT_PTR pObj, boolean bSwitchON);
+_mqx_uint   fte_botem_pn1500_reset(FTE_OBJECT_PTR pObj);
 _mqx_uint   fte_botem_pn1500_countReset(FTE_OBJECT_PTR pObj);
+_mqx_uint   fte_botem_pn1500_accumCountReset(FTE_OBJECT_PTR pObj);
+
+static uint_32  _version = 1;
 
 FTE_VALUE_TYPE  FTE_BOTEM_PN1500_valueTypes[] =
 {
@@ -41,32 +45,66 @@ _mqx_uint   fte_botem_pn1500_receive_data(FTE_OBJECT_PTR pObj)
     memset(pBuff, 0, sizeof(pBuff));
     
     nLen = FTE_UCS_recv(pStatus->pUCS, pBuff, sizeof(pBuff));
-    if (nLen != 23)
-    {
-        return  MQX_ERROR;
-    }
 
-    if ((pBuff[0] != '[') || (pBuff[nLen-1] != ']'))
+    if (_version == 0)
     {
-        return  MQX_ERROR;
-    }
-    
-    pBuff[14] = 0;
-    pBuff[16] = 0;
-    pBuff[22] = 0;
+        if (nLen != 23)
+        {
+            return  MQX_ERROR;
+        }
 
-    nPeopleCount = atoi((char *)&pBuff[9]);
-    bSwitch = (pBuff[15] == '1');
-    nAccum = atoi((char *)&pBuff[17]);
+        if ((pBuff[0] != '[') || (pBuff[nLen-1] != ']'))
+        {
+            return  MQX_ERROR;
+        }
+        
+        pBuff[14] = 0;
+        pBuff[16] = 0;
+        pBuff[22] = 0;
 
-    FTE_VALUE_getULONG(&pStatus->xCommon.pValue[0], &nPrevPeopleCount);
-    if (nPrevPeopleCount != nPeopleCount)
-    {
-        FTE_OBJ_wasChanged(pObj);
+        nPeopleCount = atoi((char *)&pBuff[9]);
+        bSwitch = (pBuff[15] == '1');
+        nAccum = atoi((char *)&pBuff[17]);
+
+        FTE_VALUE_getULONG(&pStatus->xCommon.pValue[0], &nPrevPeopleCount);
+        if (nPrevPeopleCount != nPeopleCount)
+        {
+            FTE_OBJ_wasChanged(pObj);
+        }
+        else
+        {
+            FTE_OBJ_wasUpdated(pObj);
+        }
     }
     else
     {
-        FTE_OBJ_wasUpdated(pObj);
+        if (nLen != 54)
+        {
+            return  MQX_ERROR;
+        }
+
+        if ((pBuff[0] != '[') || (pBuff[nLen-1] != ']'))
+        {
+            return  MQX_ERROR;
+        }
+        
+        pBuff[20] = 0;
+        pBuff[26] = 0;
+        pBuff[32] = 0;
+
+        nPeopleCount = atoi((char *)&pBuff[21]);
+        bSwitch = (pBuff[12] == '1');
+        nAccum = atoi((char *)&pBuff[27]);
+
+        FTE_VALUE_getULONG(&pStatus->xCommon.pValue[0], &nPrevPeopleCount);
+        if (nPrevPeopleCount != nPeopleCount)
+        {
+            FTE_OBJ_wasChanged(pObj);
+        }
+        else
+        {
+            FTE_OBJ_wasUpdated(pObj);
+        }
     }
     
     FTE_VALUE_setULONG(&pStatus->xCommon.pValue[0], nPeopleCount);
@@ -87,6 +125,10 @@ _mqx_uint   fte_botem_pn1500_set(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_
     case    1:
         {
             pCMD[nCmdLen++] = 'Z';        
+            if (_version == 1)
+            {
+                pCMD[nCmdLen++] = '1';        
+            }
         }
         break;
         
@@ -99,6 +141,11 @@ _mqx_uint   fte_botem_pn1500_set(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_
             else 
             {
                 pCMD[nCmdLen++] = 'N';
+            }
+
+            if (_version == 1)
+            {
+                pCMD[nCmdLen++] = '1';        
             }
         }
         break;
@@ -125,7 +172,6 @@ _mqx_uint   fte_botem_pn1500_set(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_
     
     return  MQX_OK;
 }
-
 
 _mqx_uint   fte_botem_pn1500_setConfig(FTE_OBJECT_PTR  pObj, char_ptr pString)
 {
@@ -155,9 +201,17 @@ _mqx_uint   fte_botem_pn1500_setConfig(FTE_OBJECT_PTR  pObj, char_ptr pString)
     {
         fte_botem_pn1500_switchCtrl(pObj, FALSE);
     }
+    else if (strcmp(pxCmd->text_value, "reset") == 0)
+    {
+        fte_botem_pn1500_reset(pObj);
+    }
     else if (strcmp(pxCmd->text_value, "count_reset") == 0)
     {
         fte_botem_pn1500_countReset(pObj);
+    }
+    else if (strcmp(pxCmd->text_value, "accum_reset") == 0)
+    {
+        fte_botem_pn1500_accumCountReset(pObj);
     }
     else
     {
@@ -236,8 +290,13 @@ _mqx_uint   fte_botem_pn1500_switchCtrl(FTE_OBJECT_PTR pObj, boolean bSwitchON)
         pCMD[nCmdLen++] = 'F';        
     }
     
+    if (_version == 1)
+    {
+        pCMD[nCmdLen++] = '1';        
+    }
     pCMD[nCmdLen++] = ']';
     pCMD[nCmdLen++] = '\0';
+    
     FTE_UCS_clear(pStatus->pUCS);    
     FTE_UCS_send(pStatus->pUCS, pCMD, nCmdLen, FALSE);    
     
@@ -246,7 +305,37 @@ _mqx_uint   fte_botem_pn1500_switchCtrl(FTE_OBJECT_PTR pObj, boolean bSwitchON)
 
 _mqx_uint   fte_botem_pn1500_countReset(FTE_OBJECT_PTR pObj)
 {
-    uint_8  pCMD[16] = { '\0', '[', '0', '0', '0', '0', 'B', 'T', 'Z', ']', '\0'};
+    uint_8  pCMD[16] = { '\0', '[', '0', '0', '0', '0', 'B', 'T', 'Z'};
+    uint_32 nCmdLen = 9;
+    FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
+    
+    if (_version == 1)
+    {
+        pCMD[nCmdLen++] = '1';        
+    }
+    pCMD[nCmdLen++] = ']';
+    pCMD[nCmdLen++] = '\0';
+    
+    FTE_UCS_clear(pStatus->pUCS);    
+    FTE_UCS_send(pStatus->pUCS, pCMD, nCmdLen, FALSE);    
+    
+    return  MQX_OK;
+}
+
+_mqx_uint   fte_botem_pn1500_accumCountReset(FTE_OBJECT_PTR pObj)
+{
+    uint_8  pCMD[16] = { '\0', '[', '0', '0', '0', '0', 'B', 'T', 'Z', '2', ']', '\0'};
+    uint_32 nCmdLen = 12;
+    FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
+    FTE_UCS_clear(pStatus->pUCS);    
+    FTE_UCS_send(pStatus->pUCS, pCMD, nCmdLen, FALSE);    
+    
+    return  MQX_OK;
+}
+
+_mqx_uint   fte_botem_pn1500_reset(FTE_OBJECT_PTR pObj)
+{
+    uint_8  pCMD[16] = { '\0', '[', '0', '0', '0', '0', 'B', 'T', 'R', ']', '\0'};
     uint_32 nCmdLen = 11;
     FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     
@@ -255,3 +344,4 @@ _mqx_uint   fte_botem_pn1500_countReset(FTE_OBJECT_PTR pObj)
     
     return  MQX_OK;
 }
+
