@@ -699,11 +699,22 @@ error:
     {
         if (bShortHelp)
         {
-            printf ("%s <cmd>\n", pArgv[0]);
+            printf ("%s <command>\n", pArgv[0]);
         }
         else
         {
-            printf("Usage : %s <cmd>\n", pArgv[0]);
+            printf("Usage : %s <command>\n", pArgv[0]);
+            printf("  Commands:\n");
+            printf("    <index> del\n");
+            printf("        Delete event\n");
+            printf("    <index> interval <seconds>\n");
+            printf("        Set interval time\n");
+            printf("    <index> [enable | disable] <type>\n");
+            printf("        Enable/Disable event type (snmp, mqtt, log, etc)\n");
+            printf("  Parameters:\n");
+            printf("    <index>   = event index\n");
+            printf("    <type>    = event type\n");
+            printf("    <seconds> = time\n");
         }
     }
     
