@@ -160,7 +160,7 @@ _mqx_uint   FTE_SNMPD_TRAP_add(_ip_address target, boolean bStatic)
         return  MQX_OK;
     }
     
-    FTE_SNMPD_TRAP_addServer(target);
+    RTCS_trap_target_add(target);
     
     if (bStatic)
     {
@@ -180,7 +180,7 @@ _mqx_uint   FTE_SNMPD_TRAP_del(_ip_address target)
     {
         if (pServer->xIP == target)
         {  
-            FTE_SNMPD_TRAP_delServer(target);
+            RTCS_trap_target_remove(target);
             if (pServer->bStatic)
             {
                 FTE_CFG_NET_TRAP_delIP(target);
@@ -262,7 +262,8 @@ void FTE_SNMPD_TRAP_processing(void)
             {
                 if (!FTE_NET_SERVER_isExist(pCurrentTrapMsg->xParams.xManagement.xServerIP))
                 {
-                    uint_32 error = RTCS_trap_target_add(pCurrentTrapMsg->xParams.xManagement.xServerIP);
+                    
+                    uint_32 error = FTE_SNMPD_TRAP_add(pCurrentTrapMsg->xParams.xManagement.xServerIP, TRUE);
                     if (error) 
                     {
                         SNMP_TRACE("\nFailed to add target trap, error = %X", error);
@@ -275,7 +276,7 @@ void FTE_SNMPD_TRAP_processing(void)
             {
                 if (FTE_NET_SERVER_isExist(pCurrentTrapMsg->xParams.xManagement.xServerIP))
                 {
-                    uint_32 error = RTCS_trap_target_remove(pCurrentTrapMsg->xParams.xManagement.xServerIP);
+                    uint_32 error = FTE_SNMPD_TRAP_del(pCurrentTrapMsg->xParams.xManagement.xServerIP);
                     if (error) 
                     {
                         SNMP_TRACE("\nFailed to remove target trap, error = %X", error);
@@ -2188,7 +2189,7 @@ uint_32 MIB_set_tsAdd(pointer dummy, uchar_ptr varptr, uint_32 varlen)
         return  SNMP_ERROR_badValue;
     }
 
-    FTE_SNMPD_TRAP_add(nIP, TRUE);
+    FTE_SNMPD_TRAP_addServer(nIP);
     
     return   SNMP_ERROR_noError;
 }
@@ -2215,7 +2216,7 @@ uint_32 MIB_set_tsDel(pointer dummy, uchar_ptr varptr, uint_32 varlen)
          return  SNMP_ERROR_badValue;
     }
 
-    if (FTE_SNMPD_TRAP_del(nIP) != MQX_OK)
+    if (FTE_SNMPD_TRAP_delServer(nIP) != MQX_OK)
     {
         return  SNMP_ERROR_badValue;
     }
