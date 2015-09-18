@@ -84,6 +84,7 @@ const SHELL_COMMAND_STRUCT pSHELLCommands[] =
 #if FTE_SHT_SUPPORTED
     { "sht",        FTE_SHT_SHELL_cmd},
 #endif
+    { "smng",       FTE_SMNGD_SHELL_cmd},
 #if FTE_SPI_SUPPORTED
     { "spi",        FTE_SPI_SHELL_cmd},
 #endif

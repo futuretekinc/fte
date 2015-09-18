@@ -280,6 +280,8 @@ FTE_OBJECT_DESC_PTR     FTE_OBJ_DESC_getAt(uint_32 ulIndex);
 uint_32         FTE_OBJ_DESC_CLASS_count(void);
 uint_32         FTE_OBJ_DESC_CLASS_getAt(uint_32 ulIndex);
 
+_mqx_uint       FTE_OBJ_CLASS_getName(FTE_OBJECT_ID nID, char_ptr pName, uint_32 nBuffLen);
+
 FTE_OBJECT_PTR  FTE_OBJ_create(FTE_OBJECT_CONFIG_PTR pConfig);
 _mqx_uint       FTE_OBJ_destroy(FTE_OBJECT_PTR pObj);
 

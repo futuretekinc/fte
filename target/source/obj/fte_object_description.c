@@ -1,6 +1,68 @@
 #include "fte_target.h"
 #include "fte_object.h"
 
+typedef struct 
+{
+    FTE_OBJECT_ID   xClass;
+    char_ptr        pName;
+} FTE_CLASS_DESC;
+
+static const FTE_CLASS_DESC _pClassDescs[] =
+{
+    {
+        .xClass = FTE_OBJ_CLASS_TEMPERATURE,
+        .pName  = "Temperature"
+    },
+    {
+        .xClass = FTE_OBJ_CLASS_HUMIDITY,
+        .pName  = "Humidity"
+    },
+    {
+        .xClass = FTE_OBJ_CLASS_VOLTAGE,
+        .pName  = "Voltage"
+    },
+    {
+        .xClass = FTE_OBJ_CLASS_CURRENT,
+        .pName  = "Current"
+    },
+    {
+        .xClass = FTE_OBJ_CLASS_DI,
+        .pName  = "Digital Input"
+    },
+    {
+        .xClass = FTE_OBJ_CLASS_DO,
+        .pName  = "Digital Output"
+    },
+    {
+        .xClass = FTE_OBJ_CLASS_GAS,
+        .pName  = "Gas"
+    },
+    {
+        .xClass = FTE_OBJ_CLASS_POWER,
+        .pName  = "Power"
+    },
+    {
+        .xClass = FTE_OBJ_CLASS_SRF,
+        .pName  = "Sound Range Finder"
+    },
+    {
+        .xClass = FTE_OBJ_CLASS_AI,
+        .pName  = "Analog Input"
+    },
+    {
+        .xClass = FTE_OBJ_CLASS_COUNT,
+        .pName  = "Count"
+    },
+    {
+        .xClass = FTE_OBJ_CLASS_PRESSURE,
+        .pName  = "Pressure"
+    },
+    {
+        .xClass = FTE_OBJ_CLASS_MULTI,
+        .pName  = "Multi Function Device"
+    }
+};
+
 static const FTE_OBJECT_DESC _pObjDescs[] = 
 {
 #if FTE_RTD_SUPPORTED
@@ -778,4 +840,25 @@ uint_32 FTE_OBJ_DESC_CLASS_getAt(uint_32 ulIndex)
     }
     
     return  _pClass[ulIndex];
+}
+
+_mqx_uint       FTE_OBJ_CLASS_getName(FTE_OBJECT_ID nID, char_ptr pName, uint_32 nBuffLen)
+{
+    uint_32 i;
+    
+    if (nBuffLen > 1)
+    {
+        for(i = 0 ; i < sizeof(_pClassDescs) / sizeof(FTE_CLASS_DESC) ; i++)
+        {
+            if (_pClassDescs[i].xClass == (nID & FTE_OBJ_CLASS_MASK))
+            {
+                strncpy(pName, _pClassDescs[i].pName, nBuffLen - 1);
+                return   MQX_OK;
+            }
+        }
+    }
+    
+    strcpy(pName, "Unknown");
+    
+    return   MQX_ERROR;
 }
