@@ -219,7 +219,7 @@ static const FTE_HEM12_06M_CONFIG fte_init_tascon_hem12_06m_0_config =
     .xCommon    =
     {
         .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12_06M, 0),
-        .pName      = "HEM12-AGU",
+        .pName      = "AGU-HA",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
         .ulChild    = sizeof(fte_init_tascon_hem12_06m_child_configs) / sizeof(FTE_OBJECT_CONFIG_PTR),
         .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)fte_init_tascon_hem12_06m_child_configs
@@ -235,7 +235,7 @@ static const FTE_HEM12_06M_CONFIG fte_init_tascon_hem12_06m_1_config =
     .xCommon    =
     {
         .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12_06M, 0),
-        .pName      = "HEM12-AGU",
+        .pName      = "AGU-HA",
         .xFlags     = 0, 
         .ulChild    = sizeof(fte_init_tascon_hem12_06m_child_configs) / sizeof(FTE_OBJECT_CONFIG_PTR),
         .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)fte_init_tascon_hem12_06m_child_configs
@@ -251,7 +251,7 @@ static const FTE_HEM12_06M_CONFIG fte_init_tascon_hem12_06m_2_config =
     .xCommon    =
     {
         .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12_06M, 0),
-        .pName      = "HEM12-AGU",
+        .pName      = "AGU-HA",
         .xFlags     = 0, 
         .ulChild    = sizeof(fte_init_tascon_hem12_06m_child_configs) / sizeof(FTE_OBJECT_CONFIG_PTR),
         .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)fte_init_tascon_hem12_06m_child_configs
@@ -1585,7 +1585,7 @@ const FTE_OBJECT_CONFIG_PTR pInitObjConfigs[] =
 };
 
 #if FTE_GPIO_DI_SUPPORTED
-static const FTE_EVENT_CONFIG fte_report_di0_config = 
+static const FTE_EVENT_CONFIG fte_report_di_config = 
 {
     .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DI, 0x0001),
     .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
@@ -1597,7 +1597,7 @@ static const FTE_EVENT_CONFIG fte_report_di0_config =
     }
 };
 
-static const FTE_EVENT_CONFIG fte_occurred_di0_config = 
+static const FTE_EVENT_CONFIG fte_occurred_di_config = 
 {
     .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DI, 0x0001),
     .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
@@ -1614,7 +1614,7 @@ static const FTE_EVENT_CONFIG fte_occurred_di0_config =
 };
 
 
-static const FTE_EVENT_CONFIG fte_release_di0_config = 
+static const FTE_EVENT_CONFIG fte_release_di_config = 
 {
     .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DI, 0x0001),
     .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
@@ -1630,7 +1630,7 @@ static const FTE_EVENT_CONFIG fte_release_di0_config =
     }
 };
 
-static const FTE_EVENT_CONFIG fte_changed_di0_config = 
+static const FTE_EVENT_CONFIG fte_changed_di_config = 
 {
     .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DI, 0x0001),
     .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
@@ -2057,6 +2057,13 @@ static const FTE_EVENT_CONFIG fte_occurred_di0_config =
     }
 };
 
+static const FTE_EVENT_CONFIG fte_changed_di0_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0000),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
 
 static const FTE_EVENT_CONFIG fte_release_di0_config = 
 {
@@ -2160,8 +2167,8 @@ static const FTE_EVENT_CONFIG fte_changed_led8_config =
 const FTE_CFG_EVENT_PTR pInitEventConfigs[] =
 {
 #if FTE_GPIO_DI_SUPPORTED
-    (FTE_CFG_EVENT_PTR)&fte_report_di0_config,    
-    (FTE_CFG_EVENT_PTR)&fte_changed_di0_config,    
+    (FTE_CFG_EVENT_PTR)&fte_report_di_config,    
+    (FTE_CFG_EVENT_PTR)&fte_changed_di_config,    
 #endif    
 #if FTE_MCP23S08_SUPPORTED
     (FTE_CFG_EVENT_PTR)&fte_report_di0_config,    

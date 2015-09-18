@@ -243,20 +243,20 @@ _mqx_uint   _FTE_DS18B20_run(FTE_OBJECT_PTR pObj)
         return  MQX_ERROR;
     }
     
-    _time_get_ticks(&pStatus->xCommon.xStartTicks);
+    _time_get_elapsed_ticks(&pStatus->xCommon.xStartTicks);
     
     _time_init_ticks(&xDTicks, 0);
     _time_add_sec_to_ticks(&xDTicks, pConfig->nInterval);
-    _time_get_ticks(&xTicks);
+    _time_get_elapsed_ticks(&xTicks);
     _time_add_sec_to_ticks(&xTicks, 1);
     
-    pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(_FTE_DS18B20_restart_convert, pObj, TIMER_KERNEL_TIME_MODE, &xTicks, &xDTicks);
+    pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(_FTE_DS18B20_restart_convert, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);
 
     _FTE_DS18B20_start_convert(pObj);
     
     _time_init_ticks(&xDTicks, 0);
     _time_add_msec_to_ticks(&xDTicks, FTE_DS18B20_CONVERT_TIME);    
-    pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_FTE_DS18B20_done, pObj, TIMER_KERNEL_TIME_MODE, &xDTicks);
+    pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_FTE_DS18B20_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
 
     return  MQX_OK;
 }
@@ -288,7 +288,7 @@ static void _FTE_DS18B20_restart_convert(_timer_id id, pointer data_ptr, MQX_TIC
     MQX_TICK_STRUCT     xDTicks;            
     FTE_DS18B20_STATUS_PTR  pStatus = (FTE_DS18B20_STATUS_PTR)pObj->pStatus;
 
-    _time_get_ticks(&pStatus->xCommon.xStartTicks);
+    _time_get_elapsed_ticks(&pStatus->xCommon.xStartTicks);
 
     if (FTE_OBJ_IS_ENABLED(pObj))
     {
@@ -296,7 +296,7 @@ static void _FTE_DS18B20_restart_convert(_timer_id id, pointer data_ptr, MQX_TIC
         
         _time_init_ticks(&xDTicks, 0);
         _time_add_msec_to_ticks(&xDTicks, FTE_DS18B20_CONVERT_TIME);    
-        pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_FTE_DS18B20_done, pObj, TIMER_KERNEL_TIME_MODE, &xDTicks);
+        pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_FTE_DS18B20_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
     }
     else 
     {

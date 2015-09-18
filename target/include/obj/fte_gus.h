@@ -60,12 +60,14 @@ typedef struct FTE_GUS_STATUS_STRUCT
     uint_32                 nTrial;
     
     _mqx_uint               xRet;
+    FTE_LIST                xChildList;
 }   FTE_GUS_STATUS, _PTR_ FTE_GUS_STATUS_PTR;
 
 _mqx_uint       FTE_GUS_search(void);
 _mqx_uint       FTE_GUS_attach(FTE_OBJECT_PTR pObj);
 _mqx_uint       FTE_GUS_detach(FTE_OBJECT_PTR pObj);
-
+_mqx_uint       FTE_GUS_attachChild(FTE_OBJECT_PTR pSelf, uint_32 nChild);
+_mqx_uint       FTE_GUS_detachChild(FTE_OBJECT_PTR pSelf, uint_32 nChild);
 int_32     FTE_GUS_SHELL_cmd(int_32 argc, char_ptr argv[] );
 
 #endif

@@ -168,7 +168,7 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state>FTE_ES18=1</state>
+          <state>FTE_EH1=1</state>
           <state>FTE_V2=1</state>
           <state>FTE_DEBUG=1</state>
           <state>FREESCALE_MQX</state>
@@ -301,6 +301,7 @@
         </option>
         <option>
           <name>CCIncludePath2</name>
+          <state>$PROJ_DIR$/../config</state>
           <state>$PROJ_DIR$/include</state>
           <state>$PROJ_DIR$/include/net</state>
           <state>$PROJ_DIR$/include/target</state>
@@ -1942,25 +1943,49 @@
     <group>
       <name>dev</name>
       <file>
-        <name>$PROJ_DIR$\include\dev\fte_1wire.h</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\include\dev\fte_ad7785.h</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$\include\fte_dev.h</name>
       </file>
+    </group>
+    <group>
+      <name>drv</name>
       <file>
-        <name>$PROJ_DIR$\include\dev\fte_gpio.h</name>
+        <name>$PROJ_DIR$\include\drv\fte_1wire.h</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\include\dev\fte_lwgpio.h</name>
+        <name>$PROJ_DIR$\include\drv\fte_ad7785.h</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\include\dev\fte_mcp23s08.h</name>
+        <name>$PROJ_DIR$\include\drv\fte_drv.h</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\include\dev\fte_spi.h</name>
+        <name>$PROJ_DIR$\include\drv\fte_gpio.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\drv\fte_i2c.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\drv\fte_lwgpio.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\drv\fte_m25P16.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\drv\fte_mcp23s08.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\drv\fte_mcp23s08_gpio.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\drv\fte_spi.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\drv\fte_ssd1305.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\drv\fte_ucm.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\drv\fte_ucs.h</name>
       </file>
     </group>
     <group>
@@ -2207,6 +2232,12 @@
   <group>
     <name>Source</name>
     <group>
+      <name>db</name>
+      <file>
+        <name>$PROJ_DIR$\source\db\fte_db.c</name>
+      </file>
+    </group>
+    <group>
       <name>dev</name>
       <file>
         <name>$PROJ_DIR$\source\dev\fte_dev.c</name>
@@ -2231,6 +2262,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\source\drv\fte_lwgpio.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\drv\fte_m25p16.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\source\drv\fte_mcp23s08.c</name>

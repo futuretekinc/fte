@@ -33,7 +33,9 @@
 typedef enum    _FTE_NET_SNMP_TRAP_TYPE
 {
     FTE_NET_SNMP_TRAP_TYPE_ALERT,
-    FTE_NET_SNMP_TRAP_TYPE_DISCOVERY
+    FTE_NET_SNMP_TRAP_TYPE_DISCOVERY,
+    FTE_NET_SNMP_TRAP_TYPE_ADD,
+    FTE_NET_SNMP_TRAP_TYPE_DEL
 }   FTE_NET_SNMP_TRAP_TYPE, _PTR_ FTE_NET_SNMP_TRAP_TYPE_PTR;
 
 typedef enum  _fte_snmp_trap_alert_level
@@ -62,6 +64,8 @@ _mqx_uint   FTE_SNMPD_TRAP_del(_ip_address target);
 void        FTE_SNMPD_TRAP_processing(void);
 _mqx_uint   FTE_SNMPD_TRAP_sendAlert(uint_32 nOID, boolean bOccurred);
 _mqx_uint   FTE_SNMPD_TRAP_discovery(_ip_address xHostIP);
+_mqx_uint   FTE_SNMPD_TRAP_addServer(_ip_address xServerIP);
+_mqx_uint   FTE_SNMPD_TRAP_delServer(_ip_address xServerIP);
 
 int_32      FTE_SNMPD_SHELL_cmd(int_32 argc, char_ptr argv[] );
 

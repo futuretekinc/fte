@@ -337,12 +337,12 @@ _mqx_uint   _FTE_I2C_unlock(FTE_I2C_PTR pI2C)
     }
     
     return  MQX_OK;
-}
+} 
 
 #define I2C_DEVICE_INTERRUPT "ii2c0:"
 #define I2C_EEPROM_BUS_ADDRESS  0x3c
 
-int_32  FTE_I2C_shell_cmd(int_32 argc, char_ptr argv[] )
+int_32  FTE_I2C_SHELL_cmd(int_32 argc, char_ptr argv[] )
 { 
     boolean             print_usage, shorthelp = FALSE;
     int_32              return_code = SHELL_EXIT_SUCCESS;

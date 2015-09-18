@@ -1,6 +1,6 @@
 #include "fte_target.h"
 #include "fte_config.h"
-#include "fte_log.h"
+#include "fte_log.h" 
 #include "fte_time.h"
 
 #if 1 //FTE_IFCE_SUPPORTED
@@ -43,7 +43,7 @@ _mqx_uint   fte_ifce_attach(FTE_OBJECT_PTR pObj)
         goto error;
     }
  */ 
-    
+     
     switch(FTE_OBJ_CLASS(pObj))
     {
     case    FTE_OBJ_CLASS_TEMPERATURE: 
@@ -78,12 +78,13 @@ _mqx_uint   fte_ifce_attach(FTE_OBJECT_PTR pObj)
     pObj->pAction = (FTE_OBJECT_ACTION_PTR)&_ifce_action;
     
     pStatus->pParent = pParent;    
-    /*
-    if (pParent->pAction->f_attach_child(pParent, pConfig->nID) != MQX_OK)
+    if ((pParent != NULL) && (pParent->pAction->f_attach_child != NULL))
     {
-        goto error;
+        if (pParent->pAction->f_attach_child(pParent, pConfig->xCommon.nID) != MQX_OK)
+        {
+            goto error;
+        }
     }
-    */
     
     _ifce_init(pObj);
 
@@ -154,10 +155,10 @@ _mqx_uint   _ifce_run(FTE_OBJECT_PTR pObj)
     
     _time_init_ticks(&xDTicks, 0);
     _time_add_sec_to_ticks(&xDTicks, pConfig->nInterval);
-    _time_get_ticks(&xTicks);
+    _time_get_elapsed_ticks(&xTicks);
     _time_add_sec_to_ticks(&xTicks, 1);
     
-    pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(_ifce_restart_convert, pObj, TIMER_KERNEL_TIME_MODE, &xTicks, &xDTicks);
+    pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(_ifce_restart_convert, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);
     
     return  MQX_OK;
 }

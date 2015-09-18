@@ -406,9 +406,9 @@ void     _FTE_SYS_factoryResetPushed(boolean bPushed)
     }        
     
     _time_init_ticks(&xTicks, 0);
-    _time_add_msec_to_ticks(&xTicks, FTE_FACTORY_RESET_DETECT_TIME*1000);
+    _time_add_msec_to_ticks(&xTicks, FTE_FACTORY_RESET_DETECT_TIME);
 
-    _hFactoryResetTimer = _timer_start_oneshot_after_ticks(_FTE_SYS_CB_factoryReset, 0, TIMER_KERNEL_TIME_MODE, &xTicks);
+    _hFactoryResetTimer = _timer_start_oneshot_after_ticks(_FTE_SYS_CB_factoryReset, 0, TIMER_ELAPSED_TIME_MODE, &xTicks);
 #endif
     _bFactoryResetPushed = bPushed;
     
@@ -442,7 +442,7 @@ int_32  FTE_SYS_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
                 FTE_TIME_toString(&xTime, pBuff, sizeof(pBuff));
                 printf("%16s : %s\n", "Touch Time", pBuff);
                 
-                _time_get_ticks(&xCurrentTime);
+                _time_get_elapsed_ticks(&xCurrentTime);
                 ulDiffTime = _time_diff_seconds(&xCurrentTime, pLastCheckTime, &bOverflow);
                 printf("%16s : %d seconds\n",   "Live Time", ulDiffTime);
             }
@@ -674,7 +674,7 @@ _mqx_uint   FTE_SYS_LIVE_CHECK_init(uint_32 ulKeepAliveTime)
 
 _mqx_uint   FTE_SYS_LIVE_CHECK_start(void)
 {
-    _time_get_ticks(&_xLastCheckTime);
+    _time_get_elapsed_ticks(&_xLastCheckTime);
     _bLiveCheckRunning = TRUE;
 
     return  MQX_OK;
@@ -684,7 +684,7 @@ _mqx_uint   FTE_SYS_LIVE_CHECK_touch(void)
 {
     if (_bLiveCheckRunning)
     {    
-        _time_get_ticks(&_xLastCheckTime);
+        _time_get_elapsed_ticks(&_xLastCheckTime);
     }
 
     return  MQX_OK;
@@ -715,7 +715,7 @@ boolean     FTE_SYS_LIVE_CHECK_isLive(void)
         boolean         bOverflow = FALSE;
         uint_32         ulDiffTime;
         
-        _time_get_ticks(&xCurrentTime);
+        _time_get_elapsed_ticks(&xCurrentTime);
         
         ulDiffTime = _time_diff_seconds(&xCurrentTime, &_xLastCheckTime, &bOverflow);
         if ( (ulDiffTime> _ulKeepAliveTime) || bOverflow)

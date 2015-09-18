@@ -4,6 +4,7 @@
 uint_32     fte_botem_pn1500_request_data(FTE_OBJECT_PTR pObj);
 _mqx_uint   fte_botem_pn1500_receive_data(FTE_OBJECT_PTR pObj);
 _mqx_uint   fte_botem_pn1500_set(FTE_OBJECT_PTR pObject, uint_32 nIndex, FTE_VALUE_PTR pValue);
+_mqx_uint   fte_botem_pn1500_set_multi(FTE_OBJECT_PTR pSelf, uint_32 nIndex, FTE_VALUE_PTR pValue);
 _mqx_uint   fte_botem_pn1500_setConfig(FTE_OBJECT_PTR pDevice, char_ptr pJSON);
 _mqx_uint   fte_botem_pn1500_getConfig(FTE_OBJECT_PTR pDevice, char_ptr pBuff, uint_32 ulBuffLen);
 

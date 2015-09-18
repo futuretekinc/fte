@@ -11,6 +11,7 @@ typedef struct
     }   xFlags;
     uint_32         ulAllowFailureCount;
     uint_32         ulKeepAliveTime;
+    uint_32         ulAutoSaveInterval;
 }   FTE_SYS_CONFIG, _PTR_ FTE_SYS_CONFIG_PTR;
 
 typedef void (_CODE_PTR_  FTE_SYS_STATE_CHANGE_FPTR)(pointer);

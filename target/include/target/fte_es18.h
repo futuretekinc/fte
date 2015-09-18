@@ -17,12 +17,13 @@
 #define FTE_SSD1305_SUPPORTED               0
 #define FTE_LCD_SUPPORTED                   0
 
-#define FTE_SPI_SUPPORTED                   0
+#define FTE_SPI_SUPPORTED                   1
 #define FTE_AD7785_SUPPORTED                0
 #define FTE_1WIRE_SUPPORTED                 0
 #define FTE_MCP23S08_SUPPORTED              0
 #define FTE_UCS_SUPPORTED                   1
 #define FTE_UCM_SUPPORTED                   0
+#define FTE_M25P16_SUPPORTED                1
 #define FTE_DEV_LWGPIO_UTS_FLOWCTRL         1
 #define FTE_DEV_LWGPIO_UTS_FLOWCTRL2        1
 

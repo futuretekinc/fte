@@ -220,6 +220,7 @@ _mqx_uint   FTE_SPI_read(FTE_SPI_PTR pSPI, uint_8_ptr cmd, uint_32 cmd_len, uint
     _FTE_SPI_lock(pSPI);
 
 #ifdef  DEBUG_SPI
+    printf("RD : ");
     for(int i = 0 ; i < cmd_len ; i++)
     {
         printf("%02x ", cmd[i]);
@@ -265,6 +266,7 @@ _mqx_uint   FTE_SPI_write(FTE_SPI_PTR pSPI, uint_8_ptr cmd, uint_32 cmd_len, uin
     _FTE_SPI_lock(pSPI);
 
 #ifdef  DEBUG_SPI
+    printf("WR : ");
     for(int i = 0 ; i < cmd_len ; i++)
     {
         printf("%02x ", cmd[i]);

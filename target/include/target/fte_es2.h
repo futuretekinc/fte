@@ -7,6 +7,7 @@
 #define FTE_HUMIDITY_SUPPORTED              1
 #define FTE_CO2_SUPPORTED                   0
 #define FTE_POWER_SUPPORTED                 0
+
 #define FTE_CONSOLE_SUPPORTED               1
 #define FTE_LOG_SUPPORTED                   1
 #if FTE_V2
@@ -41,14 +42,14 @@
 #define FTE_PRESSURE_SUPPORTED              0
 #define FTE_SHT_SUPPORTED                   1
 #define FTE_DS18B20_SUPPORTED               1
-#define FTE_DI_SUPPORTED                    0
+#define FTE_DI_SUPPORTED                    1
 #define FTE_DO_SUPPORTED                    0
 #define FTE_RL_SUPPORTED                    0
 #define FTE_LED_SUPPORTED                   1
 #define FTE_SRF_SUPPORTED                   0
 #define FTE_FIS_SUPPORTED                   0
 #define FTE_FIS3061_SUPPORTED               0
-#define FTE_GPIO_DI_SUPPORTED               0
+#define FTE_GPIO_DI_SUPPORTED               1
 #define FTE_MULTI_DI_SUPPORTED              0
 #define FTE_MULTI_DO_SUPPORTED              0
 #define FTE_MULTI_TEMP_SUPPORTED            1
@@ -84,7 +85,7 @@
 #define FTE_SSL_SUPPORTED                   0
 #define FTE_TELNETD_SUPPORTED               1
 
-#define FTE_DI_MAX_COUNT                    0
+#define FTE_DI_MAX_COUNT                    1
 #define FTE_DO_MAX_COUNT                    0
 #define FTE_RL_MAX_COUNT                    0
 #define FTE_LED_MAX_COUNT                   1

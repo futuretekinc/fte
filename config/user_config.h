@@ -87,7 +87,7 @@
 #define RTCSCFG_ENABLE_GATEWAYS                 1
 #define FTPDCFG_USES_MFS                        1
 #define RTCSCFG_ENABLE_SNMP                     1
-#define RTCSCFG_ENABLE_LWDNS                    0  // 1: single DNS
+#define RTCSCFG_ENABLE_LWDNS                    1  // 1: single DNS
 #define RTCSCFG_IP_DISABLE_DIRECTED_BROADCAST   0
 
 #define TELNETDCFG_NOWAIT        FALSE 

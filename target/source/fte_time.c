@@ -232,7 +232,7 @@ int_32  FTE_TIME_SHELL_cmd(int_32 argc, char_ptr argv[] )
                                                 printf("\nError synchronize time!\n");
                                             }
                                             
-                                            FTE_SYS_reset();
+                                            //FTE_SYS_reset();
                                         }
                                     }
                                 }

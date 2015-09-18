@@ -55,7 +55,7 @@
 
 #if FTE_TASK_MAIN
     #define FTE_TASK_MAIN_STACK         (FTE_TASK_DEFAULT_STACK * 2)
-    #define FTE_TASK_MAIN_PRIO          7
+    #define FTE_TASK_MAIN_PRIO          9
 #endif
      
 #if FTE_TASK_WATCHDOG
@@ -74,7 +74,7 @@
 #endif
      
 #if FTE_TASK_TIMER
-    #define FTE_TASK_TIMER_STACK        FTE_TASK_DEFAULT_STACK
+    #define FTE_TASK_TIMER_STACK        FTE_TASK_DEFAULT_STACK * 2
     #define FTE_TASK_TIMER_PRIO         9
 #endif
 
@@ -105,6 +105,8 @@
 #define FTE_SYS_KEEP_ALIVE_TIME_MAX     ((60 * 60) * 24)
 
 #define FTE_SYS_LIVE_CHECK_INTERVAL     1000
+     
+#define FTE_SYS_AUTO_SAVE_INTERVAL      5000
 /******************************************************************************
  * Network Configuration
  ******************************************************************************/
@@ -152,7 +154,7 @@
 #define FTE_NET_MQTT_SENDER_NAME        "mqtt_sender"
 #define FTE_NET_MQTT_SENDER_STACK       (FTE_TASK_DEFAULT_STACK * 2)
 #define FTE_NET_MQTT_RECEIVER_NAME      "mqtt_receiver"
-#define FTE_NET_MQTT_RECEIVER_STACK     (FTE_TASK_DEFAULT_STACK * 2)
+#define FTE_NET_MQTT_RECEIVER_STACK     (FTE_TASK_DEFAULT_STACK * 3)
 #define FTE_NET_MQTT_PRIO               9
 #define FTE_NET_MQTT_PORT               8883
 #define FTE_NET_MQTT_BROKER             IPADDR(10, 0, 1, 18)
@@ -162,7 +164,7 @@
 #define FTE_NET_MQTT_SSL_METHOD         FTE_SSL_METHOD_TLSV1_2
      
 #define FTE_NET_TELNETD_NAME            "telnet"
-#define FTE_NET_TELNETD_PRIO            8
+#define FTE_NET_TELNETD_PRIO            9
 #define FTE_NET_TELNETD_STACK           (FTE_TASK_DEFAULT_STACK * 4)
 
 /******************************************************************************
@@ -195,6 +197,11 @@ void                    fte_state_initialized(void);
 void                    fte_state_disconnected(void);
 uint_32                 fte_state_get(void);
 void                    fte_state_change_set_cb(void (*cb)(void));
+
+#ifndef FTE_SHELL_TIMEOUT
+    #define FTE_SHELL_TIMEOUT               60  /* 60 secs */
+#endif
+
 
 #include "fte_drv.h"
 #include "fte_object.h"
@@ -319,7 +326,7 @@ void                    fte_state_change_set_cb(void (*cb)(void));
 #endif
 
 #ifndef FTE_FACTORY_RESET_DETECT_TIME
-    #define FTE_FACTORY_RESET_DETECT_TIME   5
+    #define FTE_FACTORY_RESET_DETECT_TIME   5000    /* msecs */
 #endif
 #endif
 
@@ -347,8 +354,5 @@ void                    fte_state_change_set_cb(void (*cb)(void));
 #endif
 
 
-#ifndef FTE_SHELL_TIMEOUT
-    #define FTE_SHELL_TIMEOUT               60  /* 60 secs */
-#endif
 #endif
 

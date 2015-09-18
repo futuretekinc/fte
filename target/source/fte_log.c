@@ -125,6 +125,8 @@ _mqx_uint   FTE_LOG_save(void)
         DEBUG("\n_xLWSEM_post failed");
     }
 
+    bPoolModified = FALSE;
+    
     return  MQX_OK;
 }
 _mqx_uint   FTE_LOG_addSystem(FTE_LOG_SYSTEM_MESSAGE xMsg)

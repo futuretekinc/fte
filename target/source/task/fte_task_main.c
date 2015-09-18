@@ -2,6 +2,7 @@
 #include "fte_config.h"
 #include "fte_task.h"
 #include "fte_log.h"
+#include "fte_db.h"
 #include "sys/fte_sys.h"
 #include "sys/fte_sys_msg.h"
 #include <watchdog.h>
@@ -17,6 +18,7 @@ void FTE_TASK_main(uint_32 params)
 {
     MQX_TICK_STRUCT     xTicks;            
     MQX_TICK_STRUCT     xNextTicks;            
+
     _int_install_unexpected_isr();
 
     FTE_DEBUG_init();
@@ -46,15 +48,15 @@ void FTE_TASK_main(uint_32 params)
         FTE_SYS_LIVE_CHECK_start();
     }
     
-   _time_get_ticks(&xNextTicks);
-    
+   _time_get_elapsed_ticks(&xNextTicks);
+   
     while(1)
     {
         int_32  nDiffTime;
         boolean bOverflow;
         
         FTE_CFG_save(FALSE);
-        FTE_LOG_save();
+        FTE_LOG_save(); 
         
         if (FTE_SYS_LIVE_CHECK_isRun())
         {
@@ -73,7 +75,7 @@ void FTE_TASK_main(uint_32 params)
             }
         }
         
-        _time_get_ticks(&xTicks);        
+        _time_get_elapsed_ticks(&xTicks);        
         do 
         {
             _time_add_msec_to_ticks(&xNextTicks, FTE_SYS_LIVE_CHECK_INTERVAL);
@@ -88,3 +90,4 @@ void FTE_TASK_main(uint_32 params)
         _time_delay(nDiffTime);        
     }
 }
+

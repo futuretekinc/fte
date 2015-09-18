@@ -277,9 +277,9 @@ int_32 FTE_NET_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
             boolean                 bTask;
             _enet_address           xMAC= {0};
             IPCFG_IP_ADDRESS_DATA   xIPData;
-        #if RTCSCFG_IPCFG_ENABLE_DNS
+#if RTCSCFG_IPCFG_ENABLE_DNS
             _ip_address             xDNS;
-        #endif
+#endif
 
             xState = ipcfg_get_state (ulEnetDevice);
             if (xState != IPCFG_STATE_INIT)
@@ -290,7 +290,7 @@ int_32 FTE_NET_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
                 ipcfg_get_ip (ulEnetDevice, &xIPData);
         /* It take amount of addresses for device and store it to n */
 #if RTCSCFG_IPCFG_ENABLE_DNS
-                xDNS = ipcfg_get_dns_ip (enet_device, 0);
+                xDNS = ipcfg_get_dns_ip (ulEnetDevice, 0);
 #endif
                 printf ("Link: %s\n", bLink ? "on" : "off");
                 printf ("MAC : %02x:%02x:%02x:%02x:%02x:%02x\n", xMAC[0], xMAC[1], xMAC[2], xMAC[3], xMAC[4], xMAC[5]);
@@ -328,11 +328,75 @@ int_32 FTE_NET_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
             {
                 FTE_NET_printStats();
             }
+#if RTCSCFG_IPCFG_ENABLE_DNS
+            else if (strcmp(pArgv[1], "dns") == 0)
+            {
+                uint_32     i;
+                _ip_address xDNS;
+
+                for (i = 0, xDNS = ipcfg_get_dns_ip (ulEnetDevice, i); xDNS != 0 ; i++, xDNS = ipcfg_get_dns_ip (ulEnetDevice, i))
+                {
+                    printf ("%d: %d.%d.%d.%d\n", i + 1, IPBYTES(xDNS));
+                }
+            }
+#endif
             else
             {
                 nRet = SHELL_EXIT_ERROR;
                 goto error;
             }
+        }
+        break;
+        
+    case    4:
+        {
+#if RTCSCFG_IPCFG_ENABLE_DNS
+            if (strcmp(pArgv[1], "dns") == 0)
+            {
+                _ip_address xDNS;
+
+                if (strcmp (pArgv[2], "add") == 0)
+                {
+                    if (! Shell_parse_ip_address (pArgv[3], &xDNS))
+                    {
+                        printf ("Error in dns command, invalid ip address!\n");
+                        return SHELL_EXIT_ERROR;
+                    }
+                    if (ipcfg_add_dns_ip (ulEnetDevice, xDNS))
+                    {
+                        printf ("Add dns ip successful.\n");
+                    }
+                    else
+                    {
+                        printf ("Add dns ip failed!\n");
+                        return SHELL_EXIT_ERROR;
+                    }
+                }
+                else if (strcmp (pArgv[2], "del") == 0)
+                {
+                    if (! Shell_parse_ip_address (pArgv[3], &xDNS))
+                    {
+                        printf ("Error in dns command, invalid ip address!\n");
+                        return SHELL_EXIT_ERROR;
+                    }
+                    if (ipcfg_del_dns_ip (ulEnetDevice, xDNS))
+                    {
+                        printf ("Del dns ip successful.\n");
+                    }
+                    else
+                    {
+                        printf ("Del dns ip failed!\n");
+                        return SHELL_EXIT_ERROR;
+                    }
+                }
+                else
+                {
+                    printf ("Error in dns command, unknown parameter!\n");
+                    return SHELL_EXIT_ERROR;
+                }
+
+            }
+#endif
         }
         break;
         
@@ -393,11 +457,18 @@ error:
     {
         if (bShortHelp)  
         {
-            printf("%s <cmd>\n", pArgv[0]);
+            printf("%s [<command>]\n", pArgv[0]);
         } 
         else  
         {
-            printf("Usage: %s <cmd>\n",pArgv[0]);
+            printf("Usage: %s [<command>]\n",pArgv[0]);
+            printf("  Commands:\n");
+            printf("    static <IP> <Netmask> <Gateway>\n");
+            printf("        Static IP configuration.\n");
+            printf("    dhcp\n");
+            printf("        Dynamic IP configuration.\n");
+            printf("    stat\n");
+            printf("        Statistics informations.\n");
         }
     }
     
@@ -409,7 +480,7 @@ void    FTE_NET_printStats(void)
     IP_STATS_PTR    pStats = IP_stats();
     if (pStats != NULL)
     {
-        printf("\n<Network Status>\n");
+        printf("\n<Network Statistics>\n");
         printf("\n< RX STAT >\n");
         printf("%16s : %d\n", "Total",      pStats->COMMON.ST_RX_TOTAL);
         printf("%16s : %d\n", "Missed",     pStats->COMMON.ST_RX_MISSED);

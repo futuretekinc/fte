@@ -13,6 +13,7 @@
 #include "shell.h"
 #include "sh_prv.h"
 #include "io.h"
+#include "fte_db.h"
 
 uint_32     FTE_SHELL_getPasswd(MQX_FILE_PTR pFile, char_ptr pPasswd, uint_32 ulMaxLen, uint_32 ulTimeout);
 int_32      FTE_SHELL_cmdPasswd(int_32 nArgc, char_ptr pArgv[]);
@@ -36,6 +37,7 @@ const SHELL_COMMAND_STRUCT pSHELLCommands[] =
     { "1wire",      FTE_1WIRE_SHELL_cmd},
 #endif
     { "date",       FTE_TIME_SHELL_cmd},
+    { "db",         FTE_DB_SHELL_cmd},
 #if FTE_DO_SUPPORTED
     { "do",         FTE_DO_SHELL_cmd},
 #endif
@@ -51,7 +53,6 @@ const SHELL_COMMAND_STRUCT pSHELLCommands[] =
 #if FTE_I2C_SUPPORTED
     { "i2c",        FTE_I2C_SHELL_cmd },
 #endif
-    { "ipconfig",   Shell_ipconfig },    
     { "ifconfig",   FTE_NET_SHELL_cmd },
 #if FTE_LOG_SUPPORTED
     { "log",        FTE_LOG_SHELL_cmd},
@@ -83,6 +84,7 @@ const SHELL_COMMAND_STRUCT pSHELLCommands[] =
 #if FTE_SHT_SUPPORTED
     { "sht",        FTE_SHT_SHELL_cmd},
 #endif
+    { "smng",       FTE_SMNGD_SHELL_cmd},
 #if FTE_SPI_SUPPORTED
     { "spi",        FTE_SPI_SHELL_cmd},
 #endif
@@ -505,21 +507,21 @@ _mqx_int    FTE_SHELL_fgetc(MQX_FILE_PTR pFile, _mqx_int_ptr pChar, uint_32 ulTi
     if (_io_fstatus(pFile) != TRUE)
     {        
         MQX_TICK_STRUCT xStartTick;
-        _time_get_ticks(&xStartTick);
+        _time_get_elapsed_ticks(&xStartTick);
         
         while(_io_fstatus(pFile) != TRUE)
         {
             MQX_TICK_STRUCT xCurrentTick;
             boolean     bOverflow = FALSE;
             
-            _time_get_ticks(&xCurrentTick);
+            _time_get_elapsed_ticks(&xCurrentTick);
             
             if ((ulTimeout != 0) && (_time_diff_seconds(&xCurrentTick, &xStartTick, &bOverflow) > ulTimeout))
             {
                 return  MQX_ETIMEDOUT;
             }
             
-            _time_delay(0);
+            _time_delay(1);
         }
     }
 

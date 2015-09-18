@@ -160,18 +160,17 @@ _mqx_uint   _FTE_SHT_run(FTE_OBJECT_PTR pObj)
         _time_add_msec_to_ticks(&xDTicks, pConfig->nInterval * 500);
     }
     
-    _time_get_ticks(&pStatus->xCommon.xStartTicks);
-    _time_get_ticks(&xTicks);
+    _time_get_elapsed_ticks(&pStatus->xCommon.xStartTicks);
+    _time_get_elapsed_ticks(&xTicks);
     _time_add_sec_to_ticks(&xTicks, 1);
     
-    pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(_FTE_SHT_restartConvert, pObj, TIMER_KERNEL_TIME_MODE, &xTicks, &xDTicks);
+    pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(_FTE_SHT_restartConvert, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);
     
     pStatus->bHumidity = TRUE;
     _FTE_SHT_startConvert(pObj);
     
-    _time_init_ticks(&xDTicks, 0);
-    _time_add_msec_to_ticks(&xDTicks, 1000);    
-    pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_FTE_SHT_done, pObj, TIMER_KERNEL_TIME_MODE, &xDTicks);
+    _time_init_ticks(&xDTicks, _time_get_ticks_per_sec());
+    pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_FTE_SHT_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
 
     return  MQX_OK;
 } 
@@ -234,15 +233,14 @@ static void _FTE_SHT_restartConvert(_timer_id id, pointer data_ptr, MQX_TICK_STR
     MQX_TICK_STRUCT     xDTicks;            
     FTE_SHT_STATUS_PTR  pStatus = (FTE_SHT_STATUS_PTR)pObj->pStatus;
 
-    _time_get_ticks(&pStatus->xCommon.xStartTicks);
+    _time_get_elapsed_ticks(&pStatus->xCommon.xStartTicks);
     
     if (FTE_OBJ_IS_ENABLED(pObj))
     {
         _FTE_SHT_startConvert(pObj);
         
-        _time_init_ticks(&xDTicks, 0);
-        _time_add_msec_to_ticks(&xDTicks, 500);    
-        pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_FTE_SHT_done, pObj, TIMER_KERNEL_TIME_MODE, &xDTicks);
+        _time_init_ticks(&xDTicks, _time_get_ticks_per_sec());
+        pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_FTE_SHT_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
     }
     else
     {

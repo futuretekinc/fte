@@ -13,6 +13,7 @@
 
 #define FTE_DEV_TYPE_AD7785         0x00020100
 #define FTE_DEV_TYPE_MCP23S08       0x00020200
+#define FTE_DEV_TYPE_M25P16         0x00020300
 
 #define FTE_DEV_TYPE_SSD1305        0x00030100
 
@@ -70,5 +71,6 @@ _mqx_uint   FTE_DRV_create(fte_dev_type xType, void *pParams);
 #include "drv/fte_1wire.h"
 #include "drv/fte_ucs.h"
 #include "drv/fte_ucm.h"
+#include "drv/fte_m25P16.h"
 
 #endif

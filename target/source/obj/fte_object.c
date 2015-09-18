@@ -365,7 +365,30 @@ _mqx_uint       FTE_OBJ_activate(FTE_OBJECT_PTR pObj, boolean enabled)
         {
             if (FTE_OBJ_start(pObj) == MQX_OK)
             {
-                FTE_OBJ_FLAG_set(pObj, FTE_OBJ_CONFIG_FLAG_ENABLE);
+                if (pObj->pAction->f_get_child_count != NULL)
+                {
+                    uint_32 ulChild = 0;
+                
+                    pObj->pAction->f_get_child_count(pObj, &ulChild);
+                    if (ulChild != 0)
+                    {
+                        uint_32 i;
+                        
+                        for(i = 0 ; i < ulChild ; i++)
+                        {
+                            FTE_OBJECT_ID   xChildID = 0;
+                            
+                            if (pObj->pAction->f_get_child(pObj, i, &xChildID) == MQX_OK)
+                            {
+                                FTE_OBJECT_PTR  pChild = FTE_OBJ_get(xChildID);
+                                if (pChild != NULL)
+                                {
+                                    FTE_OBJ_start(pChild);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -375,7 +398,30 @@ _mqx_uint       FTE_OBJ_activate(FTE_OBJECT_PTR pObj, boolean enabled)
         {
             if (FTE_OBJ_stop(pObj) == MQX_OK)
             {
-                FTE_OBJ_FLAG_clear(pObj, FTE_OBJ_CONFIG_FLAG_ENABLE);
+                if (pObj->pAction->f_get_child_count != NULL)
+                {
+                    uint_32 ulChild = 0;
+                    
+                    pObj->pAction->f_get_child_count(pObj, &ulChild);
+                    if (ulChild != 0)
+                    {
+                        uint_32 i;
+                        
+                        for(i = 0 ; i < ulChild ; i++)
+                        {
+                            FTE_OBJECT_ID   xChildID = 0;
+                            
+                            if (pObj->pAction->f_get_child(pObj, i, &xChildID) == MQX_OK)
+                            {
+                                FTE_OBJECT_PTR  pChild = FTE_OBJ_get(xChildID);
+                                if (pChild != NULL)
+                                {
+                                    FTE_OBJ_stop(pChild);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -387,6 +433,8 @@ _mqx_uint       FTE_OBJ_activate(FTE_OBJECT_PTR pObj, boolean enabled)
 
 _mqx_uint       FTE_OBJ_start(FTE_OBJECT_PTR pObj)
 {
+    _mqx_uint   ulRet;
+    
     ASSERT(pObj != NULL);
     
     if (pObj->pAction->f_run == NULL)
@@ -394,11 +442,42 @@ _mqx_uint       FTE_OBJ_start(FTE_OBJECT_PTR pObj)
         return  MQX_NOT_SUPPORTED_FUNCTION;
     }
     
-    return  pObj->pAction->f_run(pObj);
+    ulRet = pObj->pAction->f_run(pObj);
+    if (ulRet == MQX_OK)
+    {
+        FTE_OBJ_FLAG_set(pObj, FTE_OBJ_CONFIG_FLAG_ENABLE);        
+        if (pObj->pAction->f_get_child_count != NULL)
+        {
+            uint_32 ulChild;
+            
+            pObj->pAction->f_get_child_count(pObj, &ulChild);
+            if (ulChild != 0)
+            {
+                uint_32 i;
+                
+                for(i = 0 ; i < ulChild ; i++)
+                {
+                    FTE_OBJECT_ID   xChildID = 0;
+                    
+                    if (pObj->pAction->f_get_child(pObj, i, &xChildID) == MQX_OK)
+                    {
+                        FTE_OBJECT_PTR  pChild = FTE_OBJ_get(xChildID);
+                        if (pChild != NULL)
+                        {
+                            FTE_OBJ_start(pChild);
+                        }
+                    }
+                }
+            }
+        }        
+    }
+    
+    return  ulRet;
 }
 
 _mqx_uint       FTE_OBJ_stop(FTE_OBJECT_PTR pObj)
 {
+    _mqx_uint   ulRet;
     ASSERT(pObj != NULL);
     
     if (pObj->pAction->f_stop == NULL)
@@ -406,7 +485,37 @@ _mqx_uint       FTE_OBJ_stop(FTE_OBJECT_PTR pObj)
         return  MQX_NOT_SUPPORTED_FUNCTION;
     }
     
-    return  pObj->pAction->f_stop(pObj);
+    ulRet = pObj->pAction->f_stop(pObj);
+    if (ulRet == MQX_OK)
+    {
+        FTE_OBJ_FLAG_clear(pObj, FTE_OBJ_CONFIG_FLAG_ENABLE);
+        if (pObj->pAction->f_get_child_count != NULL)
+        {
+            uint_32 ulChild;
+            
+            pObj->pAction->f_get_child_count(pObj, &ulChild);
+            if (ulChild != 0)
+            {
+                uint_32 i;
+                
+                for(i = 0 ; i < ulChild ; i++)
+                {
+                    FTE_OBJECT_ID   xChildID = 0;
+                    
+                    if (pObj->pAction->f_get_child(pObj, i, &xChildID) == MQX_OK)
+                    {
+                        FTE_OBJECT_PTR  pChild = FTE_OBJ_get(xChildID);
+                        if (pChild != NULL)
+                        {
+                            FTE_OBJ_stop(pChild);
+                        }
+                    }
+                }
+            }
+        }        
+    }
+    
+    return  ulRet;
 }
 
 _mqx_uint       FTE_OBJ_wasUpdated(FTE_OBJECT_PTR pObj)
@@ -522,7 +631,7 @@ uint_32         FTE_OBJ_runLoop(FTE_OBJECT_PTR pObj, TIMER_NOTIFICATION_TICK_FPT
 
     _time_init_ticks(&xTicks, 0);
     _time_add_msec_to_ticks(&xTicks, nInterval);
-    return  _timer_start_periodic_every_ticks(f_callback, pObj, TIMER_KERNEL_TIME_MODE, &xTicks);    
+    return  _timer_start_periodic_every_ticks(f_callback, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks);    
 }
         
 uint_32         FTE_OBJ_runMeasurement(FTE_OBJECT_PTR pObj, TIMER_NOTIFICATION_TICK_FPTR f_callback, uint_32 nTimeout)
@@ -531,7 +640,7 @@ uint_32         FTE_OBJ_runMeasurement(FTE_OBJECT_PTR pObj, TIMER_NOTIFICATION_T
 
     _time_init_ticks(&xTicks, 0);
     _time_add_msec_to_ticks(&xTicks, nTimeout);
-    return  _timer_start_oneshot_after_ticks(f_callback, pObj, TIMER_KERNEL_TIME_MODE, &xTicks);    
+    return  _timer_start_oneshot_after_ticks(f_callback, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks);    
 }
         
 
@@ -1187,7 +1296,6 @@ int_32          FTE_OBJ_SHELL_cmd(int_32 argc, char_ptr argv[])
                     }
                     else
                     {
-                        FTE_OBJ_start(pObj);
                         FTE_OBJ_activate(pObj, TRUE);
                     }
                 }
@@ -1199,7 +1307,6 @@ int_32          FTE_OBJ_SHELL_cmd(int_32 argc, char_ptr argv[])
                     }
                     else
                     {
-                        FTE_OBJ_stop(pObj);
                         FTE_OBJ_activate(pObj, FALSE);
                     }
                 }

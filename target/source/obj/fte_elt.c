@@ -14,6 +14,7 @@ FTE_VALUE_TYPE  FTE_ELT_AQM100_valueTypes[] =
 
 _mqx_uint   fte_elt_aqm100_request_data(FTE_OBJECT_PTR pObj)
 {
+#if 0
     FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     uint_16 uiCRC;    
     uint_8  pCMD[9] = { 0x04, 0x03, 0x00, 0x50, 0x00, 0x04, 0x00, 0x00, 0x00};
@@ -24,13 +25,20 @@ _mqx_uint   fte_elt_aqm100_request_data(FTE_OBJECT_PTR pObj)
     
     FTE_UCS_clear(pStatus->pUCS);    
     FTE_UCS_send(pStatus->pUCS, pCMD,sizeof(pCMD), FALSE);    
+#else
+    uint_8  pReqPkt[6] = { 0xF5, 0xFC, 0x00, 0xF1, 0x05, 0x00};
+    FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
+    
+    FTE_UCS_clear(pStatus->pUCS);    
+    FTE_UCS_send(pStatus->pUCS, pReqPkt,sizeof(pReqPkt), FALSE);    
 
+#endif
     return  MQX_OK;
 }
 
 _mqx_uint   fte_elt_aqm100_receive_data(FTE_OBJECT_PTR pObj)
 {
-#if 1
+#if 0
     FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     uint_32     nCO2 = 0;
     int_32      nTemp = 0;
@@ -74,6 +82,7 @@ _mqx_uint   fte_elt_aqm100_receive_data(FTE_OBJECT_PTR pObj)
     uint_8      pBuff[64];
     uint_32     nLen;
     uint_8      nCRC = 0;
+    uint_8      nFlag= 0;
     
     memset(pBuff, 0, sizeof(pBuff));
     
@@ -93,6 +102,7 @@ _mqx_uint   fte_elt_aqm100_receive_data(FTE_OBJECT_PTR pObj)
         return  MQX_ERROR;
     }
     
+    nFlag = pBuff[3];
     nCO2  = ((uint_32)pBuff[4] << 8) | pBuff[5];
     nTemp = (((int_32)pBuff[6] << 8) | pBuff[7]) * 10;
     nHumi = (uint_32)pBuff[8] * 100;
@@ -104,10 +114,24 @@ _mqx_uint   fte_elt_aqm100_receive_data(FTE_OBJECT_PTR pObj)
     default:       nVOC = 3; break;
     }
 #endif
-    FTE_VALUE_setPPM(&pStatus->xCommon.pValue[0], nCO2);
-    FTE_VALUE_setTemperature(&pStatus->xCommon.pValue[1], nTemp);
-    FTE_VALUE_setHumidity(&pStatus->xCommon.pValue[2], nHumi);
-    FTE_VALUE_setDIO(&pStatus->xCommon.pValue[3], nVOC);
+    
+    if (nFlag & 0x08)
+    {
+        FTE_VALUE_setPPM(&pStatus->xCommon.pValue[0], nCO2);
+    }
+    if (nFlag & 0x04)
+    {
+        FTE_VALUE_setTemperature(&pStatus->xCommon.pValue[1], nTemp);
+    }
+    
+    if (nFlag & 0x02)
+    {
+        FTE_VALUE_setHumidity(&pStatus->xCommon.pValue[2], nHumi);
+    }
+    if (nFlag & 0x01)
+    {
+        FTE_VALUE_setDIO(&pStatus->xCommon.pValue[3], nVOC);
+    }
     
     return  MQX_OK;
 }

@@ -233,6 +233,8 @@ typedef struct _fte_object_action_struct
     _mqx_uint       (*f_get_statistic)(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTICS_PTR pStat);
     _mqx_uint       (*f_attach_child)(FTE_OBJECT_PTR pSelf, uint_32 nChild);
     _mqx_uint       (*f_detach_child)(FTE_OBJECT_PTR pSelf, uint_32 nChild);
+    _mqx_uint       (*f_get_child_count)(FTE_OBJECT_PTR pSelf, uint_32_ptr pulCount);
+    _mqx_uint       (*f_get_child)(FTE_OBJECT_PTR pSelf, uint_32 ulIndex, FTE_OBJECT_ID _PTR_ pxID);
     _mqx_uint       (*f_set_config)(FTE_OBJECT_PTR pSelf, char_ptr pJSON);
     _mqx_uint       (*f_get_config)(FTE_OBJECT_PTR pSelf, char_ptr pBuff, uint_32 ulBuffLen);
     
@@ -277,6 +279,8 @@ FTE_OBJECT_DESC_PTR     FTE_OBJ_DESC_getAt(uint_32 ulIndex);
 
 uint_32         FTE_OBJ_DESC_CLASS_count(void);
 uint_32         FTE_OBJ_DESC_CLASS_getAt(uint_32 ulIndex);
+
+_mqx_uint       FTE_OBJ_CLASS_getName(FTE_OBJECT_ID nID, char_ptr pName, uint_32 nBuffLen);
 
 FTE_OBJECT_PTR  FTE_OBJ_create(FTE_OBJECT_CONFIG_PTR pConfig);
 _mqx_uint       FTE_OBJ_destroy(FTE_OBJECT_PTR pObj);

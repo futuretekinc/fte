@@ -259,16 +259,18 @@ int_32  FTE_SYS_BL_cmd(int_32 nArgc, char_ptr pArgv[])
     {
         if (bShortHelp)
         {
-            printf ("%s\n", pArgv[0]);
+            printf ("%s [<command>]\n", pArgv[0]);
         }
         else
         {
-            printf("Usage : %s [<Commands>]\n", pArgv[0]);
+            printf("Usage : %s [<command>]\n", pArgv[0]);
             printf("  Commands:\n");
             printf("    set <param>\n");
             printf("        Set bootloader parameters\n");
             printf("        'set image <image_name>' to change image name\n");
             printf("        'set script <script>' to change boot script\n");                   
+            printf("    reset\n");
+            printf("        Change to bootloader mode\n");
         }
     }
 

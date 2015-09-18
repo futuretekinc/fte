@@ -19,7 +19,11 @@ typedef struct
 }   FTE_SMNG_PACKET, _PTR_ FTE_SMNG_PACKET_PTR;
 
 static  char_ptr    pDiscoveryMsg = NULL;
- 
+static FTE_SMNGD_CFG    _Config = 
+{ 
+    .pulHideClass = {0,}
+};
+
 void FTE_SMNG_task(pointer pParams, pointer pCreator)
 {
     char        _pBuff[1024];
@@ -191,3 +195,106 @@ char_ptr FTE_SMNG_getDiscoveryMessage(void)
 {
     return  pDiscoveryMsg;
 }
+
+
+/******************************************************************************
+ * Shell command
+ ******************************************************************************/
+int_32  FTE_SMNGD_SHELL_cmd(int_32 argc, char_ptr argv[] )
+{
+    boolean  print_usage, shorthelp = FALSE;
+    int_32   return_code = SHELL_EXIT_SUCCESS;
+ 
+    print_usage = Shell_check_help_request(argc, argv, &shorthelp );
+
+    if (!print_usage)  
+    {
+        switch(argc)  
+        {
+        case    3:
+            {
+                if (strcmp(argv[1], "class") == 0)
+                {
+                    if (strcmp(argv[2], "list") == 0)
+                    {
+                        uint_32 i,j, ulCount;
+                        uint_32 pulClassIDs[16];
+
+                        ulCount = FTE_OBJ_DESC_CLASS_count();
+                        
+                        for(i = 0 ; i < ulCount ; i++)
+                        {
+                            pulClassIDs[i] = FTE_OBJ_DESC_CLASS_getAt(i);
+                        }
+
+                        for(i = 0 ; i < ulCount - 1 ; i++)
+                        {
+                            for(j = i+1 ; j < ulCount ; j++)
+                            {
+                                if (pulClassIDs[i] > pulClassIDs[j])
+                                {
+                                    uint_32 ulTemp = pulClassIDs[i];
+                                    pulClassIDs[i] = pulClassIDs[j];
+                                    pulClassIDs[j] = ulTemp;
+                                }
+                            }
+                        }
+                        
+                        for(i = 0 ; i < ulCount ; i++)
+                        {
+                            uint_32 ulClass = pulClassIDs[i];
+                            char    pClassName[32];
+                            
+                            FTE_OBJ_CLASS_getName(ulClass, pClassName, sizeof(pClassName));
+                            printf("%d : %6d %s\n", i + 1, ulClass >> 16, pClassName);
+                        }
+                    }
+                }
+            }
+            break;
+            
+        case    4:
+            {
+                if (strcmp(argv[1], "class") == 0)
+                {
+                    if (strcmp(argv[2], "hide") == 0)
+                    {
+                        uint_32 ulClass;
+                        
+                        if (Shell_parse_hexnum(argv[3], &ulClass) != TRUE)
+                        {
+                            printf("Invalid Class ID[%s]\n", argv[3]);
+                            return_code = SHELL_EXIT_ERROR;
+                            break;
+                        }
+
+                    }
+                }
+            }
+            break;
+            
+        default:
+            print_usage = TRUE;
+            goto error;
+        }
+    }
+    
+error:    
+    if (print_usage)  
+    {
+        if (shorthelp)  
+        {
+            printf("%s <command>\n", argv[0]);
+        } 
+        else  
+        {
+            printf("Usage: %s <command>\n",argv[0]);
+            printf("  Commands:\n");
+            printf("    class list\n");
+            printf("        Supported object type list\n");
+        }
+    }
+    
+    
+   return return_code;
+} /* Endbody */
