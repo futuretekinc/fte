@@ -82,6 +82,7 @@
 #define FTE_MQTT_SUPPORTED                  1
 #define FTE_SSL_SUPPORTED                   0
 #define FTE_TELNETD_SUPPORTED               1
+#define FTE_SMNGD_SUPPORTED                 1
 
 #define FTE_DI_MAX_COUNT                    0
 #define FTE_DO_MAX_COUNT                    0
