@@ -14,6 +14,7 @@
 #include "sh_prv.h"
 #include "io.h"
 #include "fte_db.h"
+#include "fte_cias.h"
 
 uint_32     FTE_SHELL_getPasswd(MQX_FILE_PTR pFile, char_ptr pPasswd, uint_32 ulMaxLen, uint_32 ulTimeout);
 int_32      FTE_SHELL_cmdPasswd(int_32 nArgc, char_ptr pArgv[]);
@@ -32,6 +33,9 @@ const SHELL_COMMAND_STRUCT pSHELLCommands[] =
 #endif
     { "bl",         FTE_SYS_BL_cmd},    
     { "cert",       FTE_CFG_CERT_SHELL_cmd},    
+#if FTE_CIAS_SIOUX_CU_SUPPORTED
+    { "cias",       FTE_CIAS_SIOUX_CU_SHELL_cmd},
+#endif
     { "config",     FTE_CFG_SHELL_cmd},
 #if FTE_1WIRE_SUPPORTED
     { "1wire",      FTE_1WIRE_SHELL_cmd},
@@ -47,6 +51,9 @@ const SHELL_COMMAND_STRUCT pSHELLCommands[] =
     { "event",      FTE_EVENT_shell_cmd},
     { "exit",       Shell_exit},
     { "get",        FTE_SHELL_cmdGet},
+#if FTE_IOEX_SUPPORTED
+    {"ioex",    FTE_IOEX_SHELL_cmd},
+#endif
 #if FTE_TASCON_HEM12_06M_SUPPORTED
     { "hem12",      FTE_TASCON_HEM12_SHELL_cmd},
 #endif
