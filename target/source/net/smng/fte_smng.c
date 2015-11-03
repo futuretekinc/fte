@@ -19,10 +19,6 @@ typedef struct
 }   FTE_SMNG_PACKET, _PTR_ FTE_SMNG_PACKET_PTR;
 
 static  char_ptr    pDiscoveryMsg = NULL;
-static FTE_SMNGD_CFG    _Config = 
-{ 
-    .pulHideClass = {0,}
-};
 
 void FTE_SMNG_task(pointer pParams, pointer pCreator)
 {
