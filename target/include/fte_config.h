@@ -64,9 +64,20 @@ _mqx_uint               FTE_CFG_EVENT_free(FTE_CFG_EVENT_PTR pConfig);
 uint_32                 FTE_CFG_EVENT_count(void);
 _mqx_uint               FTE_CFG_EVENT_getAt(uint_32 ulIndex, FTE_CFG_EVENT_PTR _PTR_ ppConfig);
 
-
 pointer                 FTE_CFG_EVENT_getFirst(void);
 pointer                 FTE_CFG_EVENT_getNext(void);
+
+_mqx_uint               FTE_CFG_EXT_init(void);
+
+#if FTE_CIAS_SIOUX_CU_SUPPORTED
+_mqx_uint               FTE_CFG_CIAS_get(void _PTR_ pBuff, uint_32 ulBuffLen);
+_mqx_uint               FTE_CFG_CIAS_set(void _PTR_ pCIAS, uint_32 ulCIASLen);
+#endif
+
+#if FTE_IOEX_SUPPORTED
+_mqx_uint               FTE_CFG_IOEX_get(void _PTR_ pBuff, uint_32 ulBuffLen);
+_mqx_uint               FTE_CFG_IOEX_set(void _PTR_ pCIAS, uint_32 ulIOEXLen);
+#endif
 
 boolean                 FTE_CFG_CERT_valid(void);
 uint_32                 FTE_CFG_CERT_size(void);
