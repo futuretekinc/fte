@@ -25,6 +25,7 @@
 #define FTE_CFG_POOL_VERSION            0x20150708
 #define FTE_CFG_OBJECT_POOL_VERSION     0x20150708
 #define FTE_CFG_EVENT_POOL_VERSION      0x20150708
+#define FTE_CFG_EXT_POOL_VERSION        0x20150708
 #define FTE_CFG_CERT_POOL_VERSION       0x20150708
 
 void    FTE_CFG_lock(void);
@@ -72,6 +73,19 @@ typedef struct _FTE_CFG_EVENT_POOL_STRUCT
     FTE_EVENT_CONFIG    pEvents[(0x800 - sizeof(uint_32) * 4) / sizeof(FTE_EVENT_CONFIG)];
 }   FTE_CFG_EVENT_POOL, _PTR_ FTE_CFG_EVENT_POOL_PTR;
 
+typedef struct _FTE_CFG_EXT_POOL_STRUCT
+{
+    uint_32             crc;
+    uint_32             tag;
+    int_32              nID;
+#if FTE_CIAS_SIOUX_CU_SUPPORTED
+    FTE_CIAS_SIOUX_CU_CONFIG    xCU[FTE_CIAS_SIOUX_CU_MAX];
+#endif
+#if FTE_IOEX_SUPPORTED
+    FTE_IOEX_CONFIG             xIOEX;
+#endif
+}   FTE_CFG_EXT_POOL, _PTR_ FTE_CFG_EXT_POOL_PTR;
+
 typedef struct _FTE_CFG_CERT_POOL_HEAD_STRUCT
 {
     uint_32             crc;
@@ -98,6 +112,8 @@ typedef struct  _FTE_CFG_struct
     FTE_CFG_OBJECT_POOL     xObjectPool;
     boolean                 bEventPoolModified;
     FTE_CFG_EVENT_POOL      xEventPool;
+    boolean                 bExtPoolModified;
+    FTE_CFG_EXT_POOL        xExtPool;
     uint_32                 ulIndex;
 }   FTE_CONFIG, _PTR_ FTE_CFG_PTR;
 
@@ -112,6 +128,7 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
     FTE_CFG_POOL_PTR        pPool = NULL;
     FTE_CFG_OBJECT_POOL_PTR pObjectPool = NULL;
     FTE_CFG_EVENT_POOL_PTR  pEventPool = NULL;
+    FTE_CFG_EXT_POOL_PTR    pExtPool = NULL;
     FTE_CFG_CERT_POOL_PTR   pCertPool = NULL;
     void _PTR_              pBuff = NULL;
     
@@ -142,6 +159,12 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
 
     pEventPool = (FTE_CFG_EVENT_POOL_PTR)FTE_MEM_allocZero(sizeof(FTE_CFG_EVENT_POOL));
     if (pEventPool == NULL)
+    {
+        goto error;
+    }
+
+    pExtPool = (FTE_CFG_EXT_POOL_PTR)FTE_MEM_allocZero(sizeof(FTE_CFG_EXT_POOL));
+    if (pExtPool == NULL)
     {
         goto error;
     }
@@ -236,6 +259,34 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
             {
                 memcpy(&_config.xEventPool, pEventPool, sizeof(FTE_CFG_EVENT_POOL));
             }
+        }    
+        
+        for(int nMTD = 6 ; nMTD < 8 ; nMTD++)
+        {
+            MQX_FILE_PTR    fp;    
+            
+            /* Open the flash device */
+            fp = fopen(desc->pMTDs[nMTD], NULL);
+            if (fp == NULL) 
+            {
+                continue;
+            }
+
+            ioctl(fp, FLASH_IOCTL_ENABLE_SECTOR_CACHE, NULL);
+            read(fp, (char_ptr)pExtPool, sizeof(FTE_CFG_EXT_POOL));
+            fclose(fp);
+
+            if ((pExtPool->crc != fte_crc32(0, (char_ptr)&pExtPool->tag, sizeof(FTE_CFG_EXT_POOL) - sizeof(uint_32))) ||
+                (pExtPool->tag != FTE_CFG_EXT_POOL_VERSION) || 
+                (pExtPool->nID > (uint_32)MAX_INT_32))
+            {
+                continue;
+            }
+                
+            if (pExtPool->nID > _config.xExtPool.nID)
+            {
+                memcpy(&_config.xExtPool, pExtPool, sizeof(FTE_CFG_EXT_POOL));
+            }
         }     
     }
     
@@ -269,6 +320,11 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
         }
     } 
 
+    if (_config.xExtPool.nID == 0)
+    {
+        FTE_CFG_EXT_init();
+    } 
+
     FTE_LOG_init();
     FTE_CFG_DBG_setBootTime();
     
@@ -277,6 +333,7 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
     FTE_MEM_free(pPool);  
     FTE_MEM_free(pObjectPool);
     FTE_MEM_free(pEventPool);    
+    FTE_MEM_free(pExtPool);    
     FTE_MEM_free(pBuff);    
 
     _time_init_ticks(&xDTicks, 0);
@@ -303,6 +360,11 @@ error:
     if (pEventPool != NULL)
     {
         FTE_MEM_free(pEventPool);
+    }
+        
+    if (pExtPool != NULL)
+    {
+        FTE_MEM_free(pExtPool);
     }
         
     if (pCertPool != NULL)
@@ -426,6 +488,38 @@ _mqx_uint FTE_CFG_save(boolean force)
         _config.bEventPoolModified = FALSE;
     }
 
+    if ((force) || (_config.bExtPoolModified == TRUE))
+    {
+        int             i;
+        MQX_FILE_PTR    fp;
+        
+        for(i = 0 ; i < 2 ; i++)
+        {
+            _config.xExtPool.nID++;
+            _config.xExtPool.crc = fte_crc32(0, (pointer)&_config.xExtPool.tag, sizeof(FTE_CFG_EXT_POOL) - sizeof(uint_32));   
+        
+            int nMTD = _config.xExtPool.nID & 0x01;
+
+            fp = fopen(_config.pDESC->pMTDs[nMTD + 6], NULL);
+            if (fp != NULL) 
+            {
+                ioctl(fp, FLASH_IOCTL_ENABLE_SECTOR_CACHE, NULL);
+                
+                if (sizeof(FTE_CFG_EXT_POOL) != write(fp, (pointer)&_config.xExtPool, sizeof(FTE_CFG_EXT_POOL)))
+                {
+                    fprintf(stderr, "\nError writing to the file. Error code: %d", _io_ferror(fp));
+                    fclose(fp);
+                    
+                    goto error;
+                }
+
+                fflush(fp);
+                fclose(fp);
+            }
+        }
+        
+        _config.bExtPoolModified = FALSE;
+    }
 
     goto success;
     
@@ -450,6 +544,7 @@ _mqx_uint FTE_CFG_clear(void)
     memset(&_config.xPool, 0, sizeof(FTE_CFG_POOL));
     memset(&_config.xObjectPool, 0, sizeof(FTE_CFG_OBJECT_POOL));
     memset(&_config.xEventPool, 0, sizeof(FTE_CFG_EVENT_POOL));
+    memset(&_config.xExtPool, 0, sizeof(FTE_CFG_EXT_POOL));
 
     _config.xPool.tag    = FTE_CFG_POOL_VERSION;    
     FTE_CFG_unlock();
@@ -473,6 +568,10 @@ _mqx_uint FTE_CFG_clear(void)
         FTE_CFG_EVENT_create(_config.pDESC->pEvents[i]);
     }
 
+    FTE_CFG_lock();
+    FTE_CFG_EXT_init();
+    FTE_CFG_unlock();
+    
     FTE_CFG_save(TRUE);
     
     return  MQX_OK;
@@ -826,6 +925,84 @@ pointer FTE_CFG_EVENT_getNext(void)
     
     return  NULL;
 }
+
+_mqx_uint   FTE_CFG_EXT_init(void)
+{
+    _config.xExtPool.tag    = FTE_CFG_EXT_POOL_VERSION;
+#if FTE_CIAS_SIOUX_CU_SUPPORTED
+    for(int i = 0 ; i < FTE_CIAS_SIOUX_CU_MAX ; i++)
+    {
+        for(int j = 0 ; j < FTE_CIAS_SIOUX_CU_ZONE_MAX ; j++)
+        {
+            _config.xExtPool.xCU[i].pZones[j].nDeviceNumber = j+1;
+            _config.xExtPool.xCU[i].pZones[j].bActivation = FALSE;
+        }
+    }
+#endif
+#if FTE_IOEX_SUPPORTED
+    for(int i = 0 ; i < FTE_IOEX_DI_MAX ; i++)
+    {
+        _config.xExtPool.xIOEX.pDI[i].bActivation = FALSE;
+    }
+#endif
+    _config.bExtPoolModified = TRUE;
+     
+    return  MQX_OK;
+}
+
+#if FTE_CIAS_SIOUX_CU_SUPPORTED
+_mqx_uint   FTE_CFG_CIAS_get(void _PTR_ pBuff, uint_32 ulBuffLen)
+{
+    if ((_config.pDESC == NULL) || (ulBuffLen != sizeof(_config.xExtPool.xCU[0])))
+    {
+        return  MQX_ERROR;
+    }
+
+    memcpy(pBuff, &_config.xExtPool.xCU[0], sizeof(_config.xExtPool.xCU));
+    
+    return  MQX_OK;    
+}
+
+_mqx_uint   FTE_CFG_CIAS_set(void _PTR_ pCIAS, uint_32 ulCIASLen)
+{
+    if ((_config.pDESC == NULL) || (ulCIASLen != sizeof(_config.xExtPool.xCU[0])))
+    {
+        return  MQX_ERROR;
+    }
+
+    memcpy(&_config.xExtPool.xCU[0], pCIAS, sizeof(_config.xExtPool.xCU));
+    _config.bExtPoolModified = TRUE;
+    
+    return  MQX_OK;    
+}
+#endif
+
+#if FTE_IOEX_SUPPORTED
+_mqx_uint   FTE_CFG_IOEX_get(void _PTR_ pBuff, uint_32 ulBuffLen)
+{
+    if ((_config.pDESC == NULL) || (ulBuffLen != sizeof(_config.xExtPool.xIOEX)))
+    {
+        return  MQX_ERROR;
+    }
+
+    memcpy(pBuff, &_config.xExtPool.xIOEX, sizeof(_config.xExtPool.xIOEX));
+    
+    return  MQX_OK;    
+}
+
+_mqx_uint   FTE_CFG_IOEX_set(void _PTR_ pIOEX, uint_32 ulIOEXLen)
+{
+    if ((_config.pDESC == NULL) || (ulIOEXLen != sizeof(_config.xExtPool.xIOEX)))
+    {
+        return  MQX_ERROR;
+    }
+
+    memcpy(&_config.xExtPool.xIOEX, pIOEX, sizeof(_config.xExtPool.xIOEX));
+    _config.bExtPoolModified = TRUE;
+    
+    return  MQX_OK;    
+}
+#endif
 
 
 /******************************************************************************

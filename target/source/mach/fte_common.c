@@ -1235,6 +1235,7 @@ FTE_MCP23S08_GPIO_CONFIG pMCP23S08GPIOConfigs[] =
 #if FTE_UCS_SUPPORTED
 const FTE_UCS_CONFIG pUCSConfigs[] =
 {
+#if FTE_DEV_UCS_1
     {
         .nID        = FTE_DEV_UCS_1,
         .pName      = "UCS_1",
@@ -1256,7 +1257,48 @@ const FTE_UCS_CONFIG pUCSConfigs[] =
         .nStopBits  = FTE_UCS_1_STOPBITS,
         .nRecvBufLen= 1024,
         .nSendBufLen= 1024
-    }
+    },
+#endif
+#if FTE_DEV_UCS_2
+    {
+        .nID        = FTE_DEV_UCS_2,
+        .pName      = "UCS_2",
+        .pUART      = "ittyb:",
+#if FTE_DEV_LWGPIO_UTS_FLOWCTRL
+        .nFlowCtrlID= FTE_DEV_LWGPIO_UTS_FLOWCTRL,
+#else
+        .nFlowCtrlID= 0,
+#endif
+#if FTE_DEV_LWGPIO_UTS_FLOWCTRL2
+        .nFlowCtrl2ID= FTE_DEV_LWGPIO_UTS_FLOWCTRL2,
+#else
+        .nFlowCtrl2ID= 0,
+#endif
+        .bFullDuplex= FTE_UCS_2_FULL_DUPLEX,
+        .nBaudrate  = FTE_UCS_2_BAUDRATE,
+        .nDataBits  = FTE_UCS_2_DATABITS,
+        .nParity    = FTE_UCS_2_PARITY,
+        .nStopBits  = FTE_UCS_2_STOPBITS,
+        .nRecvBufLen= 1024,
+        .nSendBufLen= 1024
+    },
+#endif
+#if FTE_DEV_UCS_3
+    {
+        .nID        = FTE_DEV_UCS_3,
+        .pName      = "UCS_3",
+        .pUART      = "ittyf:",
+        .nFlowCtrlID= 0,
+        .nFlowCtrl2ID= 0,
+        .bFullDuplex= FTE_UCS_3_FULL_DUPLEX,
+        .nBaudrate  = FTE_UCS_3_BAUDRATE,
+        .nDataBits  = FTE_UCS_3_DATABITS,
+        .nParity    = FTE_UCS_3_PARITY,
+        .nStopBits  = FTE_UCS_3_STOPBITS,
+        .nRecvBufLen= 1024,
+        .nSendBufLen= 1024
+    },
+#endif
 };
 #endif
 

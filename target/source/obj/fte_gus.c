@@ -15,6 +15,7 @@ static  _mqx_uint   _gus_stop(FTE_OBJECT_PTR pObj);
 static  _mqx_uint   _gus_startMeasurement(FTE_OBJECT_PTR pObj);
 static  void        _gus_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
 static  _mqx_uint   _gus_setMulti(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_PTR pValue);
+static  _mqx_uint   _gus_getMulti(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_PTR pValue);
 static  void        _gus_restartConvert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
 static  uint_32     _gus_getUpdateInterval(FTE_OBJECT_PTR pObj);
 static  _mqx_uint   _gus_setUpdateInterval(FTE_OBJECT_PTR pObj, uint_32 nInterval);
@@ -33,6 +34,7 @@ static  FTE_OBJECT_ACTION _Action =
     .f_run          = _gus_run,
     .f_stop         = _gus_stop, 
     .f_set_multi    = _gus_setMulti,
+    .f_get_multi    = _gus_getMulti,
     .f_get_update_interval  = _gus_getUpdateInterval,
     .f_set_update_interval  = _gus_setUpdateInterval,
     .f_get_statistic        = _gus_getStatistics,
@@ -57,7 +59,9 @@ const FTE_GUS_MODEL_INFO  _pGUSModelInfos[] =
     FTE_GS_DPC_HL_DESCRIPTOR,
     FTE_TASCON_HEM12_06M_DESCRIPTOR,
     FTE_BOTEM_PN1500_SENS,
-    FTE_FTLM_SENS
+    FTE_FTLM_SENS,
+    FTE_CIAS_SIOUX_CU_SENS,
+    FTE_IOEX_DESCRIPTOR
 };
  
 _mqx_uint   FTE_GUS_attach(FTE_OBJECT_PTR pObj)
@@ -133,10 +137,9 @@ _mqx_uint FTE_GUS_detach(FTE_OBJECT_PTR pObj)
     pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     if (pStatus->pModelInfo->f_detach != NULL)
     {
-        return  pStatus->pModelInfo->f_detach(pObj);
+        pStatus->pModelInfo->f_detach(pObj);
     }
-
-    if (pStatus->pUCS != NULL)
+    else if (pStatus->pUCS != NULL)
     {
         FTE_UCS_detach(pStatus->pUCS, pObj->pConfig->xCommon.nID);
         pStatus->pUCS = NULL;
@@ -322,7 +325,7 @@ static void _gus_restartConvert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_
         _gus_stop(pObj);
     }
 }
-
+ 
 _mqx_uint    _gus_setMulti(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_PTR pValue)
 {
     ASSERT((pObj != NULL) && (pValue != NULL));
@@ -340,6 +343,31 @@ _mqx_uint    _gus_setMulti(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_PTR pV
     return  MQX_ERROR;
 }
 
+_mqx_uint    _gus_getMulti(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_PTR pValue)
+{
+    ASSERT((pObj != NULL) && (pValue != NULL));
+    
+    FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
+    
+    if (FTE_OBJ_IS_ENABLED(pObj))
+    {
+        if (pStatus->pModelInfo->f_get != NULL)
+        {
+            return  pStatus->pModelInfo->f_get(pObj, nIndex, pValue);
+        }
+        else
+        {
+            if (nIndex < pObj->pStatus->nValueCount)
+            {
+                FTE_VALUE_copy(pValue, &pObj->pStatus->pValue[nIndex]);
+                
+                return  MQX_OK;
+            }
+        }
+    }
+
+    return  MQX_ERROR;
+}
 _mqx_uint   _gus_setConfig(FTE_OBJECT_PTR pObj, char_ptr pJSON)
 {
     ASSERT((pObj != NULL) && (pJSON != NULL));

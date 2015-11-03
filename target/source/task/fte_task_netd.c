@@ -34,6 +34,8 @@ void FTE_TASK_net(uint_32 params)
 #endif
 #if FTE_SNMPD_SUPPORTED
     printf("Starting snmpd ... [%s]\n",(FTE_SNMPD_init(&pCfgNet->xSNMP) == MQX_OK)?"OK":"FAILED");
+#endif
+#if FTE_SMNGD_SUPPORTED
     printf("Starting smngd ... [%s]\n",(FTE_SMNGD_init(NULL) == MQX_OK)?"OK":"FAILED");
 #endif
 #if FTE_MQTT_SUPPORTED

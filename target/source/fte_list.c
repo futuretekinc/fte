@@ -106,7 +106,7 @@ _mqx_int    FTE_LIST_pushFront(FTE_LIST_PTR pList, pointer pItem)
     pNode->pNext = pList->pHead->pNext;
         
     pList->pHead->pNext->pPrev = pNode;
-    pList->pHead->pNext = pNode;    
+    pList->pHead->pNext = pNode;     
     pList->nCount++;
     
     fte_sys_lock_disable(pList->pLockKey);

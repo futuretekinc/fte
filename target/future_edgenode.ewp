@@ -168,7 +168,7 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state>FTE_EH1=1</state>
+          <state>FTE_ES19=1</state>
           <state>FTE_V2=1</state>
           <state>FTE_DEBUG=1</state>
           <state>FREESCALE_MQX</state>
@@ -2036,6 +2036,12 @@
         <name>$PROJ_DIR$\include\obj\fte_ftlm.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\include\obj\fte_gus.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\obj\fte_ioex.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\include\obj\fte_led.h</name>
       </file>
       <file>
@@ -2056,9 +2062,6 @@
     </group>
     <group>
       <name>target</name>
-      <file>
-        <name>$PROJ_DIR$\include\target\fte_ec1.h</name>
-      </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_eh1.h</name>
       </file>
@@ -2099,6 +2102,9 @@
         <name>$PROJ_DIR$\include\target\fte_es18.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\include\target\fte_es19.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\include\target\fte_es2.h</name>
       </file>
       <file>
@@ -2128,6 +2134,30 @@
     </group>
     <group>
       <name>task</name>
+      <file>
+        <name>$PROJ_DIR$\include\task\fte_task.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\task\fte_task_main.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\task\fte_task_mqttd.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\task\fte_task_netd.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\task\fte_task_object_management.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\task\fte_task_shell.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\task\fte_task_timer.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\task\fte_task_watchdog.h</name>
+      </file>
     </group>
     <file>
       <name>$PROJ_DIR$\include\fte_buff.h</name>
@@ -2164,6 +2194,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\include\fte_utils.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\include\fte_value.h</name>
     </file>
   </group>
   <group>
@@ -2397,6 +2430,9 @@
         <name>$PROJ_DIR$\source\obj\fte_botem.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\source\obj\fte_cias.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\source\obj\fte_cozir.c</name>
       </file>
       <file>
@@ -2428,6 +2464,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\source\obj\fte_ifce.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\obj\fte_ioex.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\source\obj\fte_led.c</name>
@@ -2525,6 +2564,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\source\fte_crc32.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\source\fte_crc_ccitt.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\source\fte_debug.c</name>
