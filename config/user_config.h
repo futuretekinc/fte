@@ -56,7 +56,7 @@
 #define BSPCFG_ENABLE_TTYE       0
 #define BSPCFG_ENABLE_ITTYE      0
 #define BSPCFG_ENABLE_TTYF       0
-#define BSPCFG_ENABLE_ITTYF      0
+#define BSPCFG_ENABLE_ITTYF      1
 #define BSPCFG_ENABLE_I2C0       0
 #define BSPCFG_ENABLE_II2C0      1
 #define BSPCFG_ENABLE_I2C1       0

@@ -4,6 +4,7 @@
 #include "fte_task_shell.h"
 #include "fte_task_object_management.h"
 #include "fte_task_timer.h"
+#include "fte_cias.h"
 #include "fte_task.h"
 #include "fte_task_watchdog.h"
 #include <rtcs.h>
@@ -110,7 +111,30 @@ const TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .CREATION_PARAMETER     =   0,                      /* Param */
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
     },
-
+#if FTE_CIAS_SIOUX_CU_SUPPORTED
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_CIAS_SIOUX_CU, /* Task Index */
+        .TASK_ADDRESS           =   FTE_CIAS_SIOUX_CU_task,    /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_CIAS_SIOUX_CU_STACK,   /* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_CIAS_SIOUX_CU_PRIO,    /* Priority */
+        .TASK_NAME              =   "SIOUX_CU",             /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   0,                      /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+#endif
+#if FTE_IOEX_SUPPORTED
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_IOEX,          /* Task Index */
+        .TASK_ADDRESS           =   FTE_IOEX_task,          /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_IOEX_STACK,    /* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_IOEX_PRIO,     /* Priority */
+        .TASK_NAME              =   "IOEX",                 /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   0,                      /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+#endif
     { 0 }
 };
 
@@ -175,6 +199,26 @@ _mqx_uint   FTE_TASK_append
     FTE_LIST_pushBack(&_taskList, (pointer)pTaskInfo);    
     
     return  MQX_OK;
+}
+
+_mqx_uint   FTE_TASK_remove
+(
+    _task_id        xTaskID
+)
+{ 
+    for(int i = 0 ; i < FTE_LIST_count(&_taskList); i++)
+    {
+        FTE_TASK_INFO_PTR   pTaskInfo = (FTE_TASK_INFO_PTR)FTE_LIST_getAt(&_taskList, i);
+        if (pTaskInfo->xID == xTaskID)
+        {
+            FTE_LIST_remove(&_taskList, pTaskInfo);
+            FTE_MEM_free(pTaskInfo);
+            
+            return  MQX_OK;
+        }        
+    }
+
+    return  MQX_INVALID_TASK_ID;
 }
 
 int_32 FTE_TASK_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )

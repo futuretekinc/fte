@@ -50,6 +50,8 @@
 #define FTE_TASK_UCS_RX                 8
 #define FTE_TASK_UCS_TX                 9
 #define FTE_TASK_EVENT                  10
+#define FTE_TASK_CIAS_SIOUX_CU          11
+#define FTE_TASK_IOEX                   12
      
 #define FTE_TASK_DEFAULT_STACK          512
 
@@ -97,6 +99,17 @@
     #define FTE_TASK_EVENT_STACK        (FTE_TASK_DEFAULT_STACK * 2)
     #define FTE_TASK_EVENT_PRIO         9
 #endif
+
+#if FTE_TASK_CIAS_SIOUX_CU
+    #define FTE_TASK_CIAS_SIOUX_CU_STACK        (FTE_TASK_DEFAULT_STACK * 2)
+    #define FTE_TASK_CIAS_SIOUX_CU_PRIO 9
+#endif
+
+#if FTE_TASK_IOEX
+    #define FTE_TASK_IOEX_STACK         (FTE_TASK_DEFAULT_STACK * 2)
+    #define FTE_TASK_IOEX_PRIO          9
+#endif
+
 /******************************************************************************
  * System Configuration
  ******************************************************************************/
@@ -248,6 +261,8 @@ void                    fte_state_change_set_cb(void (*cb)(void));
 #include "fte_es17.h"
 #elif defined(FTE_ES18)
 #include "fte_es18.h"
+#elif defined(FTE_ES19)
+#include "fte_es19.h"
 #elif defined(FTE_EH1)
 #include "fte_eh1.h"
 #elif defined(FTE_MN1)
@@ -328,31 +343,12 @@ void                    fte_state_change_set_cb(void (*cb)(void));
 #ifndef FTE_FACTORY_RESET_DETECT_TIME
     #define FTE_FACTORY_RESET_DETECT_TIME   5000    /* msecs */
 #endif
-#endif
 
 #ifndef FTE_LOG_MAX_COUNT
     #define FTE_LOG_MAX_COUNT   100
 #endif
 
 #define FTE_OBJ_LED_SYS_STATUS  MAKE_SYSTEM_ID(FTE_OBJ_TYPE_LED, 100)
-
-#if FTE_UCS_SUPPORTED
-#ifndef FTE_UCS_1_BAUDRATE
-    #define FTE_UCS_1_BAUDRATE              9600
-#endif
-
-#ifndef FTE_UCS_1_DATABITS
-    #define FTE_UCS_1_DATABITS              8
-#endif
-
-#ifndef FTE_UCS_1_PARITY
-    #define FTE_UCS_1_PARITY                FTE_UART_PARITY_NONE
-#endif
-
-#ifndef FTE_UCS_1_STOPBITS
-    #define FTE_UCS_1_STOPBITS              FTE_UART_STOP_BITS_1
-#endif
-
 
 #endif
 

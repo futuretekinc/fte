@@ -90,6 +90,8 @@
 #define FTE_DEV_MCP23S08_1_GPIO_8       (FTE_DEV_MCP23S08_1 | 8)
 
 #define FTE_DEV_UCS_1                   (FTE_DEV_TYPE_UCS | 1)
+#define FTE_DEV_UCS_2                   (FTE_DEV_TYPE_UCS | 2)
+#define FTE_DEV_UCS_3                   (FTE_DEV_TYPE_UCS | 3)
 #define FTE_DEV_UCM_1                   (FTE_DEV_TYPE_UCM | 1)
 
 #define FTE_DEV_SRF_1                   (FTE_DEV_TYPE_SRF | 1)
@@ -202,12 +204,77 @@
 #define FTE_UCS_1_DATABITS                  8
 #define FTE_UCS_1_PARITY                    FTE_UART_PARITY_NONE
 #define FTE_UCS_1_STOPBITS                  FTE_UART_STOP_BITS_1
-#else
-#define FTE_UCS_1_FULL_DUPLEX               TRUE
-#define FTE_UCS_1_BAUDRATE                  9600
+#elif FTE_CIAS_SIOUX_CU_SUPPORTED
+#define FTE_UCS_1_FULL_DUPLEX               FALSE
+#define FTE_UCS_1_BAUDRATE                  115200
 #define FTE_UCS_1_DATABITS                  8
 #define FTE_UCS_1_PARITY                    FTE_UART_PARITY_NONE
 #define FTE_UCS_1_STOPBITS                  FTE_UART_STOP_BITS_1
+#define FTE_UCS_3_FULL_DUPLEX               FALSE
+#define FTE_UCS_3_BAUDRATE                  115200
+#define FTE_UCS_3_DATABITS                  8
+#define FTE_UCS_3_PARITY                    FTE_UART_PARITY_NONE
+#define FTE_UCS_3_STOPBITS                  FTE_UART_STOP_BITS_1
+#endif
+
+#ifndef FTE_UCS_1_FULL_DUPLEX
+#define FTE_UCS_1_FULL_DUPLEX               FALSE
+#endif
+
+#ifndef FTE_UCS_1_BAUDRATE
+#define FTE_UCS_1_BAUDRATE                  115200
+#endif
+
+#ifndef FTE_UCS_1_DATABITS
+#define FTE_UCS_1_DATABITS                  8
+#endif
+
+#ifndef FTE_UCS_1_PARITY
+#define FTE_UCS_1_PARITY                    FTE_UART_PARITY_NONE
+#endif
+
+#ifndef FTE_UCS_1_STOPBITS
+#define FTE_UCS_1_STOPBITS                  FTE_UART_STOP_BITS_1
+#endif
+
+#ifndef FTE_UCS_2_FULL_DUPLEX
+#define FTE_UCS_2_FULL_DUPLEX               FALSE
+#endif
+
+#ifndef FTE_UCS_2_BAUDRATE
+#define FTE_UCS_2_BAUDRATE                  115200
+#endif
+
+#ifndef FTE_UCS_2_DATABITS
+#define FTE_UCS_2_DATABITS                  8
+#endif
+
+#ifndef FTE_UCS_2_PARITY
+#define FTE_UCS_2_PARITY                    FTE_UART_PARITY_NONE
+#endif
+
+#ifndef FTE_UCS_2_STOPBITS
+#define FTE_UCS_2_STOPBITS                  FTE_UART_STOP_BITS_1
+#endif
+
+#ifndef FTE_UCS_3_FULL_DUPLEX
+#define FTE_UCS_3_FULL_DUPLEX               FALSE
+#endif
+
+#ifndef FTE_UCS_3_BAUDRATE
+#define FTE_UCS_3_BAUDRATE                  115200
+#endif
+
+#ifndef FTE_UCS_3_DATABITS
+#define FTE_UCS_3_DATABITS                  8
+#endif
+
+#ifndef FTE_UCS_3_PARITY
+#define FTE_UCS_3_PARITY                    FTE_UART_PARITY_NONE
+#endif
+
+#ifndef FTE_UCS_3_STOPBITS
+#define FTE_UCS_3_STOPBITS                  FTE_UART_STOP_BITS_1
 #endif
 
 #if FTE_DS18B20_SUPPORTED

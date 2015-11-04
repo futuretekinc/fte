@@ -3,6 +3,7 @@
 #include "fte_task.h"
 #include "fte_log.h"
 #include "fte_db.h"
+#include "fte_cias.h"
 #include "sys/fte_sys.h"
 #include "sys/fte_sys_msg.h"
 #include <watchdog.h>

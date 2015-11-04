@@ -737,7 +737,6 @@ _mqx_uint       FTE_VALUE_getLED(FTE_VALUE_PTR pObj, uint_32_ptr pxState)
     return  MQX_OK;
 }
 
-
 _mqx_uint       FTE_VALUE_getTimeStamp(FTE_VALUE_PTR pObj, TIME_STRUCT_PTR pTimeStamp)
 {
     ASSERT(pObj != NULL);
@@ -813,6 +812,7 @@ char_ptr        FTE_VALUE_toString(FTE_VALUE_PTR pObj, char_ptr pValueString, ui
                 {
                     snprintf(pValueString, ulLen, "%d.%02d", pObj->xData.ulValue / 1000, pObj->xData.ulValue % 1000 / 10);
                 }
+#if 0
                 else if (pObj->xData.ulValue < 10000)
                 {
                     snprintf(pValueString, ulLen, "%d.%d", pObj->xData.ulValue / 1000, pObj->xData.ulValue % 1000 / 100);
@@ -821,6 +821,12 @@ char_ptr        FTE_VALUE_toString(FTE_VALUE_PTR pObj, char_ptr pValueString, ui
                 {
                     snprintf(pValueString, ulLen, "%d", pObj->xData.ulValue / 1000);
                 }
+#else
+                else 
+                {
+                    snprintf(pValueString, ulLen, "%d.%d", pObj->xData.ulValue / 1000, pObj->xData.ulValue % 1000 / 100);
+                }
+#endif
             }
             break;
             
@@ -831,6 +837,7 @@ char_ptr        FTE_VALUE_toString(FTE_VALUE_PTR pObj, char_ptr pValueString, ui
                 {
                     snprintf(pValueString, ulLen, "%d.%03d", pObj->xData.ulValue / 1000, pObj->xData.ulValue % 1000);
                 }
+#if 0
                 else if (pObj->xData.ulValue < 100000)
                 {
                     snprintf(pValueString, ulLen, "%d.%02d", pObj->xData.ulValue / 1000, pObj->xData.ulValue % 1000 / 10);
@@ -843,6 +850,12 @@ char_ptr        FTE_VALUE_toString(FTE_VALUE_PTR pObj, char_ptr pValueString, ui
                 {
                     snprintf(pValueString, ulLen, "%d", pObj->xData.ulValue / 1000);
                 }
+#else
+                else 
+                {
+                    snprintf(pValueString, ulLen, "%d.%01d", pObj->xData.ulValue / 1000, pObj->xData.ulValue % 1000 / 100);
+                }
+#endif
             }
             break;
             
@@ -858,6 +871,7 @@ char_ptr        FTE_VALUE_toString(FTE_VALUE_PTR pObj, char_ptr pValueString, ui
                 snprintf(pValueString, ulLen, "%d.%d", pObj->xData.nValue / 10, abs(pObj->xData.nValue) % 10);
             }
             break;
+
         }
     }
                      
@@ -916,13 +930,10 @@ char_ptr        FTE_VALUE_unit(FTE_VALUE_PTR pObj, char_ptr pUnitString, uint_32
         }
         break;
         
-    case    FTE_VALUE_TYPE_DIO:
-    case    FTE_VALUE_TYPE_ULONG:
-    case    FTE_VALUE_TYPE_LED:
+    default:
         {
             snprintf(pUnitString, ulLen, "");
         }
-        break;
     }
                      
     return  pUnitString;
@@ -975,6 +986,7 @@ boolean         FTE_VALUE_equal(FTE_VALUE_PTR pValue1, FTE_VALUE_PTR pValue2)
             return  (pValue1->xData.bValue == pValue2->xData.bValue);
         }
         break;
+        
     }
 
     return  FALSE;

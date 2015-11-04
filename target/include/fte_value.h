@@ -68,6 +68,7 @@ _mqx_uint       FTE_VALUE_initCurrent(FTE_VALUE_PTR pValue, uint_32 ulValue);
 _mqx_uint       FTE_VALUE_initPressure(FTE_VALUE_PTR pValue, uint_32 ulValue);
 _mqx_uint       FTE_VALUE_initPowerKW(FTE_VALUE_PTR pValue, uint_32 ulValue);
 _mqx_uint       FTE_VALUE_initPowerKWH(FTE_VALUE_PTR pValue, uint_32 ulValue);
+_mqx_uint       FTE_VALUE_initUINT64(FTE_VALUE_PTR pValue, uint_64 ulValue64);
 
 _mqx_uint       FTE_VALUE_setValid(FTE_VALUE_PTR pValue, boolean bValid);
 boolean         FTE_VALUE_isValid(FTE_VALUE_PTR pValue);

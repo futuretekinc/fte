@@ -599,7 +599,7 @@ int_32  FTE_UCS_SHELL_cmd(int_32 argc, char_ptr argv[] )
 
         case    2:
             {
-                FTE_UCS_PTR pUCS = FTE_UCS_get(FTE_DEV_UCS_1);
+                FTE_UCS_PTR pUCS = FTE_UCS_get(FTE_DEV_UCS_2);
                 if (pUCS == NULL)
                 {
                     printf("UCS not exists.\n");
@@ -682,12 +682,15 @@ void FTE_UCS_TASK_send
 
         fflush(pUCS->pFD);
         ioctl( pUCS->pFD, IO_IOCTL_SERIAL_WAIT_FOR_TC, NULL );
+        fflush(pUCS->pFD);
 
         pUCS->nSendHead = 0;
         pUCS->nSendTail = 0;
 
         if (pUCS->pFlowCtrl != NULL)
         {
+            for(int i = 0; i < 20 ;i++)
+                _time_delay(0);
             FTE_LWGPIO_setValue(pUCS->pFlowCtrl, FALSE);
  //           FTE_LWGPIO_setValue(pUCS->pFlowCtrl2, TRUE);
         }

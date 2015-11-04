@@ -259,11 +259,18 @@ _mqx_uint   FTE_OBJ_setValue(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue)
 
 _mqx_uint       FTE_OBJ_getValueAt(FTE_OBJECT_PTR pObj, uint_32 ulIdx, FTE_VALUE_PTR pValue)
 {
-    if (ulIdx < pObj->pStatus->nValueCount)
+    if (pObj->pAction->f_get_multi != NULL)
     {
-        FTE_VALUE_copy(pValue, &pObj->pStatus->pValue[ulIdx]);
-        
-        return  MQX_OK;
+        return  pObj->pAction->f_get_multi(pObj, ulIdx, pValue);
+    }
+    else
+    {
+        if (ulIdx < pObj->pStatus->nValueCount)
+        {
+            FTE_VALUE_copy(pValue, &pObj->pStatus->pValue[ulIdx]);
+            
+            return  MQX_OK;
+        }
     }
     
     return  MQX_ERROR;

@@ -1517,6 +1517,654 @@ static const FTE_GUS_CONFIG fte_init_ftlm_config =
 };
 #endif
 
+#if FTE_CIAS_SIOUX_CU_SUPPORTED
+#if 0
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone1_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 1",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 0,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone2_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 2",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 1,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone3_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 3",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 2,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone4_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 4",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 3,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone5_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 4",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 4,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone6_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 6",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 5,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone7_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 6",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 6,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone8_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 8",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 7,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone9_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 9",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 8,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone10_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 10",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 9,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone11_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 11",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 10,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone12_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 12",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 11,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone13_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 13",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 12,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone14_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 14",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 13,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone15_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 15",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 14,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone16_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 16",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 15,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone17_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 17",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 16,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone18_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 18",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 17,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone19_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 19",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 18,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_zone20_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "ZONE 20",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 19,
+    .nInterval  = 2
+};
+
+static const FTE_OBJECT_CONFIG_PTR xCIASSIOUXCUChildConfigs[] =
+{
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone1_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone2_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone3_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone4_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone5_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone6_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone7_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone8_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone9_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone10_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone11_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone12_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone13_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone14_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone15_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone16_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone17_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone18_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone19_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_zone20_config,
+};
+
+static const FTE_GUS_CONFIG fte_init_cias_sioux_cu_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+        .pName      = "SIOUX_CU",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+        .ulChild    = sizeof(xCIASSIOUXCUChildConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR),
+        .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)xCIASSIOUXCUChildConfigs
+    },
+    .nModel     = FTE_GUS_MODEL_CIAS_SIOUX_CU,
+    .nSensorID  = 0x01,
+    .nUCSID     = FTE_DEV_UCS_1,
+    .nInterval  = 10
+};
+#else
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_line_cutting_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "CU LINE CUTTING",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 0,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_line_short_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "CU LINE SHORT",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 1,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_tamper_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "CU TAMPER DEVICE",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 2,
+    .nInterval  = 2
+};
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_fault_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "CU FAULT DEVICE",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 3,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_alarm_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "CU ALARM",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 4,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_sabotage_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "CU SABOTAGE",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 5,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_cias_sioux_cu_prealarm_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .pName      = "CU PREALARM",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 7,
+    .nInterval  = 2
+};
+
+static const FTE_OBJECT_CONFIG_PTR xCIASSIOUXCUChildConfigs[] =
+{
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_line_cutting_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_line_short_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_tamper_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_alarm_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_fault_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_sabotage_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_cias_sioux_cu_prealarm_config,
+};
+
+static const FTE_GUS_CONFIG fte_init_cias_sioux_cu_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+        .pName      = "SIOUX_CU",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+        .ulChild    = sizeof(xCIASSIOUXCUChildConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR),
+        .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)xCIASSIOUXCUChildConfigs
+    },
+    .nModel     = FTE_GUS_MODEL_CIAS_SIOUX_CU,
+    .nSensorID  = 0x01,
+    .nUCSID     = FTE_DEV_UCS_1,
+    .nInterval  = 10
+};
+#endif
+#endif
+
+#if FTE_IOEX_SUPPORTED
+static const FTE_IFCE_CONFIG ifte_init_ioex_di0_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI 0",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 0,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ioex_di1_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI 1",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 1,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ioex_di2_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI 2",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 2,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ioex_di3_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI 3",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 3,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ioex_di4_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI 4",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 4,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ioex_di5_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI 5",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 5,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ioex_di6_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI 6",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 6,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ioex_di7_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI 7",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 7,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ioex_di8_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI 8",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 8,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ioex_di9_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI 9",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 9,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ioex_di10_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI 10",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 10,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ioex_di11_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI 11",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 11,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ioex_di12_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI 12",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 12,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ioex_di13_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI 13",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 13,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ioex_di14_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI 14",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 14,
+    .nInterval  = 2
+};
+
+static const FTE_IFCE_CONFIG ifte_init_ioex_di15_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI 15",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 15,
+    .nInterval  = 2
+};
+
+
+static const FTE_OBJECT_CONFIG_PTR xIOEXChildConfigs[] =
+{
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ioex_di0_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ioex_di1_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ioex_di2_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ioex_di3_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ioex_di4_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ioex_di5_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ioex_di6_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ioex_di7_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ioex_di8_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ioex_di9_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ioex_di10_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ioex_di11_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ioex_di12_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ioex_di13_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ioex_di14_config,
+    (FTE_OBJECT_CONFIG_PTR)&ifte_init_ioex_di15_config,
+};
+
+static const FTE_GUS_CONFIG fte_init_ioex_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+        .pName      = "IOEX",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+        .ulChild    = sizeof(xIOEXChildConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR),
+        .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)xIOEXChildConfigs
+    },
+    .nModel     = FTE_GUS_MODEL_IOEX,
+    .nSensorID  = 0x01,
+    .nUCSID     = FTE_DEV_UCS_1,
+    .nInterval  = 10
+};
+#endif
+
 const FTE_OBJECT_CONFIG_PTR pInitObjConfigs[] =
 {
 #if FTE_GPIO_DI_SUPPORTED
@@ -1581,6 +2229,12 @@ const FTE_OBJECT_CONFIG_PTR pInitObjConfigs[] =
 #endif
 #if FTE_FTLM_SUPPORTED
     (FTE_OBJECT_CONFIG_PTR)&fte_init_ftlm_config,
+#endif
+#if FTE_CIAS_SIOUX_CU_SUPPORTED
+    (FTE_OBJECT_CONFIG_PTR)&fte_init_cias_sioux_cu_config,
+#endif
+#if FTE_IOEX_SUPPORTED
+    (FTE_OBJECT_CONFIG_PTR)&fte_init_ioex_config,
 #endif
 };
 
@@ -2163,6 +2817,161 @@ static const FTE_EVENT_CONFIG fte_changed_led8_config =
     .xCondition = FTE_EVENT_CONDITION_CHANGED,
 };
 #endif
+#if FTE_CIAS_SIOUX_CU_SUPPORTED
+static const FTE_EVENT_CONFIG fte_changed_di0_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b01),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+
+static const FTE_EVENT_CONFIG fte_changed_di1_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b02),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+static const FTE_EVENT_CONFIG fte_changed_di2_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b03),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+static const FTE_EVENT_CONFIG fte_changed_di3_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b04),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+static const FTE_EVENT_CONFIG fte_changed_di4_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b05),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+static const FTE_EVENT_CONFIG fte_changed_di5_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b06),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+static const FTE_EVENT_CONFIG fte_changed_di6_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b07),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+static const FTE_EVENT_CONFIG fte_changed_di7_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b08),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+static const FTE_EVENT_CONFIG fte_changed_di8_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b09),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+static const FTE_EVENT_CONFIG fte_changed_di9_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b0A),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+static const FTE_EVENT_CONFIG fte_changed_di10_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b0B),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+static const FTE_EVENT_CONFIG fte_changed_di11_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b0C),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+static const FTE_EVENT_CONFIG fte_changed_di12_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b0d),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+static const FTE_EVENT_CONFIG fte_changed_di13_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b0e),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+static const FTE_EVENT_CONFIG fte_changed_di14_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b0f),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+static const FTE_EVENT_CONFIG fte_changed_di15_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b10),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+
+static const FTE_EVENT_CONFIG fte_changed_line_cutting_config = 
+{
+    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0a01),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_ALERT,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+
+static const FTE_EVENT_CONFIG fte_changed_line_short_circuit_config = 
+{
+    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0a02),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_ALERT,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+
+static const FTE_EVENT_CONFIG fte_changed_tamper_device_config = 
+{
+    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0a03),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_ALERT,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+
+static const FTE_EVENT_CONFIG fte_changed_fault_device_config = 
+{
+    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0a04),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_ALERT,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+
+static const FTE_EVENT_CONFIG fte_changed_alarm_device_config = 
+{
+    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0a05),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_ALERT,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+#endif
 
 const FTE_CFG_EVENT_PTR pInitEventConfigs[] =
 {
@@ -2219,6 +3028,29 @@ const FTE_CFG_EVENT_PTR pInitEventConfigs[] =
     (FTE_CFG_EVENT_PTR)&fte_changed_led6_config,
     (FTE_CFG_EVENT_PTR)&fte_changed_led7_config,
     (FTE_CFG_EVENT_PTR)&fte_changed_led8_config,
+#endif
+#if FTE_CIAS_SIOUX_CU_SUPPORTED
+    (FTE_CFG_EVENT_PTR)&fte_changed_di0_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_di1_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_di2_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_di3_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_di4_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_di5_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_di6_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_di7_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_di8_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_di9_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_di10_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_di11_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_di12_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_di13_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_di14_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_di15_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_line_cutting_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_line_short_circuit_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_tamper_device_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_fault_device_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_alarm_device_config
 #endif
 
 };

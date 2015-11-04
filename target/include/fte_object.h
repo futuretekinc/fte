@@ -98,6 +98,8 @@
 #define FTE_OBJ_TYPE_MULTI_DPC_HL       ((FTE_OBJ_CLASS_MULTI       ) | (0x07 << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_MULTI_HEM12_06M    ((FTE_OBJ_CLASS_MULTI       ) | (0x08 << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_MULTI_FTLM         ((FTE_OBJ_CLASS_MULTI       ) | (0x09 << FTE_OBJ_TYPE_SHIFT))
+#define FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU ((FTE_OBJ_CLASS_MULTI      ) | (0x0A << FTE_OBJ_TYPE_SHIFT))
+#define FTE_OBJ_TYPE_MULTI_IOEX         ((FTE_OBJ_CLASS_MULTI      )  | (0x0B << FTE_OBJ_TYPE_SHIFT))
 
 #define FTE_OBJ_ID_MASK                     0xFFFFFFFF
 typedef uint_32 FTE_OBJECT_ID;
@@ -226,7 +228,9 @@ typedef struct _fte_object_action_struct
     _mqx_uint       (*f_run)(FTE_OBJECT_PTR pSelf);
     _mqx_uint       (*f_stop)(FTE_OBJECT_PTR pSelf);
     _mqx_uint       (*f_set)(FTE_OBJECT_PTR pSelf, FTE_VALUE_PTR pValue);
+    _mqx_uint       (*f_get)(FTE_OBJECT_PTR pSelf, FTE_VALUE_PTR pValue);
     _mqx_uint       (*f_set_multi)(FTE_OBJECT_PTR pSelf, uint_32 nIndex, FTE_VALUE_PTR pValue);
+    _mqx_uint       (*f_get_multi)(FTE_OBJECT_PTR pSelf, uint_32 nIndex, FTE_VALUE_PTR pValue);
     _mqx_uint       (*f_get_sn)(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 nLen);
     uint_32         (*f_get_update_interval)(FTE_OBJECT_PTR pObj);
     _mqx_uint       (*f_set_update_interval)(FTE_OBJECT_PTR pObj, uint_32 nInterval);
@@ -370,5 +374,7 @@ int_32          FTE_OBJ_SHELL_cmd(int_32 argc, char_ptr argv[]);
 #include "obj/fte_mst_mex510c.h"
 #include "obj/fte_gs_dpc.h"
 #include "obj/fte_ftlm.h"
+#include "obj/fte_cias.h"
+#include "obj/fte_ioex.h"
 
 #endif
