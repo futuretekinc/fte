@@ -2,7 +2,6 @@
 #include "fte_spi.h"
 
 #define MAX_SPI_COUNT   3
-//#define DEBUG_SPI       1
 static _mqx_int    _FTE_SPI_setCS(uint_32 cs_mask, pointer user_data);
 static _mqx_uint   _FTE_SPI_lock(FTE_SPI_PTR pSPI);
 static _mqx_uint   _FTE_SPI_unlock(FTE_SPI_PTR pSPI);
@@ -92,7 +91,7 @@ _mqx_uint   FTE_SPI_attach(FTE_SPI_PTR pSPI, uint_32 nParent)
             goto error;
         }
 
-        nValue = SPI_CLK_POL_PHA_MODE3;
+        nValue = SPI_CLK_POL_PHA_MODE1;
          if (SPI_OK != ioctl (pSPI->pChannel->xFD, IO_IOCTL_SPI_SET_MODE, &nValue))
         {
             goto error;

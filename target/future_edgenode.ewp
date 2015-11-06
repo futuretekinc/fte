@@ -168,11 +168,12 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state>FTE_ES19=1</state>
+          <state>FTE_ES=1</state>
           <state>FTE_V2=1</state>
           <state>FTE_DEBUG=1</state>
           <state>FREESCALE_MQX</state>
           <state>NO_FILESYSTEM</state>
+          <state>PLATFORM=4</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -310,6 +311,7 @@
           <state>$PROJ_DIR$/include/task</state>
           <state>$PROJ_DIR$/include/obj</state>
           <state>$PROJ_DIR$/include/sys</state>
+          <state>$PROJ_DIR$/include/lora</state>
           <state>$PROJ_DIR$/../mqx/include</state>
           <state>$PROJ_DIR$/../mqx/include/bsp</state>
           <state>$PROJ_DIR$/../mqx/include/bsp/Sources</state>
@@ -344,6 +346,8 @@
           <state>$PROJ_DIR$/../FNET 1.0.0/fnet_stack/services/telnet</state>
           <state>$PROJ_DIR$/../FNET 1.0.0/fnet_stack/services/tftp</state>
           <state>$PROJ_DIR$/../FNET 1.0.0/fnet_stack/stack</state>
+          <state>$PROJ_DIR$/../LoRa/radio</state>
+          <state>$PROJ_DIR$/../LoRa/platform</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -2219,6 +2223,9 @@
         <name>$PROJ_DIR$\..\lib\libjsmnd.a</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\lib\liblorad.a</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\lib\libnxjsond.a</name>
       </file>
       <file>
@@ -2319,6 +2326,18 @@
       <name>event</name>
       <file>
         <name>$PROJ_DIR$\source\obj\fte_event.c</name>
+      </file>
+    </group>
+    <group>
+      <name>LoRa</name>
+      <file>
+        <name>$PROJ_DIR$\source\lora\fte_lora.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\lora\fte_lora_utils.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\LoRa\platform\fte\sx1276-Hal.c</name>
       </file>
     </group>
     <group>

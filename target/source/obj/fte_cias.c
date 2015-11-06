@@ -6,6 +6,8 @@
 #include "fte_time.h"
 #include "fte_task.h"
 
+#if FTE_CIAS_SIOUX_CU_SUPPORTED
+
 static  FTE_CIAS_SIOUX_CU   SIOUX_CU[FTE_CIAS_SIOUX_CU_MAX];
 FTE_VALUE_TYPE  FTE_CIAS_SIOUX_CU_valueTypes[] =
 {    
@@ -455,3 +457,4 @@ int_32 FTE_CIAS_SIOUX_CU_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
     
     return  nRet;
 } 
+#endif

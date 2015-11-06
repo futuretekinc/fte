@@ -15,6 +15,7 @@
 #include "io.h"
 #include "fte_db.h"
 #include "fte_cias.h"
+#include "fte_lora.h"
 
 uint_32     FTE_SHELL_getPasswd(MQX_FILE_PTR pFile, char_ptr pPasswd, uint_32 ulMaxLen, uint_32 ulTimeout);
 int_32      FTE_SHELL_cmdPasswd(int_32 nArgc, char_ptr pArgv[]);
@@ -64,6 +65,9 @@ const SHELL_COMMAND_STRUCT pSHELLCommands[] =
 #if FTE_LOG_SUPPORTED
     { "log",        FTE_LOG_SHELL_cmd},
 #endif
+
+    { "lora",   FTE_LORA_SHELL_cmd},
+
 #if FTE_MCP23S08_SUPPORTED
     {"mcp23s08",    FTE_MCP23S08_SHELL_cmd},
 #endif

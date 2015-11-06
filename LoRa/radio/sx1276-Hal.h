@@ -36,7 +36,11 @@
 // RXTX pin control see errata note
 #define RXTX( txEnable )                            SX1276WriteRxTx( txEnable );
 
+#ifdef __MQX__
+#define GET_TICK_COUNT( )                           ( _time_get_hwticks() )
+#else
 #define GET_TICK_COUNT( )                           ( TickCounter )
+#endif
 #define TICK_RATE_MS( ms )                          ( ms )
 
 typedef enum

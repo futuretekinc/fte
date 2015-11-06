@@ -6,6 +6,7 @@
 #include "fte_cias.h"
 #include "sys/fte_sys.h"
 #include "sys/fte_sys_msg.h"
+#include "fte_lora.h"
 #include <watchdog.h>
 
 /*TASK*-----------------------------------------------------------------
@@ -32,14 +33,21 @@ void FTE_TASK_main(uint_32 params)
     FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
 
     
+#if FTE_NET_SUPPORTED
 #if FTE_TASK_NET
     _task_create(0, FTE_TASK_NET, 0);
 #endif
+#endif
+    
 #if FTE_CONSOLE_SUPPORTED
     _task_create(0, FTE_TASK_SHELL, 0);
 #endif
 
     _task_create(0, FTE_TASK_OBJECT_MNGT, 0);
+    
+#if FTE_LORA_SUPPORTED
+    FTE_LORA_init();
+#endif
     
     fte_platform_run();
     

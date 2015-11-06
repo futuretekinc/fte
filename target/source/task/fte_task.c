@@ -7,8 +7,9 @@
 #include "fte_cias.h"
 #include "fte_task.h"
 #include "fte_task_watchdog.h"
+#include "fte_lora.h"
 #include <rtcs.h>
-
+ 
 /*
 ** MQX initialization information
 */
@@ -132,6 +133,28 @@ const TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .TASK_NAME              =   "IOEX",                 /* Name */
         .TASK_ATTRIBUTES        =   0,                      /* Attributes */
         .CREATION_PARAMETER     =   0,                      /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+#endif
+#if FTE_TASK_LORA
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_LORA_COMM,     /* Task Index */
+        .TASK_ADDRESS           =   FTE_LORA_comm,          /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_LORA_STACK,    /* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_LORA_PRIO,     /* Priority */
+        .TASK_NAME              =   "LoRa COMM",            /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   (uint_32)0,             /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_LORA,          /* Task Index */
+        .TASK_ADDRESS           =   FTE_LORA_process,       /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_LORA_STACK,    /* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_LORA_PRIO,     /* Priority */
+        .TASK_NAME              =   "LoRa Process",         /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   (uint_32)0,             /* Param */
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
     },
 #endif

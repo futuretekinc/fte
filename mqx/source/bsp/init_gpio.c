@@ -471,13 +471,21 @@ _mqx_int _bsp_dspi_io_init
     {
         case 0:
             /* Configure GPIOD for SPI0 peripheral function */
+#if 0
             pctl = (PORT_MemMapPtr)PORTC_BASE_PTR;
 
 //            pctl->PCR[4] = PORT_PCR_MUX(2);     /* SPI0.PCS0   */
             pctl->PCR[5] = PORT_PCR_MUX(2);     /* SPI0.SCK    */
             pctl->PCR[6] = PORT_PCR_MUX(2);     /* SPI0.SOUT   */
             pctl->PCR[7] = PORT_PCR_MUX(2);     /* SPI0.SIN    */
+#else
+            pctl = (PORT_MemMapPtr)PORTA_BASE_PTR;
 
+//            pctl->PCR[14] = PORT_PCR_MUX(2);     /* SPI0.PCS0   */
+            pctl->PCR[15] = PORT_PCR_MUX(2);     /* SPI0.SCK    */
+            pctl->PCR[16] = PORT_PCR_MUX(2);     /* SPI0.SOUT   */
+            pctl->PCR[17] = PORT_PCR_MUX(2);     /* SPI0.SIN    */
+#endif
             /* Enable clock gate to SPI0 module */
             sim->SCGC6 |= SIM_SCGC6_SPI0_MASK;
             break;

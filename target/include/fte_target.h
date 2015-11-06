@@ -52,6 +52,8 @@
 #define FTE_TASK_EVENT                  10
 #define FTE_TASK_CIAS_SIOUX_CU          11
 #define FTE_TASK_IOEX                   12
+#define FTE_TASK_LORA                   13
+#define FTE_TASK_LORA_COMM              14
      
 #define FTE_TASK_DEFAULT_STACK          512
 
@@ -108,6 +110,11 @@
 #if FTE_TASK_IOEX
     #define FTE_TASK_IOEX_STACK         (FTE_TASK_DEFAULT_STACK * 2)
     #define FTE_TASK_IOEX_PRIO          9
+#endif
+
+#if FTE_TASK_LORA
+    #define FTE_TASK_LORA_STACK         (FTE_TASK_DEFAULT_STACK * 4)
+    #define FTE_TASK_LORA_PRIO          9
 #endif
 
 /******************************************************************************

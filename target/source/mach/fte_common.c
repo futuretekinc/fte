@@ -612,6 +612,94 @@ FTE_LWGPIO_CONFIG   pLWGPIOConfigs[] =
         .nInactive  = LWGPIO_VALUE_HIGH
     },
 #endif
+#if FTE_DEV_LWGPIO_LORA_CS
+    {
+        .nID        = FTE_DEV_LWGPIO_LORA_CS,
+        .nLWGPIO    = FTE_GPIO_LORA_CS,
+        .nMUX       = FTE_GPIO_LORA_CS_MUX,
+        .nDIR       = LWGPIO_DIR_OUTPUT,
+        .nInit      = LWGPIO_VALUE_HIGH,
+        .nActive    = LWGPIO_VALUE_LOW,
+        .nInactive  = LWGPIO_VALUE_HIGH
+    },
+#endif
+#if FTE_DEV_LWGPIO_LORA_DIO0
+    {
+        .nID        = FTE_DEV_LWGPIO_LORA_DIO0,
+        .nLWGPIO    = FTE_GPIO_LORA_DIO0,
+        .nMUX       = FTE_GPIO_LORA_DIO0_MUX,
+        .nDIR       = LWGPIO_DIR_INPUT,
+        .nInit      = LWGPIO_VALUE_LOW,
+        .nActive    = LWGPIO_VALUE_HIGH,
+        .nInactive  = LWGPIO_VALUE_LOW
+    },
+#endif
+#if FTE_DEV_LWGPIO_LORA_DIO1
+    {
+        .nID        = FTE_DEV_LWGPIO_LORA_DIO1,
+        .nLWGPIO    = FTE_GPIO_LORA_DIO1,
+        .nMUX       = FTE_GPIO_LORA_DIO1_MUX,
+        .nDIR       = LWGPIO_DIR_INPUT,
+        .nInit      = LWGPIO_VALUE_LOW,
+        .nActive    = LWGPIO_VALUE_HIGH,
+        .nInactive  = LWGPIO_VALUE_LOW
+    },
+#endif
+#if FTE_DEV_LWGPIO_LORA_DIO2
+    {
+        .nID        = FTE_DEV_LWGPIO_LORA_DIO2,
+        .nLWGPIO    = FTE_GPIO_LORA_DIO2,
+        .nMUX       = FTE_GPIO_LORA_DIO2_MUX,
+        .nDIR       = LWGPIO_DIR_INPUT,
+        .nInit      = LWGPIO_VALUE_LOW,
+        .nActive    = LWGPIO_VALUE_HIGH,
+        .nInactive  = LWGPIO_VALUE_LOW
+    },
+#endif
+#if FTE_DEV_LWGPIO_LORA_DIO3
+    {
+        .nID        = FTE_DEV_LWGPIO_LORA_DIO3,
+        .nLWGPIO    = FTE_GPIO_LORA_DIO3,
+        .nMUX       = FTE_GPIO_LORA_DIO3_MUX,
+        .nDIR       = LWGPIO_DIR_OUTPUT,
+        .nInit      = LWGPIO_VALUE_LOW,
+        .nActive    = LWGPIO_VALUE_HIGH,
+        .nInactive  = LWGPIO_VALUE_LOW
+    },
+#endif
+#if FTE_DEV_LWGPIO_LORA_DIO4
+    {
+        .nID        = FTE_DEV_LWGPIO_LORA_DIO4,
+        .nLWGPIO    = FTE_GPIO_LORA_DIO4,
+        .nMUX       = FTE_GPIO_LORA_DIO4_MUX,
+        .nDIR       = LWGPIO_DIR_OUTPUT,
+        .nInit      = LWGPIO_VALUE_LOW,
+        .nActive    = LWGPIO_VALUE_HIGH,
+        .nInactive  = LWGPIO_VALUE_LOW
+    },
+#endif
+#if FTE_DEV_LWGPIO_LORA_DIO5
+    {
+        .nID        = FTE_DEV_LWGPIO_LORA_DIO5,
+        .nLWGPIO    = FTE_GPIO_LORA_DIO5,
+        .nMUX       = FTE_GPIO_LORA_DIO5_MUX,
+        .nDIR       = LWGPIO_DIR_OUTPUT,
+        .nInit      = LWGPIO_VALUE_LOW,
+        .nActive    = LWGPIO_VALUE_HIGH,
+        .nInactive  = LWGPIO_VALUE_LOW
+    },
+#endif
+#if FTE_DEV_LWGPIO_LORA_CTX
+    {
+        .nID        = FTE_DEV_LWGPIO_LORA_CTX,
+        .nLWGPIO    = FTE_GPIO_LORA_CTX,
+        .nMUX       = FTE_GPIO_LORA_CTX_MUX,
+        .nDIR       = LWGPIO_DIR_OUTPUT,
+        .nInit      = LWGPIO_VALUE_LOW,
+        .nActive    = LWGPIO_VALUE_HIGH,
+        .nInactive  = LWGPIO_VALUE_LOW
+    },
+#endif
 #if FTE_DEV_LWGPIO_GAS_OUTPUT
     {
         .nID        = FTE_DEV_LWGPIO_GAS_OUTPUT,
@@ -1107,6 +1195,14 @@ FTE_SPI_CONFIG      pSPIConfigs[] =
     {   .nID        = FTE_DEV_SPI_0_0,
         .xPort      = 0,
         .xCSGPIO    = FTE_DEV_LWGPIO_MCP23S08_CS,
+        .nBaudrate  = 500000,
+        .xFlags     = 0
+    },
+#endif
+#if FTE_LORA_SUPPORTED
+    {   .nID        = FTE_DEV_SPI_0_0,
+        .xPort      = 0,
+        .xCSGPIO    = FTE_DEV_LWGPIO_LORA_CS,
         .nBaudrate  = 500000,
         .xFlags     = 0
     },

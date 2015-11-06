@@ -1,80 +1,128 @@
 #include "fte_target.h"
 #include "fte_buff.h"
 
-/* Local variables */
-static LWSEM_STRUCT _lwsem;
-static uint_32      _buff_len = 0;
-static uint_8 _PTR_ _buff = NULL;
 
-_mqx_uint fte_buff_init(uint_32 size)
-{ 
-    _mqx_uint ret;
+FTE_FBM_PTR FTE_FBM_create(uint_32 ulUnit, uint_32 ulMaxCount)
+{
+    FTE_FBM_PTR pFBM = NULL;
     
-    /* Create the lightweight semaphore */
-    ret = _lwsem_create(&_lwsem, 1);
-    if (ret != MQX_OK)  
+    pFBM = (FTE_FBM_PTR)FTE_MEM_allocZero(sizeof(FTE_FBM));
+    if (pFBM == NULL)
     {
-        DEBUG("\nCreating sem failed: 0x%X", ret);
-        return  ret;
+        goto error;
     }
     
-    _buff = (uint_8_ptr)FTE_MEM_allocZero(size);
-    if (_buff == NULL)
+    for(int i = 0 ; i < ulMaxCount ; i++)
     {
-        DEBUG("\nNot enough memory: Size = %d", size);
-        return  MQX_ERROR;
-    }
-    _buff_len = size;
-    
-    return  MQX_OK;
-}
-
-uint_32 fte_buff_size(void)
-{
-    return  _buff_len;
-}
-
-_mqx_uint fte_buff_lock(pointer _PTR_ buffer)
-{
-#if 1
-    _mqx_uint   ret;
-
-    assert(buffer != NULL);
-    
-    printf("%s : %08x\n", __func__, buffer);
-    ret = _lwsem_wait(&_lwsem);
-    if (ret != MQX_OK)
-    {  
-        DEBUG("\n_lwsem_wait failed");
-        return  ret;
-    }
-    
-    _PTR_ buffer = _buff;
-#else
-    _PTR_ buffer = FTE_MEM_alloc(1024);
-#endif
-    return  MQX_OK;
-}
-
-_mqx_uint fte_buff_unlock(pointer buffer)
-{
-    if (buffer != NULL)
-    {
-#if 1
-        _mqx_uint   ret;
-    
-        printf("%s : %08x\n", __func__, buffer);
-    
-        ret = _lwsem_post(&_lwsem);
-        if (ret != MQX_OK)
+        FTE_FBM_BUFF_PTR pBuff = (FTE_FBM_BUFF_PTR)FTE_MEM_allocZero(sizeof(FTE_FBM_BUFF) + ulUnit);    
+        if (pBuff == NULL)
         {
-            DEBUG("\n_lwsem_post failed");
-            return  ret;
+            goto error;
         }
-#else
-        FTE_MEM_free(buffer);    
-#endif    
+        
+        FTE_LIST_pushBack(&pFBM->xFreeList, pBuff);
+    }
+    
+    pFBM->ulUnit = ulUnit;
+    pFBM->ulMaxCount = ulMaxCount;
+    
+    _lwsem_create(&pFBM->xSemaphore, 1);
+   
+    return  pFBM;
+    
+error:
+    if (pFBM != NULL)
+    {
+        while(FTE_LIST_count(&pFBM->xAllocList) != 0)
+        {
+            FTE_FBM_BUFF_PTR    pBuff;
+            
+            if (FTE_LIST_popFront(&pFBM->xAllocList, (pointer *)&pBuff) == MQX_OK)
+            {
+                FTE_MEM_free(pBuff);
+            }
+        }
+
+        while(FTE_LIST_count(&pFBM->xFreeList) != 0)
+        {
+            FTE_FBM_BUFF_PTR    pBuff;
+            
+            if (FTE_LIST_popFront(&pFBM->xFreeList, (pointer *)&pBuff) == MQX_OK)
+            {
+                FTE_MEM_free(pBuff);
+            }
+        }
+        
+        FTE_MEM_free(pFBM);
+    }
+    
+    return  NULL;
+}
+
+_mqx_uint   FTE_FBM_destroy(FTE_FBM_PTR pFBM)
+{
+    if (pFBM != NULL)
+    {
+        while(FTE_LIST_count(&pFBM->xAllocList) != 0)
+        {
+            FTE_FBM_BUFF_PTR    pBuff;
+            
+            if (FTE_LIST_popFront(&pFBM->xAllocList, (pointer *)&pBuff) == MQX_OK)
+            {
+                FTE_MEM_free(pBuff);
+            }
+        }
+
+        while(FTE_LIST_count(&pFBM->xFreeList) != 0)
+        {
+            FTE_FBM_BUFF_PTR    pBuff;
+            
+            if (FTE_LIST_popFront(&pFBM->xFreeList, (pointer *)&pBuff) == MQX_OK)
+            {
+                FTE_MEM_free(pBuff);
+            }
+        }
+        
+        FTE_MEM_free(pFBM);
     }
     
     return  MQX_OK;
+}
+
+FTE_FBM_BUFF_PTR    FTE_FBM_alloc(FTE_FBM_PTR pFBM, uint_32 ulSize)
+{
+    FTE_FBM_BUFF_PTR pAlloc = NULL;
+    
+    if ((pFBM != NULL) && (FTE_LIST_count(&pFBM->xFreeList) != 0))
+    {
+        FTE_FBM_BUFF_PTR    pBuff;
+        
+        _lwsem_wait(&pFBM->xSemaphore);
+        
+        if (FTE_LIST_popFront(&pFBM->xFreeList, (pointer *)&pBuff) == MQX_OK)
+        {
+            FTE_LIST_pushBack(&pFBM->xAllocList, pBuff);
+            pBuff->ulSize = ulSize;
+            
+            pAlloc = pBuff;
+        }
+        _lwsem_post(&pFBM->xSemaphore);
+    }
+    
+    return  pAlloc;
+}
+
+void        FTE_FBM_free(FTE_FBM_PTR pFBM, FTE_FBM_BUFF_PTR pBlock)
+{
+    if (pFBM != NULL)
+    {
+        _lwsem_wait(&pFBM->xSemaphore);
+        
+        if (FTE_LIST_remove(&pFBM->xAllocList, pBlock) == MQX_OK)
+        {
+            FTE_LIST_pushBack(&pFBM->xFreeList, pBlock);
+        }
+        
+        _lwsem_post(&pFBM->xSemaphore);
+    }
 }

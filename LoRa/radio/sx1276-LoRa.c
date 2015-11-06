@@ -99,11 +99,11 @@ const int32_t HoppingFrequencies[] =
 // Default settings
 tLoRaSettings LoRaSettings =
 {
-    870000000,        // RFFrequency
+    915000000,        // RFFrequency
     20,               // Power
     9,                // SignalBw [0: 7.8kHz, 1: 10.4 kHz, 2: 15.6 kHz, 3: 20.8 kHz, 4: 31.2 kHz,
                       // 5: 41.6 kHz, 6: 62.5 kHz, 7: 125 kHz, 8: 250 kHz, 9: 500 kHz, other: Reserved]
-    7,                // SpreadingFactor [6: 64, 7: 128, 8: 256, 9: 512, 10: 1024, 11: 2048, 12: 4096  chips]
+    9,                // SpreadingFactor [6: 64, 7: 128, 8: 256, 9: 512, 10: 1024, 11: 2048, 12: 4096  chips]
     2,                // ErrorCoding [1: 4/5, 2: 4/6, 3: 4/7, 4: 4/8]
     true,             // CrcOn [0: OFF, 1: ON]
     false,            // ImplicitHeaderOn [0: OFF, 1: ON]
@@ -112,7 +112,7 @@ tLoRaSettings LoRaSettings =
     4,                // HopPeriod Hops every frequency hopping period symbols
     100,              // TxPacketTimeout
     100,              // RxPacketTimeout
-    128,              // PayloadLength (used for implicit header mode)
+    64,              // PayloadLength (used for implicit header mode)
 };
 
 /*!
