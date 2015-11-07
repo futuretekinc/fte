@@ -19,16 +19,9 @@
  * Last modified by Miguel Luis on Jun 19 2013
  */
 #include <string.h>
-
-#include "platform.h"
-
-#if defined( USE_SX1276_RADIO )
-
-#include "radio.h"
-
+#include <stdint.h>
+#include <stdbool.h>
 #include "sx1276-Hal.h"
-#include "sx1276.h"
-
 #include "sx1276-LoRaMisc.h"
 #include "sx1276-LoRa.h"
 
@@ -107,7 +100,7 @@ tLoRaSettings LoRaSettings =
     2,                // ErrorCoding [1: 4/5, 2: 4/6, 3: 4/7, 4: 4/8]
     true,             // CrcOn [0: OFF, 1: ON]
     false,            // ImplicitHeaderOn [0: OFF, 1: ON]
-    1,                // RxSingleOn [0: Continuous, 1 Single]
+    0,                // RxSingleOn [0: Continuous, 1 Single]
     0,                // FreqHopOn [0: OFF, 1: ON]
     4,                // HopPeriod Hops every frequency hopping period symbols
     100,              // TxPacketTimeout
@@ -118,14 +111,15 @@ tLoRaSettings LoRaSettings =
 /*!
  * SX1276 LoRa registers variable
  */
-tSX1276LR* SX1276LR;
+uint8_t SX1276Regs[0x70];
+tSX1276LR* SX1276LR = (tSX1276LR*)SX1276Regs;
 
 /*!
  * Local RF buffer for communication support
  */
 static uint8_t RFBuffer[RF_BUFFER_SIZE];
 
-/*!
+/*! 
  * RF state machine variable
  */
 static uint8_t RFLRState = RFLR_STATE_IDLE;
@@ -148,8 +142,25 @@ static uint32_t PacketTimeout;
  */
 static uint16_t TxPacketSize = 0;
 
+static uint32_t TxPacketCount = 0;
+static uint32_t RxPacketCount = 0;
+
 void SX1276LoRaInit( void )
 {
+    SX1276LoRaSetOpMode( RFLR_OPMODE_SLEEP );
+    
+    SX1276LR->RegOpMode = ( SX1276LR->RegOpMode & RFLR_OPMODE_LONGRANGEMODE_MASK ) | RFLR_OPMODE_LONGRANGEMODE_ON;
+    SX1276Write( REG_LR_OPMODE, SX1276LR->RegOpMode );
+    
+    SX1276LoRaSetOpMode( RFLR_OPMODE_STANDBY );
+                                    // RxDone               RxTimeout                   FhssChangeChannel           CadDone
+    SX1276LR->RegDioMapping1 = RFLR_DIOMAPPING1_DIO0_00 | RFLR_DIOMAPPING1_DIO1_00 | RFLR_DIOMAPPING1_DIO2_00 | RFLR_DIOMAPPING1_DIO3_00;
+                                    // CadDetected          ModeReady
+    SX1276LR->RegDioMapping2 = RFLR_DIOMAPPING2_DIO4_00 | RFLR_DIOMAPPING2_DIO5_00;
+    SX1276WriteBuffer( REG_LR_DIOMAPPING1, &SX1276LR->RegDioMapping1, 2 );
+    
+    SX1276ReadBuffer( REG_LR_OPMODE, SX1276Regs + 1, 0x70 - 1 );
+    
     RFLRState = RFLR_STATE_IDLE;
 
     SX1276LoRaSetDefaults( );
@@ -216,17 +227,6 @@ void SX1276LoRaSetDefaults( void )
 
 void SX1276LoRaReset( void )
 {
-    SX1276SetReset( RADIO_RESET_ON );
-    
-    // Wait 1ms
-    uint32_t startTick = GET_TICK_COUNT( );
-    while( ( GET_TICK_COUNT( ) - startTick ) < TICK_RATE_MS( 1 ) );    
-
-    SX1276SetReset( RADIO_RESET_OFF );
-    
-    // Wait 6ms
-    startTick = GET_TICK_COUNT( );
-    while( ( GET_TICK_COUNT( ) - startTick ) < TICK_RATE_MS( 6 ) );    
 }
 
 void SX1276LoRaSetOpMode( uint8_t opMode )
@@ -306,6 +306,11 @@ void SX1276LoRaStartRx( void )
     SX1276LoRaSetRFState( RFLR_STATE_RX_INIT );
 }
 
+void SX1276LoRaStartCAD( void )
+{
+    SX1276LoRaSetRFState( RFLR_STATE_CAD_INIT );
+}
+
 void SX1276LoRaGetRxPacket( void *buffer, uint16_t *size )
 {
     *size = RxPacketSize;
@@ -329,6 +334,26 @@ uint8_t SX1276LoRaGetRFState( void )
 void SX1276LoRaSetRFState( uint8_t state )
 {
     RFLRState = state;
+}
+
+void     SX1276LoRaResetRxPacketCount( void )
+{
+    RxPacketCount = 0;
+}
+
+uint32_t SX1276LoRaGetRxPacketCount( void )
+{
+    return  RxPacketCount;
+}
+
+void     SX1276LoRaResetTxPacketCount( void )
+{
+    TxPacketCount = 0;
+}
+
+uint32_t SX1276LoRaGetTxPacketCount( void )
+{
+    return  TxPacketCount;
 }
 
 /*!
@@ -541,6 +566,7 @@ uint32_t SX1276LoRaProcess( void )
         {
             RFLRState = RFLR_STATE_RX_RUNNING;
         }
+        RxPacketCount++;
         result = RF_RX_DONE;
         break;
     case RFLR_STATE_RX_TIMEOUT:
@@ -626,6 +652,7 @@ uint32_t SX1276LoRaProcess( void )
         SX1276LoRaSetOpMode( RFLR_OPMODE_STANDBY );
 
         RFLRState = RFLR_STATE_IDLE;
+        TxPacketCount++;
         result = RF_TX_DONE;
         break;
     case RFLR_STATE_CAD_INIT:    
@@ -677,5 +704,3 @@ uint32_t SX1276LoRaProcess( void )
     } 
     return result;
 }
-
-#endif // USE_SX1276_RADIO

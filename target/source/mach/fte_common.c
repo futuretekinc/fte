@@ -656,12 +656,12 @@ FTE_LWGPIO_CONFIG   pLWGPIOConfigs[] =
         .nInactive  = LWGPIO_VALUE_LOW
     },
 #endif
-#if FTE_DEV_LWGPIO_LORA_DIO3
+#if FTE_DEV_LWGPIO_LORA_DIO3 
     {
         .nID        = FTE_DEV_LWGPIO_LORA_DIO3,
         .nLWGPIO    = FTE_GPIO_LORA_DIO3,
         .nMUX       = FTE_GPIO_LORA_DIO3_MUX,
-        .nDIR       = LWGPIO_DIR_OUTPUT,
+        .nDIR       = LWGPIO_DIR_INPUT,
         .nInit      = LWGPIO_VALUE_LOW,
         .nActive    = LWGPIO_VALUE_HIGH,
         .nInactive  = LWGPIO_VALUE_LOW
@@ -672,7 +672,7 @@ FTE_LWGPIO_CONFIG   pLWGPIOConfigs[] =
         .nID        = FTE_DEV_LWGPIO_LORA_DIO4,
         .nLWGPIO    = FTE_GPIO_LORA_DIO4,
         .nMUX       = FTE_GPIO_LORA_DIO4_MUX,
-        .nDIR       = LWGPIO_DIR_OUTPUT,
+        .nDIR       = LWGPIO_DIR_INPUT,
         .nInit      = LWGPIO_VALUE_LOW,
         .nActive    = LWGPIO_VALUE_HIGH,
         .nInactive  = LWGPIO_VALUE_LOW
@@ -683,7 +683,7 @@ FTE_LWGPIO_CONFIG   pLWGPIOConfigs[] =
         .nID        = FTE_DEV_LWGPIO_LORA_DIO5,
         .nLWGPIO    = FTE_GPIO_LORA_DIO5,
         .nMUX       = FTE_GPIO_LORA_DIO5_MUX,
-        .nDIR       = LWGPIO_DIR_OUTPUT,
+        .nDIR       = LWGPIO_DIR_INPUT,
         .nInit      = LWGPIO_VALUE_LOW,
         .nActive    = LWGPIO_VALUE_HIGH,
         .nInactive  = LWGPIO_VALUE_LOW

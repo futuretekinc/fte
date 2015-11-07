@@ -1,14 +1,13 @@
+#include <stdbool.h>
 #include "fte_target.h"
-#include "radio.h"
 #include "fte_lora.h"
 #include "fte_lora_utils.h"
-#include <stdbool.h>
-#include "sx1276.h"
+#include "fte_buff.h"
+#include "fte_debug.h"
+#include "sx1276-Hal.h"
 #include "sx1276-LoRa.h"
 #include "sx1276-LoRaMisc.h"
-#include "fte_buff.h"
 
-tRadioDriver*       pRadio = NULL;
 FTE_LIST            xRcvdList;
 FTE_LIST            xSendList;
 FTE_FBM_PTR         pFBM = NULL;
@@ -20,14 +19,10 @@ _mqx_uint   FTE_LORA_init(void)
     
     pFBM = FTE_FBM_create(RF_BUFFER_SIZE_MAX, 8);
 
-    pRadio = RadioDriverInit( );
-
-    pRadio->Init( );
+    SX1276InitIo( );
     
-    pRadio->StartRx( );
-    
-    FTE_LORA_init();
-    
+    SX1276LoRaInit( );
+   
     _task_create(0, FTE_TASK_LORA_COMM, 0);
     _task_create(0, FTE_TASK_LORA, 0);
 
@@ -36,45 +31,24 @@ _mqx_uint   FTE_LORA_init(void)
 
 void FTE_LORA_comm(uint_32 params)
 {
-    uint_8  pBuffer[RF_BUFFER_SIZE_MAX];
-    uint_16 usBufferSize = RF_BUFFER_SIZE_MAX;
-    uint_32  ulSendCount = 0;
+    uint_8      pBuffer[RF_BUFFER_SIZE_MAX];
+    uint_16     usBufferSize = RF_BUFFER_SIZE_MAX;
     
     FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
     
-    
+    SX1276LoRaStartRx();   
     while(1)
     {
-        switch( pRadio->Process( ) )
+        uint_32     ulState;
+        boolean     bTxON = FALSE;
+        
+        ulState = SX1276LoRaProcess();
+        
+        switch( ulState )
         {
-        case    RF_IDLE:
-            {
-                if (FTE_LIST_count(&xSendList) == 0)
-                {
-                    pRadio->StartRx();
-                    ulSendCount = 0;
-                }
-                else
-                {
-                    FTE_FBM_BUFF_PTR pBlock;
-                    if (FTE_LIST_popFront(&xSendList, (pointer *)&pBlock) == MQX_OK)
-                    {
-                        pRadio->SetTxPacket(pBlock->pBuff, pBlock->ulSize);
-                        ulSendCount++;
-                        FTE_FBM_free(pFBM, pBlock);
-                    }
-                }
-            }
-            break;
-             
-        case    RF_BUSY:
-            {
-            }
-            break;
-            
         case    RF_RX_DONE:
             {
-                pRadio->GetRxPacket( pBuffer, ( uint16_t* )&usBufferSize );
+                SX1276LoRaGetRxPacket( pBuffer, ( uint16_t* )&usBufferSize );
                 if (usBufferSize != 0)
                 {
                     FTE_FBM_BUFF_PTR pBlock = FTE_FBM_alloc(pFBM, usBufferSize);
@@ -85,72 +59,52 @@ void FTE_LORA_comm(uint_32 params)
                         FTE_LIST_pushBack(&xRcvdList, pBlock);
                     }                    
                 }
-                
-                if (FTE_LIST_count(&xSendList) == 0)
-                {
-                    pRadio->StartRx();
-                }
-                else
-                {
-                    FTE_FBM_BUFF_PTR pBlock;
-                    if (FTE_LIST_popFront(&xSendList, (pointer *)&pBlock) == MQX_OK)
-                    {
-                        pRadio->SetTxPacket(pBlock->pBuff, pBlock->ulSize);
-                        ulSendCount++;
-                        FTE_FBM_free(pFBM, pBlock);
-                    }
-                }
             }
-            break;
-            
+        case    RF_IDLE:
+        case    RF_BUSY:
         case    RF_RX_TIMEOUT:
-            {
-                ulSendCount = 0;
-            }
-            break;
-            
         case    RF_TX_DONE:
             {
-                if ((FTE_LIST_count(&xSendList) == 0) || (ulSendCount > 4))
-                {
-                    pRadio->StartRx();
-                    ulSendCount = 0;
-                }
-                else
-                {
-                    FTE_FBM_BUFF_PTR pBlock;
-                    if (FTE_LIST_popFront(&xSendList, (pointer *)&pBlock) == MQX_OK)
-                    {
-                        pRadio->SetTxPacket(pBlock->pBuff, pBlock->ulSize);
-                        ulSendCount++;
-                        FTE_FBM_free(pFBM, pBlock);
-                    }
-                }
+                bTxON = TRUE;
             }
             break;
             
         case    RF_TX_TIMEOUT:
             {
+                DEBUG("RF_TX_TIMEOUT\n");
             }
             break;
             
         case    RF_LEN_ERROR:
             {
+                DEBUG("RF_LEN_ERROR\n");
             }
             break;
             
         case    RF_CHANNEL_EMPTY:
             {
+                DEBUG("Channel Empty\n");
             }
             break;
             
         case    RF_CHANNEL_ACTIVITY_DETECTED:
             {
+                DEBUG("RF_CHANNEL_ACTIVITY_DETECTED\n");
             }
             break;
         }
-
-        _time_delay(1);
+        
+        if (bTxON && (FTE_LIST_count(&xSendList) != 0))
+        {
+            FTE_FBM_BUFF_PTR pBlock;
+            if (FTE_LIST_popFront(&xSendList, (pointer *)&pBlock) == MQX_OK)
+            {
+                SX1276LoRaSetTxPacket(pBlock->pBuff, pBlock->ulSize);
+                FTE_FBM_free(pFBM, pBlock);
+            }            
+        }
+        
+        _time_delay(10);
     }      
 }
 
@@ -165,12 +119,30 @@ void FTE_LORA_process(uint_32 params)
             FTE_FBM_BUFF_PTR pBlock;
             if (FTE_LIST_popFront(&xRcvdList, (pointer *)&pBlock) == MQX_OK)
             {
+//                DEBUG("Packet Received : %d\n", pBlock->ulSize);
+//                DEUMP(pBlock->pBuff, pBlock->ulSize);
+                
                 FTE_FBM_free(pFBM, pBlock);
             }
         }
 
         _time_delay(1);
     }      
+}
+
+_mqx_uint FTE_LORA_send(uint_8_ptr pData, uint_32 ulDataSize)
+{
+    FTE_FBM_BUFF_PTR pBlock = FTE_FBM_alloc(pFBM, ulDataSize);
+    if (pBlock == NULL)
+    {
+        return  MQX_NOT_ENOUGH_MEMORY;
+    }
+    
+    memcpy(pBlock->pBuff, pData, ulDataSize);
+    pBlock->ulSize = ulDataSize;
+    FTE_LIST_pushBack(&xSendList, pBlock);
+    
+    return  MQX_OK;
 }
 
 int_32  FTE_LORA_SHELL_cmd(int_32 argc, char_ptr argv[])
@@ -186,20 +158,24 @@ int_32  FTE_LORA_SHELL_cmd(int_32 argc, char_ptr argv[])
         {
         case    1:
             {                
-                double  dRssi;
-                    printf("%16s : %s\n", "Op Mode", FTE_LORA_getOpModeString(SX1276LoRaGetOpMode( )));
-                    printf("%16s : %d\n", "RF Frequency", SX1276LoRaGetRFFrequency( ));
-                    printf("%16s : %d\n", "Spreading Factor", SX1276LoRaGetSpreadingFactor( )); // SF6 only operates in implicit header mode.
-                    printf("%16s : %d\n", "Error Coding", SX1276LoRaGetErrorCoding( ));
-                    printf("%16s : %d\n", "Packet CRC ON", SX1276LoRaGetPacketCrcOn( ));
-                    printf("%16s : %d\n", "Bandwidth", SX1276LoRaGetSignalBandwidth( ));
-                    dRssi = SX1276ReadRssi( );
-                    printf("%16s : %d\n", "RSSI", (int_32)dRssi);
+                printf("%16s : %s\n", "Op Mode", FTE_LORA_getOpModeString(SX1276LoRaGetOpMode( )));
+                printf("%16s : %d\n", "RF Frequency", SX1276LoRaGetRFFrequency( ));
+                printf("%16s : %d\n", "Spreading Factor", SX1276LoRaGetSpreadingFactor( )); // SF6 only operates in implicit header mode.
+                printf("%16s : %d\n", "Error Coding", SX1276LoRaGetErrorCoding( ));
+                printf("%16s : %d\n", "Packet CRC ON", SX1276LoRaGetPacketCrcOn( ));
+                printf("%16s : %d\n", "Bandwidth", SX1276LoRaGetSignalBandwidth( ));
+                printf("%16s : %d dBm\n", "RSSI", (int_32)SX1276LoRaGetPacketRssi( ));
+                printf("%16s : %d\n", "Rx Packets", SX1276LoRaGetRxPacketCount());
+                printf("%16s : %d\n", "Tx Packets", SX1276LoRaGetTxPacketCount());
             }
             break;
             
-        case    2:
+        case    3:
             {
+                if (strcmp(argv[1], "send") == 0)
+                {
+                    FTE_LORA_send((uint_8_ptr)argv[2], strlen(argv[2]));
+                }
             }
             break;
             

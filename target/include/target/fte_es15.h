@@ -70,6 +70,7 @@
 #define FTE_HM1001_SUPPORTED                0
 #define FTE_MST_MEX510C_SUPPORTED           0
 
+#define FTE_NET_SUPPORTED                   1
 #define FTE_HTTPD_SUPPORTED                 0
 #define FTE_SNMPD_SUPPORTED                 1
 #define FTE_MQTT_SUPPORTED                  1

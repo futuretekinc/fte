@@ -173,7 +173,6 @@
           <state>FTE_DEBUG=1</state>
           <state>FREESCALE_MQX</state>
           <state>NO_FILESYSTEM</state>
-          <state>PLATFORM=4</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -2223,9 +2222,6 @@
         <name>$PROJ_DIR$\..\lib\libjsmnd.a</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\lib\liblorad.a</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$\..\lib\libnxjsond.a</name>
       </file>
       <file>
@@ -2337,7 +2333,13 @@
         <name>$PROJ_DIR$\source\lora\fte_lora_utils.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\LoRa\platform\fte\sx1276-Hal.c</name>
+        <name>$PROJ_DIR$\source\lora\sx1276-Hal.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\lora\sx1276-LoRa.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\lora\sx1276-LoRaMisc.c</name>
       </file>
     </group>
     <group>

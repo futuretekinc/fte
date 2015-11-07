@@ -7,4 +7,6 @@ int_32      FTE_LORA_SHELL_cmd(int_32 argc, char_ptr argv[]);
 void        FTE_LORA_process(uint_32 params);
 void        FTE_LORA_comm(uint_32 params);
 
+_mqx_uint FTE_LORA_send(uint_8_ptr pData, uint_32 ulDataSize);
+
 #endif

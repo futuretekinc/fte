@@ -82,6 +82,7 @@
 #define FTE_CIAS_SIOUX_CU_SUPPORTED         1
 #define FTE_IOEX_SUPPORTED                  1
 
+#define FTE_NET_SUPPORTED                   1
 #define FTE_HTTPD_SUPPORTED                 0
 #define FTE_SNMPD_SUPPORTED                 1
 #define FTE_MQTT_SUPPORTED                  0

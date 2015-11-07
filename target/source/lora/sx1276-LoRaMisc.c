@@ -26,13 +26,10 @@
  *
  * Last modified by Miguel Luis on Jun 19 2013
  */
-#include "platform.h"
 
-#if defined( USE_SX1276_RADIO )
-
+#include <stdint.h>
+#include <stdbool.h>
 #include "sx1276-Hal.h"
-#include "sx1276.h"
-
 #include "sx1276-LoRa.h"
 #include "sx1276-LoRaMisc.h"
 
@@ -407,5 +404,3 @@ uint8_t SX1276LoRaGetNbTrigPeaks( void )
     SX1276Read( 0x31, &SX1276LR->RegDetectOptimize );
     return ( SX1276LR->RegDetectOptimize & 0x07 );
 }
-
-#endif // USE_SX1276_RADIO

@@ -10,8 +10,13 @@
 
 #define FTE_CONSOLE_SUPPORTED               1
 #define FTE_LOG_SUPPORTED                   1
+#if FTE_V2
 #define FTE_PWR_SW_SUPPORTED                1
 #define FTE_FACTORY_RESET_SUPPORTED         1
+#else
+#define FTE_PWR_SW_SUPPORTED                0
+#define FTE_FACTORY_RESET_SUPPORTED         0
+#endif
 
 #define FTE_I2C_SUPPORTED                   0
 #define FTE_SSD1305_SUPPORTED               0
@@ -56,6 +61,7 @@
 #define FTE_MULTI_VOLTAGE_SUPPORTED         0
 #define FTE_MULTI_CURRENT_SUPPORTED         0
 #define FTE_MULTI_POWER_SUPPORTED           0 
+#define FTE_MULTI_VALUE_SUPPORTED           0
 
 // CO2 Sensors
 #define FTE_SH_MV250_SUPPORTED              0
@@ -73,6 +79,8 @@
 #define FTE_GUS_SUPPORTED                   1
 #define FTE_HM1001_SUPPORTED                0
 #define FTE_MST_MEX510C_SUPPORTED           0
+#define FTE_CIAS_SIOUX_CU_SUPPORTED         0
+#define FTE_IOEX_SUPPORTED                  0
 
 #define FTE_NET_SUPPORTED                   0
 #define FTE_HTTPD_SUPPORTED                 0

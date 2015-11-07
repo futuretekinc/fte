@@ -9,26 +9,27 @@
  * Copyright (C) SEMTECH S.A.
  */
 /*! 
- * \file       sx1272-LoRa.h
- * \brief      SX1272 RF chip driver mode LoRa
+ * \file       sx1276-LoRa.h
+ * \brief      SX1276 RF chip driver mode LoRa
  *
- * \version    2.0.B2
- * \date       Nov 21 2012
- * \author     Miguel Luis
+ * \version    2.0.B2 
+ * \date       May 6 2013
+ * \author     Gregory Cristian
  *
  * Last modified by Miguel Luis on Jun 19 2013
  */
-#ifndef __SX1272_LORA_H__
-#define __SX1272_LORA_H__
+#ifndef __SX1276_LORA_H__
+#define __SX1276_LORA_H__
 
 /*!
- * SX1272 LoRa General parameters definition
+ * SX1276 LoRa General parameters definition
  */
 typedef struct sLoRaSettings
 {
     uint32_t RFFrequency;
     int8_t Power;
-    uint8_t SignalBw;                   // LORA [0: 125 kHz, 1: 250 kHz, 2: 500 kHz, 3: Reserved] 
+    uint8_t SignalBw;                   // LORA [0: 7.8 kHz, 1: 10.4 kHz, 2: 15.6 kHz, 3: 20.8 kHz, 4: 31.2 kHz,
+                                        // 5: 41.6 kHz, 6: 62.5 kHz, 7: 125 kHz, 8: 250 kHz, 9: 500 kHz, other: Reserved]  
     uint8_t SpreadingFactor;            // LORA [6: 64, 7: 128, 8: 256, 9: 512, 10: 1024, 11: 2048, 12: 4096  chips]
     uint8_t ErrorCoding;                // LORA [1: 4/5, 2: 4/6, 3: 4/7, 4: 4/8]
     bool CrcOn;                         // [0: OFF, 1: ON]
@@ -67,17 +68,34 @@ typedef enum
 }tRFLRStates;
 
 /*!
- * SX1272 definitions
+ * RF process return code
+ */
+typedef enum
+{
+    RF_IDLE,
+    RF_BUSY,
+    RF_RX_DONE,
+    RF_RX_TIMEOUT,
+    RF_TX_DONE,
+    RF_TX_TIMEOUT,
+    RF_LEN_ERROR,
+    RF_CHANNEL_EMPTY,
+    RF_CHANNEL_ACTIVITY_DETECTED,
+}tRFProcessReturnCodes;
+
+/*!
+ * SX1276 definitions
  */
 #define XTAL_FREQ                                   32000000
 #define FREQ_STEP                                   61.03515625
 
 /*!
- * SX1272 Internal registers Address
+ * SX1276 Internal registers Address
  */
 #define REG_LR_FIFO                                 0x00 
 // Common settings
 #define REG_LR_OPMODE                               0x01 
+#define REG_LR_BANDSETTING                          0x04
 #define REG_LR_FRFMSB                               0x06 
 #define REG_LR_FRFMID                               0x07
 #define REG_LR_FRFLSB                               0x08 
@@ -113,6 +131,7 @@ typedef enum
 #define REG_LR_PAYLOADMAXLENGTH                     0x23 
 #define REG_LR_HOPPERIOD                            0x24 
 #define REG_LR_FIFORXBYTEADDR                       0x25
+#define REG_LR_MODEMCONFIG3                         0x26
 #define REG_LR_FEIMSB                               0x28
 #define REG_LR_FEIMIB                               0x29
 #define REG_LR_FEILSB                               0x2A
@@ -126,19 +145,19 @@ typedef enum
 // Version
 #define REG_LR_VERSION                              0x42
 // Additional settings
-#define REG_LR_AGCREF                               0x43
-#define REG_LR_AGCTHRESH1                           0x44
-#define REG_LR_AGCTHRESH2                           0x45
-#define REG_LR_AGCTHRESH3                           0x46
-#define REG_LR_PLLHOP                               0x4B
-#define REG_LR_TCXO                                 0x58
-#define REG_LR_PADAC                                0x5A
-#define REG_LR_PLL                                  0x5C
-#define REG_LR_PLLLOWPN                             0x5E
-#define REG_LR_FORMERTEMP                           0x6C
+#define REG_LR_PLLHOP                               0x44
+#define REG_LR_TCXO                                 0x4B
+#define REG_LR_PADAC                                0x4D
+#define REG_LR_FORMERTEMP                           0x5B
+#define REG_LR_BITRATEFRAC                          0x5D
+#define REG_LR_AGCREF                               0x61
+#define REG_LR_AGCTHRESH1                           0x62
+#define REG_LR_AGCTHRESH2                           0x63
+#define REG_LR_AGCTHRESH3                           0x64
+
 
 /*!
- * SX1272 LoRa bit control definition
+ * SX1276 LoRa bit control definition
  */
 
 /*!
@@ -156,6 +175,10 @@ typedef enum
 #define RFLR_OPMODE_ACCESSSHAREDREG_ENABLE          0x40 
 #define RFLR_OPMODE_ACCESSSHAREDREG_DISABLE         0x00 // Default
 
+#define RFLR_OPMODE_FREQMODE_ACCESS_MASK            0xF7
+#define RFLR_OPMODE_FREQMODE_ACCESS_LF              0x08 // Default
+#define RFLR_OPMODE_FREQMODE_ACCESS_HF              0x00 
+
 #define RFLR_OPMODE_MASK                            0xF8 
 #define RFLR_OPMODE_SLEEP                           0x00 
 #define RFLR_OPMODE_STANDBY                         0x01 // Default
@@ -168,8 +191,22 @@ typedef enum
 #define RFLR_OPMODE_CAD                             0x07 
 
 /*!
+ * RegBandSetting 
+ */
+#define RFLR_BANDSETTING_MASK                    0x3F 
+#define RFLR_BANDSETTING_AUTO                    0x00 // Default
+#define RFLR_BANDSETTING_DIV_BY_1                0x40
+#define RFLR_BANDSETTING_DIV_BY_2                0x80
+#define RFLR_BANDSETTING_DIV_BY_6                0xC0
+
+/*!
  * RegFrf (MHz)
  */
+ 
+#define RFLR_FRFMSB_434_MHZ                         0x6C // Default
+#define RFLR_FRFMID_434_MHZ                         0x80 // Default
+#define RFLR_FRFLSB_434_MHZ                         0x00 // Default
+
 #define RFLR_FRFMSB_863_MHZ                         0xD7
 #define RFLR_FRFMID_863_MHZ                         0xC0
 #define RFLR_FRFLSB_863_MHZ                         0x00
@@ -284,14 +321,16 @@ typedef enum
 #define RFLR_PACONFIG_PASELECT_PABOOST              0x80 
 #define RFLR_PACONFIG_PASELECT_RFO                  0x00 // Default
 
+#define RFLR_PACONFIG_MAX_POWER_MASK                0x8F
+
 #define RFLR_PACONFIG_OUTPUTPOWER_MASK              0xF0 
  
 /*!
  * RegPaRamp
  */
-#define RFLR_PARAMP_LOWPNTXPLL_MASK                 0xE0 
-#define RFLR_PARAMP_LOWPNTXPLL_OFF                  0x10 // Default
-#define RFLR_PARAMP_LOWPNTXPLL_ON                   0x00 
+#define RFLR_PARAMP_TXBANDFORCE_MASK                0xEF 
+#define RFLR_PARAMP_TXBANDFORCE_BAND_SEL            0x10 
+#define RFLR_PARAMP_TXBANDFORCE_AUTO                0x00 // Default
 
 #define RFLR_PARAMP_MASK                            0xF0 
 #define RFLR_PARAMP_3400_US                         0x00 
@@ -359,9 +398,19 @@ typedef enum
 #define RFLR_LNA_GAIN_G5                            0xA0 
 #define RFLR_LNA_GAIN_G6                            0xC0 
 
-#define RFLR_LNA_BOOST_MASK                         0xFC 
-#define RFLR_LNA_BOOST_OFF                          0x00 // Default
-#define RFLR_LNA_BOOST_ON                           0x03 
+#define RFLR_LNA_BOOST_LF_MASK                      0xE7 
+#define RFLR_LNA_BOOST_LF_DEFAULT                   0x00 // Default
+#define RFLR_LNA_BOOST_LF_GAIN                      0x08 
+#define RFLR_LNA_BOOST_LF_IP3                       0x10 
+#define RFLR_LNA_BOOST_LF_BOOST                     0x18 
+
+#define RFLR_LNA_RXBANDFORCE_MASK                   0xFB 
+#define RFLR_LNA_RXBANDFORCE_BAND_SEL               0x04
+#define RFLR_LNA_RXBANDFORCE_AUTO                   0x00 // Default
+
+#define RFLR_LNA_BOOST_HF_MASK                      0xFC 
+#define RFLR_LNA_BOOST_HF_OFF                       0x00 // Default
+#define RFLR_LNA_BOOST_HF_ON                        0x03 
 
 /*!
  * RegFifoAddrPtr
@@ -452,39 +501,39 @@ typedef enum
 /*!
  * RegRssiValue (Read Only)    //
  */
-
- /*!
+ 
+/*!
  * RegHopChannel (Read Only)    //
  */
 #define RFLR_HOP_CHANNEL_PAYLOAD_CRC_ON_MASK       0xBF
-#define RFLR_HOP_CHANNEL_PAYLOAD_CRC_ON            0x40 
-#define RFLR_HOP_CHANNEL_PAYLOAD_CRC_OFF           0x00 
+#define RFLR_HOP_CHANNEL_PAYLOAD_CRC_ON            0x40
+#define RFLR_HOP_CHANNEL_PAYLOAD_CRC_OFF           0x00
  
  /*!
  * RegModemConfig1
  */
-#define RFLR_MODEMCONFIG1_BW_MASK                   0x3F 
-#define RFLR_MODEMCONFIG1_BW_125_KHZ                0x00 // Default
-#define RFLR_MODEMCONFIG1_BW_250_KHZ                0x40 
-#define RFLR_MODEMCONFIG1_BW_500_KHZ                0x80 
+#define RFLR_MODEMCONFIG1_BW_MASK                   0x0F 
+
+#define RFLR_MODEMCONFIG1_BW_7_81_KHZ               0x00 
+#define RFLR_MODEMCONFIG1_BW_10_41_KHZ              0x10 
+#define RFLR_MODEMCONFIG1_BW_15_62_KHZ              0x20 
+#define RFLR_MODEMCONFIG1_BW_20_83_KHZ              0x30 
+#define RFLR_MODEMCONFIG1_BW_31_25_KHZ              0x40 
+#define RFLR_MODEMCONFIG1_BW_41_66_KHZ              0x50 
+#define RFLR_MODEMCONFIG1_BW_62_50_KHZ              0x60 
+#define RFLR_MODEMCONFIG1_BW_125_KHZ                0x70 // Default
+#define RFLR_MODEMCONFIG1_BW_250_KHZ                0x80 
+#define RFLR_MODEMCONFIG1_BW_500_KHZ                0x90 
                                                     
-#define RFLR_MODEMCONFIG1_CODINGRATE_MASK           0xC7 
-#define RFLR_MODEMCONFIG1_CODINGRATE_4_5            0x08
-#define RFLR_MODEMCONFIG1_CODINGRATE_4_6            0x10 // Default
-#define RFLR_MODEMCONFIG1_CODINGRATE_4_7            0x18 
-#define RFLR_MODEMCONFIG1_CODINGRATE_4_8            0x20 
+#define RFLR_MODEMCONFIG1_CODINGRATE_MASK           0xF1 
+#define RFLR_MODEMCONFIG1_CODINGRATE_4_5            0x02
+#define RFLR_MODEMCONFIG1_CODINGRATE_4_6            0x04 // Default
+#define RFLR_MODEMCONFIG1_CODINGRATE_4_7            0x06 
+#define RFLR_MODEMCONFIG1_CODINGRATE_4_8            0x08 
                                                     
-#define RFLR_MODEMCONFIG1_IMPLICITHEADER_MASK       0xFB 
-#define RFLR_MODEMCONFIG1_IMPLICITHEADER_ON         0x04 
+#define RFLR_MODEMCONFIG1_IMPLICITHEADER_MASK       0xFE 
+#define RFLR_MODEMCONFIG1_IMPLICITHEADER_ON         0x01 
 #define RFLR_MODEMCONFIG1_IMPLICITHEADER_OFF        0x00 // Default
-                                                    
-#define RFLR_MODEMCONFIG1_RXPAYLOADCRC_MASK         0xFD 
-#define RFLR_MODEMCONFIG1_RXPAYLOADCRC_ON           0x02 
-#define RFLR_MODEMCONFIG1_RXPAYLOADCRC_OFF          0x00 // Default
-                                                    
-#define RFLR_MODEMCONFIG1_LOWDATARATEOPTIMIZE_MASK  0xFE 
-#define RFLR_MODEMCONFIG1_LOWDATARATEOPTIMIZE_ON    0x01 
-#define RFLR_MODEMCONFIG1_LOWDATARATEOPTIMIZE_OFF   0x00 // Default
 
  /*!
  * RegModemConfig2
@@ -502,9 +551,9 @@ typedef enum
 #define RFLR_MODEMCONFIG2_TXCONTINUOUSMODE_ON       0x08 
 #define RFLR_MODEMCONFIG2_TXCONTINUOUSMODE_OFF      0x00 
 
-#define RFLR_MODEMCONFIG2_AGCAUTO_MASK              0xFB 
-#define RFLR_MODEMCONFIG2_AGCAUTO_ON                0x04 // Default 
-#define RFLR_MODEMCONFIG2_AGCAUTO_OFF               0x00 
+#define RFLR_MODEMCONFIG2_RXPAYLOADCRC_MASK         0xFB 
+#define RFLR_MODEMCONFIG2_RXPAYLOADCRC_ON           0x04 
+#define RFLR_MODEMCONFIG2_RXPAYLOADCRC_OFF          0x00 // Default
  
 #define RFLR_MODEMCONFIG2_SYMBTIMEOUTMSB_MASK       0xFC 
 #define RFLR_MODEMCONFIG2_SYMBTIMEOUTMSB            0x00 // Default
@@ -665,17 +714,28 @@ typedef enum
 #define RFLR_PLLLOWPN_BANDWIDTH_300                 0xC0  // Default
 
 /*!
+ * RegModemConfig3
+ */
+#define RFLR_MODEMCONFIG3_LOWDATARATEOPTIMIZE_MASK  0xF7 
+#define RFLR_MODEMCONFIG3_LOWDATARATEOPTIMIZE_ON    0x08 
+#define RFLR_MODEMCONFIG3_LOWDATARATEOPTIMIZE_OFF   0x00 // Default
+
+#define RFLR_MODEMCONFIG3_AGCAUTO_MASK              0xFB 
+#define RFLR_MODEMCONFIG3_AGCAUTO_ON                0x04 // Default 
+#define RFLR_MODEMCONFIG3_AGCAUTO_OFF               0x00 
+
+/*!
  * RegFormerTemp
  */
 
-typedef struct sSX1272LR
+typedef struct sSX1276LR
 {
     uint8_t RegFifo;                                // 0x00 
     // Common settings
     uint8_t RegOpMode;                              // 0x01 
     uint8_t RegRes02;                               // 0x02 
     uint8_t RegRes03;                               // 0x03 
-    uint8_t RegRes04;                               // 0x04 
+    uint8_t RegBandSetting;                         // 0x04 
     uint8_t RegRes05;                               // 0x05 
     uint8_t RegFrfMsb;                              // 0x06 
     uint8_t RegFrfMid;                              // 0x07 
@@ -711,128 +771,132 @@ typedef struct sSX1272LR
     uint8_t RegPayloadLength;                       // 0x22 
     uint8_t RegMaxPayloadLength;                    // 0x23 
     uint8_t RegHopPeriod;                           // 0x24 
-    uint8_t RegFifoRxByteAddr;                      // 0x25     
-    uint8_t RegTestReserved26[0x27 - 0x26];         // 0x26-0x27 
+    uint8_t RegFifoRxByteAddr;                      // 0x25
+    uint8_t RegModemConfig3;                        // 0x26
+    uint8_t RegTestReserved27;                      // 0x27
     uint8_t RegFeiMsb;                              // 0x28
     uint8_t RegFeiMib;                              // 0x29 
     uint8_t RegFeiLsb;                              // 0x2A
     uint8_t RegTestReserved2B[0x30 - 0x2B];         // 0x2B-0x30 
-    uint8_t RegDetectOptimize;                  // 0x31    
+    uint8_t RegDetectOptimize;                      // 0x31    
     uint8_t RegTestReserved32;                      // 0x32   
     uint8_t RegInvertIQ;                            // 0x33 
     uint8_t RegTestReserved34[0x36 - 0x34];         // 0x34-0x36 
     uint8_t RegDetectionThreshold;                  // 0x37
-    uint8_t RegTestReserved38[0x3F - 0x38];         // 0x38-0x3F    
+    uint8_t RegTestReserved38[0x3F - 0x38];         // 0x38-0x3F
     // I/O settings                
     uint8_t RegDioMapping1;                         // 0x40 
     uint8_t RegDioMapping2;                         // 0x41 
     // Version
     uint8_t RegVersion;                             // 0x42
+    // Test   
+    uint8_t RegTestReserved43;                      // 0x43
     // Additional settings
-    uint8_t RegAgcRef;                              // 0x43
-    uint8_t RegAgcThresh1;                          // 0x44
-    uint8_t RegAgcThresh2;                          // 0x45
-    uint8_t RegAgcThresh3;                          // 0x46
+    uint8_t RegPllHop;                              // 0x44 
     // Test
-    uint8_t RegTestReserved47[0x4B - 0x47];         // 0x47-0x4A
+    uint8_t RegTestReserved45[0x4A - 0x45];         // 0x45-0x4A   
+    // Additional settings    
+    uint8_t RegTcxo;                                // 0x4B
+    // Test    
+    uint8_t RegTestReserved4C;                      // 0x4C  
+    // Additional settings    
+    uint8_t RegPaDac;                               // 0x4D 
+    // Test    
+    uint8_t RegTestReserved4E[0x5A - 0x4E];         // 0x4E-0x5A  
     // Additional settings
-    uint8_t RegPllHop;                              // 0x4B
-    // Test
-    uint8_t RegTestReserved4C[0x58-0x4C];           // 0x4C-0x57
+    uint8_t RegFormerTemp;                          // 0x5B
+    // Test    
+    uint8_t RegTestReserved5C;                      // 0x5C
+    // Additional settings    
+    uint8_t RegBitrateFrac;                         // 0x5D   
+    // Additional settings    
+    uint8_t RegTestReserved5E[0x60 - 0x5E];         // 0x5E-0x60
     // Additional settings
-    uint8_t RegTcxo;                                // 0x58
+    uint8_t RegAgcRef;                              // 0x60
+    uint8_t RegAgcThresh1;                          // 0x61
+    uint8_t RegAgcThresh2;                          // 0x62
+    uint8_t RegAgcThresh3;                          // 0x63
     // Test
-    uint8_t RegTestReserved59;                      // 0x59
-    // Additional settings
-    uint8_t RegPaDac;                               // 0x5A
-    // Test
-    uint8_t RegTestReserved5B;                      // 0x5B
-    // Additional settings
-    uint8_t RegPll;                                 // 0x5C
-    // Test
-    uint8_t RegTestReserved5D;                      // 0x5D
-    // Additional settings
-    uint8_t RegPllLowPn;                            // 0x5E
-    // Test
-    uint8_t RegTestReserved5F[0x6C - 0x5F];         // 0x5F-0x6B
-    // Additional settings
-    uint8_t RegFormerTemp;                          // 0x6C
-    // Test
-    uint8_t RegTestReserved6D[0x71 - 0x6D];         // 0x6D-0x70
-}tSX1272LR;
+    uint8_t RegTestReserved64[0x70 - 0x64];         // 0x64-0x70
+}tSX1276LR;
 
-extern tSX1272LR* SX1272LR;
+extern tSX1276LR* SX1276LR;
 
 /*!
- * \brief Initializes the SX1272
+ * \brief Initializes the SX1276
  */
-void SX1272LoRaInit( void );
+void SX1276LoRaInit( void );
 
 /*!
- * \brief Sets the SX1272 to datasheet default values
+ * \brief Sets the SX1276 to datasheet default values
  */
-void SX1272LoRaSetDefaults( void );
+void SX1276LoRaSetDefaults( void );
 
 /*!
  * \brief Enables/Disables the LoRa modem
  *
  * \param [IN]: enable [true, false]
  */
-void SX1272LoRaSetLoRaOn( bool enable );
+void SX1276LoRaSetLoRaOn( bool enable );
 
 /*!
- * \brief Sets the SX1272 operating mode
+ * \brief Sets the SX1276 operating mode
  *
  * \param [IN] opMode New operating mode
  */
-void SX1272LoRaSetOpMode( uint8_t opMode );
+void SX1276LoRaSetOpMode( uint8_t opMode );
 
 /*!
- * \brief Gets the SX1272 operating mode
+ * \brief Gets the SX1276 operating mode
  *
  * \retval opMode Current operating mode
  */
-uint8_t SX1272LoRaGetOpMode( void );
+uint8_t SX1276LoRaGetOpMode( void );
 
 /*!
  * \brief Reads the current Rx gain setting
  *
  * \retval rxGain Current gain setting
  */
-uint8_t SX1272LoRaReadRxGain( void );
+uint8_t SX1276LoRaReadRxGain( void );
 
 /*!
  * \brief Trigs and reads the current RSSI value
  *
  * \retval rssiValue Current RSSI value in [dBm]
  */
-double SX1272LoRaReadRssi( void );
+double SX1276LoRaReadRssi( void );
 
 /*!
  * \brief Gets the Rx gain value measured while receiving the packet
  *
  * \retval rxGainValue Current Rx gain value
  */
-uint8_t SX1272LoRaGetPacketRxGain( void );
+uint8_t SX1276LoRaGetPacketRxGain( void );
 
 /*!
  * \brief Gets the SNR value measured while receiving the packet
  *
  * \retval snrValue Current SNR value in [dB]
  */
-int8_t SX1272LoRaGetPacketSnr( void );
+int8_t SX1276LoRaGetPacketSnr( void );
 
 /*!
  * \brief Gets the RSSI value measured while receiving the packet
  *
  * \retval rssiValue Current RSSI value in [dBm]
  */
-double SX1272LoRaGetPacketRssi( void );
+double SX1276LoRaGetPacketRssi( void );
 
 /*!
  * \brief Sets the radio in Rx mode. Waiting for a packet
  */
-void SX1272LoRaStartRx( void );
+void SX1276LoRaStartRx( void );
+
+/*!
+ * \brief Sets the radio channel active detection. Waiting for signal
+ */
+void SX1276LoRaStartCAD( void );
 
 /*!
  * \brief Gets a copy of the current received buffer
@@ -840,7 +904,7 @@ void SX1272LoRaStartRx( void );
  * \param [IN]: buffer     Buffer pointer
  * \param [IN]: size       Buffer size
  */
-void SX1272LoRaGetRxPacket( void *buffer, uint16_t *size );
+void SX1276LoRaGetRxPacket( void *buffer, uint16_t *size );
 
 /*!
  * \brief Sets a copy of the buffer to be transmitted
@@ -848,7 +912,7 @@ void SX1272LoRaGetRxPacket( void *buffer, uint16_t *size );
  * \param [IN]: buffer     Buffer pointer
  * \param [IN]: size       Buffer size
  */
-void SX1272LoRaSetTxPacket( const void *buffer, uint16_t size );
+void SX1276LoRaSetTxPacket( const void *buffer, uint16_t size );
 
 /*!
  * \brief Gets the current RFState
@@ -857,23 +921,43 @@ void SX1272LoRaSetTxPacket( const void *buffer, uint16_t size );
  *                                   RF_RX_DONE, RF_RX_TIMEOUT,
  *                                   RF_TX_DONE, RF_TX_TIMEOUT]
  */
-uint8_t SX1272LoRaGetRFState( void );
+uint8_t SX1276LoRaGetRFState( void );
 
 /*!
  * \brief Sets the new state of the RF state machine
  *
  * \param [IN]: state New RF state machine state
  */
-void SX1272LoRaSetRFState( uint8_t state );
+void SX1276LoRaSetRFState( uint8_t state );
+
+/*!
+ * \brief Gets received packet count
+ */
+uint32_t SX1276LoRaGetRxPacketCount( void );
+
+/*!
+ * \brief clear received packet count
+ */
+void SX1276LoRaResetRxPacketCount( void );
+
+/*!
+ * \brief Gets sent packet count
+ */
+uint32_t SX1276LoRaGetTxPacketCount( void );
+
+/*!
+ * \brief clear sent packet count
+ */
+void SX1276LoRaResetTxPacketCount( void );
 
 /*!
  * \brief Process the LoRa modem Rx and Tx state machines depending on the
- *        SX1272 operating mode.
+ *        SX1276 operating mode.
  *
  * \retval rfState Current RF state [RF_IDLE, RF_BUSY, 
  *                                   RF_RX_DONE, RF_RX_TIMEOUT,
  *                                   RF_TX_DONE, RF_TX_TIMEOUT]
  */
-uint32_t SX1272LoRaProcess( void );
+uint32_t SX1276LoRaProcess( void );
 
-#endif //__SX1272_LORA_H__
+#endif //__SX1276_LORA_H__

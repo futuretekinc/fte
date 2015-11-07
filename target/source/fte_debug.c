@@ -81,6 +81,27 @@ _mqx_int    FTE_DEBUG_error(const char _PTR_ pFuncName, int nLine, const char _P
     return   fprintf(_debugOut, "%s[%d] : %s\n", pFuncName, nLine, _pBuff);
 }
 
+_mqx_int    FTE_DEBUG_dump(const char _PTR_ pFuncName, int nLine, void *pBuff, uint_32 ulSize)
+{
+    uint_32 i;
+    
+    for(i = 0 ; i < ulSize ; i++)
+    {
+        fprintf(_debugOut, "%02x ", ((uint_8_ptr)pBuff)[i]);
+        if ((i+1) % 16 == 0)
+        {
+            fprintf(_debugOut, "\n");
+        }
+    }
+    
+    if (i % 16 != 0)
+    {
+        fprintf(_debugOut, "\n");
+    }
+    
+    return  MQX_OK;
+}
+
 typedef struct
 {
     char_ptr    pName;

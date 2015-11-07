@@ -21,12 +21,10 @@
 #include <stdint.h>
 #include <stdbool.h> 
 
-#include "platform.h"
-#include "ioe.h"
-#include "../../radio/sx1276-Hal.h"
 #include "fte_target.h"
 #include "fte_common.h"
 #include "fte_spi.h"
+#include "sx1276-Hal.h"
 
 static FTE_SPI_PTR pSPI = NULL;
 static FTE_LWGPIO_PTR pGPIO[6] = {NULL,};
@@ -96,7 +94,7 @@ void SX1276Write( uint8_t addr, uint8_t data )
 }
 
 void SX1276Read( uint8_t addr, uint8_t *data )
-{
+{ 
     SX1276ReadBuffer( addr, data, 1 );
 }
 
@@ -124,7 +122,7 @@ void SX1276ReadFifo( uint8_t *buffer, uint8_t size )
     SX1276ReadBuffer( 0, buffer, size );
 }
 
-inline uint8_t SX1276ReadDio0( void )
+uint8_t SX1276ReadDio0( void )
 {
     boolean bValue = 0;
     
@@ -133,7 +131,7 @@ inline uint8_t SX1276ReadDio0( void )
     return bValue;
 }
 
-inline uint8_t SX1276ReadDio1( void )
+ uint8_t SX1276ReadDio1( void )
 {
     boolean bValue = 0;
     
@@ -142,7 +140,7 @@ inline uint8_t SX1276ReadDio1( void )
     return bValue;
 }
 
-inline uint8_t SX1276ReadDio2( void )
+uint8_t SX1276ReadDio2( void )
 {
     boolean bValue = 0;
     
@@ -151,7 +149,7 @@ inline uint8_t SX1276ReadDio2( void )
     return bValue;
 }
 
-inline uint8_t SX1276ReadDio3( void )
+uint8_t SX1276ReadDio3( void )
 {
     boolean bValue = 0;
     
@@ -160,7 +158,7 @@ inline uint8_t SX1276ReadDio3( void )
     return bValue;
 }
 
-inline uint8_t SX1276ReadDio4( void )
+uint8_t SX1276ReadDio4( void )
 {
     boolean bValue = 0;
     
@@ -169,7 +167,7 @@ inline uint8_t SX1276ReadDio4( void )
     return bValue;
 }
 
-inline uint8_t SX1276ReadDio5( void )
+uint8_t SX1276ReadDio5( void )
 {
     boolean bValue = 0;
     
@@ -178,7 +176,7 @@ inline uint8_t SX1276ReadDio5( void )
     return bValue;
 }
 
-inline void SX1276WriteRxTx( uint8_t txEnable )
+void SX1276WriteRxTx( uint8_t txEnable )
 {
     if( txEnable != 0 )
     {
@@ -188,4 +186,9 @@ inline void SX1276WriteRxTx( uint8_t txEnable )
     {
         FTE_LWGPIO_setValue(pCTX, FALSE);
     }
+}
+
+uint32_t SX1276GetTickCount( void ) 
+{
+    return  _time_get_hwticks();
 }

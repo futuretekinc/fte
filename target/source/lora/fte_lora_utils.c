@@ -1,5 +1,4 @@
 #include "fte_target.h"
-#include "radio.h"
 #include "fte_lora.h"
 #include "sx1276-LoRaRegs.h"
 
