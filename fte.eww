@@ -20,9 +20,6 @@
     <path>$WS_DIR$\mqtt\libemqtt.ewp</path>
   </project>
   <project>
-    <path>$WS_DIR$\LoRa\liblora.ewp</path>
-  </project>
-  <project>
     <path>$WS_DIR$\mfs\libmfs.ewp</path>
   </project>
   <project>
