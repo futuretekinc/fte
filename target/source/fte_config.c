@@ -79,10 +79,10 @@ typedef struct _FTE_CFG_EXT_POOL_STRUCT
     uint_32             tag;
     int_32              nID;
 #if FTE_CIAS_SIOUX_CU_SUPPORTED
-    FTE_CIAS_SIOUX_CU_CONFIG    xCU[FTE_CIAS_SIOUX_CU_MAX];
+    FTE_CIAS_SIOUX_CU_EXT_CONFIG    xCU;
 #endif
 #if FTE_IOEX_SUPPORTED
-    FTE_IOEX_CONFIG             xIOEX;
+    FTE_IOEX_EXT_CONFIG xIOEX;
 #endif
 }   FTE_CFG_EXT_POOL, _PTR_ FTE_CFG_EXT_POOL_PTR;
 
@@ -930,47 +930,37 @@ _mqx_uint   FTE_CFG_EXT_init(void)
 {
     _config.xExtPool.tag    = FTE_CFG_EXT_POOL_VERSION;
 #if FTE_CIAS_SIOUX_CU_SUPPORTED
-    for(int i = 0 ; i < FTE_CIAS_SIOUX_CU_MAX ; i++)
-    {
-        for(int j = 0 ; j < FTE_CIAS_SIOUX_CU_ZONE_MAX ; j++)
-        {
-            _config.xExtPool.xCU[i].pZones[j].nDeviceNumber = j+1;
-            _config.xExtPool.xCU[i].pZones[j].bActivation = FALSE;
-        }
-    }
+    FTE_CIAS_SIOUX_CU_initDefaultExtConfig(&_config.xExtPool.xCU);
 #endif
 #if FTE_IOEX_SUPPORTED
-    for(int i = 0 ; i < FTE_IOEX_DI_MAX ; i++)
-    {
-        _config.xExtPool.xIOEX.pDI[i].bActivation = FALSE;
-    }
+    FTE_IOEX_initDefaultExtConfig(&_config.xExtPool.xIOEX);
 #endif
     _config.bExtPoolModified = TRUE;
      
     return  MQX_OK;
-}
+} 
 
 #if FTE_CIAS_SIOUX_CU_SUPPORTED
-_mqx_uint   FTE_CFG_CIAS_get(void _PTR_ pBuff, uint_32 ulBuffLen)
+_mqx_uint   FTE_CFG_CIAS_getExtConfig(void _PTR_ pBuff, uint_32 ulBuffLen)
 {
-    if ((_config.pDESC == NULL) || (ulBuffLen != sizeof(_config.xExtPool.xCU[0])))
+    if ((_config.pDESC == NULL) || (ulBuffLen != sizeof(_config.xExtPool.xCU)))
     {
         return  MQX_ERROR;
     }
 
-    memcpy(pBuff, &_config.xExtPool.xCU[0], sizeof(_config.xExtPool.xCU));
+    memcpy(pBuff, &_config.xExtPool.xCU, sizeof(_config.xExtPool.xCU));
     
     return  MQX_OK;    
 }
 
-_mqx_uint   FTE_CFG_CIAS_set(void _PTR_ pCIAS, uint_32 ulCIASLen)
+_mqx_uint   FTE_CFG_CIAS_setExtConfig(void _PTR_ pCIAS, uint_32 ulCIASLen)
 {
-    if ((_config.pDESC == NULL) || (ulCIASLen != sizeof(_config.xExtPool.xCU[0])))
+    if ((_config.pDESC == NULL) || (ulCIASLen != sizeof(_config.xExtPool.xCU)))
     {
         return  MQX_ERROR;
     }
 
-    memcpy(&_config.xExtPool.xCU[0], pCIAS, sizeof(_config.xExtPool.xCU));
+    memcpy(&_config.xExtPool.xCU, pCIAS, sizeof(_config.xExtPool.xCU));
     _config.bExtPoolModified = TRUE;
     
     return  MQX_OK;    
@@ -978,7 +968,7 @@ _mqx_uint   FTE_CFG_CIAS_set(void _PTR_ pCIAS, uint_32 ulCIASLen)
 #endif
 
 #if FTE_IOEX_SUPPORTED
-_mqx_uint   FTE_CFG_IOEX_get(void _PTR_ pBuff, uint_32 ulBuffLen)
+_mqx_uint   FTE_CFG_IOEX_getExtConfig(void _PTR_ pBuff, uint_32 ulBuffLen)
 {
     if ((_config.pDESC == NULL) || (ulBuffLen != sizeof(_config.xExtPool.xIOEX)))
     {
@@ -990,7 +980,7 @@ _mqx_uint   FTE_CFG_IOEX_get(void _PTR_ pBuff, uint_32 ulBuffLen)
     return  MQX_OK;    
 }
 
-_mqx_uint   FTE_CFG_IOEX_set(void _PTR_ pIOEX, uint_32 ulIOEXLen)
+_mqx_uint   FTE_CFG_IOEX_setExtConfig(void _PTR_ pIOEX, uint_32 ulIOEXLen)
 {
     if ((_config.pDESC == NULL) || (ulIOEXLen != sizeof(_config.xExtPool.xIOEX)))
     {

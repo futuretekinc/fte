@@ -596,26 +596,6 @@ int_32  FTE_UCS_SHELL_cmd(int_32 argc, char_ptr argv[] )
                 }
             }
             break;
-
-        case    2:
-            {
-                FTE_UCS_PTR pUCS = FTE_UCS_get(FTE_DEV_UCS_2);
-                if (pUCS == NULL)
-                {
-                    printf("UCS not exists.\n");
-                    break;
-                }
-
-                if (strcmp(argv[1], "attach") == 0)
-                {
-                    FTE_UCS_attach(pUCS, FTE_DEV_TYPE_ROOT);
-                }
-                else
-                {
-                    FTE_UCS_detach(pUCS, FTE_DEV_TYPE_ROOT);
-                }
-            }
-            break;
         }
     }
 

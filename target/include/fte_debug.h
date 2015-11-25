@@ -21,7 +21,7 @@
 #define DEBUG(...)              FTE_DEBUG_error(__func__, __LINE__, __VA_ARGS__)
 #define ERROR(...)              FTE_DEBUG_error(__func__, __LINE__, __VA_ARGS__)
 #define err_sys(...)            FTE_DEBUG_error(__func__, __LINE__, __VA_ARGS__)
-#define DEUMP(pBuff, ulSize)    FTE_DEBUG_dump(__func__, __LINE__, pBuff, ulSize)
+#define DUMP(pTitle, pBuff, ulSize, ulWrapLen)     FTE_DEBUG_dump(__func__, __LINE__, pTitle, pBuff, ulSize, ulWrapLen)
 #else
 #define TRACE(ulModule, ...)    
 #define TRACE_ON(ulModule)      
@@ -36,7 +36,7 @@ _mqx_int    FTE_DEBUG_trace(uint_32 ulModule, const char _PTR_ fmt_ptr, ... );
 _mqx_int    FTE_DEBUG_traceOn(uint_32 ulModule);
 _mqx_int    FTE_DEBUG_traceOff(uint_32 ulModule);
 _mqx_int    FTE_DEBUG_error(const char _PTR_ pFuncName, int nLine, const char _PTR_ fmt_ptr, ... );
-_mqx_int    FTE_DEBUG_dump(const char _PTR_ pFuncName, int nLine, void *pBuff, uint_32 ulSize);
+_mqx_int    FTE_DEBUG_dump(const char _PTR_ pFuncName, int nLine, char *pTitle, void *pBuff, uint_32 ulSize, uint_32 ulWrapLen);
 
 int_32 FTE_TRACE_SHELL_cmd(int_32 nArgc, char_ptr pArgv[]);
 

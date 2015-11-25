@@ -46,9 +46,13 @@ void FTE_TASK_main(uint_32 params)
     _task_create(0, FTE_TASK_OBJECT_MNGT, 0);
     
 #if FTE_LORA_SUPPORTED
-    FTE_LORA_init();
+    //FTE_LORA_init();
+    //MAC_15_4_init( );
+    //NS_STACK_init( );
+    FTE_LORAWAN_init( TRUE );
+
 #endif
-    
+
     fte_platform_run();
     
     FTE_SYS_LIVE_CHECK_init(FTE_CFG_SYS_getKeepAliveTime());

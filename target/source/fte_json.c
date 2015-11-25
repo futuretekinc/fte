@@ -61,6 +61,22 @@ FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createNumber(long nValue)
     return  (FTE_JSON_VALUE_PTR)pItem;
 }
 
+FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createHex(long nValue)
+{
+    FTE_JSON_NUMBER_PTR pItem = NULL;
+    
+    pItem = (FTE_JSON_NUMBER_PTR)FTE_JSON_alloc(sizeof(FTE_JSON_HEX));
+    if (pItem == NULL)
+    {
+        return  NULL;
+    }
+    
+    pItem->xType = FTE_JSON_TYPE_HEX;
+    pItem->nValue = nValue;
+    
+    return  (FTE_JSON_VALUE_PTR)pItem;
+}
+
 FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createFloat(long nValue)
 {
     FTE_JSON_FLOAT_PTR pItem = NULL;
@@ -99,6 +115,11 @@ FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createValue(FTE_VALUE_PTR pValue)
     case    FTE_VALUE_TYPE_PPM:
         {
             return  FTE_JSON_VALUE_createNumber(pValue->xData.ulValue);
+        }
+        
+    case    FTE_VALUE_TYPE_HEX32:
+        {
+            return  FTE_JSON_VALUE_createHex(pValue->xData.ulValue);
         }
         
     case    FTE_VALUE_TYPE_TEMPERATURE:
@@ -333,6 +354,7 @@ int FTE_JSON_VALUE_destroy(FTE_JSON_VALUE_PTR pValue)
         }
         break;
     case    FTE_JSON_TYPE_NUMBER:
+    case    FTE_JSON_TYPE_HEX:
     case    FTE_JSON_TYPE_FLOAT:
     case    FTE_JSON_TYPE_TRUE:
     case    FTE_JSON_TYPE_FALSE:
@@ -418,6 +440,13 @@ int FTE_JSON_VALUE_snprint(char *pBuff, int nBuffLen, FTE_JSON_VALUE_PTR pValue)
             nLen = snprintf(pBuff, nBuffLen, "%d", ((FTE_JSON_NUMBER_PTR)pValue)->nValue);
        }
         break;
+        
+    case    FTE_JSON_TYPE_HEX:
+        {
+            nLen = snprintf(pBuff, nBuffLen, "0x%08x", ((FTE_JSON_HEX_PTR)pValue)->nValue);
+       }
+        break;
+        
     case    FTE_JSON_TYPE_FLOAT:
         {
             if ((((FTE_JSON_FLOAT_PTR)pValue)->nValue % 100) == 0)
@@ -522,6 +551,12 @@ int FTE_JSON_VALUE_buffSize(FTE_JSON_VALUE_PTR pValue)
     case    FTE_JSON_TYPE_NUMBER:
         {
             nLen = snprintf(pBuff, sizeof(pBuff), "%d", ((FTE_JSON_NUMBER_PTR)pValue)->nValue);
+       }
+        break;
+        
+    case    FTE_JSON_TYPE_HEX:
+        {
+            nLen = snprintf(pBuff, sizeof(pBuff), "0x%08x", ((FTE_JSON_HEX_PTR)pValue)->nValue);
        }
         break;
         

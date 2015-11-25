@@ -22,6 +22,7 @@ FTE_VALUE_PTR   FTE_VALUE_create(FTE_VALUE_TYPE xType)
     case    FTE_VALUE_TYPE_PWR_KW:      return  FTE_VALUE_createPowerKW();
     case    FTE_VALUE_TYPE_PWR_KWH:     return  FTE_VALUE_createPowerKWH();
     case    FTE_VALUE_TYPE_LED:         return  FTE_VALUE_createLED();
+    case    FTE_VALUE_TYPE_HEX32:       return  FTE_VALUE_createHex32();
     }
     
     return  NULL;
@@ -95,6 +96,21 @@ FTE_VALUE_PTR   FTE_VALUE_createULONG(void)
     if (pValue != NULL)
     {
         pValue->xType = FTE_VALUE_TYPE_ULONG;
+        pValue->bValid = FALSE;
+        pValue->xData.ulValue = 0;
+    }
+    
+    return  pValue;
+}
+
+FTE_VALUE_PTR   FTE_VALUE_createHex32(void)
+{
+    FTE_VALUE_PTR   pValue;
+    
+    pValue = FTE_MEM_allocZero(sizeof(FTE_VALUE));
+    if (pValue != NULL)
+    {
+        pValue->xType = FTE_VALUE_TYPE_HEX32;
         pValue->bValid = FALSE;
         pValue->xData.ulValue = 0;
     }
@@ -284,6 +300,17 @@ _mqx_uint       FTE_VALUE_initULONG(FTE_VALUE_PTR pValue, uint_32 ulValue)
     return  MQX_OK;
 }
 
+_mqx_uint       FTE_VALUE_initHex32(FTE_VALUE_PTR pValue, uint_32 ulValue)
+{
+    ASSERT(pValue != NULL);
+    
+    memset(pValue, 0, sizeof(FTE_VALUE));
+    pValue->xType = FTE_VALUE_TYPE_HEX32;
+    pValue->xData.ulValue = ulValue;
+    
+    return  MQX_OK;
+}
+
 _mqx_uint       FTE_VALUE_initVoltage(FTE_VALUE_PTR pValue, uint_32 ulValue)
 {
     ASSERT(pValue != NULL);
@@ -385,6 +412,12 @@ _mqx_uint       FTE_VALUE_set(FTE_VALUE_PTR pObj, char_ptr pString)
     case    FTE_VALUE_TYPE_ULONG:
         {
             pObj->xData.ulValue = strtoul(pString, NULL, 10);
+        }
+        break;
+
+    case    FTE_VALUE_TYPE_HEX32:
+        {
+            pObj->xData.ulValue = strtoul(pString, NULL, 16);
         }
         break;
 
@@ -866,6 +899,12 @@ char_ptr        FTE_VALUE_toString(FTE_VALUE_PTR pObj, char_ptr pValueString, ui
             }
             break;
             
+         case    FTE_VALUE_TYPE_HEX32:
+            {
+                snprintf(pValueString, ulLen, "0x%08x", pObj->xData.ulValue);
+            }
+            break;
+            
           case    FTE_VALUE_TYPE_PRESSURE:
             {
                 snprintf(pValueString, ulLen, "%d.%d", pObj->xData.nValue / 10, abs(pObj->xData.nValue) % 10);
@@ -975,6 +1014,7 @@ boolean         FTE_VALUE_equal(FTE_VALUE_PTR pValue1, FTE_VALUE_PTR pValue2)
     case    FTE_VALUE_TYPE_PWR_KW:
     case    FTE_VALUE_TYPE_PPM:
     case    FTE_VALUE_TYPE_ULONG:
+    case    FTE_VALUE_TYPE_HEX32:
         {
             return  (pValue1->xData.nValue == pValue2->xData.nValue);
         }

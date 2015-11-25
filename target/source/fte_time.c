@@ -6,6 +6,7 @@
 #include "fte_sys.h"
 #include "fte_time.h"
 #include "fte_debug.h"
+#include "fte_assert.h"
 
 _mqx_uint   FTE_TIME_init(void)
 {
@@ -124,6 +125,38 @@ uint_64     FTE_TIME_getMilliSeconds(void)
     _time_get(&xTime);
     
     return  xTime.SECONDS * 1000 + xTime.MILLISECONDS;
+}
+
+_mqx_uint   FTE_TIME_DELAY_init(FTE_TIME_DELAY_PTR pObj, uint_32 ulDelayMS)
+{
+    ASSERT(pObj != NULL);
+    
+    _time_get_elapsed_ticks(&pObj->xNextTicks);        
+    pObj->ulDelayMS = ulDelayMS;
+    
+    return  MQX_OK;
+}
+
+void    FTE_TIME_DELAY_waitingAndSetNext(FTE_TIME_DELAY_PTR pObj)
+{
+    MQX_TICK_STRUCT xCurrentTicks;
+    boolean         bOverflow = FALSE;
+    int_32          nDiffTime;
+    
+    ASSERT(pObj != NULL);
+    
+    _time_get_elapsed_ticks(&xCurrentTicks);        
+    nDiffTime = _time_diff_milliseconds(&pObj->xNextTicks, &xCurrentTicks, &bOverflow);
+    if ((nDiffTime > 0) && (!bOverflow))
+    {
+        _time_delay(nDiffTime);
+    }
+    else
+    {
+        _time_get_elapsed_ticks(&pObj->xNextTicks);
+    }
+    
+    _time_add_msec_to_ticks(&pObj->xNextTicks, pObj->ulDelayMS);
 }
 
 int_32  FTE_TIME_SHELL_cmd(int_32 argc, char_ptr argv[] )
@@ -656,9 +689,8 @@ FTE_TIMER_TIME FTE_TIMER_getCurrentTime( void )
 static void FTE_TIMER_setTimeout( FTE_TIMER_EVENT_PTR obj )
 {
     MQX_TICK_STRUCT     xTicks;            
-    _timer_id           xID;
+
     _time_init_ticks(&xTicks, _time_get_ticks_per_sec() * obj->ulTimestamp / 1000000);    
     obj->xID = _timer_start_oneshot_after_ticks(FTE_TIMER_handler, NULL, TIMER_ELAPSED_TIME_MODE, &xTicks);
-    DEBUG("setTimeout[%d]\n", xID);
 }
 

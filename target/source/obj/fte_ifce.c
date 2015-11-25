@@ -71,6 +71,10 @@ _mqx_uint   fte_ifce_attach(FTE_OBJECT_PTR pObj)
         pStatus->xCommon.pValue = FTE_VALUE_createPPM();
         break;
         
+    case    FTE_OBJ_CLASS_DISCRETE:
+        pStatus->xCommon.pValue = FTE_VALUE_createHex32();
+        break;
+        
     default:
         pStatus->xCommon.pValue = FTE_VALUE_createULONG();
     }

@@ -37,85 +37,6 @@
 
 #define FTE_LOG_BOOT_TIME_MAX_COUNT     5
 
-/******************************************************************************
- * Task 
- ******************************************************************************/
-#define FTE_TASK_MAIN                   1
-#define FTE_TASK_WATCHDOG               2
-#define FTE_TASK_OBJECT_MNGT            3
-#define FTE_TASK_SHELL                  4
-#define FTE_TASK_NET                    5
-#define FTE_TASK_SMNG                   6
-#define FTE_TASK_TIMER                  7
-#define FTE_TASK_UCS_RX                 8
-#define FTE_TASK_UCS_TX                 9
-#define FTE_TASK_EVENT                  10
-#define FTE_TASK_CIAS_SIOUX_CU          11
-#define FTE_TASK_IOEX                   12
-#define FTE_TASK_LORA                   13
-#define FTE_TASK_LORA_COMM              14
-     
-#define FTE_TASK_DEFAULT_STACK          512
-
-#if FTE_TASK_MAIN
-    #define FTE_TASK_MAIN_STACK         (FTE_TASK_DEFAULT_STACK * 2)
-    #define FTE_TASK_MAIN_PRIO          9
-#endif
-     
-#if FTE_TASK_WATCHDOG
-    #define FTE_TASK_WATCHDOG_STACK     FTE_TASK_DEFAULT_STACK
-    #define FTE_TASK_WATCHDOG_PRIO      8
-    #define FTE_TASK_WATCHDOG_TIME      5000
-#endif
-#if FTE_TASK_NET
-    #define FTE_TASK_NET_STACK          (FTE_TASK_DEFAULT_STACK * 6)
-    #define FTE_TASK_NET_PRIO           9
-#endif
-
-#if FTE_TASK_SHELL
-    #define FTE_TASK_SHELL_STACK        (FTE_TASK_DEFAULT_STACK * 4)
-    #define FTE_TASK_SHELL_PRIO         9
-#endif
-     
-#if FTE_TASK_TIMER
-    #define FTE_TASK_TIMER_STACK        FTE_TASK_DEFAULT_STACK * 2
-    #define FTE_TASK_TIMER_PRIO         9
-#endif
-
-#if FTE_TASK_UCS_RX
-    #define FTE_TASK_UCS_RX_STACK       FTE_TASK_DEFAULT_STACK
-    #define FTE_TASK_UCS_RX_PRIO        9
-#endif
-
-#if FTE_TASK_UCS_TX
-    #define FTE_TASK_UCS_TX_STACK       FTE_TASK_DEFAULT_STACK
-    #define FTE_TASK_UCS_TX_PRIO        9
-#endif
-
-#if FTE_TASK_OBJECT_MNGT
-    #define FTE_TASK_OBJECT_MNGT_STACK  (FTE_TASK_DEFAULT_STACK * 2)
-    #define FTE_TASK_OBJECT_MNGT_PRIO   9
-#endif
-     
-#if FTE_TASK_EVENT
-    #define FTE_TASK_EVENT_STACK        (FTE_TASK_DEFAULT_STACK * 2)
-    #define FTE_TASK_EVENT_PRIO         9
-#endif
-
-#if FTE_TASK_CIAS_SIOUX_CU
-    #define FTE_TASK_CIAS_SIOUX_CU_STACK        (FTE_TASK_DEFAULT_STACK * 2)
-    #define FTE_TASK_CIAS_SIOUX_CU_PRIO 9
-#endif
-
-#if FTE_TASK_IOEX
-    #define FTE_TASK_IOEX_STACK         (FTE_TASK_DEFAULT_STACK * 2)
-    #define FTE_TASK_IOEX_PRIO          9
-#endif
-
-#if FTE_TASK_LORA
-    #define FTE_TASK_LORA_STACK         (FTE_TASK_DEFAULT_STACK * 4)
-    #define FTE_TASK_LORA_PRIO          9
-#endif
 
 /******************************************************************************
  * System Configuration
@@ -141,8 +62,8 @@
 #define FTE_NET_DEFAULT_NETMASK         IPADDR(255,255,255,0) 
 #define FTE_NET_DEFAULT_GATEWAY_IP      IPADDR(192,168,1,1) 
 
-#define FTE_NET_SMNG_BUFF_SIZE          1024
-#define FTE_NET_SMNG_STACK              (FTE_TASK_DEFAULT_STACK * 4 + FTE_NET_SMNG_BUFF_SIZE)
+#define FTE_NET_SMNG_BUFF_SIZE          512
+#define FTE_NET_SMNG_STACK              (FTE_TASK_DEFAULT_STACK * 2 + FTE_NET_SMNG_BUFF_SIZE)
 #define FTE_NET_SMNG_PRIO               9
 #define FTE_NET_SMNG_PORT               1234
 
@@ -276,6 +197,93 @@ void                    fte_state_change_set_cb(void (*cb)(void));
 #include "fte_mn1.h"
 #endif
 
+/******************************************************************************
+ * Task 
+ ******************************************************************************/
+#define FTE_TASK_MAIN                   1
+#define FTE_TASK_WATCHDOG               2
+#define FTE_TASK_OBJECT_MNGT            3
+#define FTE_TASK_SHELL                  4
+#define FTE_TASK_NET                    5
+#define FTE_TASK_SMNG                   6
+#define FTE_TASK_TIMER                  7
+#define FTE_TASK_UCS_RX                 8
+#define FTE_TASK_UCS_TX                 9
+#define FTE_TASK_EVENT                  10
+#if FTE_CIAS_SIOUX_CU_SUPPORTED
+#define FTE_TASK_CIAS_SIOUX_CU          11
+#endif
+#if FTE_IOEX_SUPPORTED
+#define FTE_TASK_IOEX                   12
+#endif
+#if FTE_LORA_SUPPORTED
+#define FTE_TASK_LORA                   13
+#define FTE_TASK_LORA_COMM              14
+#define FTE_TASK_15_4_STACK             15
+#define FTE_TASK_NS_STACK               16
+#endif
+     
+#define FTE_TASK_DEFAULT_STACK          512
+
+#if FTE_TASK_MAIN
+    #define FTE_TASK_MAIN_STACK         (FTE_TASK_DEFAULT_STACK * 2)
+    #define FTE_TASK_MAIN_PRIO          9
+#endif
+     
+#if FTE_TASK_WATCHDOG
+    #define FTE_TASK_WATCHDOG_STACK     FTE_TASK_DEFAULT_STACK
+    #define FTE_TASK_WATCHDOG_PRIO      8
+    #define FTE_TASK_WATCHDOG_TIME      5000
+#endif
+#if FTE_TASK_NET
+    #define FTE_TASK_NET_STACK          (FTE_TASK_DEFAULT_STACK * 6)
+    #define FTE_TASK_NET_PRIO           9
+#endif
+
+#if FTE_TASK_SHELL
+    #define FTE_TASK_SHELL_STACK        (FTE_TASK_DEFAULT_STACK * 4)
+    #define FTE_TASK_SHELL_PRIO         9
+#endif
+     
+#if FTE_TASK_TIMER
+    #define FTE_TASK_TIMER_STACK        FTE_TASK_DEFAULT_STACK * 2
+    #define FTE_TASK_TIMER_PRIO         9
+#endif
+
+#if FTE_TASK_UCS_RX
+    #define FTE_TASK_UCS_RX_STACK       FTE_TASK_DEFAULT_STACK
+    #define FTE_TASK_UCS_RX_PRIO        9
+#endif
+
+#if FTE_TASK_UCS_TX
+    #define FTE_TASK_UCS_TX_STACK       FTE_TASK_DEFAULT_STACK
+    #define FTE_TASK_UCS_TX_PRIO        9
+#endif
+
+#if FTE_TASK_OBJECT_MNGT
+    #define FTE_TASK_OBJECT_MNGT_STACK  (FTE_TASK_DEFAULT_STACK * 2)
+    #define FTE_TASK_OBJECT_MNGT_PRIO   9
+#endif
+     
+#if FTE_TASK_EVENT
+    #define FTE_TASK_EVENT_STACK        (FTE_TASK_DEFAULT_STACK * 2)
+    #define FTE_TASK_EVENT_PRIO         9
+#endif
+
+#if FTE_TASK_CIAS_SIOUX_CU
+    #define FTE_TASK_CIAS_SIOUX_CU_STACK        (FTE_TASK_DEFAULT_STACK * 2)
+    #define FTE_TASK_CIAS_SIOUX_CU_PRIO 9
+#endif
+
+#if FTE_TASK_IOEX
+    #define FTE_TASK_IOEX_STACK         (FTE_TASK_DEFAULT_STACK * 2)
+    #define FTE_TASK_IOEX_PRIO          9
+#endif
+
+#if FTE_TASK_LORA
+    #define FTE_TASK_LORA_STACK         (FTE_TASK_DEFAULT_STACK * 4)
+    #define FTE_TASK_LORA_PRIO          9
+#endif
 
 #if FTE_DI_SUPPORTED                    
     #if !FTE_DI_MAX_COUNT            
@@ -356,6 +364,6 @@ void                    fte_state_change_set_cb(void (*cb)(void));
 #endif
 
 #define FTE_OBJ_LED_SYS_STATUS  MAKE_SYSTEM_ID(FTE_OBJ_TYPE_LED, 100)
-
+#define FTE_OBJ_TYPE_IOEX_RESET MAKE_SYSTEM_ID(FTE_OBJ_TYPE_DO, 100)
 #endif
 

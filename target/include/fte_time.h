@@ -11,6 +11,12 @@ typedef struct FTE_TIMER_EVENT_STRUCT
     uint_32 xID;
 }   FTE_TIMER_EVENT, _PTR_ FTE_TIMER_EVENT_PTR;
 
+typedef struct  FTE_TIME_DELAY_STRUCT
+{
+    MQX_TICK_STRUCT xNextTicks;
+    uint_32         ulDelayMS;          //! milliseconds
+}   FTE_TIME_DELAY, _PTR_ FTE_TIME_DELAY_PTR;
+
 _mqx_uint   FTE_TIME_init(void);
 
 extern  uint_32     FTE_TIME_diff(TIME_STRUCT *time1, TIME_STRUCT *time);
@@ -19,6 +25,9 @@ extern  uint_32     FTE_TIME_toString(TIME_STRUCT *time, char_ptr pBuff, uint_32
 extern  uint_32     FTE_TIME_toTime(char_ptr pBuff, TIME_STRUCT *pTime);
 
 extern  uint_64     FTE_TIME_getMilliSeconds(void);
+
+extern  _mqx_uint   FTE_TIME_DELAY_init(FTE_TIME_DELAY_PTR pObj, uint_32 ulDelayMS);
+extern  void        FTE_TIME_DELAY_waitingAndSetNext(FTE_TIME_DELAY_PTR pObj);
 
 extern  int_32      FTE_TIME_SHELL_cmd(int_32 argc, char_ptr argv[] );
 

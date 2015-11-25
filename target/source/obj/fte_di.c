@@ -9,7 +9,7 @@
 #ifndef FTE_DIO_REMOVE_GLITCH
 #define FTE_DIO_REMOVE_GLITCH   1
 #endif
-
+ 
 static  _mqx_uint   _FTE_DI_init(FTE_OBJECT_PTR pObj);
 static  _mqx_uint   _FTE_DI_run(FTE_OBJECT_PTR pObj);
 static  _mqx_uint   _FTE_DI_stop(FTE_OBJECT_PTR pObj);

@@ -81,20 +81,36 @@ _mqx_int    FTE_DEBUG_error(const char _PTR_ pFuncName, int nLine, const char _P
     return   fprintf(_debugOut, "%s[%d] : %s\n", pFuncName, nLine, _pBuff);
 }
 
-_mqx_int    FTE_DEBUG_dump(const char _PTR_ pFuncName, int nLine, void *pBuff, uint_32 ulSize)
+_mqx_int    FTE_DEBUG_dump(const char _PTR_ pFuncName, int nLine, char * pTitle, void *pBuff, uint_32 ulSize, uint_32 ulWrapLen)
 {
     uint_32 i;
+    char    pIndent[32];
+    
+    if (pTitle != NULL)
+    {
+        fprintf(_debugOut, "%s : ", pTitle);
+        memset(pIndent, ' ', strlen(pTitle) + 3);
+        pIndent[strlen(pTitle) + 3] = 0;
+    }
+    else
+    {
+        pIndent[0] = 0;
+    }
     
     for(i = 0 ; i < ulSize ; i++)
     {
         fprintf(_debugOut, "%02x ", ((uint_8_ptr)pBuff)[i]);
-        if ((i+1) % 16 == 0)
+        if ((ulWrapLen != 0) && ((i+1) % ulWrapLen == 0))
         {
             fprintf(_debugOut, "\n");
+            if ((i+1) != ulSize)
+            {
+                fprintf(_debugOut, "%s", pIndent);
+            }
         }
     }
     
-    if (i % 16 != 0)
+    if ((ulWrapLen == 0) || ((i+1) % ulWrapLen != 0))
     {
         fprintf(_debugOut, "\n");
     }

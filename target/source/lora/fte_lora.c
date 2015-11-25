@@ -8,6 +8,10 @@
 #include "sx1276-LoRa.h"
 #include "sx1276-LoRaMisc.h"
 
+#include "xtype.h"
+#include "buffer.h"
+#include "stack.h"
+
 FTE_LIST            xRcvdList;
 FTE_LIST            xSendList;
 FTE_FBM_PTR         pFBM = NULL;
@@ -31,7 +35,7 @@ _mqx_uint   FTE_LORA_init(void)
 
 void FTE_LORA_comm(uint_32 params)
 {
-    uint_8      pBuffer[RF_BUFFER_SIZE_MAX];
+    uint_8      pInternalBuffer[RF_BUFFER_SIZE_MAX];
     uint_16     usBufferSize = RF_BUFFER_SIZE_MAX;
     
     FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
@@ -41,23 +45,45 @@ void FTE_LORA_comm(uint_32 params)
     {
         uint_32     ulState;
         boolean     bTxON = FALSE;
-        
+         
         ulState = SX1276LoRaProcess();
         
         switch( ulState )
         {
         case    RF_RX_DONE:
             {
-                SX1276LoRaGetRxPacket( pBuffer, ( uint16_t* )&usBufferSize );
+                SX1276LoRaGetRxPacket( pInternalBuffer, ( uint16_t* )&usBufferSize );
                 if (usBufferSize != 0)
                 {
+#if 0                    
                     FTE_FBM_BUFF_PTR pBlock = FTE_FBM_alloc(pFBM, usBufferSize);
                     if (pBlock != NULL)
                     {
-                        memcpy(pBlock->pBuff, pBuffer, usBufferSize);
+                        memcpy(pBlock->pBuff, pInternalBuffer, usBufferSize);
                         pBlock->ulSize = usBufferSize;
                         FTE_LIST_pushBack(&xRcvdList, pBlock);
                     }                    
+#else
+                    buffer_t *pBuffer = stack_buffer_allocate(usBufferSize);
+                    
+                    memcpy(pBuffer->buf, pInternalBuffer, usBufferSize);
+                    pBuffer->dir = BUFFER_UP;
+                    pBuffer->size = usBufferSize;
+                    
+			#ifdef HAVE_MAC_15_4
+                    mac_push(pBuffer);
+					mac_rx_push();
+			#else
+                    {
+                        event_t event;
+						event.process = 0;
+						event.param = (void *) pBuffer;
+				
+						xQueueSendFromISR( events, ( void * ) &event, 0);
+                    }
+			#endif
+                    
+#endif
                 }
             }
         case    RF_IDLE:
@@ -119,6 +145,7 @@ void FTE_LORA_process(uint_32 params)
             FTE_FBM_BUFF_PTR pBlock;
             if (FTE_LIST_popFront(&xRcvdList, (pointer *)&pBlock) == MQX_OK)
             {
+
 //                DEBUG("Packet Received : %d\n", pBlock->ulSize);
 //                DEUMP(pBlock->pBuff, pBlock->ulSize);
                 

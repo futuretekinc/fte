@@ -25,7 +25,7 @@ _mqx_uint FTE_GPIO_create(FTE_GPIO_CONFIG_PTR pConfig)
 _mqx_uint   FTE_GPIO_attach(FTE_GPIO_PTR pGPIO, uint_32 nParent)
 {
     assert(pGPIO != NULL);
-    if (pGPIO == NULL)
+        if (pGPIO == NULL)
     {
         return  MQX_INVALID_COMPONENT_HANDLE;
     }

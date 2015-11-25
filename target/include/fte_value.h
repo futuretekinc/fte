@@ -15,6 +15,7 @@ typedef enum
     FTE_VALUE_TYPE_LED,
     FTE_VALUE_TYPE_PWR_KWH,
     FTE_VALUE_TYPE_PWR_KW,
+    FTE_VALUE_TYPE_HEX32,
     FTE_VALUE_TYPE_MAX
 }   FTE_VALUE_TYPE, _PTR_ FTE_VALUE_TYPE_PTR;
 
@@ -43,6 +44,7 @@ typedef struct
 
 FTE_VALUE_PTR   FTE_VALUE_create(FTE_VALUE_TYPE xType);
 FTE_VALUE_PTR   FTE_VALUE_createULONG(void);
+FTE_VALUE_PTR   FTE_VALUE_createHex32(void);
 FTE_VALUE_PTR   FTE_VALUE_createTemperature(void);
 FTE_VALUE_PTR   FTE_VALUE_createHumidity(void);
 FTE_VALUE_PTR   FTE_VALUE_createDIO(void);
@@ -58,6 +60,7 @@ _mqx_uint       FTE_VALUE_destroy(FTE_VALUE_PTR pValue);
 
 _mqx_uint       FTE_VALUE_init(FTE_VALUE_PTR pValue, FTE_VALUE_TYPE xType);
 _mqx_uint       FTE_VALUE_initULONG(FTE_VALUE_PTR pValue, uint_32 ulValue);
+_mqx_uint       FTE_VALUE_initHex32(FTE_VALUE_PTR pValue, uint_32 ulValue);
 _mqx_uint       FTE_VALUE_initTemperature(FTE_VALUE_PTR pValue, int_32 nValue);
 _mqx_uint       FTE_VALUE_initHumidity(FTE_VALUE_PTR pValue, uint_32 ulValue);
 _mqx_uint       FTE_VALUE_initDIO(FTE_VALUE_PTR pValue, boolean bValue);
@@ -89,6 +92,9 @@ _mqx_uint       FTE_VALUE_setPPM(FTE_VALUE_PTR pObj, uint_32 ulValue);
 
 _mqx_uint       FTE_VALUE_setULONG(FTE_VALUE_PTR pObj, uint_32 ulValue);
 _mqx_uint       FTE_VALUE_getULONG(FTE_VALUE_PTR pObj, uint_32_ptr pulValue);
+
+_mqx_uint       FTE_VALUE_setHex32(FTE_VALUE_PTR pObj, uint_32 ulValue);
+_mqx_uint       FTE_VALUE_getHex32(FTE_VALUE_PTR pObj, uint_32_ptr pulValue);
 
 _mqx_uint       FTE_VALUE_setLED(FTE_VALUE_PTR pObj, uint_32 xState);
 _mqx_uint       FTE_VALUE_getLED(FTE_VALUE_PTR pObj, uint_32_ptr pxState);

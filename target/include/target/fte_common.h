@@ -4,8 +4,10 @@
 #define FTE_DEV_LWGPIO_RESET            (FTE_DEV_TYPE_LWGPIO | 0x00)
 #define FTE_DEV_LWGPIO_AD7785_0_CS      (FTE_DEV_TYPE_LWGPIO | 0x01)
 #define FTE_DEV_LWGPIO_AD7785_1_CS      (FTE_DEV_TYPE_LWGPIO | 0x02)
+#if FTE_SHT_SUPPORTED
 #define FTE_DEV_LWGPIO_SHT_SDA          (FTE_DEV_TYPE_LWGPIO | 0x03)
 #define FTE_DEV_LWGPIO_SHT_SCL          (FTE_DEV_TYPE_LWGPIO | 0x04)
+#endif
 #define FTE_DEV_LWGPIO_POWER_HOLD       (FTE_DEV_TYPE_LWGPIO | 0x05)
 #if FTE_V2
 #define FTE_DEV_LWGPIO_POWER_IN         (FTE_DEV_TYPE_LWGPIO | 0x06)
@@ -36,12 +38,21 @@
 #define FTE_DEV_LWGPIO_LORA_DIO4        (FTE_DEV_TYPE_LWGPIO | 0x19)
 #define FTE_DEV_LWGPIO_LORA_DIO5        (FTE_DEV_TYPE_LWGPIO | 0x1A)
 #define FTE_DEV_LWGPIO_LORA_CTX         (FTE_DEV_TYPE_LWGPIO | 0x1B)
+#define FTE_DEV_LWGPIO_IOEX_RESET       (FTE_DEV_TYPE_LWGPIO | 0x1C)
+#define FTE_DEV_LWGPIO_UCS1_RCTRL       (FTE_DEV_TYPE_LWGPIO | 0x1D)
+#define FTE_DEV_LWGPIO_UCS1_WCTRL       (FTE_DEV_TYPE_LWGPIO | 0x1E)
+#define FTE_DEV_LWGPIO_UCS2_RCTRL       (FTE_DEV_TYPE_LWGPIO | 0x1F)
+#define FTE_DEV_LWGPIO_UCS2_WCTRL       (FTE_DEV_TYPE_LWGPIO | 0x20)
+#define FTE_DEV_LWGPIO_UCS3_RCTRL       (FTE_DEV_TYPE_LWGPIO | 0x21)
+#define FTE_DEV_LWGPIO_UCS3_WCTRL       (FTE_DEV_TYPE_LWGPIO | 0x22)
 
 #define FTE_DEV_GPIO_RESET              (FTE_DEV_TYPE_GPIO | 0x00)
 #define FTE_DEV_GPIO_AD7785_0_CS        (FTE_DEV_TYPE_GPIO | 0x01)
 #define FTE_DEV_GPIO_AD7785_1_CS        (FTE_DEV_TYPE_GPIO | 0x02)
+#if FTE_SHT_SUPPORTED
 #define FTE_DEV_GPIO_SHT_SDA            (FTE_DEV_TYPE_GPIO | 0x03)
 #define FTE_DEV_GPIO_SHT_SCL            (FTE_DEV_TYPE_GPIO | 0x04)
+#endif
 #define FTE_DEV_GPIO_POWER_HOLD         (FTE_DEV_TYPE_GPIO | 0x05)
 #if FTE_V2
 #define FTE_DEV_GPIO_POWER_IN           (FTE_DEV_TYPE_GPIO | 0x06)
@@ -63,6 +74,7 @@
 #define FTE_DEV_GPIO_LED_1              (FTE_DEV_TYPE_GPIO | 0x10)
 #endif
 #define FTE_DEV_GPIO_DI_0               (FTE_DEV_TYPE_GPIO | 0x11)
+#define FTE_DEV_GPIO_IOEX_RESET         (FTE_DEV_TYPE_GPIO | 0x12)
 
 #define FTE_DEV_I2C_0                   (FTE_DEV_TYPE_I2C | 0)
 #define FTE_DEV_I2C_1                   (FTE_DEV_TYPE_I2C | 1)
@@ -99,7 +111,6 @@
 
 #define FTE_DEV_UCS_1                   (FTE_DEV_TYPE_UCS | 1)
 #define FTE_DEV_UCS_2                   (FTE_DEV_TYPE_UCS | 2)
-#define FTE_DEV_UCS_3                   (FTE_DEV_TYPE_UCS | 3)
 #define FTE_DEV_UCM_1                   (FTE_DEV_TYPE_UCM | 1)
 
 #define FTE_DEV_SRF_1                   (FTE_DEV_TYPE_SRF | 1)
@@ -113,8 +124,10 @@
 #define FTE_GPIO_M25P16_WP              (GPIO_PORT_B | GPIO_PIN16)
 #define FTE_GPIO_M25P16_HOLD            (GPIO_PORT_B | GPIO_PIN17)
 
+#if FTE_SHT_SUPPORTED
 #define FTE_GPIO_SHT_SDA                (GPIO_PORT_C | GPIO_PIN2)
 #define FTE_GPIO_SHT_SCL                (GPIO_PORT_C | GPIO_PIN1)
+#endif
 
 #define FTE_GPIO_RESET                  (GPIO_PORT_B | GPIO_PIN3)
 #if FTE_V2
@@ -148,13 +161,16 @@
 
 #define FTE_GPIO_GAS_OUTPUT             (GPIO_PORT_C | GPIO_PIN1)
 #define FTE_GPIO_UART1_RTS              (GPIO_PORT_C | GPIO_PIN1)
-#define FTE_GPIO_UCS_FLOWCTRL           (GPIO_PORT_D | GPIO_PIN0)
-#define FTE_GPIO_UCS_FLOWCTRL2          (GPIO_PORT_D | GPIO_PIN1)
+#define FTE_GPIO_UCS1_RCTRL             (GPIO_PORT_D | GPIO_PIN0)
+#define FTE_GPIO_UCS1_WCTRL             (GPIO_PORT_D | GPIO_PIN1)
+#define FTE_GPIO_UCS2_RCTRL             (GPIO_PORT_E | GPIO_PIN11)
+#define FTE_GPIO_UCS2_WCTRL             (GPIO_PORT_E | GPIO_PIN10)
 
 #define FTE_GPIO_1WIRE_0                (GPIO_PORT_C | GPIO_PIN3)
 #define FTE_GPIO_1WIRE_1                (GPIO_PORT_C | GPIO_PIN4)
 
 #define FTE_GPIO_DI_0                   (GPIO_PORT_C | GPIO_PIN11)
+#define FTE_GPIO_IOEX_RESET             (GPIO_PORT_C | GPIO_PIN2)
 
 #define FTE_GPIO_AD7785_0_CS_MUX        (LWGPIO_MUX_C4_GPIO)
 #define FTE_GPIO_AD7785_1_CS_MUX        (LWGPIO_MUX_C3_GPIO)
@@ -163,8 +179,10 @@
 #define FTE_GPIO_M25P16_WP_MUX          (LWGPIO_MUX_B16_GPIO)
 #define FTE_GPIO_M25P16_HOLD_MUX        (LWGPIO_MUX_B17_GPIO)
 
+#if FTE_SHT_SUPPORTED
 #define FTE_GPIO_SHT_SDA_MUX            (LWGPIO_MUX_C2_GPIO)
 #define FTE_GPIO_SHT_SCL_MUX            (LWGPIO_MUX_C1_GPIO)
+#endif
 
 #define FTE_GPIO_RESET_MUX              (LWGPIO_MUX_B3_GPIO)
 #if FTE_V2
@@ -198,13 +216,16 @@
 
 #define FTE_GPIO_GAS_OUTPUT_MUX       	(LWGPIO_MUX_C1_GPIO)
 #define FTE_GPIO_UART1_RTS_MUX        	(LWGPIO_MUX_C1_GPIO)
-#define FTE_GPIO_UCS_FLOWCTRL_MUX     	(LWGPIO_MUX_D0_GPIO)
-#define FTE_GPIO_UCS_FLOWCTRL2_MUX    	(LWGPIO_MUX_D1_GPIO)
+#define FTE_GPIO_UCS1_RCTRL_MUX     	(LWGPIO_MUX_D0_GPIO)
+#define FTE_GPIO_UCS1_WCTRL_MUX    	    (LWGPIO_MUX_D1_GPIO)
+#define FTE_GPIO_UCS2_RCTRL_MUX     	(LWGPIO_MUX_E11_GPIO)
+#define FTE_GPIO_UCS2_WCTRL_MUX    	    (LWGPIO_MUX_E10_GPIO)
 
 #define FTE_GPIO_1WIRE_0_MUX            (LWGPIO_MUX_C3_GPIO)
 #define FTE_GPIO_1WIRE_1_MUX            (LWGPIO_MUX_C4_GPIO)
 
 #define FTE_GPIO_DI_0_MUX               (LWGPIO_MUX_C11_GPIO)
+#define FTE_GPIO_IOEX_RESET_MUX         (LWGPIO_MUX_C2_GPIO)
 
 #if FTE_TASCON_HEM12_SUPPORTED
 #define FTE_UCS_1_FULL_DUPLEX               FALSE
