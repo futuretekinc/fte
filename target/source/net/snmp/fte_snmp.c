@@ -688,7 +688,7 @@ char const *MIB_get_objValue(pointer param)
     FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;    
     ASSERT(pObj != NULL);
     
-    FTE_SYS_LIVE_CHECK_touch();
+    FTE_NET_liveTouch();
      
     if ( FTE_OBJ_IS_ENABLED(pObj))
     {

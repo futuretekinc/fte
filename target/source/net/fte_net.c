@@ -166,6 +166,78 @@ boolean FTE_NET_SERVER_isExist(_ip_address ip)
 }
 #endif
 
+
+static  MQX_TICK_STRUCT _xLastCheckTime;
+static  boolean         _bLiveCheck = FALSE;
+static  uint_32         _ulKeepAliveTime = FTE_SYS_KEEP_ALIVE_TIME;
+
+_mqx_uint   FTE_NET_liveCheckInit(uint_32 ulKeepAliveTime)
+{
+    if ((ulKeepAliveTime >= FTE_SYS_KEEP_ALIVE_TIME_MIN) && (ulKeepAliveTime <= FTE_SYS_KEEP_ALIVE_TIME_MAX))
+    {
+        _time_get_elapsed_ticks(&_xLastCheckTime);
+        _ulKeepAliveTime = ulKeepAliveTime;
+        return  MQX_OK;
+    }
+    
+    return  MQX_ERROR;
+} 
+
+_mqx_uint   FTE_NET_liveCheckStart(void)
+{
+    _time_get_elapsed_ticks(&_xLastCheckTime);
+    _bLiveCheck = TRUE;
+
+    return  MQX_OK;
+}
+
+_mqx_uint   FTE_NET_liveCheckStop(void)
+{
+    _bLiveCheck = FALSE;
+    
+    return  MQX_OK;
+}
+
+boolean     FTE_NET_isLiveChecking(void)
+{
+    return  _bLiveCheck;
+}
+
+_mqx_uint   FTE_NET_lastLiveCheckTime(MQX_TICK_STRUCT_PTR pTime)
+{
+    memcpy(pTime, &_xLastCheckTime, sizeof(MQX_TICK_STRUCT));
+    
+    return  MQX_OK;
+}
+
+_mqx_uint   FTE_NET_liveTouch(void)
+{
+    _time_get_elapsed_ticks(&_xLastCheckTime);
+
+    return  MQX_OK;
+}
+
+
+boolean     FTE_NET_isStable(void)
+{
+    if (_bLiveCheck)
+    {
+        MQX_TICK_STRUCT xCurrentTime;
+        boolean         bOverflow = FALSE;
+        uint_32         ulDiffTime;
+        
+        _time_get_elapsed_ticks(&xCurrentTime);
+        
+        ulDiffTime = _time_diff_seconds(&xCurrentTime, &_xLastCheckTime, &bOverflow);
+        if ( (ulDiffTime> _ulKeepAliveTime) || bOverflow)
+        {
+            return  FALSE;
+        }
+    }
+    
+    return  TRUE;
+}
+
 int_32  FTE_PHY_SHELL_cmd(int_32 argc, char_ptr argv[] )
 { 
     boolean              bPrintUsage, bShortHelp = FALSE;

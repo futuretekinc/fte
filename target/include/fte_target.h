@@ -19,8 +19,9 @@
 #define FTE_STATE_POWER_UP              0x0001
 #define FTE_STATE_INITIALIZED           0x0002
 #define FTE_STATE_CONNECTED             0x0004
-#define FTE_STATE_WARNING               0x0008
-#define FTE_STATE_FINISHING             0x0010
+#define FTE_STATE_UNSTABLED             0x0008
+#define FTE_STATE_WARNING               0x0100
+#define FTE_STATE_ALERT                 0x0200
 
 #define FTE_MANUFACTURER                "FutureTek,Inc."
 #define FTE_HW_VERSION                  VERSION(1,1,1,2)
@@ -45,12 +46,15 @@
 #define FTE_SYS_KEEP_ALIVE_TIME_MIN     (60)
 #define FTE_SYS_KEEP_ALIVE_TIME_MAX     ((60 * 60) * 24)
 
-#define FTE_SYS_LIVE_CHECK_INTERVAL     1000
+#define FTE_SYS_LIVE_CHECK_INTERVAL     100
      
 #define FTE_SYS_AUTO_SAVE_INTERVAL      5000
 /******************************************************************************
  * Network Configuration
  ******************************************************************************/
+#define FTE_NET_INIT_WAITING_TIME       10000   //  10 s
+#define FTE_NET_STATE_CHECK_INTERVAL    500     //  500 ms
+
 #define FTE_NET_PHY_ADDR                0
 
 #define FTE_NET_OUI_0                   0x00
@@ -117,7 +121,7 @@
 #define FTE_OBJ_LIVE_CHECK_INTERVAL     60  /* seconds */
 
 
-typedef struct _product_desc_struct
+typedef struct _PRODUCT_DESC_STRUCT
 {
     char_ptr            pModel;
     char_ptr            pManufacturer;
@@ -131,13 +135,8 @@ typedef struct _product_desc_struct
 extern  const SHELL_COMMAND_STRUCT shell_commands[];
 
 FTE_PRODUCT_DESC const *fte_get_product_desc(void);
-_mqx_uint               fte_platform_init(void);
-_mqx_uint               fte_platform_run(void);
-_mqx_uint               fte_power_hold(boolean bHoldOn);
-void                    fte_state_initialized(void);
-void                    fte_state_disconnected(void);
-uint_32                 fte_state_get(void);
-void                    fte_state_change_set_cb(void (*cb)(void));
+_mqx_uint               FTE_PLATFORM_init(void);
+_mqx_uint               FTE_PLATFORM_run(void);
 
 #ifndef FTE_SHELL_TIMEOUT
     #define FTE_SHELL_TIMEOUT               60  /* 60 secs */
@@ -363,7 +362,8 @@ void                    fte_state_change_set_cb(void (*cb)(void));
     #define FTE_LOG_MAX_COUNT   100
 #endif
 
-#define FTE_OBJ_LED_SYS_STATUS  MAKE_SYSTEM_ID(FTE_OBJ_TYPE_LED, 100)
+#define FTE_OBJ_LED_SYS0_STATUS  MAKE_SYSTEM_ID(FTE_OBJ_TYPE_LED, 100)
+#define FTE_OBJ_LED_SYS1_STATUS  MAKE_SYSTEM_ID(FTE_OBJ_TYPE_LED, 101)
 #define FTE_OBJ_TYPE_IOEX_RESET MAKE_SYSTEM_ID(FTE_OBJ_TYPE_DO, 100)
 #endif
 

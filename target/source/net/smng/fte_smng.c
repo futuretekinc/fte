@@ -68,8 +68,8 @@ void FTE_SMNG_task(pointer pParams, pointer pCreator)
         {
             continue;
         }
-        
-        FTE_SYS_LIVE_CHECK_touch();
+
+        FTE_NET_liveTouch();
 
         if (strcmp(_pBuff, "Hello?") == 0)
         {
