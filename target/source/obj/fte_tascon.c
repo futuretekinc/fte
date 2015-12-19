@@ -107,44 +107,146 @@ FTE_VALUE_TYPE  FTE_TASCON_HEM12_valueTypes[] =
     FTE_VALUE_TYPE_PWR_KW
 };
 
-_mqx_uint   FTE_TASCON_HEM12_request(FTE_OBJECT_PTR pObj)
+_mqx_uint   FTE_TASCON_HEM12_FRAME_create(uint_8_ptr pAddress, uint_32 ulType, uint_8_ptr pBuff, uint_32 ulBuffLen, uint_32_ptr pulFrameSize)
 {
-    FTE_HEM12_06M_STATUS_PTR    pStatus = (FTE_HEM12_06M_STATUS_PTR)pObj->pStatus;
-    uint_8      pBuff[32];
-    uint_32     nLen = 0;
-    uint_8      nCS = 0;
-    
-    pBuff[nLen++] = FTE_HEM12_FRAME_START;
-    pBuff[nLen++] = 0xAA;
-    pBuff[nLen++] = 0xAA;
-    pBuff[nLen++] = 0xAA;
-    pBuff[nLen++] = 0xAA;
-    pBuff[nLen++] = 0xAA;
-    pBuff[nLen++] = 0xAA;
-    pBuff[nLen++] = FTE_HEM12_START_CODE; 
-    pBuff[nLen++] = 0x01;
-    pBuff[nLen++] = 0x02;
-    pBuff[nLen++] = 0x47;
-    pBuff[nLen++] = 0x14;
-    
-    for(int i = 0 ; i < nLen ; i++)
+    switch(ulType)
     {
-        nCS += pBuff[i];
+    case    0:
+        {
+            uint_8  ucCRC;
+            const uint_8  pBaseFrame[] = {  FTE_HEM12_FRAME_START, 
+                                            0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 
+                                            FTE_HEM12_START_CODE,
+                                            0x01, 0x02, 0x47, 0x14,
+                                            0xFF, 
+                                            FTE_HEM12_STOP_CODE, 0x00 };
+
+            memcpy(pBuff, pBaseFrame, sizeof(pBaseFrame));
+            *pulFrameSize = sizeof(pBaseFrame);    
+            
+            pBuff[1] = pAddress[5];
+            pBuff[2] = pAddress[4];
+            pBuff[3] = pAddress[3];
+            pBuff[4] = pAddress[2];
+            pBuff[5] = pAddress[1];
+            pBuff[6] = pAddress[0];
+                        
+            ucCRC = FTE_TASCON_HEM12_CRC(pBuff, 12);
+            pBuff[12] = ucCRC;
+        }
+        break;
+        
+    case    1:
+        {
+            const uint_8  pBaseFrame[] = {  FTE_HEM12_FRAME_START, 
+                                            0x99, 0x99, 0x99, 0x99, 0x99, 0x99, 
+                                            FTE_HEM12_START_CODE,
+                                            0x01, 0x02, 0x67, 0xf3,
+                                            0xC5, 
+                                            FTE_HEM12_STOP_CODE, 0x00 };
+
+            memcpy(pBuff, pBaseFrame, sizeof(pBaseFrame));
+            *pulFrameSize = sizeof(pBaseFrame);    
+        }
+        break;
+    default:
+        return  MQX_ERROR;
     }
     
-    pBuff[nLen++] = nCS;
-    pBuff[nLen++] = FTE_HEM12_STOP_CODE;
-    pBuff[nLen++] = FTE_HEM12_STOP_CODE;
+    return  MQX_OK;
+} 
 
-    
+
+_mqx_uint   FTE_TASCON_HEM12_request(FTE_OBJECT_PTR pObj)
+{
+    FTE_HEM12_06M_CONFIG_PTR    pConfig = (FTE_HEM12_06M_CONFIG_PTR)pObj->pConfig;
+    FTE_HEM12_06M_STATUS_PTR    pStatus = (FTE_HEM12_06M_STATUS_PTR)pObj->pStatus;
+    uint_8      pReqBuff[32];
+    uint_32     ulReqLen;
+    uint_8      pRcvdBuff[32];
+    uint_32     ulRcvdLen;
+    uint_8      nCS = 0;
+    char_ptr    pHead;
+     uint_32    nPower, nSkip = 0, nValue;    
+
+#if FTE_TASCON_HEM12_06M_SUPPORTED && FTE_TASCON_HEM12_SUPPORTED
+    FTE_UCS_setBaudrate(pStatus->xGUS.pUCS, FTE_TASCON_HEM12_BAUDRATE);
+#endif
+        
+    FTE_TASCON_HEM12_FRAME_create(pConfig->pSensorID, 0, pReqBuff, sizeof(pReqBuff), &ulReqLen);    
+        
     FTE_UCS_clear(pStatus->xGUS.pUCS);    
-    FTE_UCS_send(pStatus->xGUS.pUCS, pBuff, nLen, FALSE);    
+        
+    ulRcvdLen = FTE_UCS_sendAndRecv(pStatus->xGUS.pUCS, pReqBuff, ulReqLen, pRcvdBuff, sizeof(pRcvdBuff), FTE_HEM12_RESP_DELAY_TIME, FTE_HEM12_RESP_WAIT_TIME);            
+    if (ulRcvdLen == 0)
+    {
+        return  MQX_ERROR;
+    }
+    
+    pHead = (char_ptr)pRcvdBuff;
+    for(int i = 0 ; i < ulRcvdLen ; i++)
+    {
+        if (pHead[i] == 0xFE)
+        {
+            nSkip++;
+        }
+        else
+        {
+            break;
+        }
+    }
+    
+    pHead += nSkip;
+    ulRcvdLen -= nSkip;
+    
+    if ((ulRcvdLen < 14) || 
+        (pHead[0] != FTE_HEM12_FRAME_START) || 
+        (pHead[7] != FTE_HEM12_START_CODE) || 
+        (ulRcvdLen < (12 + pHead[9])))
+    {
+        return  MQX_INVALID_CHECKSUM;
+    }
+    
+    ulRcvdLen = 12 + pHead[9];
 
+    for(int i = 0 ; i < ulRcvdLen - 2 ; i++)
+    {
+        nCS += pHead[i];
+    }
+    
+    if ((pHead[ulRcvdLen - 2] != nCS) ||
+        (pHead[ulRcvdLen - 1] != FTE_HEM12_STOP_CODE))
+    {
+        return  MQX_INVALID_CHECKSUM;
+    }
+    
+#if 0
+    for(int i = 0 ; i < 6 ; i++)
+    {
+        if (pConfig->pAddress[i] != pHead[6 - i])
+        {
+            return  MQX_INVALID_PARAMETER;
+        }
+    }
+#endif
+    
+    nValue = (pHead[15] - 0x33);
+    nPower = ((nValue >> 4) * 10) + (nValue & 0x0F);
+    nValue = (pHead[14] - 0x33);
+    nPower = nPower * 100 + ((nValue >> 4) * 10) + (nValue & 0x0F);
+    nValue = (pHead[13] - 0x33);
+    nPower = nPower * 100 + ((nValue >> 4) * 10) + (nValue & 0x0F);
+    nValue = (pHead[12] - 0x33);
+    nPower = nPower * 100 + ((nValue >> 4) * 10) + (nValue & 0x0F);
+   
+    FTE_VALUE_setULONG(&pStatus->xGUS.xCommon.pValue[0], nPower * 10);
+    
     return  MQX_OK;
 }
 
 _mqx_uint     FTE_TASCON_HEM12_received(FTE_OBJECT_PTR pObj)
 {
+#if 0
     FTE_HEM12_06M_STATUS_PTR  pStatus = (FTE_HEM12_06M_STATUS_PTR)pObj->pStatus;
     uint_32             nPower, nSkip = 0, nValue;    
     uint_8              pBuff[64];
@@ -216,8 +318,8 @@ _mqx_uint     FTE_TASCON_HEM12_received(FTE_OBJECT_PTR pObj)
     nValue = (pHead[12] - 0x33);
     nPower = nPower * 100 + ((nValue >> 4) * 10) + (nValue & 0x0F);
    
-    FTE_VALUE_setPowerKW(&pStatus->xGUS.xCommon.pValue[0], nPower * 10);
-    
+    FTE_VALUE_setULONG(&pStatus->xGUS.xCommon.pValue[0], nPower * 10);
+#endif
     return  MQX_OK;
 }
 
@@ -505,6 +607,11 @@ _mqx_uint   FTE_TASCON_HEM12_06M_request(FTE_OBJECT_PTR pObj)
        pStatus->nField = nFieldType;
     
         FTE_TASCON_HEM12_06M_FRAME_create(pConfig->pSensorID, pStatus->nField, pReqBuff, sizeof(pReqBuff), &ulReqLen);    
+
+#if FTE_TASCON_HEM12_06M_SUPPORTED && FTE_TASCON_HEM12_SUPPORTED
+        FTE_UCS_setBaudrate(pStatus->xGUS.pUCS, FTE_TASCON_HEM12_06M_BAUDRATE);
+#endif
+        
         FTE_UCS_clear(pStatus->xGUS.pUCS);    
         
         ulRcvdLen = FTE_UCS_sendAndRecv(pStatus->xGUS.pUCS, pReqBuff, ulReqLen, pRcvdBuff, sizeof(pRcvdBuff), FTE_HEM12_RESP_DELAY_TIME, FTE_HEM12_RESP_WAIT_TIME);            
@@ -745,9 +852,9 @@ int_32  FTE_TASCON_HEM12_SHELL_cmd(int_32 argc, char_ptr argv[])
                 }
             }
             break;
-#if FTE_TASCON_PACKET_DEBUG
         case    3:
             {
+#if FTE_TASCON_PACKET_DEBUG
                 if (strcmp(argv[1], "dump") == 0)
                 {
                     if (strcmp(argv[2], "on") == 0)
@@ -763,9 +870,72 @@ int_32  FTE_TASCON_HEM12_SHELL_cmd(int_32 argc, char_ptr argv[])
                         print_usage = TRUE;
                     }
                 }
+#endif
+                if (strcmp(argv[2], "get_addr") == 0)
+                {
+                    uint_32  nOID = 0;
+                    Shell_parse_hexnum(argv[1], &nOID);
+                    
+                    FTE_OBJECT_PTR  pObj = FTE_OBJ_get(nOID);                    
+                    if (pObj == NULL)
+                    {
+                        printf("Invalid OID[%08x]\n", nOID);
+                    }
+                    
+                    if (FTE_OBJ_TYPE(pObj) == FTE_OBJ_TYPE_MULTI_HEM12)
+                    {                    
+                        uint_8      pReqBuff[32];
+                        uint_32     ulReqLen;
+                        uint_8      pRcvdBuff[32];
+                        uint_32     ulRcvdLen;
+                        char_ptr    pHead;
+                        uint_32     nSkip = 0;
+                        
+                        FTE_HEM12_06M_CONFIG_PTR pConfig = (FTE_HEM12_06M_CONFIG_PTR)pObj->pConfig;
+                        FTE_HEM12_06M_STATUS_PTR pStatus = (FTE_HEM12_06M_STATUS_PTR)pObj->pStatus;
+                        FTE_TASCON_HEM12_FRAME_create(pConfig->pSensorID, 1, pReqBuff, sizeof(pReqBuff), &ulReqLen);    
+                     
+                        FTE_UCS_setBaudrate(pStatus->xGUS.pUCS, FTE_TASCON_HEM12_BAUDRATE);
+                        FTE_UCS_clear(pStatus->xGUS.pUCS);    
+                        ulRcvdLen = FTE_UCS_sendAndRecv(pStatus->xGUS.pUCS, pReqBuff, ulReqLen, pRcvdBuff, sizeof(pRcvdBuff), FTE_HEM12_RESP_DELAY_TIME, FTE_HEM12_RESP_WAIT_TIME);            
+                        if (ulRcvdLen >= 20)
+                        {
+                            pHead = (char_ptr)pRcvdBuff;
+                            for(int i = 0 ; i < ulRcvdLen ; i++)
+                            {
+                                if (pHead[i] == 0xFE)
+                                {
+                                    nSkip++;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                            
+                            pHead += nSkip;
+                            ulRcvdLen -= nSkip;
+                            
+                            if ((ulRcvdLen < 20) ||
+                                (pHead[0] != FTE_HEM12_FRAME_START) ||
+                                (pHead[7] == FTE_HEM12_START_CODE) ||
+                                (ulRcvdLen < (12 + pHead[9])))
+                            {
+                                printf("Received invalid frame.\n");
+                            }
+                            else
+                            {
+                                for(int i = 0 ; i < 6 ; i++)
+                                {
+                                    printf("%02x ", pHead[12+i]);
+                                }
+                                printf("\n");
+                            }
+                        }
+                     }                
+                }
             }
             break;
-#endif
             
          case    4:
             {

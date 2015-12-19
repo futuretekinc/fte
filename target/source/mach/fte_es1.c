@@ -138,6 +138,24 @@ static const FTE_SHT_CONFIG fte_init_sht_config =
 #endif
 
 #if FTE_TASCON_HEM12_SUPPORTED
+static const FTE_IFCE_CONFIG    fte_init_tascon_hem12_kwh_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_POWER, 0x0000),
+        .pName      = "HEM12(kWh)",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE,
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12, 0x0000),
+    .nRegID     = 0,
+    .nInterval  = 1
+};
+
+static const FTE_OBJECT_CONFIG_PTR fte_init_tascon_hem12_child_configs[] =
+{
+    (FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_hem12_kwh_config,
+};
+
 static const FTE_GUS_CONFIG fte_init_tascon_config =
 {
     .xCommon    =
@@ -150,6 +168,23 @@ static const FTE_GUS_CONFIG fte_init_tascon_config =
     .nUCSID     = FTE_DEV_UCS_1,
     .nInterval  = FTE_HEM12_INTERVAL,
 };
+
+static const FTE_HEM12_06M_CONFIG fte_init_tascon_hem12_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12, 0),
+        .pName      = "HEM12",
+        .xFlags     = 0, 
+        .ulChild    = sizeof(fte_init_tascon_hem12_child_configs) / sizeof(FTE_OBJECT_CONFIG_PTR),
+        .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)fte_init_tascon_hem12_child_configs
+    },
+    .nModel     = FTE_GUS_MODEL_TASCON_HEM12,
+    .nUCSID     = FTE_DEV_UCS_1,
+    .nInterval  = FTE_HEM12_INTERVAL,
+    .pSensorID  = { 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA},
+};
+
 #endif
 
 #if FTE_TASCON_HEM12_06M_SUPPORTED
@@ -158,7 +193,7 @@ static const FTE_IFCE_CONFIG    fte_init_tascon_hem12_06m_kwh_config =
     .xCommon    =
     {
         .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_POWER, 0x0000),
-        .pName      = "HEM12-POWER(Wh)",
+        .pName      = "POWER(kWh)",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE,
     },
     .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12_06M, 0x0000),
@@ -171,7 +206,7 @@ static const FTE_IFCE_CONFIG    fte_init_tascon_hem12_06m_pwr_config =
     .xCommon    =
     {
         .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_POWER, 0x0000),
-        .pName      = "HEM12-POWER(W)",
+        .pName      = "POWER(W)",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE,
     },
     .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12_06M, 0x0000),
@@ -184,7 +219,7 @@ static const FTE_IFCE_CONFIG    fte_init_tascon_hem12_06m_voltage_config =
     .xCommon    =
     {
         .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VOLTAGE, 0x0000),
-        .pName      = "MEM12-VOLTAGE",
+        .pName      = "VOLTAGE(V)",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE,
     },
     .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12_06M, 0x0000),
@@ -197,7 +232,7 @@ static const FTE_IFCE_CONFIG    fte_init_tascon_hem12_06m_current_config =
     .xCommon    =
     {
         .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_CURRENT, 0x0000),
-        .pName      = "HEM12-CURRENT",
+        .pName      = "CURRENT(A)",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE,
     },
     .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12_06M, 0x0000),
@@ -209,7 +244,7 @@ static const FTE_IFCE_CONFIG    fte_init_tascon_hem12_06m_current_config =
 static const FTE_OBJECT_CONFIG_PTR fte_init_tascon_hem12_06m_child_configs[] =
 {
     (FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_hem12_06m_kwh_config,
-    (FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_hem12_06m_pwr_config,
+//    (FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_hem12_06m_pwr_config,
     (FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_hem12_06m_voltage_config,
     (FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_hem12_06m_current_config,
 };
@@ -1947,7 +1982,8 @@ const FTE_OBJECT_CONFIG_PTR pInitObjConfigs[] =
     (FTE_OBJECT_CONFIG_PTR)&fte_init_sht_config,
 #endif
 #if FTE_TASCON_HEM12_SUPPORTED
-    (FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_config,
+    //(FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_config,
+    (FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_hem12_config,
 #endif
 #if FTE_TASCON_HEM12_06M_SUPPORTED
     (FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_hem12_06m_0_config,

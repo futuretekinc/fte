@@ -1421,13 +1421,13 @@ const FTE_UCS_CONFIG pUCSConfigs[] =
         .nID        = FTE_DEV_UCS_1,
         .pName      = "UCS_1",
         .pUART      = "ittyc:",
-#if FTE_DEV_LWGPIO_UCS1_RCTRL_SUPPORTED
-        .nFlowCtrlID= FTE_DEV_LWGPIO_UCS1_RCTRL,
+#if FTE_DEV_LWGPIO_UCS1_WCTRL_SUPPORTED
+        .nFlowCtrlID= FTE_DEV_LWGPIO_UCS1_WCTRL,
 #else
         .nFlowCtrlID= 0,
 #endif
-#if FTE_DEV_LWGPIO_UCS1_WCTRL_SUPPORTED
-        .nFlowCtrl2ID= FTE_DEV_LWGPIO_UCS1_WCTRL,
+#if FTE_DEV_LWGPIO_UCS1_RCTRL_SUPPORTED
+        .nFlowCtrl2ID= FTE_DEV_LWGPIO_UCS1_RCTRL,
 #else
         .nFlowCtrl2ID= 0,
 #endif

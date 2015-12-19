@@ -228,14 +228,20 @@
 #define FTE_GPIO_IOEX_RESET_MUX         (LWGPIO_MUX_C2_GPIO)
 
 #if FTE_TASCON_HEM12_SUPPORTED
+#define FTE_TASCON_HEM12_BAUDRATE           1200
+#endif
+#if FTE_TASCON_HEM12_06M_SUPPORTED
+#define FTE_TASCON_HEM12_06M_BAUDRATE       19200
+#endif
+#if FTE_TASCON_HEM12_SUPPORTED
 #define FTE_UCS_1_FULL_DUPLEX               FALSE
-#define FTE_UCS_1_BAUDRATE                  1200
+#define FTE_UCS_1_BAUDRATE                  FTE_TASCON_HEM12_BAUDRATE
 #define FTE_UCS_1_DATABITS                  8
 #define FTE_UCS_1_PARITY                    FTE_UART_PARITY_EVEN
 #define FTE_UCS_1_STOPBITS                  FTE_UART_STOP_BITS_1
 #elif FTE_TASCON_HEM12_06M_SUPPORTED
 #define FTE_UCS_1_FULL_DUPLEX               FALSE
-#define FTE_UCS_1_BAUDRATE                  19600
+#define FTE_UCS_1_BAUDRATE                  FTE_TASCON_HEM12_06M_BAUDRATE
 #define FTE_UCS_1_DATABITS                  8
 #define FTE_UCS_1_PARITY                    FTE_UART_PARITY_EVEN
 #define FTE_UCS_1_STOPBITS                  FTE_UART_STOP_BITS_1

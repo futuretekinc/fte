@@ -363,25 +363,6 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
         .f_detach           = FTE_GUS_detach
     },
 #endif
-#if FTE_TASCON_HEM12_SUPPORTED
-    {   
-        .nType              = FTE_OBJ_TYPE_POWER,   
-        .pName              = "POWER",
-        .nMaxCount          = 1,
-        .xFlags             = 0,
-        .xSupportedFields   = FTE_OBJ_FIELD_ID | 
-                              FTE_OBJ_FIELD_NAME |
-                              FTE_OBJ_FIELD_NAME_EDIT |
-                              FTE_OBJ_FIELD_VALUE |
-                              FTE_OBJ_FIELD_STATE |
-                              FTE_OBJ_FIELD_ENABLE |
-                              FTE_OBJ_FIELD_ENABLE_EDIT,                
-        .nConfigSize        = sizeof(FTE_GUS_CONFIG),
-        .nStatusSize        = sizeof(FTE_GUS_STATUS),
-        .f_attach           = FTE_GUS_attach, 
-        .f_detach           = FTE_GUS_detach
-    }
-#endif
 #if FTE_SRF_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_SRF,   
@@ -718,6 +699,42 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
         .nConfigSize        = sizeof(FTE_GUS_CONFIG),
         .nStatusSize        = sizeof(FTE_GUS_STATUS),
+        .f_attach           = FTE_GUS_attach, 
+        .f_detach           = FTE_GUS_detach
+    },
+#endif
+#if FTE_TASCON_HEM12_SUPPORTED
+    {   
+        .nType              = FTE_OBJ_TYPE_POWER,   
+        .pName              = "HEM12",
+        .nMaxCount          = 1,
+        .xFlags             = 0,
+        .xSupportedFields   = FTE_OBJ_FIELD_ID | 
+                              FTE_OBJ_FIELD_NAME |
+                              FTE_OBJ_FIELD_NAME_EDIT |
+                              FTE_OBJ_FIELD_VALUE |
+                              FTE_OBJ_FIELD_STATE |
+                              FTE_OBJ_FIELD_ENABLE |
+                              FTE_OBJ_FIELD_ENABLE_EDIT,                
+        .nConfigSize        = sizeof(FTE_GUS_CONFIG),
+        .nStatusSize        = sizeof(FTE_GUS_STATUS),
+        .f_attach           = FTE_GUS_attach, 
+        .f_detach           = FTE_GUS_detach
+    },
+    {   
+        .nType              = FTE_OBJ_TYPE_MULTI_HEM12,   
+        .pName              = "HEM12",
+        .nMaxCount          = 1,
+        .xFlags             = 0,
+        .xSupportedFields   = FTE_OBJ_FIELD_ID | 
+                              FTE_OBJ_FIELD_NAME |
+                              FTE_OBJ_FIELD_NAME_EDIT |
+                              FTE_OBJ_FIELD_VALUE |
+                              FTE_OBJ_FIELD_STATE |
+                              FTE_OBJ_FIELD_ENABLE |
+                              FTE_OBJ_FIELD_ENABLE_EDIT,                
+        .nConfigSize        = sizeof(FTE_HEM12_06M_CONFIG),
+        .nStatusSize        = sizeof(FTE_HEM12_06M_STATUS),
         .f_attach           = FTE_GUS_attach, 
         .f_detach           = FTE_GUS_detach
     },

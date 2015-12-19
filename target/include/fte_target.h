@@ -190,6 +190,8 @@ _mqx_uint               FTE_PLATFORM_run(void);
 #include "fte_es18.h"
 #elif defined(FTE_ES19)
 #include "fte_es19.h"
+#elif defined(FTE_ES20)
+#include "fte_es20.h"
 #elif defined(FTE_EH1)
 #include "fte_eh1.h"
 #elif defined(FTE_MN1)
@@ -209,12 +211,8 @@ _mqx_uint               FTE_PLATFORM_run(void);
 #define FTE_TASK_UCS_RX                 8
 #define FTE_TASK_UCS_TX                 9
 #define FTE_TASK_EVENT                  10
-#if FTE_CIAS_SIOUX_CU_SUPPORTED
 #define FTE_TASK_CIAS_SIOUX_CU          11
-#endif
-#if FTE_IOEX_SUPPORTED
 #define FTE_TASK_IOEX                   12
-#endif
 #if FTE_LORA_SUPPORTED
 #define FTE_TASK_LORA                   13
 #define FTE_TASK_LORA_COMM              14

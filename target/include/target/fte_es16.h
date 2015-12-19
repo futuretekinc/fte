@@ -27,7 +27,7 @@
 #define FTE_MCP23S08_SUPPORTED              0
 #define FTE_UCS_SUPPORTED                   0
 #define FTE_UCM_SUPPORTED                   0
-#define FTE_DEV_LWGPIO_UCS1_RCTRL_SUPPORTED 1
+#define FTE_DEV_LWGPIO_UCS1_RCTRL_SUPPORTED 0
 #define FTE_DEV_LWGPIO_UCS1_WCTRL_SUPPORTED 1
 
 #define FTE_RTD_SUPPORTED                   0
