@@ -39,6 +39,7 @@ epGAS                   endpoints.1792
 epPower                 endpoints.2048
 epCount                 endpoints.2816
 epPressure              endpoints.3072
+epDiscrete              endpoints.3328
 epDevice                endpoints.32512
 epMgmt                  endpoints.65535
 
@@ -187,6 +188,19 @@ prsValue                 prsEntry.6         DisplayString       read-write      
 prsLastValue             prsEntry.7         DisplayString       read-only       deprecated  
 prsLastTime              prsEntry.8         DisplayString       read-only       deprecated  
 prsInitValue             prsEntry.9         DisplayString       read-write      deprecated
+
+dscCount                 epDiscrete.1       INTEGER             read-only       mandatory
+dscTable                 epDiscrete.2       SEQUENCE            not-accessible  deprecated  
+dscEntry                 dscTable.1         SEQUENCE            not-accessible  deprecated   dscID
+dscID                    dscEntry.1         DisplayString       read-only       deprecated
+dscType                  dscEntry.2         DisplayString       read-only       deprecated  
+dscName                  dscEntry.3         DisplayString       read-write      deprecated
+dscSN                    dscEntry.4         DisplayString       read-only       deprecated
+dscState                 dscEntry.5         DisplayString       read-write      deprecated
+dscValue                 dscEntry.6         DisplayString       read-write      deprecated  
+dscLastValue             dscEntry.7         DisplayString       read-only       deprecated  
+dscLastTime              dscEntry.8         DisplayString       read-only       deprecated  
+dscInitValue             dscEntry.9         DisplayString       read-write      deprecated
 
 devCount                epDevice.1          INTEGER             read-only       deprecated
 devTable                epDevice.2          SEQUENCE            not-accessible  deprecated 

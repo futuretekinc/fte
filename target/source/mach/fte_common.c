@@ -40,7 +40,7 @@
 
 #include "fte_es1.c"
 
-void    fte_state_change( pointer pParams );
+void    FTE_SYS_STATE_CB_changed( pointer pParams );
 
 FTE_LWGPIO_CONFIG   pLWGPIOConfigs[] =
 {
@@ -115,6 +115,28 @@ FTE_LWGPIO_CONFIG   pLWGPIOConfigs[] =
         .nInit      = LWGPIO_VALUE_LOW,
         .nActive    = LWGPIO_VALUE_HIGH,
         .nInactive  = LWGPIO_VALUE_LOW
+    },
+#endif
+#if FTE_DEV_LWGPIO_SYS_LED_0
+    {
+        .nID        = FTE_DEV_LWGPIO_SYS_LED_0,
+        .nLWGPIO    = FTE_GPIO_SYS_LED_0,
+        .nMUX       = FTE_GPIO_SYS_LED_0_MUX,
+        .nDIR       = LWGPIO_DIR_OUTPUT,
+        .nInit      = LWGPIO_VALUE_HIGH,
+        .nActive    = LWGPIO_VALUE_LOW,
+        .nInactive  = LWGPIO_VALUE_HIGH
+    },
+#endif
+#if FTE_DEV_LWGPIO_SYS_LED_1
+    {
+        .nID        = FTE_DEV_LWGPIO_SYS_LED_1,
+        .nLWGPIO    = FTE_GPIO_SYS_LED_1,
+        .nMUX       = FTE_GPIO_SYS_LED_1_MUX,
+        .nDIR       = LWGPIO_DIR_OUTPUT,
+        .nInit      = LWGPIO_VALUE_HIGH,
+        .nActive    = LWGPIO_VALUE_LOW,
+        .nInactive  = LWGPIO_VALUE_HIGH
     },
 #endif
 #if FTE_DEV_LWGPIO_LED_0
@@ -612,6 +634,94 @@ FTE_LWGPIO_CONFIG   pLWGPIOConfigs[] =
         .nInactive  = LWGPIO_VALUE_HIGH
     },
 #endif
+#if FTE_DEV_LWGPIO_LORA_CS
+    {
+        .nID        = FTE_DEV_LWGPIO_LORA_CS,
+        .nLWGPIO    = FTE_GPIO_LORA_CS,
+        .nMUX       = FTE_GPIO_LORA_CS_MUX,
+        .nDIR       = LWGPIO_DIR_OUTPUT,
+        .nInit      = LWGPIO_VALUE_HIGH,
+        .nActive    = LWGPIO_VALUE_LOW,
+        .nInactive  = LWGPIO_VALUE_HIGH
+    },
+#endif
+#if FTE_DEV_LWGPIO_LORA_DIO0
+    {
+        .nID        = FTE_DEV_LWGPIO_LORA_DIO0,
+        .nLWGPIO    = FTE_GPIO_LORA_DIO0,
+        .nMUX       = FTE_GPIO_LORA_DIO0_MUX,
+        .nDIR       = LWGPIO_DIR_INPUT,
+        .nInit      = LWGPIO_VALUE_LOW,
+        .nActive    = LWGPIO_VALUE_HIGH,
+        .nInactive  = LWGPIO_VALUE_LOW
+    },
+#endif
+#if FTE_DEV_LWGPIO_LORA_DIO1
+    {
+        .nID        = FTE_DEV_LWGPIO_LORA_DIO1,
+        .nLWGPIO    = FTE_GPIO_LORA_DIO1,
+        .nMUX       = FTE_GPIO_LORA_DIO1_MUX,
+        .nDIR       = LWGPIO_DIR_INPUT,
+        .nInit      = LWGPIO_VALUE_LOW,
+        .nActive    = LWGPIO_VALUE_HIGH,
+        .nInactive  = LWGPIO_VALUE_LOW
+    },
+#endif
+#if FTE_DEV_LWGPIO_LORA_DIO2
+    {
+        .nID        = FTE_DEV_LWGPIO_LORA_DIO2,
+        .nLWGPIO    = FTE_GPIO_LORA_DIO2,
+        .nMUX       = FTE_GPIO_LORA_DIO2_MUX,
+        .nDIR       = LWGPIO_DIR_INPUT,
+        .nInit      = LWGPIO_VALUE_LOW,
+        .nActive    = LWGPIO_VALUE_HIGH,
+        .nInactive  = LWGPIO_VALUE_LOW
+    },
+#endif
+#if FTE_DEV_LWGPIO_LORA_DIO3 
+    {
+        .nID        = FTE_DEV_LWGPIO_LORA_DIO3,
+        .nLWGPIO    = FTE_GPIO_LORA_DIO3,
+        .nMUX       = FTE_GPIO_LORA_DIO3_MUX,
+        .nDIR       = LWGPIO_DIR_INPUT,
+        .nInit      = LWGPIO_VALUE_LOW,
+        .nActive    = LWGPIO_VALUE_HIGH,
+        .nInactive  = LWGPIO_VALUE_LOW
+    },
+#endif
+#if FTE_DEV_LWGPIO_LORA_DIO4
+    {
+        .nID        = FTE_DEV_LWGPIO_LORA_DIO4,
+        .nLWGPIO    = FTE_GPIO_LORA_DIO4,
+        .nMUX       = FTE_GPIO_LORA_DIO4_MUX,
+        .nDIR       = LWGPIO_DIR_INPUT,
+        .nInit      = LWGPIO_VALUE_LOW,
+        .nActive    = LWGPIO_VALUE_HIGH,
+        .nInactive  = LWGPIO_VALUE_LOW
+    },
+#endif
+#if FTE_DEV_LWGPIO_LORA_DIO5
+    {
+        .nID        = FTE_DEV_LWGPIO_LORA_DIO5,
+        .nLWGPIO    = FTE_GPIO_LORA_DIO5,
+        .nMUX       = FTE_GPIO_LORA_DIO5_MUX,
+        .nDIR       = LWGPIO_DIR_INPUT,
+        .nInit      = LWGPIO_VALUE_LOW,
+        .nActive    = LWGPIO_VALUE_HIGH,
+        .nInactive  = LWGPIO_VALUE_LOW
+    },
+#endif
+#if FTE_DEV_LWGPIO_LORA_CTX
+    {
+        .nID        = FTE_DEV_LWGPIO_LORA_CTX,
+        .nLWGPIO    = FTE_GPIO_LORA_CTX,
+        .nMUX       = FTE_GPIO_LORA_CTX_MUX,
+        .nDIR       = LWGPIO_DIR_OUTPUT,
+        .nInit      = LWGPIO_VALUE_LOW,
+        .nActive    = LWGPIO_VALUE_HIGH,
+        .nInactive  = LWGPIO_VALUE_LOW
+    },
+#endif
 #if FTE_DEV_LWGPIO_GAS_OUTPUT
     {
         .nID        = FTE_DEV_LWGPIO_GAS_OUTPUT,
@@ -636,11 +746,11 @@ FTE_LWGPIO_CONFIG   pLWGPIOConfigs[] =
     },
 #endif
 
-#if FTE_DEV_LWGPIO_UTS_FLOWCTRL
+#if FTE_DEV_LWGPIO_UCS1_RCTRL_SUPPORTED
     {
-        .nID        = FTE_DEV_LWGPIO_UTS_FLOWCTRL,
-        .nLWGPIO    = FTE_GPIO_UCS_FLOWCTRL,
-        .nMUX       = FTE_GPIO_UCS_FLOWCTRL_MUX,
+        .nID        = FTE_DEV_LWGPIO_UCS1_RCTRL,
+        .nLWGPIO    = FTE_GPIO_UCS1_RCTRL,
+        .nMUX       = FTE_GPIO_UCS1_RCTRL_MUX,
         .nDIR       = LWGPIO_DIR_OUTPUT,
         .nInit      = LWGPIO_VALUE_LOW,
         .nActive    = LWGPIO_VALUE_HIGH,
@@ -648,16 +758,52 @@ FTE_LWGPIO_CONFIG   pLWGPIOConfigs[] =
     },
 #endif
 
-#if FTE_DEV_LWGPIO_UTS_FLOWCTRL2
+#if FTE_DEV_LWGPIO_UCS1_WCTRL_SUPPORTED
     {
-        .nID        = FTE_DEV_LWGPIO_UTS_FLOWCTRL2,
-        .nLWGPIO    = FTE_GPIO_UCS_FLOWCTRL2,
-        .nMUX       = FTE_GPIO_UCS_FLOWCTRL2_MUX,
+        .nID        = FTE_DEV_LWGPIO_UCS1_WCTRL,
+        .nLWGPIO    = FTE_GPIO_UCS1_WCTRL,
+        .nMUX       = FTE_GPIO_UCS1_WCTRL_MUX,
         .nDIR       = LWGPIO_DIR_OUTPUT,
         .nInit      = LWGPIO_VALUE_LOW,
         .nActive    = LWGPIO_VALUE_HIGH,
         .nInactive  = LWGPIO_VALUE_LOW
-    }
+    },
+#endif
+
+#if FTE_DEV_LWGPIO_UCS2_RCTRL_SUPPORTED
+    {
+        .nID        = FTE_DEV_LWGPIO_UCS2_RCTRL,
+        .nLWGPIO    = FTE_GPIO_UCS2_RCTRL,
+        .nMUX       = FTE_GPIO_UCS2_RCTRL_MUX,
+        .nDIR       = LWGPIO_DIR_OUTPUT,
+        .nInit      = LWGPIO_VALUE_LOW,
+        .nActive    = LWGPIO_VALUE_HIGH,
+        .nInactive  = LWGPIO_VALUE_LOW
+    },
+#endif
+
+#if FTE_DEV_LWGPIO_UCS2_WCTRL_SUPPORTED
+    {
+        .nID        = FTE_DEV_LWGPIO_UCS2_WCTRL,
+        .nLWGPIO    = FTE_GPIO_UCS2_WCTRL,
+        .nMUX       = FTE_GPIO_UCS2_WCTRL_MUX,
+        .nDIR       = LWGPIO_DIR_OUTPUT,
+        .nInit      = LWGPIO_VALUE_LOW,
+        .nActive    = LWGPIO_VALUE_HIGH,
+        .nInactive  = LWGPIO_VALUE_LOW
+    },
+#endif
+
+#if FTE_DEV_LWGPIO_IOEX_RESET
+    {
+        .nID        = FTE_DEV_LWGPIO_IOEX_RESET,
+        .nLWGPIO    = FTE_GPIO_IOEX_RESET,
+        .nMUX       = FTE_GPIO_IOEX_RESET_MUX,
+        .nDIR       = LWGPIO_DIR_OUTPUT,
+        .nInit      = LWGPIO_VALUE_HIGH,
+        .nActive    = LWGPIO_VALUE_LOW,
+        .nInactive  = LWGPIO_VALUE_HIGH
+    },
 #endif
 };
 
@@ -720,6 +866,24 @@ FTE_GPIO_CONFIG     pGPIOConfigs[] =
         .nDIR       = FTE_GPIO_DIR_OUTPUT,
         .nInit      = FTE_GPIO_VALUE_LOW,
         .nActive    = FTE_GPIO_VALUE_HIGH
+    },
+#endif
+#if FTE_DEV_GPIO_SYS_LED_0
+    {
+        .nID        = FTE_DEV_GPIO_SYS_LED_0,
+        .nDevID     = FTE_DEV_LWGPIO_SYS_LED_0,
+        .nDIR       = FTE_GPIO_DIR_OUTPUT,
+        .nInit      = FTE_GPIO_VALUE_HIGH,
+        .nActive    = FTE_GPIO_VALUE_LOW
+    },
+#endif
+#if FTE_DEV_GPIO_SYS_LED_1
+    {
+        .nID        = FTE_DEV_GPIO_SYS_LED_1,
+        .nDevID     = FTE_DEV_LWGPIO_SYS_LED_1,
+        .nDIR       = FTE_GPIO_DIR_OUTPUT,
+        .nInit      = FTE_GPIO_VALUE_HIGH,
+        .nActive    = FTE_GPIO_VALUE_LOW
     },
 #endif
 #if FTE_DEV_GPIO_LED_0
@@ -1073,6 +1237,15 @@ FTE_GPIO_CONFIG     pGPIOConfigs[] =
         .nActive    = FTE_GPIO_VALUE_LOW,
     },
 #endif
+#if FTE_DEV_GPIO_IOEX_RESET
+    {
+        .nID        = FTE_DEV_GPIO_IOEX_RESET,
+        .nDevID     = FTE_DEV_LWGPIO_IOEX_RESET,
+        .nDIR       = FTE_GPIO_DIR_OUTPUT,
+        .nInit      = FTE_GPIO_VALUE_HIGH,
+        .nActive    = FTE_GPIO_VALUE_LOW,
+    },
+#endif
 };
 
 #if FTE_I2C_SUPPORTED
@@ -1107,6 +1280,14 @@ FTE_SPI_CONFIG      pSPIConfigs[] =
     {   .nID        = FTE_DEV_SPI_0_0,
         .xPort      = 0,
         .xCSGPIO    = FTE_DEV_LWGPIO_MCP23S08_CS,
+        .nBaudrate  = 500000,
+        .xFlags     = 0
+    },
+#endif
+#if FTE_LORA_SUPPORTED
+    {   .nID        = FTE_DEV_SPI_0_0,
+        .xPort      = 0,
+        .xCSGPIO    = FTE_DEV_LWGPIO_LORA_CS,
         .nBaudrate  = 500000,
         .xFlags     = 0
     },
@@ -1240,13 +1421,13 @@ const FTE_UCS_CONFIG pUCSConfigs[] =
         .nID        = FTE_DEV_UCS_1,
         .pName      = "UCS_1",
         .pUART      = "ittyc:",
-#if FTE_DEV_LWGPIO_UTS_FLOWCTRL
-        .nFlowCtrlID= FTE_DEV_LWGPIO_UTS_FLOWCTRL,
+#if FTE_DEV_LWGPIO_UCS1_WCTRL_SUPPORTED
+        .nFlowCtrlID= FTE_DEV_LWGPIO_UCS1_WCTRL,
 #else
         .nFlowCtrlID= 0,
 #endif
-#if FTE_DEV_LWGPIO_UTS_FLOWCTRL2
-        .nFlowCtrl2ID= FTE_DEV_LWGPIO_UTS_FLOWCTRL2,
+#if FTE_DEV_LWGPIO_UCS1_RCTRL_SUPPORTED
+        .nFlowCtrl2ID= FTE_DEV_LWGPIO_UCS1_RCTRL,
 #else
         .nFlowCtrl2ID= 0,
 #endif
@@ -1255,22 +1436,22 @@ const FTE_UCS_CONFIG pUCSConfigs[] =
         .nDataBits  = FTE_UCS_1_DATABITS,
         .nParity    = FTE_UCS_1_PARITY,
         .nStopBits  = FTE_UCS_1_STOPBITS,
-        .nRecvBufLen= 1024,
-        .nSendBufLen= 1024
+        .nRecvBufLen= 256,
+        .nSendBufLen= 256
     },
 #endif
 #if FTE_DEV_UCS_2
     {
         .nID        = FTE_DEV_UCS_2,
         .pName      = "UCS_2",
-        .pUART      = "ittyb:",
-#if FTE_DEV_LWGPIO_UTS_FLOWCTRL
-        .nFlowCtrlID= FTE_DEV_LWGPIO_UTS_FLOWCTRL,
+        .pUART      = "ittyf:",
+#if FTE_DEV_LWGPIO_UCS2_RCTRL_SUPPORTED
+        .nFlowCtrlID= FTE_DEV_LWGPIO_UCS2_RCTRL,
 #else
         .nFlowCtrlID= 0,
 #endif
-#if FTE_DEV_LWGPIO_UTS_FLOWCTRL2
-        .nFlowCtrl2ID= FTE_DEV_LWGPIO_UTS_FLOWCTRL2,
+#if FTE_DEV_LWGPIO_UCS2_WCTRL_SUPPORTED
+        .nFlowCtrl2ID= FTE_DEV_LWGPIO_UCS2_WCTRL,
 #else
         .nFlowCtrl2ID= 0,
 #endif
@@ -1279,24 +1460,8 @@ const FTE_UCS_CONFIG pUCSConfigs[] =
         .nDataBits  = FTE_UCS_2_DATABITS,
         .nParity    = FTE_UCS_2_PARITY,
         .nStopBits  = FTE_UCS_2_STOPBITS,
-        .nRecvBufLen= 1024,
-        .nSendBufLen= 1024
-    },
-#endif
-#if FTE_DEV_UCS_3
-    {
-        .nID        = FTE_DEV_UCS_3,
-        .pName      = "UCS_3",
-        .pUART      = "ittyf:",
-        .nFlowCtrlID= 0,
-        .nFlowCtrl2ID= 0,
-        .bFullDuplex= FTE_UCS_3_FULL_DUPLEX,
-        .nBaudrate  = FTE_UCS_3_BAUDRATE,
-        .nDataBits  = FTE_UCS_3_DATABITS,
-        .nParity    = FTE_UCS_3_PARITY,
-        .nStopBits  = FTE_UCS_3_STOPBITS,
-        .nRecvBufLen= 1024,
-        .nSendBufLen= 1024
+        .nRecvBufLen= 256,
+        .nSendBufLen= 256
     },
 #endif
 };
@@ -1337,30 +1502,31 @@ const FTE_SRF_CONFIG pSRFConfigs[] =
 };
 #endif
 
-const FTE_LED_CONFIG xLedSysStatusConfig =
+const FTE_LED_CONFIG xLedSysStatus0Config =
 {
     .xCommon    =
     {
-        .nID        = FTE_OBJ_LED_SYS_STATUS,
-        .pName      = "STATUS",
+        .nID        = FTE_OBJ_LED_SYS0_STATUS,
+        .pName      = "STATUS0",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE,
     },
-    .nGPIO      = FTE_DEV_GPIO_LED_0,
+    .nGPIO      = FTE_DEV_GPIO_SYS_LED_0,
     .nInit      = FALSE
 };
 
-const FTE_LED_CONFIG xLed0Config =
+const FTE_LED_CONFIG xLedSysStatus1Config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_SYSTEM_ID(FTE_OBJ_TYPE_LED, 1),
-        .pName      = "LED0",
+        .nID        = FTE_OBJ_LED_SYS1_STATUS,
+        .pName      = "STATUS1",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE,
     },
-    .nGPIO      = FTE_DEV_GPIO_LED_0,
+    .nGPIO      = FTE_DEV_GPIO_SYS_LED_1,
     .nInit      = FALSE
 };
 
+#if FTE_LCD_SUPPORTED
 const FTE_LED_CONFIG xLCDPowerConfig =
 {
     .xCommon    =
@@ -1372,6 +1538,22 @@ const FTE_LED_CONFIG xLCDPowerConfig =
     .nGPIO      = FTE_DEV_GPIO_LCD_POWER,
     .nInit      = FALSE
 };
+#endif
+
+#if FTE_DEV_GPIO_LED_0
+const FTE_LED_CONFIG xLed0Config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_SYSTEM_ID(FTE_OBJ_TYPE_LED, 1),
+        .pName      = "LED0",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE,
+    },
+    .nGPIO      = FTE_DEV_GPIO_LED_0,
+    .nInit      = FALSE
+};
+#endif
+
 
 #if FTE_DEV_GPIO_LED_1
 const FTE_LED_CONFIG xLed1Config =
@@ -1530,6 +1712,20 @@ const FTE_LED_CONFIG xLed12Config =
 };
 #endif
 
+#if FTE_IOEX_SUPPORTED
+const FTE_DO_CONFIG fte_ioex_reset_config =
+{
+    .xCommon    =
+    {
+        .nID        = FTE_OBJ_TYPE_IOEX_RESET,
+        .pName      = "IOEX Reset",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE | FTE_OBJ_CONFIG_FLAG_TRAP_DIFF,
+    },
+    .nGPIO      = FTE_DEV_GPIO_IOEX_RESET,
+    .nLED       = 0
+};
+#endif
+
 FTE_PRODUCT_DESC _product_desc =
 {
     .pModel         = FTE_MODEL,
@@ -1632,7 +1828,8 @@ static const FTE_DRIVER_DESCRIPT    _pDriverDescripts[] =
 
 const FTE_OBJECT_CONFIG_PTR pSystemObjectConfigs[] =
 {
-    (FTE_OBJECT_CONFIG_PTR)&xLedSysStatusConfig,
+    (FTE_OBJECT_CONFIG_PTR)&xLedSysStatus0Config,
+    (FTE_OBJECT_CONFIG_PTR)&xLedSysStatus1Config,
 #if 0
     (FTE_OBJECT_CONFIG_PTR)&xLed0Config,
     (FTE_OBJECT_CONFIG_PTR)&xLed1Config,
@@ -1647,6 +1844,9 @@ const FTE_OBJECT_CONFIG_PTR pSystemObjectConfigs[] =
     (FTE_OBJECT_CONFIG_PTR)&xLed10Config,
     (FTE_OBJECT_CONFIG_PTR)&xLed11Config,
     (FTE_OBJECT_CONFIG_PTR)&xLed12Config,
+#endif
+#if FTE_IOEX_SUPPORTED
+    (FTE_OBJECT_CONFIG_PTR)&fte_ioex_reset_config
 #endif
 };
 
@@ -1777,7 +1977,7 @@ FTE_PRODUCT_DESC const *fte_get_product_desc(void)
     return  &_product_desc;
 }
 
-_mqx_uint   fte_platform_init(void)
+_mqx_uint   FTE_PLATFORM_init(void)
 {
     
     /* Init device drivers */
@@ -1873,16 +2073,23 @@ _mqx_uint   fte_platform_init(void)
     FTE_SYS_powerStateInit();
 
 #if FTE_LCD_SUPPORTED
-    fte_sys_lcd_init();
+    FTE_LCD_init();
 #endif
     
     for(int i = 0 ; i < sizeof(pSystemObjectConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR) ; i++)
     {
-        FTE_OBJECT_PTR pSystemObject = FTE_OBJ_create(pSystemObjectConfigs[i]);
-        if (pSystemObject != NULL)
+        FTE_OBJECT_PTR pObj = FTE_OBJ_create(pSystemObjectConfigs[i]);
+        if (pObj != NULL)
         {
-            pSystemObject->pAction->f_init(pSystemObject);
-            pSystemObject->pAction->f_run(pSystemObject);
+            if (pObj->pAction->f_init != NULL)
+            {
+                pObj->pAction->f_init(pObj);
+            }
+            
+            if (pObj->pAction->f_run != NULL)
+            {
+                pObj->pAction->f_run(pObj);
+            }
         }
     }
 
@@ -1891,7 +2098,7 @@ _mqx_uint   fte_platform_init(void)
 
     FTE_OBJECT_CONFIG_PTR pConfig = NULL;
 
-    FTE_SYS_STATE_setChangeCB(fte_state_change);
+    FTE_SYS_STATE_setChangeCB(FTE_SYS_STATE_CB_changed);
     FTE_SYS_powerUp();
 
     FTE_EVENT_init();
@@ -1964,7 +2171,7 @@ _mqx_uint   fte_platform_init(void)
     return  MQX_OK;
 }
 
-_mqx_uint   fte_platform_run(void)
+_mqx_uint   FTE_PLATFORM_run(void)
 {
     uint_32 ulCount = FTE_OBJ_count(FTE_OBJ_TYPE_UNKNOWN, 0, FALSE);
     for(uint_32 i = 0 ; i < ulCount ; i++)
@@ -1985,26 +2192,54 @@ _mqx_uint   fte_platform_run(void)
     return  MQX_OK;
 }
 
-void    fte_state_change( pointer pParams )
+void    FTE_SYS_STATE_changed( void )
 {
-    switch(FTE_SYS_STATE_get())
+    FTE_SYS_STATE_CB_changed( 0 );
+}
+
+void    FTE_SYS_STATE_CB_changed( pointer pParams )
+{
+    static uint_32 ulState = 0;
+    uint_32 ulNewState = FTE_SYS_STATE_get();
+    
+    if (ulState != ulNewState)
     {
-    case    FTE_STATE_POWER_UP:
+        ulState = ulNewState;
+        if (ulState & FTE_STATE_ALERT)
         {
-            FTE_LED_setValue(FTE_OBJ_LED_SYS_STATUS, FTE_LED_STATE_BLINK);
+            FTE_LED_setValue(FTE_OBJ_LED_SYS0_STATUS, FTE_LED_STATE_ON);
+            FTE_LED_setValue(FTE_OBJ_LED_SYS1_STATUS, FTE_LED_STATE_OFF);
         }
-        break;
+        else if (ulState & FTE_STATE_WARNING)
+        {
+            FTE_LED_setValue(FTE_OBJ_LED_SYS0_STATUS, FTE_LED_STATE_BLINK);
+            FTE_LED_setValue(FTE_OBJ_LED_SYS1_STATUS, FTE_LED_STATE_OFF);
+        }
+        else
+        {
+            switch(ulState)
+            {
+            case    FTE_STATE_POWER_UP:
+                {
+                    FTE_LED_setValue(FTE_OBJ_LED_SYS0_STATUS, FTE_LED_STATE_ON);
+                    FTE_LED_setValue(FTE_OBJ_LED_SYS1_STATUS, FTE_LED_STATE_OFF);
+                }
+                break;
 
-    case    FTE_STATE_POWER_UP | FTE_STATE_INITIALIZED:
-        {
-            FTE_LED_setValue(FTE_OBJ_LED_SYS_STATUS, FTE_LED_STATE_BLINK);
-        }
-        break;
+            case    FTE_STATE_POWER_UP | FTE_STATE_INITIALIZED:
+                {
+                    FTE_LED_setValue(FTE_OBJ_LED_SYS0_STATUS, FTE_LED_STATE_OFF);
+                    FTE_LED_setValue(FTE_OBJ_LED_SYS1_STATUS, FTE_LED_STATE_BLINK);
+                }
+                break;
 
-    case    FTE_STATE_POWER_UP | FTE_STATE_INITIALIZED | FTE_STATE_CONNECTED:
-        {
-            FTE_LED_setValue(FTE_OBJ_LED_SYS_STATUS, FTE_LED_STATE_ON);
+            case    FTE_STATE_POWER_UP | FTE_STATE_INITIALIZED | FTE_STATE_CONNECTED:
+                {
+                    FTE_LED_setValue(FTE_OBJ_LED_SYS0_STATUS, FTE_LED_STATE_OFF);
+                    FTE_LED_setValue(FTE_OBJ_LED_SYS1_STATUS, FTE_LED_STATE_ON);
+                }
+                break;
+            }
         }
-        break;
     }
 }

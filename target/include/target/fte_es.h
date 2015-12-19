@@ -10,21 +10,26 @@
 
 #define FTE_CONSOLE_SUPPORTED               1
 #define FTE_LOG_SUPPORTED                   1
+#if FTE_V2
 #define FTE_PWR_SW_SUPPORTED                1
 #define FTE_FACTORY_RESET_SUPPORTED         1
+#else
+#define FTE_PWR_SW_SUPPORTED                0
+#define FTE_FACTORY_RESET_SUPPORTED         0
+#endif
 
 #define FTE_I2C_SUPPORTED                   0
 #define FTE_SSD1305_SUPPORTED               0
 #define FTE_LCD_SUPPORTED                   0
 
-#define FTE_SPI_SUPPORTED                   0
+#define FTE_SPI_SUPPORTED                   1
 #define FTE_AD7785_SUPPORTED                0
 #define FTE_1WIRE_SUPPORTED                 1
 #define FTE_MCP23S08_SUPPORTED              0
 #define FTE_UCS_SUPPORTED                   1
 #define FTE_UCM_SUPPORTED                   0
-#define FTE_DEV_LWGPIO_UTS_FLOWCTRL         1
-#define FTE_DEV_LWGPIO_UTS_FLOWCTRL2        1
+#define FTE_DEV_LWGPIO_UCS1_RCTRL_SUPPORTED 0
+#define FTE_DEV_LWGPIO_UCS1_WCTRL_SUPPORTED 1
 
 #define FTE_RTD_SUPPORTED                   0
 #define FTE_RTD0_SUPPORTED                  0
@@ -55,10 +60,11 @@
 #define FTE_MULTI_PRESSURE_SUPPORTED        1
 #define FTE_MULTI_VOLTAGE_SUPPORTED         0
 #define FTE_MULTI_CURRENT_SUPPORTED         0
-#define FTE_MULTI_POWER_SUPPORTED           0
+#define FTE_MULTI_POWER_SUPPORTED           0 
+#define FTE_MULTI_VALUE_SUPPORTED           0
 
 // CO2 Sensors
-#define FTE_SH_MV250_SUPPORTED              1
+#define FTE_SH_MV250_SUPPORTED              0
 #define FTE_GS_DPC_HL_SUPPORTED             0
 #define FTE_TRUEYES_AIRQ_SUPPORTED          0
 #define FTE_ELT_AQM100_SUPPORTED            0
@@ -73,12 +79,16 @@
 #define FTE_GUS_SUPPORTED                   1
 #define FTE_HM1001_SUPPORTED                0
 #define FTE_MST_MEX510C_SUPPORTED           0
+#define FTE_CIAS_SIOUX_CU_SUPPORTED         0
+#define FTE_IOEX_SUPPORTED                  0
 
+#define FTE_NET_SUPPORTED                   0
 #define FTE_HTTPD_SUPPORTED                 0
 #define FTE_SNMPD_SUPPORTED                 0
-#define FTE_MQTT_SUPPORTED                  1
-#define FTE_SSL_SUPPORTED                   1
-#define FTE_TELNETD_SUPPORTED               1
+#define FTE_MQTT_SUPPORTED                  0
+#define FTE_SSL_SUPPORTED                   0
+#define FTE_TELNETD_SUPPORTED               0
+#define FTE_LORA_SUPPORTED                  1
 
 #define FTE_DI_MAX_COUNT                    1
 #define FTE_DO_MAX_COUNT                    1

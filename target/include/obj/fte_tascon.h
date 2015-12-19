@@ -23,6 +23,11 @@ typedef struct FTE_HEM12_06M_STATUS_STRUCT
 uint_32     FTE_TASCON_HEM12_request(FTE_OBJECT_PTR pObj);
 _mqx_uint   FTE_TASCON_HEM12_received(FTE_OBJECT_PTR pObj);
 
+uint_32     FTE_TASCON_HEM12_06M_request(FTE_OBJECT_PTR pObj);
+_mqx_uint   FTE_TASCON_HEM12_06M_received(FTE_OBJECT_PTR pObj);
+_mqx_uint   FTE_TASCON_HEM12_06M_setConfig(FTE_OBJECT_PTR pDevice, char_ptr pJSON);
+_mqx_uint   FTE_TASCON_HEM12_06M_getConfig(FTE_OBJECT_PTR pDevice, char_ptr pBuff, uint_32 ulBuffLen);
+
 extern  FTE_VALUE_TYPE  FTE_TASCON_HEM12_valueTypes[];
 
 #define FTE_TASCON_HEM12_DESCRIPTOR  {\
@@ -31,13 +36,11 @@ extern  FTE_VALUE_TYPE  FTE_TASCON_HEM12_valueTypes[];
         .nFieldCount= 1,                            \
         .pValueTypes= FTE_TASCON_HEM12_valueTypes,  \
         .f_request  = FTE_TASCON_HEM12_request,\
-        .f_received = FTE_TASCON_HEM12_received\
+        .f_received = FTE_TASCON_HEM12_received,\
+        .f_set_config = FTE_TASCON_HEM12_06M_setConfig, \
+        .f_get_config = FTE_TASCON_HEM12_06M_getConfig, \
     }
 
-uint_32     FTE_TASCON_HEM12_06M_request(FTE_OBJECT_PTR pObj);
-_mqx_uint   FTE_TASCON_HEM12_06M_received(FTE_OBJECT_PTR pObj);
-_mqx_uint   FTE_TASCON_HEM12_06M_setConfig(FTE_OBJECT_PTR pDevice, char_ptr pJSON);
-_mqx_uint   FTE_TASCON_HEM12_06M_getConfig(FTE_OBJECT_PTR pDevice, char_ptr pBuff, uint_32 ulBuffLen);
 
 extern  FTE_VALUE_TYPE  FTE_TASCON_HEM12_06M_valueTypes[];
 

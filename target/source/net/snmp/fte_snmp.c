@@ -688,7 +688,7 @@ char const *MIB_get_objValue(pointer param)
     FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;    
     ASSERT(pObj != NULL);
     
-    FTE_SYS_LIVE_CHECK_touch();
+    FTE_NET_liveTouch();
      
     if ( FTE_OBJ_IS_ENABLED(pObj))
     {
@@ -1732,6 +1732,67 @@ uint_32 MIB_set_prsValue(pointer param, uchar_ptr varptr, uint_32 varlen)
 }
 
 uint_32 MIB_set_prsInitValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objInitValue(param, varptr, varlen);
+}
+
+/******************************************************************************
+ * Discrete Sensor
+ ******************************************************************************/
+uint_32 MIB_get_dscCount(pointer dummy)
+{ 
+    return  FTE_OBJ_count(FTE_OBJ_TYPE_DISCRETE, FTE_OBJ_CLASS_MASK, FALSE);
+} 
+
+uint_32 MIB_set_dscIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+
+boolean MIB_find_dscEntry
+(
+    uint_32        op,
+    pointer        index,
+    pointer _PTR_  instance
+)
+{ /* Body */
+   uint_32           nIndex = *(uint_32_ptr)index;
+   pointer           pObj;
+
+   if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
+   {
+      nIndex = 1;
+   } /* Endif */
+
+   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_DISCRETE, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   if (!pObj) 
+   {
+      return FALSE;
+   } /* Endif */ 
+   *(uint_32_ptr)index = nIndex;
+   *instance = pObj;
+   return TRUE;
+ 
+} /* Endbody */
+
+uint_32 MIB_set_dscName(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objName(param, varptr, varlen);
+}
+
+uint_32 MIB_set_dscState(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objState(param, varptr, varlen);
+}
+
+uint_32 MIB_set_dscUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+}
+
+uint_32 MIB_set_dscValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+{
+    return  MIB_set_objValue(param, varptr, varlen);
+}
+
+uint_32 MIB_set_dscInitValue(pointer param, uchar_ptr varptr, uint_32 varlen)
 {
     return  MIB_set_objInitValue(param, varptr, varlen);
 }
@@ -3580,6 +3641,94 @@ const RTCSMIB_VALUE MIBVALUE_prsInitValue =
     (void _PTR_)MIB_get_objInitValue
 }; 
 
+/******************************************************************************
+ * futuretek.fts.endpoints.epDiscrete.xxx
+ ******************************************************************************/
+
+const RTCSMIB_VALUE MIBVALUE_dscCount= 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_dscCount
+};
+
+const RTCSMIB_VALUE MIBVALUE_dscTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_dscEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_dscIndex = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_dscID= 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objID
+};
+
+const RTCSMIB_VALUE MIBVALUE_dscType = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objType
+};
+
+const RTCSMIB_VALUE MIBVALUE_dscSN = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objSN
+};
+
+const RTCSMIB_VALUE MIBVALUE_dscName = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objName
+};
+
+const RTCSMIB_VALUE MIBVALUE_dscState = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objState
+};
+
+const RTCSMIB_VALUE MIBVALUE_dscValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_dscLastValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_dscLastTime = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastTime
+};
+
+const RTCSMIB_VALUE MIBVALUE_dscUpdateInterval = 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+    (void _PTR_)MIB_get_objUpdateInterval
+};
+
+
+const RTCSMIB_VALUE MIBVALUE_dscInitValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objInitValue
+}; 
 /******************************************************************************
  * futuretek.fts.endpoints.epDevice.xxx
  ******************************************************************************/

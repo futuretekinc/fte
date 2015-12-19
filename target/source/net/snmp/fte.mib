@@ -46,6 +46,8 @@
 
         epPressure      OBJECT IDENTIFIER ::= { endpoints 3072 }
 
+        epDiscrete      OBJECT IDENTIFIER ::= { endpoints 3328 }
+
         epDevice        OBJECT IDENTIFIER ::= { endpoints 32512 }
 
         epMgmt          OBJECT IDENTIFIER ::= { endpoints 65535 }
@@ -1245,6 +1247,115 @@
                 DESCRIPTION
                         ""
                 ::= { prsEntry 9 }
+
+        dscCount OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        ""
+                ::= { epDiscrete 1 }
+
+        dscTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF DscEntry
+                ACCESS not-accessible
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { epDiscrete 2 }
+
+        dscEntry OBJECT-TYPE
+                SYNTAX DscEntry
+                ACCESS not-accessible
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                INDEX { dscID }
+                ::= { dscTable 1 }
+
+        DscEntry ::= SEQUENCE { 
+            dscID DisplayString,
+            dscType DisplayString,
+            dscName DisplayString,
+            dscSN DisplayString,
+            dscState DisplayString,
+            dscValue DisplayString,
+            dscLastValue DisplayString,
+            dscLastTime DisplayString,
+            dscInitValue DisplayString
+        }
+
+        dscID OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-only
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { dscEntry 1 }
+
+        dscType OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-only
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { dscEntry 2 }
+
+        dscName OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-write
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { dscEntry 3 }
+
+        dscSN OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-only
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { dscEntry 4 }
+
+        dscState OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-write
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { dscEntry 5 }
+
+        dscValue OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-write
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { dscEntry 6 }
+
+        dscLastValue OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-only
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { dscEntry 7 }
+
+        dscLastTime OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-only
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { dscEntry 8 }
+
+        dscInitValue OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-write
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { dscEntry 9 }
 
         devCount OBJECT-TYPE
                 SYNTAX INTEGER

@@ -27,8 +27,8 @@
 #define FTE_MCP23S08_SUPPORTED              0
 #define FTE_UCS_SUPPORTED                   0
 #define FTE_UCM_SUPPORTED                   0
-#define FTE_DEV_LWGPIO_UTS_FLOWCTRL         1
-#define FTE_DEV_LWGPIO_UTS_FLOWCTRL2        1
+#define FTE_DEV_LWGPIO_UCS1_RCTRL_SUPPORTED 0
+#define FTE_DEV_LWGPIO_UCS1_WCTRL_SUPPORTED 1
 
 #define FTE_RTD_SUPPORTED                   0
 #define FTE_RTD0_SUPPORTED                  0
@@ -78,6 +78,7 @@
 #define FTE_HM1001_SUPPORTED                0
 #define FTE_MST_MEX510C_SUPPORTED           0
 
+#define FTE_NET_SUPPORTED                   1
 #define FTE_HTTPD_SUPPORTED                 0
 #define FTE_SNMPD_SUPPORTED                 1
 #define FTE_MQTT_SUPPORTED                  0

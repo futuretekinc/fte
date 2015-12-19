@@ -84,7 +84,10 @@ _mqx_uint       FTE_UCS_attach(FTE_UCS_PTR pUCS, uint_32 nParent)
         {
             FTE_LWGPIO_attach(pUCS->pFlowCtrl, pUCS->pConfig->nID);
         }
-
+    }
+    
+    if (pUCS->pConfig->nFlowCtrl2ID != 0)
+    {
         pUCS->pFlowCtrl2 = FTE_LWGPIO_get(pUCS->pConfig->nFlowCtrl2ID);
         if (pUCS->pFlowCtrl2 != NULL)
         {
@@ -109,6 +112,12 @@ _mqx_uint       FTE_UCS_detach(FTE_UCS_PTR pUCS, uint_32 nParent)
         {
             FTE_LWGPIO_detach(pUCS->pFlowCtrl);
             pUCS->pFlowCtrl = NULL;
+        }
+
+        if (pUCS->pFlowCtrl2 != NULL)
+        {
+            FTE_LWGPIO_detach(pUCS->pFlowCtrl2);
+            pUCS->pFlowCtrl2 = NULL;
         }
 
         if (pUCS->hTaskRX != 0)
@@ -596,26 +605,6 @@ int_32  FTE_UCS_SHELL_cmd(int_32 argc, char_ptr argv[] )
                 }
             }
             break;
-
-        case    2:
-            {
-                FTE_UCS_PTR pUCS = FTE_UCS_get(FTE_DEV_UCS_2);
-                if (pUCS == NULL)
-                {
-                    printf("UCS not exists.\n");
-                    break;
-                }
-
-                if (strcmp(argv[1], "attach") == 0)
-                {
-                    FTE_UCS_attach(pUCS, FTE_DEV_TYPE_ROOT);
-                }
-                else
-                {
-                    FTE_UCS_detach(pUCS, FTE_DEV_TYPE_ROOT);
-                }
-            }
-            break;
         }
     }
 
@@ -661,8 +650,12 @@ void FTE_UCS_TASK_send
 
         if (pUCS->pFlowCtrl != NULL)
         {
-//            FTE_LWGPIO_setValue(pUCS->pFlowCtrl2, FALSE);
             FTE_LWGPIO_setValue(pUCS->pFlowCtrl, TRUE);
+        }
+
+        if (pUCS->pFlowCtrl2 != NULL)
+        {
+            FTE_LWGPIO_setValue(pUCS->pFlowCtrl2, FALSE);
         }
 
         while(pUCS->nSendCount != 0)
@@ -691,8 +684,14 @@ void FTE_UCS_TASK_send
         {
             for(int i = 0; i < 20 ;i++)
                 _time_delay(0);
-            FTE_LWGPIO_setValue(pUCS->pFlowCtrl, FALSE);
- //           FTE_LWGPIO_setValue(pUCS->pFlowCtrl2, TRUE);
+            if (pUCS->pFlowCtrl != NULL)
+            {
+                FTE_LWGPIO_setValue(pUCS->pFlowCtrl, FALSE);
+            }
+            if (pUCS->pFlowCtrl2 != NULL)
+            {
+                FTE_LWGPIO_setValue(pUCS->pFlowCtrl2, TRUE);
+            }
         }
 
         _lwsem_post(&pUCS->xSEMSend);

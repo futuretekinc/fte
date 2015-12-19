@@ -13,6 +13,7 @@ typedef enum
     FTE_JSON_TYPE_ARRAY,
     FTE_JSON_TYPE_TRUE,
     FTE_JSON_TYPE_FALSE,
+    FTE_JSON_TYPE_HEX,
     FTE_JSON_TYPE_NULL
 }   FTE_JSON_TYPE, _PTR_ FTE_JSON_TYPE_PTR;
 
@@ -32,6 +33,12 @@ typedef struct
     FTE_JSON_TYPE       xType;
     long                nValue;
 }   FTE_JSON_NUMBER, * FTE_JSON_NUMBER_PTR;
+
+typedef struct  
+{
+    FTE_JSON_TYPE       xType;
+    long                nValue;
+}   FTE_JSON_HEX, * FTE_JSON_HEX_PTR;
 
 typedef struct  
 {
@@ -73,6 +80,7 @@ int FTE_JSON_final(FTE_JSON_PTR pJSON);
 
 FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createString(char *pString);
 FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createNumber(long nValue);
+FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createHex(long nValue);
 FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createFloat(long nValue);
 FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createPair(char *pString, FTE_JSON_VALUE_PTR pValue);
 FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createObject(int nMaxCount);

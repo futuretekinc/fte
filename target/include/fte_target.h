@@ -19,8 +19,9 @@
 #define FTE_STATE_POWER_UP              0x0001
 #define FTE_STATE_INITIALIZED           0x0002
 #define FTE_STATE_CONNECTED             0x0004
-#define FTE_STATE_WARNING               0x0008
-#define FTE_STATE_FINISHING             0x0010
+#define FTE_STATE_UNSTABLED             0x0008
+#define FTE_STATE_WARNING               0x0100
+#define FTE_STATE_ALERT                 0x0200
 
 #define FTE_MANUFACTURER                "FutureTek,Inc."
 #define FTE_HW_VERSION                  VERSION(1,1,1,2)
@@ -37,6 +38,166 @@
 
 #define FTE_LOG_BOOT_TIME_MAX_COUNT     5
 
+
+/******************************************************************************
+ * System Configuration
+ ******************************************************************************/
+#define FTE_SYS_KEEP_ALIVE_TIME         300
+#define FTE_SYS_KEEP_ALIVE_TIME_MIN     (60)
+#define FTE_SYS_KEEP_ALIVE_TIME_MAX     ((60 * 60) * 24)
+
+#define FTE_SYS_LIVE_CHECK_INTERVAL     100
+     
+#define FTE_SYS_AUTO_SAVE_INTERVAL      5000
+/******************************************************************************
+ * Network Configuration
+ ******************************************************************************/
+#define FTE_NET_INIT_WAITING_TIME       10000   //  10 s
+#define FTE_NET_STATE_CHECK_INTERVAL    500     //  500 ms
+
+#define FTE_NET_PHY_ADDR                0
+
+#define FTE_NET_OUI_0                   0x00
+#define FTE_NET_OUI_1                   0x40
+#define FTE_NET_OUI_2                   0x5c
+     
+/* IP address macros */
+#define FTE_NET_DEFAULT_IP              IPADDR(192,168,1,100)
+#define FTE_NET_DEFAULT_NETMASK         IPADDR(255,255,255,0) 
+#define FTE_NET_DEFAULT_GATEWAY_IP      IPADDR(192,168,1,1) 
+
+#define FTE_NET_SMNG_BUFF_SIZE          512
+#define FTE_NET_SMNG_STACK              (FTE_TASK_DEFAULT_STACK * 2 + FTE_NET_SMNG_BUFF_SIZE)
+#define FTE_NET_SMNG_PRIO               9
+#define FTE_NET_SMNG_PORT               1234
+
+/* SNMP Configuration */
+#define FTE_NET_SNMP_TRAP_V1            0
+#define FTE_NET_SNMP_TRAP_V2            1
+
+#define FTE_NET_SNMP_MIB1213            1
+#define FTE_NET_SNMP_MIBMQX             0
+
+#define FTE_NET_SNMP_NAME               "snmp"
+#define FTE_NET_SNMP_PRIO               9
+#define FTE_NET_SNMP_STACK              (FTE_TASK_DEFAULT_STACK * 4)
+
+#define FTE_NET_SNMP_TRAP_SPEC          3
+#define FTE_NET_SNMP_TRAP_COUNT         5
+#define FTE_NET_SNMP_COMMUNITY_LENGTH   32
+     
+/* Use this define to tell example if only one server should be used for all interfaces */
+#define FTE_NET_HTTP_MAX_SESSION        6
+#define FTE_NET_HTTP_STACK_SIZE         (FTE_TASK_DEFAULT_STACK * 4)
+#define FTE_NET_HTTP_CGI_BUFF_SIZE      1536
+
+#define FTE_NET_HTTP_INET_AF            AF_INET         
+#define FTE_NET_HTTP_SCOPE_ID           0 /* For any IF. */
+
+#define FTE_NET_MQTT_NAME               "mqtt"
+#define FTE_NET_MQTT_STACK              (FTE_TASK_DEFAULT_STACK * 20)
+#define FTE_NET_MQTT_SENDER_NAME        "mqtt_sender"
+#define FTE_NET_MQTT_SENDER_STACK       (FTE_TASK_DEFAULT_STACK * 2)
+#define FTE_NET_MQTT_RECEIVER_NAME      "mqtt_receiver"
+#define FTE_NET_MQTT_RECEIVER_STACK     (FTE_TASK_DEFAULT_STACK * 3)
+#define FTE_NET_MQTT_PRIO               9
+#define FTE_NET_MQTT_PORT               8883
+#define FTE_NET_MQTT_BROKER             IPADDR(10, 0, 1, 18)
+#define FTE_NET_MQTT_KEEPALIVE          60
+#define FTE_NET_MQTT_PUB_TIMEOUT        60
+#define FTE_NET_MQTT_WITH_SSL           TRUE
+#define FTE_NET_MQTT_SSL_METHOD         FTE_SSL_METHOD_TLSV1_2
+     
+#define FTE_NET_TELNETD_NAME            "telnet"
+#define FTE_NET_TELNETD_PRIO            9
+#define FTE_NET_TELNETD_STACK           (FTE_TASK_DEFAULT_STACK * 4)
+
+/******************************************************************************
+ * Object Management Configuration
+ ******************************************************************************/
+#define FTE_OBJ_CHECK_FAILURE_COUNT_MAX 64
+#define FTE_OBJ_ALLOW_FAILURE_COUNT     32
+#define FTE_OBJ_EVENT_CHECK_INTERVAL    200 /* milliseconds */
+#define FTE_OBJ_LIVE_CHECK_INTERVAL     60  /* seconds */
+
+
+typedef struct _PRODUCT_DESC_STRUCT
+{
+    char_ptr            pModel;
+    char_ptr            pManufacturer;
+    struct
+    {
+        uint_32         hw; 
+        uint_32         sw;
+    } xVersion;
+}   FTE_PRODUCT_DESC, _PTR_ FTE_PRODUCT_DESC_PTR;
+
+extern  const SHELL_COMMAND_STRUCT shell_commands[];
+
+FTE_PRODUCT_DESC const *fte_get_product_desc(void);
+_mqx_uint               FTE_PLATFORM_init(void);
+_mqx_uint               FTE_PLATFORM_run(void);
+
+#ifndef FTE_SHELL_TIMEOUT
+    #define FTE_SHELL_TIMEOUT               60  /* 60 secs */
+#endif
+
+
+#include "fte_drv.h"
+#include "fte_object.h"
+#include "fte_utils.h"
+#include "fte_debug.h"
+#include "fte_mem.h"
+#include "fte_sys.h"
+
+#if defined(FTE_ES)
+#include "fte_es.h"
+#elif defined(FTE_ES1)
+#include "fte_es1.h"
+#elif defined(FTE_ES2)
+#include "fte_es2.h"
+#elif defined(FTE_ES3)
+#include "fte_es3.h"
+#elif defined(FTE_ES4)
+#include "fte_es4.h"
+#elif defined(FTE_ES5)
+#include "fte_es5.h"
+#elif defined(FTE_ES7)
+#include "fte_es7.h"
+#elif defined(FTE_ES8)
+#include "fte_es8.h"
+#elif defined(FTE_ES9)
+#include "fte_es9.h"
+#elif defined(FTE_MST)
+#include "fte_mst.h"
+#elif defined(FTE_ES10)
+#include "fte_es10.h"
+#elif defined(FTE_ES11)
+#include "fte_es11.h"
+#elif defined(FTE_ES12)
+#include "fte_es12.h"
+#elif defined(FTE_ES13)
+#include "fte_es13.h"
+#elif defined(FTE_ES14)
+#include "fte_es14.h"
+#elif defined(FTE_ES15)
+#include "fte_es15.h"
+#elif defined(FTE_ES16)
+#include "fte_es16.h"
+#elif defined(FTE_ES17)
+#include "fte_es17.h"
+#elif defined(FTE_ES18)
+#include "fte_es18.h"
+#elif defined(FTE_ES19)
+#include "fte_es19.h"
+#elif defined(FTE_ES20)
+#include "fte_es20.h"
+#elif defined(FTE_EH1)
+#include "fte_eh1.h"
+#elif defined(FTE_MN1)
+#include "fte_mn1.h"
+#endif
+
 /******************************************************************************
  * Task 
  ******************************************************************************/
@@ -52,6 +213,12 @@
 #define FTE_TASK_EVENT                  10
 #define FTE_TASK_CIAS_SIOUX_CU          11
 #define FTE_TASK_IOEX                   12
+#if FTE_LORA_SUPPORTED
+#define FTE_TASK_LORA                   13
+#define FTE_TASK_LORA_COMM              14
+#define FTE_TASK_15_4_STACK             15
+#define FTE_TASK_NS_STACK               16
+#endif
      
 #define FTE_TASK_DEFAULT_STACK          512
 
@@ -110,165 +277,10 @@
     #define FTE_TASK_IOEX_PRIO          9
 #endif
 
-/******************************************************************************
- * System Configuration
- ******************************************************************************/
-#define FTE_SYS_KEEP_ALIVE_TIME         300
-#define FTE_SYS_KEEP_ALIVE_TIME_MIN     (60)
-#define FTE_SYS_KEEP_ALIVE_TIME_MAX     ((60 * 60) * 24)
-
-#define FTE_SYS_LIVE_CHECK_INTERVAL     1000
-     
-#define FTE_SYS_AUTO_SAVE_INTERVAL      5000
-/******************************************************************************
- * Network Configuration
- ******************************************************************************/
-#define FTE_NET_PHY_ADDR                0
-
-#define FTE_NET_OUI_0                   0x00
-#define FTE_NET_OUI_1                   0x40
-#define FTE_NET_OUI_2                   0x5c
-     
-/* IP address macros */
-#define FTE_NET_DEFAULT_IP              IPADDR(192,168,1,100)
-#define FTE_NET_DEFAULT_NETMASK         IPADDR(255,255,255,0) 
-#define FTE_NET_DEFAULT_GATEWAY_IP      IPADDR(192,168,1,1) 
-
-#define FTE_NET_SMNG_BUFF_SIZE          1024
-#define FTE_NET_SMNG_STACK              (FTE_TASK_DEFAULT_STACK * 4 + FTE_NET_SMNG_BUFF_SIZE)
-#define FTE_NET_SMNG_PRIO               9
-#define FTE_NET_SMNG_PORT               1234
-
-/* SNMP Configuration */
-#define FTE_NET_SNMP_TRAP_V1            0
-#define FTE_NET_SNMP_TRAP_V2            1
-
-#define FTE_NET_SNMP_MIB1213            1
-#define FTE_NET_SNMP_MIBMQX             0
-
-#define FTE_NET_SNMP_NAME               "snmp"
-#define FTE_NET_SNMP_PRIO               9
-#define FTE_NET_SNMP_STACK              (FTE_TASK_DEFAULT_STACK * 4)
-
-#define FTE_NET_SNMP_TRAP_SPEC          3
-#define FTE_NET_SNMP_TRAP_COUNT         5
-#define FTE_NET_SNMP_COMMUNITY_LENGTH   32
-     
-/* Use this define to tell example if only one server should be used for all interfaces */
-#define FTE_NET_HTTP_MAX_SESSION        6
-#define FTE_NET_HTTP_STACK_SIZE         (FTE_TASK_DEFAULT_STACK * 4)
-#define FTE_NET_HTTP_CGI_BUFF_SIZE      1536
-
-#define FTE_NET_HTTP_INET_AF            AF_INET         
-#define FTE_NET_HTTP_SCOPE_ID           0 /* For any IF. */
-
-#define FTE_NET_MQTT_NAME               "mqtt"
-#define FTE_NET_MQTT_STACK              (FTE_TASK_DEFAULT_STACK * 20)
-#define FTE_NET_MQTT_SENDER_NAME        "mqtt_sender"
-#define FTE_NET_MQTT_SENDER_STACK       (FTE_TASK_DEFAULT_STACK * 2)
-#define FTE_NET_MQTT_RECEIVER_NAME      "mqtt_receiver"
-#define FTE_NET_MQTT_RECEIVER_STACK     (FTE_TASK_DEFAULT_STACK * 3)
-#define FTE_NET_MQTT_PRIO               9
-#define FTE_NET_MQTT_PORT               8883
-#define FTE_NET_MQTT_BROKER             IPADDR(10, 0, 1, 18)
-#define FTE_NET_MQTT_KEEPALIVE          60
-#define FTE_NET_MQTT_PUB_TIMEOUT        60
-#define FTE_NET_MQTT_WITH_SSL           TRUE
-#define FTE_NET_MQTT_SSL_METHOD         FTE_SSL_METHOD_TLSV1_2
-     
-#define FTE_NET_TELNETD_NAME            "telnet"
-#define FTE_NET_TELNETD_PRIO            9
-#define FTE_NET_TELNETD_STACK           (FTE_TASK_DEFAULT_STACK * 4)
-
-/******************************************************************************
- * Object Management Configuration
- ******************************************************************************/
-#define FTE_OBJ_CHECK_FAILURE_COUNT_MAX 64
-#define FTE_OBJ_ALLOW_FAILURE_COUNT     32
-#define FTE_OBJ_EVENT_CHECK_INTERVAL    200 /* milliseconds */
-#define FTE_OBJ_LIVE_CHECK_INTERVAL     60  /* seconds */
-
-
-typedef struct _product_desc_struct
-{
-    char_ptr            pModel;
-    char_ptr            pManufacturer;
-    struct
-    {
-        uint_32         hw; 
-        uint_32         sw;
-    } xVersion;
-}   FTE_PRODUCT_DESC, _PTR_ FTE_PRODUCT_DESC_PTR;
-
-extern  const SHELL_COMMAND_STRUCT shell_commands[];
-
-FTE_PRODUCT_DESC const *fte_get_product_desc(void);
-_mqx_uint               fte_platform_init(void);
-_mqx_uint               fte_platform_run(void);
-_mqx_uint               fte_power_hold(boolean bHoldOn);
-void                    fte_state_initialized(void);
-void                    fte_state_disconnected(void);
-uint_32                 fte_state_get(void);
-void                    fte_state_change_set_cb(void (*cb)(void));
-
-#ifndef FTE_SHELL_TIMEOUT
-    #define FTE_SHELL_TIMEOUT               60  /* 60 secs */
+#if FTE_TASK_LORA
+    #define FTE_TASK_LORA_STACK         (FTE_TASK_DEFAULT_STACK * 4)
+    #define FTE_TASK_LORA_PRIO          9
 #endif
-
-
-#include "fte_drv.h"
-#include "fte_object.h"
-#include "fte_utils.h"
-#include "fte_debug.h"
-#include "fte_mem.h"
-#include "fte_sys.h"
-
-#if defined(FTE_ES)
-#include "fte_es.h"
-#elif defined(FTE_ES1)
-#include "fte_es1.h"
-#elif defined(FTE_ES2)
-#include "fte_es2.h"
-#elif defined(FTE_ES3)
-#include "fte_es3.h"
-#elif defined(FTE_ES4)
-#include "fte_es4.h"
-#elif defined(FTE_ES5)
-#include "fte_es5.h"
-#elif defined(FTE_ES7)
-#include "fte_es7.h"
-#elif defined(FTE_ES8)
-#include "fte_es8.h"
-#elif defined(FTE_ES9)
-#include "fte_es9.h"
-#elif defined(FTE_MST)
-#include "fte_mst.h"
-#elif defined(FTE_ES10)
-#include "fte_es10.h"
-#elif defined(FTE_ES11)
-#include "fte_es11.h"
-#elif defined(FTE_ES12)
-#include "fte_es12.h"
-#elif defined(FTE_ES13)
-#include "fte_es13.h"
-#elif defined(FTE_ES14)
-#include "fte_es14.h"
-#elif defined(FTE_ES15)
-#include "fte_es15.h"
-#elif defined(FTE_ES16)
-#include "fte_es16.h"
-#elif defined(FTE_ES17)
-#include "fte_es17.h"
-#elif defined(FTE_ES18)
-#include "fte_es18.h"
-#elif defined(FTE_ES19)
-#include "fte_es19.h"
-#elif defined(FTE_EH1)
-#include "fte_eh1.h"
-#elif defined(FTE_MN1)
-#include "fte_mn1.h"
-#endif
-
 
 #if FTE_DI_SUPPORTED                    
     #if !FTE_DI_MAX_COUNT            
@@ -348,7 +360,8 @@ void                    fte_state_change_set_cb(void (*cb)(void));
     #define FTE_LOG_MAX_COUNT   100
 #endif
 
-#define FTE_OBJ_LED_SYS_STATUS  MAKE_SYSTEM_ID(FTE_OBJ_TYPE_LED, 100)
-
+#define FTE_OBJ_LED_SYS0_STATUS  MAKE_SYSTEM_ID(FTE_OBJ_TYPE_LED, 100)
+#define FTE_OBJ_LED_SYS1_STATUS  MAKE_SYSTEM_ID(FTE_OBJ_TYPE_LED, 101)
+#define FTE_OBJ_TYPE_IOEX_RESET MAKE_SYSTEM_ID(FTE_OBJ_TYPE_DO, 100)
 #endif
 

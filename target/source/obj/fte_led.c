@@ -219,7 +219,7 @@ static _mqx_uint _FTE_LED_setValue(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue)
         goto error;
     }
         
-    FTE_VALUE_setULONG(pStatus->xCommon.pValue, FTE_LED_STATE_BLINK);
+    FTE_VALUE_setULONG(pStatus->xCommon.pValue, pValue->xData.xState);
     
     return   MQX_OK;
 error:

@@ -1,6 +1,7 @@
 #include "fte_target.h"
 #include "fte_config.h"
 #include "fte_net.h"
+#include "fte_time.h"
 
 /*TASK*-----------------------------------------------------------------
 *
@@ -12,22 +13,25 @@
 
 void FTE_TASK_net(uint_32 params)
 {
- 
-    int_32              ret;
-    uint_32             nLinkCheck = 5;
+    FTE_TIME_DELAY      xTimeDelay;
     boolean             bLinkActive = FALSE;
     FTE_NET_CFG_PTR     pCfgNet = FTE_CFG_NET_get();
 
     ASSERT(pCfgNet != NULL);
+
+    FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
     
     printf("Starting netd\n");
-    ret = FTE_NET_init(pCfgNet); 
-    if (ret == RTCS_ERROR)
+    if (FTE_NET_init(pCfgNet) == RTCS_ERROR)
     {
         goto error;
     }
 
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
+    FTE_NET_liveCheckInit(FTE_CFG_SYS_getKeepAliveTime());
+    if (FTE_CFG_SYS_getSystemMonitor())
+    {
+        FTE_NET_liveCheckStart();
+    }
     
 #if FTE_HTTPD_SUPPORTED
     printf("Starting httpd ... [%s]\n",(FTE_HTTPD_init(&pCfgNet->xHTTP) == MQX_OK)?"OK":"FAILED");
@@ -46,72 +50,65 @@ void FTE_TASK_net(uint_32 params)
 #endif
     
     // tcp/ip initialization waiting
-    _time_delay(10000);
+    _time_delay(FTE_NET_INIT_WAITING_TIME);
 
-    while(1)
+    FTE_TIME_DELAY_init(&xTimeDelay, FTE_NET_STATE_CHECK_INTERVAL);
+    bLinkActive =ipcfg_get_link_active (BSP_DEFAULT_ENET_DEVICE);
+    
+    while(TRUE)
     {
-        if (-- nLinkCheck <= 0)
+        IPCFG_STATE xState;
+        
+        boolean bNewLinkActive =ipcfg_get_link_active (BSP_DEFAULT_ENET_DEVICE);
+        if (bLinkActive != bNewLinkActive)
         {
-            IPCFG_STATE xState;
-            
-            boolean bNewLinkActive =ipcfg_get_link_active (BSP_DEFAULT_ENET_DEVICE);
-            if (bLinkActive != bNewLinkActive)
+            printf("Link is %s!\n",(bNewLinkActive)?"up":"down");
+            bLinkActive = bNewLinkActive;
+        }
+
+        xState = ipcfg_get_state(BSP_DEFAULT_ENET_DEVICE);
+        if (bLinkActive)
+        {
+            if ((IPCFG_STATE_BUSY == xState) || (IPCFG_STATE_UNBOUND == xState))
             {
-                if (bNewLinkActive)
+                static int nRetry = 0;
+                if (FTE_NET_bind() != MQX_OK)
                 {
-                    printf("Link is up!\n");
+                    if (++nRetry > 2)
+                    {
+                        FTE_SYS_reset();
+                    }
                 }
                 else
                 {
-                    printf("Link Down : %d\n", ipcfg_get_link_active (BSP_DEFAULT_ENET_DEVICE));
-                    printf("Link is down!\n");
-                }
-                
-                bLinkActive = bNewLinkActive;
-            }
-
-            xState = ipcfg_get_state(BSP_DEFAULT_ENET_DEVICE);
-            if (bLinkActive)
-            {
-                if ((IPCFG_STATE_BUSY == xState) || (IPCFG_STATE_UNBOUND == xState))
-                {
-                    static int nRetry = 0;
-                    if (FTE_NET_bind() != MQX_OK)
-                    {
-                        if (++nRetry > 2)
-                        {
-                            FTE_SYS_reset();
-                        }
-                    }
-                    else
-                    {
-                        nRetry = 0;;
-                    }
-                }
-                
-#if FTE_SNMPD_SUPPORTED
-                if ((IPCFG_STATE_BUSY != xState) && (IPCFG_STATE_UNBOUND != xState))
-                {
-                    FTE_SNMPD_TRAP_processing();                
-                }
-#endif
-            }
-            else 
-            {
-                if (IPCFG_STATE_UNBOUND != xState)
-                {
-                    FTE_NET_unbind();
+                    nRetry = 0;
                 }
             }
             
-            nLinkCheck = 2;
+#if FTE_SNMPD_SUPPORTED
+            if ((IPCFG_STATE_BUSY != xState) && (IPCFG_STATE_UNBOUND != xState))
+            {
+                FTE_SNMPD_TRAP_processing();                
+            }
+#endif
+            if (FTE_NET_isStable() == FALSE)
+            {
+                FTE_SYS_setUnstable();
+            }
+        }
+        else 
+        {
+            if (IPCFG_STATE_UNBOUND != xState)
+            {
+                FTE_NET_unbind();
+            }
         }
 
-
-        _time_delay(200);
+        FTE_TIME_DELAY_waitingAndSetNext(&xTimeDelay);
     }
     
 error:
     _task_block();
 }
+
 

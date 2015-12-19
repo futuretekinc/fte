@@ -16,41 +16,77 @@ static void     _FTE_SYS_INT_CB_factoryReset(void *params);
 static  MQX_TICK_STRUCT             _xSWPushStartTick;
 static  boolean                     _bShutdown = 0;
 static  uint_32                     _nState = 0;
-static  FTE_SYS_STATE_CHANGE_FPTR   _f_cb;
+static  FTE_SYS_STATE_CHANGE_FPTR   _FTE_SYS_CB_stateChanged = NULL;
 
 void    FTE_SYS_powerUp(void)
 {
     _nState |= FTE_STATE_POWER_UP;
-    if (_f_cb != NULL)
+    if (_FTE_SYS_CB_stateChanged != NULL)
     {
-        _f_cb(0); 
+        _FTE_SYS_CB_stateChanged(0); 
     }
 } 
 
 void    FTE_SYS_STATE_initialized(void)
 {
     _nState |= FTE_STATE_INITIALIZED;
-    if (_f_cb != NULL)
+    if (_FTE_SYS_CB_stateChanged != NULL)
     {
-        _f_cb(0);
+        _FTE_SYS_CB_stateChanged(0);
     }
 }
 
 void    FTE_SYS_STATE_connected(void)
 {
     _nState |= FTE_STATE_CONNECTED;
-    if (_f_cb != NULL)
+    if (_FTE_SYS_CB_stateChanged != NULL)
     {
-        _f_cb(0);
+        _FTE_SYS_CB_stateChanged(0);
     }
 }
 
 void    FTE_SYS_STATE_disconnected(void)
 {
     _nState &= ~FTE_STATE_CONNECTED;
-    if (_f_cb != NULL)
+    if (_FTE_SYS_CB_stateChanged != NULL)
     {
-        _f_cb(0);
+        _FTE_SYS_CB_stateChanged(0);
+    }
+}
+
+void    FTE_SYS_STATE_factoryResetRequested(void)
+{
+    _nState |= FTE_STATE_WARNING;
+    if (_FTE_SYS_CB_stateChanged != NULL)
+    {
+        _FTE_SYS_CB_stateChanged(0);
+    }
+}
+
+void    FTE_SYS_STATE_factoryResetCanceled(void)
+{
+    _nState &= ~FTE_STATE_WARNING;
+    if (_FTE_SYS_CB_stateChanged != NULL)
+    {
+        _FTE_SYS_CB_stateChanged(0);
+    }
+}
+
+void    FTE_SYS_STATE_factoryResetFinished(void)
+{
+    _nState |= FTE_STATE_ALERT;
+    if (_FTE_SYS_CB_stateChanged != NULL)
+    {
+        _FTE_SYS_CB_stateChanged(0);
+    }
+}
+
+void    FTE_SYS_STATE_setAlert(void)
+{
+    _nState |= FTE_STATE_ALERT;
+    if (_FTE_SYS_CB_stateChanged != NULL)
+    {
+        _FTE_SYS_CB_stateChanged(0);
     }
 }
 
@@ -111,7 +147,7 @@ uint_32 FTE_SYS_STATE_get(void)
 
 void    FTE_SYS_STATE_setChangeCB(FTE_SYS_STATE_CHANGE_FPTR fCallback)
 {
-    _f_cb = fCallback;
+    _FTE_SYS_CB_stateChanged = fCallback;
 }
 
 _mqx_uint FTE_SYS_DEVICE_resetInit(void)
@@ -315,32 +351,22 @@ void     _sys_sw_pushed(boolean bPowerCtrl)
     }
 }
 
-static  boolean _bFactoryResetPushed = FALSE;
+static boolean _bFactoryResetPushed = FALSE;
 
 
 void    FTE_SYS_factoryResetInit(void)
 {
-    boolean bValue;
     FTE_GPIO_PTR    pGPIO_factoryReset = FTE_GPIO_get(FTE_DEV_GPIO_FACTORY_RESET);
 
-    FTE_GPIO_attach(pGPIO_factoryReset, FTE_DEV_TYPE_ROOT);
-    
-    FTE_GPIO_setISR(pGPIO_factoryReset, _FTE_SYS_INT_CB_factoryReset, 0);
-    FTE_GPIO_INT_init(pGPIO_factoryReset, 3, 0, TRUE);
-    FTE_GPIO_getValue(pGPIO_factoryReset, &bValue);
-    
-    if (bValue)
+    if (pGPIO_factoryReset != NULL)
     {
-        _FTE_SYS_factoryResetPushed(TRUE);
-        FTE_GPIO_INT_setPolarity(pGPIO_factoryReset, FTE_LWGPIO_INT_LOW);        
+        FTE_GPIO_attach(pGPIO_factoryReset, FTE_DEV_TYPE_ROOT);
+        
+        FTE_GPIO_setISR(pGPIO_factoryReset, _FTE_SYS_INT_CB_factoryReset, 0);
+        FTE_GPIO_INT_init(pGPIO_factoryReset, 3, 0, TRUE);
+        
+        _FTE_SYS_INT_CB_factoryReset(NULL);
     }
-    else
-    {
-        _FTE_SYS_factoryResetPushed(FALSE);
-        FTE_GPIO_INT_setPolarity(pGPIO_factoryReset, FTE_LWGPIO_INT_HIGH);
-    }
-    
-    FTE_GPIO_INT_setEnable(pGPIO_factoryReset, TRUE);
 }
 
 boolean FTE_SYS_isfactoryResetPushed(void)
@@ -348,71 +374,72 @@ boolean FTE_SYS_isfactoryResetPushed(void)
     return  _bFactoryResetPushed;
 }
 
-#if 1
-static  uint_32     _hFactoryResetTimer = 0;
-#endif
-
 void _FTE_SYS_INT_CB_factoryReset(void *params)
 {
     boolean bValue;
     FTE_GPIO_PTR    pGPIO_factoryReset = FTE_GPIO_get(FTE_DEV_GPIO_FACTORY_RESET);
-    
+
     FTE_GPIO_INT_setEnable(pGPIO_factoryReset, FALSE);
     FTE_GPIO_getValue(pGPIO_factoryReset, &bValue);
     
-    if (bValue != _bFactoryResetPushed)
+    if (bValue == TRUE)
     {
-        if (!bValue)
-        {
-    #if 0
-            if (_hFactoryResetTimer != 0)
-            {
-                _timer_cancel(_hFactoryResetTimer);
-                _hFactoryResetTimer = 0;
-            }        
-    #endif
-            _FTE_SYS_factoryResetPushed(FALSE);
-            FTE_GPIO_INT_setPolarity(pGPIO_factoryReset, FTE_LWGPIO_INT_HIGH);
-        }
-        else
-        {
-            _FTE_SYS_factoryResetPushed(TRUE);
-            FTE_GPIO_INT_setPolarity(pGPIO_factoryReset, FTE_LWGPIO_INT_LOW);
-        }
+        FTE_GPIO_INT_setPolarity(pGPIO_factoryReset, FTE_LWGPIO_INT_LOW);
+        _bFactoryResetPushed = TRUE;
     }
-    FTE_GPIO_INT_setEnable(pGPIO_factoryReset, TRUE);
+    else
+    {
+        FTE_GPIO_INT_setPolarity(pGPIO_factoryReset, FTE_LWGPIO_INT_HIGH);
+        _bFactoryResetPushed = FALSE;
+    }
     
+    FTE_GPIO_INT_setEnable(pGPIO_factoryReset, TRUE);
+
 }
 
-#if 1
+static uint_32  _hFactoryResetTimer = 0;
+
 void _FTE_SYS_CB_factoryReset(_timer_id nID, pointer pData, MQX_TICK_STRUCT_PTR pTick)
 {
     if (nID == _hFactoryResetTimer)
     {
         printf("Factory Reset!\n");
+        FTE_CFG_clear();
+        _time_delay(500);
+        FTE_SYS_STATE_factoryResetFinished();
+        _time_delay(500);
+        FTE_SYS_reset();
+        
     }
 }
-#endif
 
-void     _FTE_SYS_factoryResetPushed(boolean bPushed)
+void     FTE_SYS_factoryReset(boolean bPushed)
 {
-#if 0
     MQX_TICK_STRUCT xTicks;
 
-    if (_hFactoryResetTimer != 0)
+    if (bPushed)
     {
-        _timer_cancel(_hFactoryResetTimer);
-        _hFactoryResetTimer = 0;
-    }        
-    
-    _time_init_ticks(&xTicks, 0);
-    _time_add_msec_to_ticks(&xTicks, FTE_FACTORY_RESET_DETECT_TIME);
+        if (_hFactoryResetTimer == 0)
+        {
+            FTE_SYS_STATE_factoryResetRequested();
+            
+            _time_init_ticks(&xTicks, 0);
+            _time_add_msec_to_ticks(&xTicks, FTE_FACTORY_RESET_DETECT_TIME);
 
-    _hFactoryResetTimer = _timer_start_oneshot_after_ticks(_FTE_SYS_CB_factoryReset, 0, TIMER_ELAPSED_TIME_MODE, &xTicks);
-#endif
-    _bFactoryResetPushed = bPushed;
-    
+            _hFactoryResetTimer = _timer_start_oneshot_after_ticks(_FTE_SYS_CB_factoryReset, 0, TIMER_ELAPSED_TIME_MODE, &xTicks);
+        }        
+    }
+    else
+    {
+        if (_hFactoryResetTimer != 0)
+        {
+            FTE_SYS_STATE_factoryResetCanceled();
+            _timer_cancel(_hFactoryResetTimer);
+            _hFactoryResetTimer = 0;
+        }        
+    }
 }
+
 
 int_32  FTE_SYS_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
 {
@@ -427,24 +454,18 @@ int_32  FTE_SYS_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
         {
         case    1:
             {
-                MQX_TICK_STRUCT_PTR pLastCheckTime;
-                MQX_TICK_STRUCT     xCurrentTime;
-                TIME_STRUCT         xTime;
-                char                pBuff[64];
+                MQX_TICK_STRUCT     xLastCheckTime;
+                MQX_TICK_STRUCT     xTempTick;
                 boolean             bOverflow = FALSE;
                 uint_32             ulDiffTime;
                 
-                printf("<Live Check>\n");
-                printf("%16s : %s\n", "State", FTE_SYS_LIVE_CHECK_isRun()?"RUNNING":"STOP");
-                printf("%16s : %d seconds\n", "Keepalive", FTE_CFG_SYS_getKeepAliveTime());
-                pLastCheckTime = FTE_SYS_LIVE_CHECK_lastCheckTime();
-                _ticks_to_time(pLastCheckTime, &xTime);
-                FTE_TIME_toString(&xTime, pBuff, sizeof(pBuff));
-                printf("%16s : %s\n", "Touch Time", pBuff);
-                
-                _time_get_elapsed_ticks(&xCurrentTime);
-                ulDiffTime = _time_diff_seconds(&xCurrentTime, pLastCheckTime, &bOverflow);
-                printf("%16s : %d seconds\n",   "Live Time", ulDiffTime);
+                printf("<Network Live Information>\n");
+                printf("%16s : %s\n", "State", FTE_NET_isLiveChecking()?"RUNNING":"STOP");
+                printf("%16s : %4d seconds\n", "Keepalive", FTE_CFG_SYS_getKeepAliveTime());
+                FTE_NET_lastLiveCheckTime(&xLastCheckTime);
+                _time_get_elapsed_ticks(&xTempTick);
+                ulDiffTime = _time_diff_seconds(&xTempTick, &xLastCheckTime, &bOverflow);
+                printf("%16s : %4d seconds\n",   "Elapsed Time", ulDiffTime);
             }
             break;
             
@@ -481,18 +502,12 @@ int_32  FTE_SYS_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
                     if (strcmp(pArgv[2], "start") == 0)
                     {
                         FTE_CFG_SYS_setSystemMonitor(TRUE);
-                        if (!FTE_SYS_LIVE_CHECK_isRun())
-                        {
-                            FTE_SYS_LIVE_CHECK_start();
-                        }
+                        FTE_NET_liveCheckStart();
                     }
                     else if (strcmp(pArgv[2], "stop") == 0)
                     {
                         FTE_CFG_SYS_setSystemMonitor(FALSE);
-                        if (FTE_SYS_LIVE_CHECK_isRun())
-                        {
-                            FTE_SYS_LIVE_CHECK_stop();
-                        }
+                        FTE_NET_liveCheckStop();
                     }
                     else
                     {
@@ -597,7 +612,7 @@ int_32  FTE_SYS_SHUTDOWN_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
     return  nReturnCode;
 }
 
-void    fte_sys_lcd_init(void)
+void    FTE_LCD_init(void)
 {
     FTE_SSD1305_PTR    pSSD1305 = FTE_SSD1305_get(FTE_DEV_SSD1305_0);
 
@@ -615,16 +630,16 @@ uint_32     FTE_SYS_getTime(void)
     return  xTime.SECONDS;
 }
 
-static boolean  bSystemIsUnstable = FALSE;
+static boolean  bSystemIsStable = TRUE;
 
 void FTE_SYS_setUnstable(void)
 {
-    bSystemIsUnstable = TRUE;
+    bSystemIsStable = FALSE;
 }
 
-boolean FTE_SYS_isUnstable(void)
+boolean FTE_SYS_isStable(void)
 {
-    return  bSystemIsUnstable;
+    return  bSystemIsStable;
 }
 
 
@@ -657,72 +672,18 @@ _mqx_uint   FTE_SYS_getMAC(uint_8_ptr pMAC)
 }
 
 
-static  MQX_TICK_STRUCT _xLastCheckTime;
-static  boolean         _bLiveCheckRunning = FALSE;
-static  uint_32         _ulKeepAliveTime = FTE_SYS_KEEP_ALIVE_TIME;
-
-_mqx_uint   FTE_SYS_LIVE_CHECK_init(uint_32 ulKeepAliveTime)
+void FTE_SYS_liveCheckAndReset(void)
 {
-    if ((ulKeepAliveTime >= FTE_SYS_KEEP_ALIVE_TIME_MIN) && (ulKeepAliveTime <= FTE_SYS_KEEP_ALIVE_TIME_MAX))
+    if (FTE_NET_isLiveChecking())
     {
-        _ulKeepAliveTime = ulKeepAliveTime;
-        return  MQX_OK;
-    }
-    
-    return  MQX_ERROR;
-} 
-
-_mqx_uint   FTE_SYS_LIVE_CHECK_start(void)
-{
-    _time_get_elapsed_ticks(&_xLastCheckTime);
-    _bLiveCheckRunning = TRUE;
-
-    return  MQX_OK;
-}
-
-_mqx_uint   FTE_SYS_LIVE_CHECK_touch(void)
-{
-    if (_bLiveCheckRunning)
-    {    
-        _time_get_elapsed_ticks(&_xLastCheckTime);
-    }
-
-    return  MQX_OK;
-}
-
-_mqx_uint   FTE_SYS_LIVE_CHECK_stop(void)
-{
-    _bLiveCheckRunning = FALSE;
-    
-    return  MQX_OK;
-}
-
-boolean     FTE_SYS_LIVE_CHECK_isRun(void)
-{
-    return  _bLiveCheckRunning;
-}
-
-MQX_TICK_STRUCT_PTR FTE_SYS_LIVE_CHECK_lastCheckTime(void)
-{
-    return  &_xLastCheckTime;
-}
-
-boolean     FTE_SYS_LIVE_CHECK_isLive(void)
-{
-    if (_bLiveCheckRunning)
-    {
-        MQX_TICK_STRUCT xCurrentTime;
-        boolean         bOverflow = FALSE;
-        uint_32         ulDiffTime;
-        
-        _time_get_elapsed_ticks(&xCurrentTime);
-        
-        ulDiffTime = _time_diff_seconds(&xCurrentTime, &_xLastCheckTime, &bOverflow);
-        if ( (ulDiffTime> _ulKeepAliveTime) || bOverflow)
+        if (!FTE_SYS_isStable())
         {
-            return  FALSE;
+            FTE_SYS_STATE_setAlert();
+            printf("System is unstabled!\n");
+            printf("System restart now!\n");
+            _time_delay(1000);
+            FTE_SYS_reset();
         }
     }
-    
-    return  TRUE;
 }
+

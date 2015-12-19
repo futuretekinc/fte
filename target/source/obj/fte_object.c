@@ -789,7 +789,68 @@ FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON(FTE_OBJECT_PTR pObj, uint_32 xOptions)
                     }
                     break;
                     
-                 default:
+                case FTE_OBJ_TYPE_MULTI_CIAS_ALARM:
+                    {
+                        uint_32 ulValue;
+                        boolean bValue;
+                        FTE_JSON_OBJECT_PTR  pValues = (FTE_JSON_OBJECT_PTR)FTE_JSON_VALUE_createObject(3);
+                        if (pValues == NULL)
+                        {
+                            goto error;
+                        }
+                        
+                        FTE_VALUE_getULONG(&pObj->pStatus->pValue[0], &ulValue);
+                        pValue = FTE_JSON_VALUE_createNumber(ulValue);
+                        if (pValue == NULL)
+                        {
+                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+                            goto error;
+                        }
+                        if (FTE_JSON_OBJECT_setPair(pValues, "count", pValue) != FTE_JSON_RET_OK)
+                        {
+                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+                            FTE_JSON_VALUE_destroy(pValue);
+                            goto error;
+                        }
+                        
+                        FTE_VALUE_getULONG(&pObj->pStatus->pValue[1], &ulValue);
+                        pValue = FTE_JSON_VALUE_createNumber(ulValue);
+                        if (pValue == NULL)
+                        {
+                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+                            goto error;
+                        }
+                        if (FTE_JSON_OBJECT_setPair(pValues, "accum", pValue) != FTE_JSON_RET_OK)
+                        {
+                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+                            FTE_JSON_VALUE_destroy(pValue);
+                            goto error;
+                        }
+
+                        FTE_VALUE_getDIO(&pObj->pStatus->pValue[2], &bValue);
+                        pValue = FTE_JSON_VALUE_createNumber(bValue);
+                        if (pValue == NULL)
+                        {
+                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+                            goto error;
+                        }
+                        if (FTE_JSON_OBJECT_setPair(pValues, "switch", pValue) != FTE_JSON_RET_OK)
+                        {
+                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+                            FTE_JSON_VALUE_destroy(pValue);
+                            goto error;
+                        }                    
+                        
+                        if (FTE_JSON_OBJECT_setPair(pObject, "value", (FTE_JSON_VALUE_PTR)pValues) != FTE_JSON_RET_OK)
+                        {
+                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+                            goto error;
+                        }                    
+                        
+                    }
+                    break;
+                    
+                default:
                    {
 #if FTE_ES18
                        uint_32  ulCmd = pObj->pStatus->pValue->xData.ulValue & 0xFF;
@@ -1135,7 +1196,7 @@ int_32          FTE_OBJ_SHELL_cmd(int_32 argc, char_ptr argv[])
                 uint_32 count = FTE_OBJ_count(FTE_OBJ_TYPE_UNKNOWN, 0, FALSE);
                 uint_32 i;
 
-                printf("%-8s %-16s %-16s %8s %8s %7s %-s\n", 
+                printf("%-8s %-16s %-16s %8s %10s %7s %-s\n", 
                         "ID", "TYPE", "NAME", "STATUS", "VALUE", "       ", "TIME");
                 for(i = 0 ; i < count ; i++)
                 {
@@ -1160,7 +1221,7 @@ int_32          FTE_OBJ_SHELL_cmd(int_32 argc, char_ptr argv[])
                             FTE_VALUE_unit(pObj->pStatus->pValue, pUnitString, sizeof(pUnitString));
                             FTE_VALUE_getTimeStamp(pObj->pStatus->pValue, &xTime);
                             FTE_TIME_toString(&xTime, pTimeString, sizeof(pTimeString));
-                            printf(" %8s %-7s %s", pValueString, pUnitString, pTimeString);
+                            printf(" %10s %-7s %s", pValueString, pUnitString, pTimeString);
                         }
                         
                         if (pObj->pAction->f_get_statistic != NULL)

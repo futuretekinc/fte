@@ -28,8 +28,10 @@
 #define FTE_MCP23S08_SUPPORTED              0
 #define FTE_UCS_SUPPORTED                   1
 #define FTE_UCM_SUPPORTED                   0
-#define FTE_DEV_LWGPIO_UTS_FLOWCTRL         1
-#define FTE_DEV_LWGPIO_UTS_FLOWCTRL2        1
+#define FTE_DEV_LWGPIO_UCS1_RCTRL_SUPPORTED 0
+#define FTE_DEV_LWGPIO_UCS1_WCTRL_SUPPORTED 0
+#define FTE_DEV_LWGPIO_UCS2_RCTRL_SUPPORTED 1
+#define FTE_DEV_LWGPIO_UCS2_WCTRL_SUPPORTED 0
 
 #define FTE_RTD_SUPPORTED                   0
 #define FTE_RTD0_SUPPORTED                  0
@@ -62,6 +64,7 @@
 #define FTE_MULTI_CURRENT_SUPPORTED         0
 #define FTE_MULTI_POWER_SUPPORTED           0
 #define FTE_MULTI_VALUE_SUPPORTED           1
+#define FTE_MULTI_DISCRETE_SUPPORTED        1
 
 // CO2 Sensors
 #define FTE_SH_MV250_SUPPORTED              0
@@ -82,6 +85,7 @@
 #define FTE_CIAS_SIOUX_CU_SUPPORTED         1
 #define FTE_IOEX_SUPPORTED                  1
 
+#define FTE_NET_SUPPORTED                   1
 #define FTE_HTTPD_SUPPORTED                 0
 #define FTE_SNMPD_SUPPORTED                 1
 #define FTE_MQTT_SUPPORTED                  0

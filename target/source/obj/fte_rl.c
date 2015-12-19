@@ -1,6 +1,6 @@
 #include "fte_target.h"
 #include "fte_config.h"
-#include "fte_log.h"
+#include "fte_log.h" 
 #include "fte_time.h"
  
 static FTE_OBJECT_PTR   _FTE_RL_getObject(FTE_OBJECT_ID nID);

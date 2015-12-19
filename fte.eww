@@ -40,6 +40,9 @@
   <project>
     <path>$WS_DIR$\usb\host\libusbh.ewp</path>
   </project>
+  <project>
+    <path>$WS_DIR$\nanostack\nanostack.ewp</path>
+  </project>
   <batchBuild>
     <batchDefinition>
       <name>Build All</name>

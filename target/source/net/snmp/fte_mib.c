@@ -61,6 +61,7 @@ extern const RTCSMIB_NODE MIBNODE_epGAS;
 extern const RTCSMIB_NODE MIBNODE_epPower;
 extern const RTCSMIB_NODE MIBNODE_epCount;
 extern const RTCSMIB_NODE MIBNODE_epPressure;
+extern const RTCSMIB_NODE MIBNODE_epDiscrete;
 extern const RTCSMIB_NODE MIBNODE_epDevice;
 extern const RTCSMIB_NODE MIBNODE_epMgmt;
 extern const RTCSMIB_NODE MIBNODE_netType;
@@ -196,6 +197,18 @@ extern const RTCSMIB_NODE MIBNODE_prsValue;
 extern const RTCSMIB_NODE MIBNODE_prsLastValue;
 extern const RTCSMIB_NODE MIBNODE_prsLastTime;
 extern const RTCSMIB_NODE MIBNODE_prsInitValue;
+extern const RTCSMIB_NODE MIBNODE_dscCount;
+extern const RTCSMIB_NODE MIBNODE_dscTable;
+extern const RTCSMIB_NODE MIBNODE_dscEntry;
+extern const RTCSMIB_NODE MIBNODE_dscID;
+extern const RTCSMIB_NODE MIBNODE_dscType;
+extern const RTCSMIB_NODE MIBNODE_dscName;
+extern const RTCSMIB_NODE MIBNODE_dscSN;
+extern const RTCSMIB_NODE MIBNODE_dscState;
+extern const RTCSMIB_NODE MIBNODE_dscValue;
+extern const RTCSMIB_NODE MIBNODE_dscLastValue;
+extern const RTCSMIB_NODE MIBNODE_dscLastTime;
+extern const RTCSMIB_NODE MIBNODE_dscInitValue;
 extern const RTCSMIB_NODE MIBNODE_devCount;
 extern const RTCSMIB_NODE MIBNODE_devTable;
 extern const RTCSMIB_NODE MIBNODE_devEntry;
@@ -276,6 +289,7 @@ extern const RTCSMIB_VALUE MIBVALUE_epGAS;
 extern const RTCSMIB_VALUE MIBVALUE_epPower;
 extern const RTCSMIB_VALUE MIBVALUE_epCount;
 extern const RTCSMIB_VALUE MIBVALUE_epPressure;
+extern const RTCSMIB_VALUE MIBVALUE_epDiscrete;
 extern const RTCSMIB_VALUE MIBVALUE_epDevice;
 extern const RTCSMIB_VALUE MIBVALUE_epMgmt;
 extern const RTCSMIB_VALUE MIBVALUE_netType;
@@ -411,6 +425,18 @@ extern const RTCSMIB_VALUE MIBVALUE_prsValue;
 extern const RTCSMIB_VALUE MIBVALUE_prsLastValue;
 extern const RTCSMIB_VALUE MIBVALUE_prsLastTime;
 extern const RTCSMIB_VALUE MIBVALUE_prsInitValue;
+extern const RTCSMIB_VALUE MIBVALUE_dscCount;
+extern const RTCSMIB_VALUE MIBVALUE_dscTable;
+extern const RTCSMIB_VALUE MIBVALUE_dscEntry;
+extern const RTCSMIB_VALUE MIBVALUE_dscID;
+extern const RTCSMIB_VALUE MIBVALUE_dscType;
+extern const RTCSMIB_VALUE MIBVALUE_dscName;
+extern const RTCSMIB_VALUE MIBVALUE_dscSN;
+extern const RTCSMIB_VALUE MIBVALUE_dscState;
+extern const RTCSMIB_VALUE MIBVALUE_dscValue;
+extern const RTCSMIB_VALUE MIBVALUE_dscLastValue;
+extern const RTCSMIB_VALUE MIBVALUE_dscLastTime;
+extern const RTCSMIB_VALUE MIBVALUE_dscInitValue;
 extern const RTCSMIB_VALUE MIBVALUE_devCount;
 extern const RTCSMIB_VALUE MIBVALUE_devTable;
 extern const RTCSMIB_VALUE MIBVALUE_devEntry;
@@ -476,6 +502,7 @@ boolean MIB_find_diEntry             (uint_32, pointer, pointer _PTR_);
 boolean MIB_find_devEntry            (uint_32, pointer, pointer _PTR_);
 boolean MIB_find_doEntry             (uint_32, pointer, pointer _PTR_);
 boolean MIB_find_currEntry           (uint_32, pointer, pointer _PTR_);
+boolean MIB_find_dscEntry            (uint_32, pointer, pointer _PTR_);
 boolean MIB_find_tsEntry             (uint_32, pointer, pointer _PTR_);
 boolean MIB_find_pwrEntry            (uint_32, pointer, pointer _PTR_);
 boolean MIB_find_vltEntry            (uint_32, pointer, pointer _PTR_);
@@ -493,6 +520,7 @@ boolean MIB_instance_diEntry             (RTCSMIB_WALK_PTR, uint_32, boolean (_C
 boolean MIB_instance_devEntry            (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
 boolean MIB_instance_doEntry             (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
 boolean MIB_instance_currEntry           (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
+boolean MIB_instance_dscEntry            (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
 boolean MIB_instance_tsEntry             (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
 boolean MIB_instance_pwrEntry            (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
 boolean MIB_instance_vltEntry            (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
@@ -538,6 +566,10 @@ uint_32 MIB_set_prsName             (pointer, uchar_ptr, uint_32);
 uint_32 MIB_set_prsState            (pointer, uchar_ptr, uint_32);
 uint_32 MIB_set_prsValue            (pointer, uchar_ptr, uint_32);
 uint_32 MIB_set_prsInitValue        (pointer, uchar_ptr, uint_32);
+uint_32 MIB_set_dscName             (pointer, uchar_ptr, uint_32);
+uint_32 MIB_set_dscState            (pointer, uchar_ptr, uint_32);
+uint_32 MIB_set_dscValue            (pointer, uchar_ptr, uint_32);
+uint_32 MIB_set_dscInitValue        (pointer, uchar_ptr, uint_32);
 uint_32 MIB_set_devName             (pointer, uchar_ptr, uint_32);
 uint_32 MIB_set_devState            (pointer, uchar_ptr, uint_32);
 uint_32 MIB_set_devValue            (pointer, uchar_ptr, uint_32);
@@ -795,8 +827,20 @@ const RTCSMIB_NODE MIBNODE_epCount = {
 const RTCSMIB_NODE MIBNODE_epPressure = {
    3072,
 
-   (RTCSMIB_NODE_PTR)&MIBNODE_epDevice,
+   (RTCSMIB_NODE_PTR)&MIBNODE_epDiscrete,
    (RTCSMIB_NODE_PTR)&MIBNODE_prsCount,
+   (RTCSMIB_NODE_PTR)&MIBNODE_endpoints,
+
+   0,
+   NULL,
+   NULL, 0, NULL, NULL
+};
+
+const RTCSMIB_NODE MIBNODE_epDiscrete = {
+   3328,
+
+   (RTCSMIB_NODE_PTR)&MIBNODE_epDevice,
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscCount,
    (RTCSMIB_NODE_PTR)&MIBNODE_endpoints,
 
    0,
@@ -2690,6 +2734,174 @@ const RTCSMIB_NODE MIBNODE_prsInitValue = {
    MIB_set_prsInitValue
 };
 
+const RTCSMIB_NODE MIBNODE_dscCount = {
+   1,
+
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscTable,
+   NULL,
+   (RTCSMIB_NODE_PTR)&MIBNODE_epDiscrete,
+
+   RTCSMIB_ACCESS_READ,
+   NULL,
+   MIB_instance_zero, ASN1_TYPE_INTEGER,
+   (RTCSMIB_VALUE_PTR)&MIBVALUE_dscCount,
+   NULL
+};
+
+const RTCSMIB_NODE MIBNODE_dscTable = {
+   2,
+
+   NULL,
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscEntry,
+   (RTCSMIB_NODE_PTR)&MIBNODE_epDiscrete,
+
+   0,
+   NULL,
+   MIB_instance_zero, ASN1_TYPE_SEQUENCE,
+   (RTCSMIB_VALUE_PTR)&MIBVALUE_dscTable,
+   NULL
+};
+
+const RTCSMIB_NODE MIBNODE_dscEntry = {
+   1,
+
+   NULL,
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscID,
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscTable,
+
+   0,
+   MIB_find_dscEntry,
+   MIB_instance_dscEntry, ASN1_TYPE_SEQUENCE,
+   (RTCSMIB_VALUE_PTR)&MIBVALUE_dscEntry,
+   NULL
+};
+
+const RTCSMIB_NODE MIBNODE_dscID = {
+   1,
+
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscType,
+   NULL,
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscEntry,
+
+   RTCSMIB_ACCESS_READ,
+   NULL,
+   MIB_instance_dscEntry, ASN1_TYPE_OCTET,
+   (RTCSMIB_VALUE_PTR)&MIBVALUE_dscID,
+   NULL
+};
+
+const RTCSMIB_NODE MIBNODE_dscType = {
+   2,
+
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscName,
+   NULL,
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscEntry,
+
+   RTCSMIB_ACCESS_READ,
+   NULL,
+   MIB_instance_dscEntry, ASN1_TYPE_OCTET,
+   (RTCSMIB_VALUE_PTR)&MIBVALUE_dscType,
+   NULL
+};
+
+const RTCSMIB_NODE MIBNODE_dscName = {
+   3,
+
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscSN,
+   NULL,
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscEntry,
+
+   RTCSMIB_ACCESS_READ | RTCSMIB_ACCESS_WRITE,
+   NULL,
+   MIB_instance_dscEntry, ASN1_TYPE_OCTET,
+   (RTCSMIB_VALUE_PTR)&MIBVALUE_dscName,
+   MIB_set_dscName
+};
+
+const RTCSMIB_NODE MIBNODE_dscSN = {
+   4,
+
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscState,
+   NULL,
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscEntry,
+
+   RTCSMIB_ACCESS_READ,
+   NULL,
+   MIB_instance_dscEntry, ASN1_TYPE_OCTET,
+   (RTCSMIB_VALUE_PTR)&MIBVALUE_dscSN,
+   NULL
+};
+
+const RTCSMIB_NODE MIBNODE_dscState = {
+   5,
+
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscValue,
+   NULL,
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscEntry,
+
+   RTCSMIB_ACCESS_READ | RTCSMIB_ACCESS_WRITE,
+   NULL,
+   MIB_instance_dscEntry, ASN1_TYPE_OCTET,
+   (RTCSMIB_VALUE_PTR)&MIBVALUE_dscState,
+   MIB_set_dscState
+};
+
+const RTCSMIB_NODE MIBNODE_dscValue = {
+   6,
+
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscLastValue,
+   NULL,
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscEntry,
+
+   RTCSMIB_ACCESS_READ | RTCSMIB_ACCESS_WRITE,
+   NULL,
+   MIB_instance_dscEntry, ASN1_TYPE_OCTET,
+   (RTCSMIB_VALUE_PTR)&MIBVALUE_dscValue,
+   MIB_set_dscValue
+};
+
+const RTCSMIB_NODE MIBNODE_dscLastValue = {
+   7,
+
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscLastTime,
+   NULL,
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscEntry,
+
+   RTCSMIB_ACCESS_READ,
+   NULL,
+   MIB_instance_dscEntry, ASN1_TYPE_OCTET,
+   (RTCSMIB_VALUE_PTR)&MIBVALUE_dscLastValue,
+   NULL
+};
+
+const RTCSMIB_NODE MIBNODE_dscLastTime = {
+   8,
+
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscInitValue,
+   NULL,
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscEntry,
+
+   RTCSMIB_ACCESS_READ,
+   NULL,
+   MIB_instance_dscEntry, ASN1_TYPE_OCTET,
+   (RTCSMIB_VALUE_PTR)&MIBVALUE_dscLastTime,
+   NULL
+};
+
+const RTCSMIB_NODE MIBNODE_dscInitValue = {
+   9,
+
+   NULL,
+   NULL,
+   (RTCSMIB_NODE_PTR)&MIBNODE_dscEntry,
+
+   RTCSMIB_ACCESS_READ | RTCSMIB_ACCESS_WRITE,
+   NULL,
+   MIB_instance_dscEntry, ASN1_TYPE_OCTET,
+   (RTCSMIB_VALUE_PTR)&MIBVALUE_dscInitValue,
+   MIB_set_dscInitValue
+};
+
 const RTCSMIB_NODE MIBNODE_devCount = {
    1,
 
@@ -3343,7 +3555,7 @@ const RTCSMIB_NODE MIBNODE_msgDiscovery = {
 const RTCSMIB_NODE MIBNODE_msgAlert = {
    2,
 
-   NULL, 
+   NULL,
    NULL,
    (RTCSMIB_NODE_PTR)&MIBNODE_trapMsg,
 
@@ -3794,6 +4006,57 @@ static boolean MIB_instance_currEntry
 
    if (*found && (op != RTCSMIB_OP_SET)) {
       if (!RTCSMIB_id_write32 (mib, index.currID)) return FALSE;
+   } /* Endif */
+
+   return TRUE;
+} /* Endbody */
+
+static boolean MIB_instance_dscEntry
+   (
+      RTCSMIB_WALK_PTR     mib,
+      uint_32              op,
+      boolean (_CODE_PTR_  find)(uint_32, pointer, pointer _PTR_),
+      boolean _PTR_        found,
+      pointer _PTR_        instance
+   )
+{ /* Body */
+   struct {
+      uint_32 dscID;
+   } index;
+
+   *found = FALSE;
+   *instance = NULL;
+
+   switch (op) {
+
+   case RTCSMIB_OP_GET:
+   case RTCSMIB_OP_SET:
+
+      if (mib->inlen == 0) break;
+      if (!RTCSMIB_id_read32(mib, &index.dscID)) return FALSE;
+      if (mib->inlen != 0) break;
+      *found = find(op, &index, instance);
+      break;
+
+   case RTCSMIB_OP_GETNEXT:
+      if (mib->inlen == 0) {
+         index.dscID = 0;
+      } else {
+         if (!RTCSMIB_id_read32(mib, &index.dscID)) return FALSE;
+         if(index.dscID < 4294967295) /* 0xffffffff */
+            index.dscID++;
+      } /* Endif */
+      *found = find(op, &index, instance);
+      break;
+
+   case RTCSMIB_OP_GETFIRST:
+      index.dscID = 0;
+      *found = find(RTCSMIB_OP_GETNEXT, &index, instance);
+      break;
+   } /* Endswitch */
+
+   if (*found && (op != RTCSMIB_OP_SET)) {
+      if (!RTCSMIB_id_write32 (mib, index.dscID)) return FALSE;
    } /* Endif */
 
    return TRUE;

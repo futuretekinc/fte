@@ -7,7 +7,13 @@
 #include "fte_cias.h"
 #include "fte_task.h"
 #include "fte_task_watchdog.h"
+#include "fte_lora.h"
 #include <rtcs.h>
+ 
+void MAC_15_4_process(uint_32 params);
+void NS_STACK_main(uint_32 params);
+void FTE_LORAWAN_process(uint_32 params);
+void FTE_LORAWAN_dio(uint_32 params);
 
 /*
 ** MQX initialization information
@@ -134,6 +140,71 @@ const TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .CREATION_PARAMETER     =   0,                      /* Param */
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
     },
+#endif
+#if FTE_TASK_LORA
+#if 0
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_LORA_COMM,     /* Task Index */
+        .TASK_ADDRESS           =   FTE_LORA_comm,          /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_LORA_STACK,    /* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_LORA_PRIO,     /* Priority */
+        .TASK_NAME              =   "LoRa COMM",            /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   (uint_32)0,             /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_LORA,          /* Task Index */
+        .TASK_ADDRESS           =   FTE_LORA_process,       /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_LORA_STACK,    /* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_LORA_PRIO,     /* Priority */
+        .TASK_NAME              =   "LoRa Process",         /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   (uint_32)0,             /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_15_4_STACK,          /* Task Index */
+        .TASK_ADDRESS           =   MAC_15_4_process,       /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_LORA_STACK * 2,    /* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_LORA_PRIO,     /* Priority */
+        .TASK_NAME              =   "802.15.4",             /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   (uint_32)0,             /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_NS_STACK,          /* Task Index */
+        .TASK_ADDRESS           =   NS_STACK_main,       /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_LORA_STACK,    /* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_LORA_PRIO,     /* Priority */
+        .TASK_NAME              =   "NanoStack",            /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   (uint_32)0,             /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+#endif
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_LORA_COMM,     /* Task Index */
+        .TASK_ADDRESS           =   FTE_LORAWAN_dio,          /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_LORA_STACK,    /* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_LORA_PRIO,     /* Priority */
+        .TASK_NAME              =   "LoRa COMM",            /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   (uint_32)0,             /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_LORA,          /* Task Index */
+        .TASK_ADDRESS           =   FTE_LORAWAN_process,       /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_LORA_STACK,    /* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_LORA_PRIO,     /* Priority */
+        .TASK_NAME              =   "LoRa Process",         /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   (uint_32)0,             /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+
 #endif
     { 0 }
 };

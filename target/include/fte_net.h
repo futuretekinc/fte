@@ -47,6 +47,15 @@ boolean FTE_NET_SERVER_isExist(_ip_address ip);
 
 void    FTE_NET_printStats(void);
 
+
+_mqx_uint   FTE_NET_liveCheckInit(uint_32 ulKeepAliveTime);
+_mqx_uint   FTE_NET_liveCheckStart(void);
+_mqx_uint   FTE_NET_liveCheckStop(void);
+boolean     FTE_NET_isLiveChecking(void);
+_mqx_uint   FTE_NET_lastLiveCheckTime(MQX_TICK_STRUCT_PTR pTime);
+_mqx_uint   FTE_NET_liveTouch(void);
+boolean     FTE_NET_isStable(void);
+
 int_32  FTE_PHY_SHELL_cmd(int_32 argc, char_ptr argv[] );
 int_32  FTE_NET_SHELL_cmd(int_32 argc, char_ptr argv[] );
 
