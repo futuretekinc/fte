@@ -69,15 +69,11 @@ pointer                 FTE_CFG_EVENT_getNext(void);
 
 _mqx_uint               FTE_CFG_EXT_init(void);
 
-#if FTE_CIAS_SIOUX_CU_SUPPORTED
 _mqx_uint               FTE_CFG_CIAS_getExtConfig(void _PTR_ pBuff, uint_32 ulBuffLen);
 _mqx_uint               FTE_CFG_CIAS_setExtConfig(void _PTR_ pCIAS, uint_32 ulCIASLen);
-#endif
 
-#if FTE_IOEX_SUPPORTED
 _mqx_uint               FTE_CFG_IOEX_getExtConfig(void _PTR_ pBuff, uint_32 ulBuffLen);
 _mqx_uint               FTE_CFG_IOEX_setExtConfig(void _PTR_ pCIAS, uint_32 ulIOEXLen);
-#endif
 
 boolean                 FTE_CFG_CERT_valid(void);
 uint_32                 FTE_CFG_CERT_size(void);
