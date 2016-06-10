@@ -4,6 +4,8 @@
 #include "fte_time.h"
 #include "nxjson.h"
 
+#if FTE_TASCON_HEM12_SUPPORTED || FTE_TASCON_HEM12_06M_SUPPORTED
+
 #define FTE_TASCON_PACKET_DEBUG 1
 
 #define FTE_HEM12_FRAME_START               0x69
@@ -23,6 +25,103 @@
 #if FTE_TASCON_PACKET_DEBUG
 static boolean  bDebugON = 0;
 #endif
+
+static const FTE_IFCE_CONFIG    fte_init_tascon_hem12_kwh_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_POWER, 0x0000),
+        .pName      = "HEM12(kWh)",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE,
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12, 0x0000),
+    .nRegID     = 0,
+    .nInterval  = 1
+};
+
+static const FTE_OBJECT_CONFIG_PTR fte_init_tascon_hem12_child_configs[] =
+{
+    (FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_hem12_kwh_config,
+};
+
+static const FTE_HEM12_06M_CONFIG fte_init_tascon_hem12_default_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12, 0),
+        .pName      = "HEM12",
+        .xFlags     = 0, 
+        .ulChild    = sizeof(fte_init_tascon_hem12_child_configs) / sizeof(FTE_OBJECT_CONFIG_PTR),
+        .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)fte_init_tascon_hem12_child_configs
+    },
+    .nModel     = FTE_GUS_MODEL_TASCON_HEM12,
+    .nUCSID     = FTE_DEV_UCS_1,
+    .nInterval  = FTE_HEM12_INTERVAL,
+    .pSensorID  = { 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA},
+};
+
+static const FTE_IFCE_CONFIG    fte_init_tascon_hem12_06m_kwh_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_POWER, 0x0000),
+        .pName      = "POWER(kWh)",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE,
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12_06M, 0x0000),
+    .nRegID     = 0,
+    .nInterval  = 1
+};
+
+static const FTE_IFCE_CONFIG    fte_init_tascon_hem12_06m_voltage_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VOLTAGE, 0x0000),
+        .pName      = "VOLTAGE(V)",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE,
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12_06M, 0x0000),
+    .nRegID     = 2,
+    .nInterval  = 1
+};
+
+static const FTE_IFCE_CONFIG    fte_init_tascon_hem12_06m_current_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_CURRENT, 0x0000),
+        .pName      = "CURRENT(A)",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE,
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12_06M, 0x0000),
+    .nRegID     = 3,
+    .nInterval  = 1
+};
+
+
+static const FTE_OBJECT_CONFIG_PTR fte_init_tascon_hem12_06m_child_configs[] =
+{
+    (FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_hem12_06m_kwh_config,
+    (FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_hem12_06m_voltage_config,
+    (FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_hem12_06m_current_config,
+};
+
+static const FTE_HEM12_06M_CONFIG fte_init_tascon_hem12_06m_default_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12_06M, 0),
+        .pName      = "AGU-HA",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+        .ulChild    = sizeof(fte_init_tascon_hem12_06m_child_configs) / sizeof(FTE_OBJECT_CONFIG_PTR),
+        .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)fte_init_tascon_hem12_06m_child_configs
+    },
+    .nModel     = FTE_GUS_MODEL_TASCON_HEM12_06M,
+    .nUCSID     = FTE_DEV_UCS_1,
+    .nInterval  = FTE_HEM12_INTERVAL,
+    .pSensorID  = { 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA},
+};
 
 static uint_8  FTE_TASCON_HEM12_CRC(uint_8_ptr pData, uint_32 ulDataLen)
 {
@@ -173,6 +272,8 @@ _mqx_uint   FTE_TASCON_HEM12_request(FTE_OBJECT_PTR pObj)
     FTE_UCS_setBaudrate(pStatus->xGUS.pUCS, FTE_TASCON_HEM12_BAUDRATE);
 #endif
         
+    pStatus->xGUS.xRet = MQX_OK;
+    
     FTE_TASCON_HEM12_FRAME_create(pConfig->pSensorID, 0, pReqBuff, sizeof(pReqBuff), &ulReqLen);    
         
     FTE_UCS_clear(pStatus->xGUS.pUCS);    
@@ -180,6 +281,9 @@ _mqx_uint   FTE_TASCON_HEM12_request(FTE_OBJECT_PTR pObj)
     ulRcvdLen = FTE_UCS_sendAndRecv(pStatus->xGUS.pUCS, pReqBuff, ulReqLen, pRcvdBuff, sizeof(pRcvdBuff), FTE_HEM12_RESP_DELAY_TIME, FTE_HEM12_RESP_WAIT_TIME);            
     if (ulRcvdLen == 0)
     {
+        FTE_VALUE_setValid(&pStatus->xGUS.xCommon.pValue[0], FALSE);
+        pStatus->xGUS.xRet = MQX_ERROR;
+
         return  MQX_ERROR;
     }
     
@@ -204,6 +308,9 @@ _mqx_uint   FTE_TASCON_HEM12_request(FTE_OBJECT_PTR pObj)
         (pHead[7] != FTE_HEM12_START_CODE) || 
         (ulRcvdLen < (12 + pHead[9])))
     {
+        FTE_VALUE_setValid(&pStatus->xGUS.xCommon.pValue[0], FALSE);
+        pStatus->xGUS.xRet = MQX_ERROR;
+        
         return  MQX_INVALID_CHECKSUM;
     }
     
@@ -217,6 +324,9 @@ _mqx_uint   FTE_TASCON_HEM12_request(FTE_OBJECT_PTR pObj)
     if ((pHead[ulRcvdLen - 2] != nCS) ||
         (pHead[ulRcvdLen - 1] != FTE_HEM12_STOP_CODE))
     {
+        FTE_VALUE_setValid(&pStatus->xGUS.xCommon.pValue[0], FALSE);
+        pStatus->xGUS.xRet = MQX_ERROR;
+
         return  MQX_INVALID_CHECKSUM;
     }
     
@@ -225,6 +335,9 @@ _mqx_uint   FTE_TASCON_HEM12_request(FTE_OBJECT_PTR pObj)
     {
         if (pConfig->pAddress[i] != pHead[6 - i])
         {
+            FTE_VALUE_setValid(&pStatus->xGUS.xCommon.pValue[0], FALSE);
+            pStatus->xGUS.xRet = MQX_ERROR;
+
             return  MQX_INVALID_PARAMETER;
         }
     }
@@ -246,8 +359,8 @@ _mqx_uint   FTE_TASCON_HEM12_request(FTE_OBJECT_PTR pObj)
 
 _mqx_uint     FTE_TASCON_HEM12_received(FTE_OBJECT_PTR pObj)
 {
-#if 0
     FTE_HEM12_06M_STATUS_PTR  pStatus = (FTE_HEM12_06M_STATUS_PTR)pObj->pStatus;
+#if 0
     uint_32             nPower, nSkip = 0, nValue;    
     uint_8              pBuff[64];
     char_ptr            pHead;
@@ -320,7 +433,7 @@ _mqx_uint     FTE_TASCON_HEM12_received(FTE_OBJECT_PTR pObj)
    
     FTE_VALUE_setULONG(&pStatus->xGUS.xCommon.pValue[0], nPower * 10);
 #endif
-    return  MQX_OK;
+    return  pStatus->xGUS.xRet;
 }
 
 
@@ -852,6 +965,7 @@ int_32  FTE_TASCON_HEM12_SHELL_cmd(int_32 argc, char_ptr argv[])
                 }
             }
             break;
+               
         case    3:
             {
 #if FTE_TASCON_PACKET_DEBUG
@@ -934,6 +1048,21 @@ int_32  FTE_TASCON_HEM12_SHELL_cmd(int_32 argc, char_ptr argv[])
                         }
                      }                
                 }
+                else if (strcasecmp(argv[1], "create") == 0)
+                {
+                    if (strcasecmp(argv[2], "hem12") == 0)
+                    {
+                        FTE_CFG_OBJ_create((FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_hem12_default_config);
+                    }
+                    else if (strcasecmp(argv[2], "hem12-06") == 0)
+                    {
+                        FTE_CFG_OBJ_create((FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_hem12_06m_default_config);
+                    }
+                    else
+                    {
+                        printf("Not supported or invalid model[%s]\n", argv[2]);
+                    }
+                }
             }
             break;
             
@@ -986,3 +1115,4 @@ int_32  FTE_TASCON_HEM12_SHELL_cmd(int_32 argc, char_ptr argv[])
     }
     return   return_code;
 }
+#endif

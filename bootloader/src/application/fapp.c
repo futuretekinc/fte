@@ -364,21 +364,21 @@ static void fapp_dup_ip_handler( fnet_netif_desc_t netif )
 ************************************************************************/
 static int FTE_BL_init()
 {
+    FTE_BL_LED_init();
+    
     static unsigned char stack_heap[FNET_CFG_HEAP_SIZE];
+    
     struct fnet_init_params init_params;
     
     struct fnet_shell_params shell_params;
 
-    FTE_BL_LED_init();
-    
     /* Input parameters for FNET stack initialization */
     init_params.netheap_ptr = stack_heap;
     init_params.netheap_size = FNET_CFG_HEAP_SIZE;
-
     
     /* Add event handler on duplicated IP address */
     fnet_netif_dupip_handler_init (fapp_dup_ip_handler);
-            
+
     /* Init FNET stack */
     if(fnet_init(&init_params) != FNET_ERR)
     {
@@ -440,7 +440,104 @@ static int FTE_BL_init()
         return  -1;
     }
 
+    return  0;
+}
 
+/************************************************************************
+* NAME: FTE_BL_init
+*
+* DESCRIPTION: FNET Application initialization.
+************************************************************************/
+static int FTE_BL_LORA_init()
+{
+    FTE_BL_LED_init();
+    
+    static unsigned char stack_heap[FNET_CFG_HEAP_SIZE];
+    
+    struct fnet_init_params init_params;
+    
+    struct fnet_shell_params shell_params;
+
+    /* Input parameters for FNET stack initialization */
+    init_params.netheap_ptr = stack_heap;
+    init_params.netheap_size = FNET_CFG_HEAP_SIZE;
+    
+    /* Add event handler on duplicated IP address */
+    fnet_netif_dupip_handler_init (fapp_dup_ip_handler);
+
+    fnet_heap_init(stack_heap, FNET_CFG_HEAP_SIZE);
+    
+        fnet_isr_init();
+
+    fnet_timer_init(FNET_TIMER_PERIOD_MS);
+ 
+    fnet_prot_init() ;
+        
+    /* Init FNET stack */
+//    if(fnet_init(&init_params) != FNET_ERR)
+    {
+//        if((fapp_default_netif = fnet_netif_get_default()) != 0)
+        {
+            #if FTE_BL_CFG_PARAMS_READ_FLASH
+                /* During bootup, the most recently stored customer configuration data will be read and used to configure the interfaces.*/
+                if(fapp_static_params_from_flash() == FNET_OK)
+                {
+                    fnet_printf(FTE_BL_STATIC_PARAMS_LOAD_STR);
+                }
+                else
+                {
+                    fapp_static_params_init();
+                }
+                
+                if(fapp_dynamic_params_from_flash() == FNET_OK)
+                {
+                    fnet_printf(FTE_BL_DYNAMIC_PARAMS_LOAD_STR);
+                }
+                else
+                {
+                    fapp_dynamic_params_init();
+                }
+            #endif
+            
+            #if (FAPP_CFG_EXP_CMD && FNET_CFG_FS) || (FAPP_CFG_HTTP_CMD && FNET_CFG_HTTP)   
+                fapp_fs_mount(); /* Init FS and mount FS Image. */
+            #endif   
+            
+            /* Init main shell. */
+            shell_params.shell = &fapp_shell;
+            shell_params.cmd_line_buffer = fapp_cmd_line_buffer;
+            shell_params.cmd_line_buffer_size = sizeof(fapp_cmd_line_buffer);
+            shell_params.stream = FNET_SERIAL_STREAM_DEFAULT;
+            shell_params.echo = 1;
+            
+            if((fapp_shell_desc = fnet_shell_init(&shell_params)) != FNET_ERR)
+            {
+                  
+                FTE_BL_boot(fapp_shell_desc);
+ 
+            }
+            else
+            {
+                fnet_printf(FTE_BL_INIT_ERR, "Shell");
+                return  -1;
+            }
+        }
+#if 0
+        else
+        {
+            fnet_printf(FTE_BL_NET_ERR);
+            return  -1;
+        }
+#endif
+    }
+#if 0
+    else
+    {
+        fnet_printf(FTE_BL_INIT_ERR, "FNET");
+        return  -1;
+    }
+#endif
+    
     return  0;
 }
 
@@ -483,8 +580,11 @@ static void FTE_BL_release(fnet_shell_desc_t desc)
 ************************************************************************/
 void FTE_BL_main()
 {
+#ifdef  FTE_LORA
+    FTE_BL_LORA_init();
+#else
     FTE_BL_init();
-    
+#endif
     /* Polling services.*/
     while(1)
     {

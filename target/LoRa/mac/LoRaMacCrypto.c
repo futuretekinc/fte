@@ -163,6 +163,18 @@ void LoRaMacJoinComputeMic( uint8_t *buffer, uint16_t size, const uint8_t *key, 
     *mic = ( uint32_t )( Mic[3] << 24 | Mic[2] << 16 | Mic[1] << 8 | Mic[0] );
 }
 
+void LoRaMacJoinEncrypt( uint8_t *buffer, uint16_t size, const uint8_t *key, uint8_t *encBuffer )
+{
+    memset1( AesContext.ksch, '\0', 240 );
+    aes_set_key( key, 16, &AesContext );
+    aes_decrypt( buffer, encBuffer, &AesContext );
+    // Check if optional CFList is included
+    if( size >= 16 )
+    {
+        aes_decrypt( buffer + 16, encBuffer + 16, &AesContext );
+    }
+}
+
 void LoRaMacJoinDecrypt( uint8_t *buffer, uint16_t size, const uint8_t *key, uint8_t *decBuffer )
 {
     memset1( AesContext.ksch, '\0', 240 );

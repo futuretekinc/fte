@@ -185,6 +185,54 @@ static const FTE_HEM12_06M_CONFIG fte_init_tascon_hem12_config =
     .pSensorID  = { 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA},
 };
 
+static const FTE_HEM12_06M_CONFIG fte_init_tascon_hem12_0_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12, 0),
+        .pName      = "HEM12",
+        .xFlags     = 0, 
+        .ulChild    = sizeof(fte_init_tascon_hem12_child_configs) / sizeof(FTE_OBJECT_CONFIG_PTR),
+        .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)fte_init_tascon_hem12_child_configs
+    },
+    .nModel     = FTE_GUS_MODEL_TASCON_HEM12,
+    .nUCSID     = FTE_DEV_UCS_1,
+    .nInterval  = FTE_HEM12_INTERVAL,
+    .pSensorID  = { 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA},
+};
+
+static const FTE_HEM12_06M_CONFIG fte_init_tascon_hem12_1_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12, 0),
+        .pName      = "HEM12",
+        .xFlags     = 0, 
+        .ulChild    = sizeof(fte_init_tascon_hem12_child_configs) / sizeof(FTE_OBJECT_CONFIG_PTR),
+        .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)fte_init_tascon_hem12_child_configs
+    },
+    .nModel     = FTE_GUS_MODEL_TASCON_HEM12,
+    .nUCSID     = FTE_DEV_UCS_1,
+    .nInterval  = FTE_HEM12_INTERVAL,
+    .pSensorID  = { 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAB},
+};
+
+static const FTE_HEM12_06M_CONFIG fte_init_tascon_hem12_2_config =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_HEM12, 0),
+        .pName      = "HEM12",
+        .xFlags     = 0, 
+        .ulChild    = sizeof(fte_init_tascon_hem12_child_configs) / sizeof(FTE_OBJECT_CONFIG_PTR),
+        .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)fte_init_tascon_hem12_child_configs
+    },
+    .nModel     = FTE_GUS_MODEL_TASCON_HEM12,
+    .nUCSID     = FTE_DEV_UCS_1,
+    .nInterval  = FTE_HEM12_INTERVAL,
+    .pSensorID  = { 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAC},
+};
+
 #endif
 
 #if FTE_TASCON_HEM12_06M_SUPPORTED
@@ -1983,7 +2031,9 @@ const FTE_OBJECT_CONFIG_PTR pInitObjConfigs[] =
 #endif
 #if FTE_TASCON_HEM12_SUPPORTED
     //(FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_config,
-    (FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_hem12_config,
+    (FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_hem12_0_config,
+    (FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_hem12_1_config,
+    (FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_hem12_2_config,
 #endif
 #if FTE_TASCON_HEM12_06M_SUPPORTED
     (FTE_OBJECT_CONFIG_PTR)&fte_init_tascon_hem12_06m_0_config,

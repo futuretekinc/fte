@@ -378,14 +378,7 @@ LoRaMac_t *LoRaMacInit( LoRaMacConfig_t *pConfig, LoRaMacEvent_t *pEvents )
         Radio.Write( REG_LR_SYNCWORD, LORA_MAC_PRIVATE_SYNCWORD );
     }
 
-    if (LoRaMac.Config.DeviceClass == CLASS_C)
-    {
-        OnRxWindow2TimerEvent(&LoRaMac);
-    }
-    else
-    {
-        Radio.Sleep( );
-    }
+    Radio.Sleep( );
     
     return  &LoRaMac;
 }

@@ -20,6 +20,11 @@ Maintainer: Miguel Luis and Gregory Cristian
 #include "sx1276/sx1276.h"
 #include "sx1276-board.h"
 
+void SX1276OnDio0Irq( void *);
+void SX1276OnDio1Irq( void *);
+void SX1276OnDio2Irq( void *);
+void SX1276OnDio3Irq( void *);
+
 /*!
  * Radio hardware and global parameters
  */
@@ -113,23 +118,28 @@ void SX1276IoInit( void )
 void SX1276IoIrqInit( DioIrqHandler **irqHandlers )
 {
     FTE_LWGPIO_setISR(SX1276.pDIO0, irqHandlers[0], 0);
-    FTE_LWGPIO_INT_setPolarity(SX1276.pDIO0, FTE_LWGPIO_INT_RISING);
-    FTE_LWGPIO_INT_init(SX1276.pDIO0, 9, 0, TRUE);
+    FTE_LWGPIO_INT_setPolarity(SX1276.pDIO0, LWGPIO_INT_MODE_HIGH);
+    FTE_LWGPIO_INT_init(SX1276.pDIO0, 9, 0, FALSE);
+    FTE_LWGPIO_INT_setEnable(SX1276.pDIO0, TRUE);
     FTE_LWGPIO_setISR(SX1276.pDIO1, irqHandlers[1], 0);
-    FTE_LWGPIO_INT_setPolarity(SX1276.pDIO1, FTE_LWGPIO_INT_RISING);
-    FTE_LWGPIO_INT_init(SX1276.pDIO1, 9, 0, TRUE);
+    FTE_LWGPIO_INT_setPolarity(SX1276.pDIO1, LWGPIO_INT_MODE_HIGH);
+    FTE_LWGPIO_INT_init(SX1276.pDIO1, 9, 0, FALSE);
+    FTE_LWGPIO_INT_setEnable(SX1276.pDIO1, TRUE);
     FTE_LWGPIO_setISR(SX1276.pDIO2, irqHandlers[2], 0);
-    FTE_LWGPIO_INT_setPolarity(SX1276.pDIO2, FTE_LWGPIO_INT_RISING);
-    FTE_LWGPIO_INT_init(SX1276.pDIO2, 9, 0, TRUE);
+    FTE_LWGPIO_INT_setPolarity(SX1276.pDIO2, LWGPIO_INT_MODE_HIGH);
+    FTE_LWGPIO_INT_init(SX1276.pDIO2, 9, 0, FALSE);
+    FTE_LWGPIO_INT_setEnable(SX1276.pDIO2, TRUE);
     FTE_LWGPIO_setISR(SX1276.pDIO3, irqHandlers[3], 0);
-    FTE_LWGPIO_INT_setPolarity(SX1276.pDIO3, FTE_LWGPIO_INT_RISING);
-    FTE_LWGPIO_INT_init(SX1276.pDIO3, 9, 0, TRUE);
+    FTE_LWGPIO_INT_setPolarity(SX1276.pDIO3, LWGPIO_INT_MODE_HIGH);
+    FTE_LWGPIO_INT_init(SX1276.pDIO3, 9, 0, FALSE);
+    FTE_LWGPIO_INT_setEnable(SX1276.pDIO3, TRUE);
     FTE_LWGPIO_setISR(SX1276.pDIO4, irqHandlers[4], 0);
-    FTE_LWGPIO_INT_setPolarity(SX1276.pDIO4, FTE_LWGPIO_INT_RISING);
-    FTE_LWGPIO_INT_init(SX1276.pDIO4, 9, 0, TRUE);
+    FTE_LWGPIO_INT_setPolarity(SX1276.pDIO4, LWGPIO_INT_MODE_HIGH);
+    FTE_LWGPIO_INT_init(SX1276.pDIO4, 9, 0, FALSE);
     FTE_LWGPIO_setISR(SX1276.pDIO5, irqHandlers[5], 0);
-    FTE_LWGPIO_INT_setPolarity(SX1276.pDIO5, FTE_LWGPIO_INT_RISING);
-    FTE_LWGPIO_INT_init(SX1276.pDIO5, 9, 0, TRUE);
+    FTE_LWGPIO_INT_setPolarity(SX1276.pDIO5, LWGPIO_INT_MODE_HIGH);
+    FTE_LWGPIO_INT_init(SX1276.pDIO5, 9, 0, FALSE);
+    _int_enable();
 }
 
 void SX1276IoDeInit( void )
@@ -146,11 +156,13 @@ void SX1276IoDeInit( void )
 
 uint8_t SX1276GetPaSelect( uint32_t channel )
 {
+#if 0 // Temporary comment out
     if( channel > RF_MID_BAND_THRESH )
     {
         return RF_PACONFIG_PASELECT_PABOOST;
     }
     else
+#endif
     {
         return RF_PACONFIG_PASELECT_RFO;
     }

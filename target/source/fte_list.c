@@ -95,6 +95,7 @@ _mqx_int    FTE_LIST_pushFront(FTE_LIST_PTR pList, pointer pItem)
     if (pNode == NULL)
     {
         ERROR("Not enough memory!\n");
+        FTE_SYS_setUnstable();
         return  MQX_OUT_OF_MEMORY;
     }
 
@@ -129,6 +130,7 @@ _mqx_int    FTE_LIST_pushBack(FTE_LIST_PTR pList, pointer pItem)
     if (pNode == NULL)
     {
         ERROR("Not enough memory!\n");
+        FTE_SYS_setUnstable();
         return  MQX_OUT_OF_MEMORY;
     }
 
@@ -164,6 +166,7 @@ _mqx_int    FTE_LIST_pushSort(FTE_LIST_PTR pList, pointer pItem, int (*comparato
     if (pNode == NULL)
     {
         ERROR("Not enough memory!\n");
+        FTE_SYS_setUnstable();
         return  MQX_OUT_OF_MEMORY;
     }
 

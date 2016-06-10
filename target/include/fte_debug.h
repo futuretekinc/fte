@@ -10,6 +10,7 @@
 #define DEBUG_NET_SMNG      0x00000400
 #define DEBUG_NET_SNMP      0x00000800
 #define DEBUG_NET_SSL       0x00001000
+#define DEBUG_NET_LORA      0x00002000
 
 #define DEBUG_ALL           0xFFFFFFFF
 
@@ -35,6 +36,7 @@ void        FTE_DEBUG_init(void);
 _mqx_int    FTE_DEBUG_trace(uint_32 ulModule, const char _PTR_ fmt_ptr, ... );
 _mqx_int    FTE_DEBUG_traceOn(uint_32 ulModule);
 _mqx_int    FTE_DEBUG_traceOff(uint_32 ulModule);
+boolean     FTE_DEBUG_isTraceOn(uint_32 ulModule);
 _mqx_int    FTE_DEBUG_error(const char _PTR_ pFuncName, int nLine, const char _PTR_ fmt_ptr, ... );
 _mqx_int    FTE_DEBUG_dump(const char _PTR_ pFuncName, int nLine, char *pTitle, void *pBuff, uint_32 ulSize, uint_32 ulWrapLen);
 

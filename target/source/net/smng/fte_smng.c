@@ -128,7 +128,7 @@ void FTE_SMNG_task(pointer pParams, pointer pCreator)
 uint_32 FTE_SMNGD_init(void _PTR_ Params)
 { 
    TRACE_ON(DEBUG_NET_SMNG);
-   
+#if 0   
     FTE_NET_CFG_PTR     pCfgNet = FTE_CFG_NET_get();
     FTE_JSON_VALUE_PTR  pObject;
     FTE_JSON_VALUE_PTR  pValue;
@@ -178,17 +178,84 @@ uint_32 FTE_SMNGD_init(void _PTR_ Params)
     if (pDiscoveryMsg == NULL)
     {
         ERROR("Not enough memory!\n");
+        FTE_SYS_setUnstable();
         return  MQX_ERROR;
     }
         
     FTE_JSON_VALUE_snprint(pDiscoveryMsg, ulMsgLen, pObject);            
     FTE_JSON_VALUE_destroy(pObject);   
-    
+#endif
     return RTCS_task_create("smng", FTE_NET_SMNG_PRIO, FTE_NET_SMNG_STACK, FTE_SMNG_task, NULL);
 } 
 
 char_ptr FTE_SMNG_getDiscoveryMessage(void)
 {
+    if (pDiscoveryMsg == NULL)
+    {
+        FTE_NET_CFG_PTR     pCfgNet = FTE_CFG_NET_get();
+        FTE_JSON_VALUE_PTR  pObject;
+        FTE_JSON_VALUE_PTR  pValue;
+        FTE_JSON_VALUE_PTR  pOIDs;
+        _enet_address       xMACAddress;
+        char                pMACString[20];
+        char                pIPString[20];
+        uint_32             ulMsgLen;
+        IPCFG_IP_ADDRESS_DATA   xIPData;
+
+        pObject = FTE_JSON_VALUE_createObject(4);
+        if (pObject == NULL)
+        {
+            return  "";
+        }
+
+        pValue = FTE_JSON_VALUE_createString(FTE_SYS_getOIDString());
+        FTE_JSON_OBJECT_setPair((FTE_JSON_OBJECT_PTR)pObject, "id", pValue);
+
+        FTE_SYS_getMAC(xMACAddress);
+        snprintf(pMACString, sizeof(pMACString), "%02x:%02x:%02x:%02x:%02x:%02x", 
+                            xMACAddress[0], xMACAddress[1],
+                            xMACAddress[2], xMACAddress[3],
+                            xMACAddress[4], xMACAddress[5]);
+        pValue = FTE_JSON_VALUE_createString(pMACString);
+        FTE_JSON_OBJECT_setPair((FTE_JSON_OBJECT_PTR)pObject, "mac", pValue);
+
+        ipcfg_get_ip (BSP_DEFAULT_ENET_DEVICE, &xIPData);
+        snprintf(pIPString, sizeof(pIPString), "%d.%d.%d.%d", IPBYTES(xIPData.ip));
+        pValue = FTE_JSON_VALUE_createString(pIPString);
+        FTE_JSON_OBJECT_setPair((FTE_JSON_OBJECT_PTR)pObject, "ip", pValue);        
+
+        pOIDs = FTE_JSON_VALUE_createArray(FTE_OBJ_DESC_CLASS_count() + FTE_DEVICE_count());
+
+        for(uint_32 i = 0 ; i < FTE_OBJ_DESC_CLASS_count() ; i++)
+        {
+            char    pOID[32];
+            uint_32 ulClass = FTE_OBJ_DESC_CLASS_getAt(i);
+            
+            if (ulClass != 0)
+            {
+                sprintf(pOID, "%d", ulClass >> 16);
+                pValue  = FTE_JSON_VALUE_createString(pOID);
+                if (pValue != NULL)
+                {
+                    FTE_JSON_ARRAY_setElement((FTE_JSON_ARRAY_PTR)pOIDs, pValue);
+                }
+            }
+        }
+
+        FTE_JSON_OBJECT_setPair((FTE_JSON_OBJECT_PTR)pObject, "oids", pOIDs);
+        ulMsgLen = FTE_JSON_VALUE_buffSize(pObject) + 1;            
+        pDiscoveryMsg = (char_ptr)FTE_MEM_alloc(ulMsgLen);
+        if (pDiscoveryMsg == NULL)
+        {
+            ERROR("Not enough memory!\n");
+            FTE_SYS_setUnstable();
+            return  "";
+        }
+            
+        FTE_JSON_VALUE_snprint(pDiscoveryMsg, ulMsgLen, pObject);            
+        FTE_JSON_VALUE_destroy(pObject);   
+    }
+    
     return  pDiscoveryMsg;
 }
 

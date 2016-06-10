@@ -2069,7 +2069,10 @@ _mqx_uint   FTE_PLATFORM_init(void)
 #if  FTE_PWR_SW_SUPPORTED
     FTE_SYS_SWDetectInit();
 #endif
+#if FTE_FACTORY_RESET_SUPPORTED
     FTE_SYS_factoryResetInit();
+#endif
+    
     FTE_SYS_powerStateInit();
 
 #if FTE_LCD_SUPPORTED

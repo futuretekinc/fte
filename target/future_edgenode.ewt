@@ -2408,9 +2408,6 @@
     <group>
       <name>mac</name>
       <file>
-        <name>$PROJ_DIR$\LoRa\mac\LoRaMac.c</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$\LoRa\mac\LoRaMac.h</name>
       </file>
       <file>
@@ -2418,6 +2415,12 @@
       </file>
       <file>
         <name>$PROJ_DIR$\LoRa\mac\LoRaMacCrypto.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\LoRa\mac\LoRaMacNode.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\LoRa\mac\LoRaMacRaw.c</name>
       </file>
     </group>
     <group>
@@ -2475,7 +2478,16 @@
       </file>
     </group>
     <file>
-      <name>$PROJ_DIR$\LoRa\lorawan.c</name>
+      <name>$PROJ_DIR$\LoRa\fte_lora.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\LoRa\fte_lora_config.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\LoRa\fte_lorawan.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\LoRa\fte_s2lora.c</name>
     </file>
   </group>
   <group>

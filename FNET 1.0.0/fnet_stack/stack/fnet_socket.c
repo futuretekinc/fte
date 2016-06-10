@@ -2049,7 +2049,7 @@ int fnet_stack_init( void )
 
     if(fnet_netif_init() == FNET_ERR)
         goto ERROR;
-
+    
     return (FNET_OK);
 ERROR:
     fnet_stack_release();

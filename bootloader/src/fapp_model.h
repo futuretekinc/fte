@@ -7,6 +7,7 @@
 
 #define FTE_BL_MODEL_NETWORK_BOARD_V1   1   // realtek rtl8201
 #define FTE_BL_MODEL_NETWORK_BOARD_V2   2   // marvell mv88e6060
+#define FTE_BL_MODEL_NETWORK_BOARD_V3   3   // LoRa
 
 #define FTE_BL_MODEL_SENSOR_BOARD_V1    1   // AD7785
 #define FTE_BL_MODEL_SENSOR_BOARD_V2    2   // RS485 + GPIO
@@ -55,6 +56,11 @@
                                              FTE_BL_MODEL_MAIN_BOARD_V1,\
                                              FTE_BL_MODEL_NETWORK_BOARD_V1,\
                                              FTE_BL_MODEL_SENSOR_BOARD_V4)
+
+#define FTE_BL_MODEL_8             MK_MODEL(FTE_BL_MODEL_ARCH_V1,\
+                                             FTE_BL_MODEL_MAIN_BOARD_V1,\
+                                             FTE_BL_MODEL_NETWORK_BOARD_V3,\
+                                             FTE_BL_MODEL_SENSOR_BOARD_V1)
 
 
 #endif

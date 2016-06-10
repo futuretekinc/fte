@@ -183,8 +183,9 @@
           <name>CCDefines</name>
           <state>IAR</state>
           <state>TWR_K60N512</state>
+          <state>FTE_LORA=1</state>
           <state>FTE_BL=1</state>
-          <state>FTE_EB4=1</state>
+          <state>FTE_LB0=1</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
