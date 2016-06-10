@@ -23,7 +23,8 @@ typedef struct TimerEvent_s
     uint32_t Timestamp;         //! Current timer value
     uint32_t ReloadValue;       //! Timer delay value
     bool IsRunning;             //! Is the timer currently running
-    void ( *Callback )( void ); //! Timer IRQ callback function
+    void ( *Callback )( void * ); //! Timer IRQ callback function
+    void *Params;
     struct TimerEvent_s *Next;  //! Pointer to the next Timer object.
     _timer_id   hTimer;
 }TimerEvent_t;
@@ -58,7 +59,7 @@ bool TimerGetLowPowerEnable( void );
  * \param [IN] obj          Structure containing the timer object parameters
  * \param [IN] callback     Function callback called at the end of the timeout
  */
-void TimerInit( TimerEvent_t *obj, void ( *callback )( void ) );
+void TimerInit( TimerEvent_t *obj, void ( *callback )( void *), void *params );
 
 /*!
  * Timer IRQ event handler

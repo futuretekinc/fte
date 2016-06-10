@@ -32,13 +32,14 @@ _mqx_int    FTE_DEBUG_trace(uint_32  ulModule, const char _PTR_ fmt_ptr, ... )
     {
        va_list      ap;
        uint_32      ulLen = 0;
-       TIME_STRUCT  xTime;
+#if 0
+        TIME_STRUCT  xTime;
        char         pTimeBuff[64];
-
+       
         _time_get(&xTime);
         FTE_TIME_toString(&xTime, pTimeBuff, sizeof(pTimeBuff));   
         ulLen = sprintf(&_pBuff[ulLen], "[%s] ", pTimeBuff);
-        
+#endif   
         va_start(ap, fmt_ptr);
         _io_vsnprintf(&_pBuff[ulLen], sizeof(_pBuff) - ulLen,  (char _PTR_)fmt_ptr, ap );
         va_end(ap);
@@ -61,6 +62,11 @@ _mqx_int    FTE_DEBUG_traceOff(uint_32 ulModule)
     _ulTraceModule &= ~ulModule;
     
     return  0;
+}
+
+boolean FTE_DEBUG_isTraceOn(uint_32 ulModule)
+{
+    return  (_ulTraceModule & ulModule) == ulModule;
 }
 
 _mqx_int    FTE_DEBUG_error(const char _PTR_ pFuncName, int nLine, const char _PTR_ fmt_ptr, ... )

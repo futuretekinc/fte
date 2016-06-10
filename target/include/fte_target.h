@@ -214,10 +214,9 @@ _mqx_uint               FTE_PLATFORM_run(void);
 #define FTE_TASK_CIAS_SIOUX_CU          11
 #define FTE_TASK_IOEX                   12
 #if FTE_LORA_SUPPORTED
-#define FTE_TASK_LORA                   13
-#define FTE_TASK_LORA_COMM              14
-#define FTE_TASK_15_4_STACK             15
-#define FTE_TASK_NS_STACK               16
+#define FTE_TASK_LORA_CTRL              13
+#define FTE_TASK_LORAWAN                14
+#define FTE_TASK_S2LORA                 15
 #endif
      
 #define FTE_TASK_DEFAULT_STACK          512
@@ -277,9 +276,19 @@ _mqx_uint               FTE_PLATFORM_run(void);
     #define FTE_TASK_IOEX_PRIO          9
 #endif
 
-#if FTE_TASK_LORA
+#if FTE_TASK_LORA_CTRL
     #define FTE_TASK_LORA_STACK         (FTE_TASK_DEFAULT_STACK * 4)
     #define FTE_TASK_LORA_PRIO          9
+#endif
+
+#if FTE_TASK_LORAWAN
+    #define FTE_TASK_LORAWAN_STACK      (FTE_TASK_DEFAULT_STACK * 4)
+    #define FTE_TASK_LORAWAN_PRIO       9
+#endif
+
+#if FTE_TASK_S2LORA
+    #define FTE_TASK_S2LORA_STACK       (FTE_TASK_DEFAULT_STACK * 4)
+    #define FTE_TASK_S2LORA_PRIO        9
 #endif
 
 #if FTE_DI_SUPPORTED                    

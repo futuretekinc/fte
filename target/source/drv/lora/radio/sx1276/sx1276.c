@@ -232,7 +232,7 @@ void SX1276Init( RadioEvents_t *events )
    
     SX1276SetOpMode( RF_OPMODE_SLEEP );
 
-    SX1276IoIrqInit( DioIrq );
+    //SX1276IoIrqInit( DioIrq );
        
     for( i = 0; i < sizeof( RadioRegsInit ) / sizeof( RadioRegisters_t ); i++ )
     {
@@ -459,8 +459,8 @@ void SX1276SetRxConfig( RadioModems_t modem, uint32_t bandwidth,
                 SX1276.Settings.LoRa.LowDatarateOptimize = 0x01;
             }
             else
-            {
-                SX1276.Settings.LoRa.LowDatarateOptimize = 0x00;
+            { 
+                SX1276.Settings.LoRa.LowDatarateOptimize = 0x01;
             }
 
             SX1276Write( REG_LR_MODEMCONFIG1,
@@ -933,7 +933,7 @@ void SX1276SetRx( uint32_t timeout )
             SX1276.Settings.FskPacketHandler.SyncWordDetected = false;
             SX1276.Settings.FskPacketHandler.NbBytes = 0;
             SX1276.Settings.FskPacketHandler.Size = 0;
-        }
+        } 
         break;
     case MODEM_LORA:
         {

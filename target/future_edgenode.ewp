@@ -185,7 +185,7 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state>FTE_ES20=1</state>
+          <state>FTE_ES7=1</state>
           <state>FTE_V2=1</state>
           <state>FTE_DEBUG=1</state>
           <state>FREESCALE_MQX</state>
@@ -363,6 +363,7 @@
           <state>$PROJ_DIR$/../FNET 1.0.0/fnet_stack/services/telnet</state>
           <state>$PROJ_DIR$/../FNET 1.0.0/fnet_stack/services/tftp</state>
           <state>$PROJ_DIR$/../FNET 1.0.0/fnet_stack/stack</state>
+          <state>$PROJ_DIR$/LoRa</state>
           <state>$PROJ_DIR$/LoRa/boards/fte</state>
           <state>$PROJ_DIR$/LoRa/mac</state>
           <state>$PROJ_DIR$/LoRa/radio</state>
@@ -2327,9 +2328,6 @@
     <group>
       <name>mac</name>
       <file>
-        <name>$PROJ_DIR$\LoRa\mac\LoRaMac.c</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$\LoRa\mac\LoRaMac.h</name>
       </file>
       <file>
@@ -2337,6 +2335,15 @@
       </file>
       <file>
         <name>$PROJ_DIR$\LoRa\mac\LoRaMacCrypto.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\LoRa\mac\LoRaMacNode.c</name>
+        <excluded>
+          <configuration>Debug</configuration>
+        </excluded>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\LoRa\mac\LoRaMacRaw.c</name>
       </file>
     </group>
     <group>
@@ -2394,7 +2401,16 @@
       </file>
     </group>
     <file>
-      <name>$PROJ_DIR$\LoRa\lorawan.c</name>
+      <name>$PROJ_DIR$\LoRa\fte_lora.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\LoRa\fte_lora_config.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\LoRa\fte_lorawan.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\LoRa\fte_s2lora.c</name>
     </file>
   </group>
   <group>

@@ -315,6 +315,7 @@ _mqx_uint   FTE_SNMPD_TRAP_sendAlert(uint_32 nOID, boolean bOccurred)
     if (FTE_LIST_pushBack(&_trapList, pMsg) != MQX_OK)
     {
         DEBUG("Not enough memory!\n");
+        FTE_SYS_setUnstable();
         FTE_MEM_free(pMsg);
         return  MQX_ERROR;
     }
@@ -352,6 +353,7 @@ _mqx_uint   FTE_SNMPD_TRAP_discovery(_ip_address xHostIP)
     if (FTE_LIST_pushBack(&_trapList, pMsg) != MQX_OK)
     {
         ERROR("Not enough memory!\n");
+        FTE_SYS_setUnstable();
         FTE_MEM_free(pMsg);
         return  MQX_ERROR;
     }
@@ -373,6 +375,7 @@ _mqx_uint   FTE_SNMPD_TRAP_addServer(_ip_address xServerIP)
     if (FTE_LIST_pushBack(&_trapList, pMsg) != MQX_OK)
     {
         DEBUG("Not enough memory!\n");
+        FTE_SYS_setUnstable();
         FTE_MEM_free(pMsg);
         return  MQX_ERROR;
     }
@@ -394,6 +397,7 @@ _mqx_uint   FTE_SNMPD_TRAP_delServer(_ip_address xServerIP)
     if (FTE_LIST_pushBack(&_trapList, pMsg) != MQX_OK)
     {
         DEBUG("Not enough memory!\n");
+        FTE_SYS_setUnstable();
         FTE_MEM_free(pMsg);
         return  MQX_ERROR;
     }
@@ -2304,7 +2308,7 @@ char const *MIB_get_msgAlert(pointer param)
                 return  _unknown;
             }
             
-            FTE_JSON_VALUE_PTR  pJSONValue = (FTE_JSON_VALUE_PTR)FTE_OBJ_createJSON(pObj, FTE_OBJ_FIELD_EP_VALUE);
+            FTE_JSON_VALUE_PTR  pJSONValue = (FTE_JSON_VALUE_PTR)FTE_OBJ_createJSON(pObj, FTE_OBJ_FIELD_DID | FTE_OBJ_FIELD_EP_VALUE);
             if (pJSONValue == NULL)
             {
                 ERROR("Not enough memory!\n");

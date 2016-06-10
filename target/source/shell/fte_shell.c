@@ -16,6 +16,7 @@
 #include "fte_db.h"
 #include "fte_cias.h"
 #include "fte_lora.h"
+#include "fte_lorawan.h"
 
 uint_32     FTE_SHELL_getPasswd(MQX_FILE_PTR pFile, char_ptr pPasswd, uint_32 ulMaxLen, uint_32 ulTimeout);
 int_32      FTE_SHELL_cmdPasswd(int_32 nArgc, char_ptr pArgv[]);
@@ -66,7 +67,9 @@ const SHELL_COMMAND_STRUCT pSHELLCommands[] =
     { "log",        FTE_LOG_SHELL_cmd},
 #endif
 
-    { "lora",   FTE_LORA_SHELL_cmd},
+#if FTE_LORAWAN_SUPPORTED
+    { "lora",       FTE_LORAWAN_SHELL_cmd},
+#endif
 
 #if FTE_MCP23S08_SUPPORTED
     {"mcp23s08",    FTE_MCP23S08_SHELL_cmd},
@@ -631,3 +634,33 @@ _mqx_int FTE_SHELL_fgets
     return MQX_OK;
 } /* Endbody */
 
+
+_mqx_int  FTE_SHELL_printHexString(uint_8 *pData, uint_32 ulSize, uint_32 ulColumn)
+{
+    _mqx_int    ulLen = 0;
+    for(int i = 0 ; i < ulSize ; i++)
+    {
+        ulLen += fprintf(stdout, "%02x ", pData[i]);
+        if ((ulColumn != 0) && ((i+1) % ulColumn == 0))
+        {
+            ulLen += fprintf(stdout, "\n", pData[i]);
+        }
+    }
+    
+    return  ulLen;
+}
+
+_mqx_int  FTE_SHELL_printNumString(uint_8 *pData, uint_32 ulSize, uint_32 ulColumn)
+{
+    _mqx_int    ulLen = 0;
+    for(int i = 0 ; i < ulSize ; i++)
+    {
+        ulLen += fprintf(stdout, "%3d ", pData[i]);
+        if ((ulColumn != 0) && ((i+1) % ulColumn == 0))
+        {
+            ulLen += fprintf(stdout, "\n", pData[i]);
+        }
+    }
+    
+    return  ulLen;
+}

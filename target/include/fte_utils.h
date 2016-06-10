@@ -13,6 +13,7 @@
 void    fte_udelay(uint_32 usec);
 boolean fte_parse_ip_address( char_ptr pIPString, uint_32 _PTR_ pIP);
 boolean fte_parse_enet_address( char_ptr pMACString, _enet_address enet_address);
+uint_32 fte_parse_hex_string(char_ptr pString, uint_8 *pBuff, uint_32 ulBuffLen);
 
 void    fte_system_reset(void);
 

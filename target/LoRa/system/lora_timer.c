@@ -82,13 +82,14 @@ bool TimerGetLowPowerEnable( void )
     return LowPowerModeEnable;
 }
 
-void TimerInit( TimerEvent_t *obj, void ( *callback )( void ) )
+void TimerInit( TimerEvent_t *obj, void ( *callback )( void * ), void *params)
 {
-    obj->Timestamp = 0;
-    obj->ReloadValue = 0;
-    obj->IsRunning = false;
-    obj->Callback = callback;
-    obj->Next = NULL;
+    obj->Timestamp  = 0;
+    obj->ReloadValue= 0;
+    obj->IsRunning  = false;
+    obj->Callback   = callback;
+    obj->Params     = params;
+    obj->Next       = NULL;
 }
 
 void TimerStart( TimerEvent_t *obj )
@@ -256,7 +257,7 @@ void TimerIrqHandler( void )
     {
         if( elapsedTimer->Callback != NULL )
         {
-            elapsedTimer->Callback( );
+            elapsedTimer->Callback( elapsedTimer->Params );
         }
         elapsedTimer = elapsedTimer->Next;
     }
@@ -461,4 +462,6 @@ void TimerLowPowerHandler( void )
             }
         }
     }
+
+    _time_delay(0);
 }

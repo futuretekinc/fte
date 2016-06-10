@@ -12,7 +12,7 @@
 #define FTE_LOG_SUPPORTED                   1
 #if FTE_V2
 #define FTE_PWR_SW_SUPPORTED                1
-#define FTE_FACTORY_RESET_SUPPORTED         1
+#define FTE_FACTORY_RESET_SUPPORTED         0
 #else
 #define FTE_PWR_SW_SUPPORTED                0
 #define FTE_FACTORY_RESET_SUPPORTED         0
@@ -76,7 +76,7 @@
 
 // Multi-Function
 #define FTE_BOTEM_PN1500_SUPPORTED          0
-#define FTE_GUS_SUPPORTED                   1
+#define FTE_GUS_SUPPORTED                   0
 #define FTE_HM1001_SUPPORTED                0
 #define FTE_MST_MEX510C_SUPPORTED           0
 #define FTE_CIAS_SIOUX_CU_SUPPORTED         0

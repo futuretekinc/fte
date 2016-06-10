@@ -70,3 +70,55 @@ boolean fte_parse_enet_address( char_ptr arg, _enet_address enet_address)
    } 
    return TRUE;   
 }
+
+uint_32 fte_parse_hex_string(char_ptr pString, uint_8 *pBuff, uint_32 ulBuffLen)
+{
+    int i;
+    uint_32 ulStringLen = strlen(pString);
+    
+    if (((ulStringLen % 2) == 1) || ((ulStringLen / 2) > ulBuffLen))
+    {
+        return  0;
+    }
+    
+    for(int i = 0 ; i < ulStringLen ;i++)
+    {
+        if (!(('0' <= pString[i] && pString[i] <= '9') || 
+              ('A' <= pString[i] && pString[i] <= 'F') ||
+              ('a' <= pString[i] && pString[i] <= 'f')))
+        {
+            return  0;
+        }
+    }
+
+   for(int i = 0 ; i <  ulStringLen  / 2; i++)
+   {
+        if ('0' <= pString[i*2] && pString[i*2] <= '9')
+        {
+           pBuff[i] = pString[i*2] - '0'; 
+        }
+        else if ('A' <= pString[i*2] && pString[i*2] <= 'F')
+        {
+           pBuff[i] = pString[i*2] - 'A' + 10; 
+        }
+        else if ('a' <= pString[i*2] && pString[i*2] <= 'f')
+        {
+           pBuff[i] = pString[i*2] - 'a' + 10; 
+        }
+
+        if ('0' <= pString[i*2 + 1] && pString[i*2 + 1] <= '9')
+        {
+           pBuff[i] = (pBuff[i] << 4) + pString[i*2 + 1] - '0'; 
+        }
+        else if ('A' <= pString[i*2 + 1] && pString[i*2 + 1] <= 'F')
+        {
+           pBuff[i] = (pBuff[i] << 4) + pString[i*2 + 1] - 'A' + 10; 
+        }
+        else if ('a' <= pString[i*2 + 1] && pString[i*2 + 1] <= 'f')
+        {
+           pBuff[i] = (pBuff[i] << 4) + pString[i*2 + 1] - 'a' + 10; 
+        }
+   }
+   
+   return   ulStringLen / 2;
+}
