@@ -14,6 +14,7 @@ Debug/
 *.ko
 *.obj
 *.elf
+*.bak
 
 # Precompiled Headers
 *.gch
@@ -44,3 +45,4 @@ Debug/
 *.dbgdt
 *.dbgdt
 
+settings/fte.wspos

@@ -282,7 +282,7 @@ _mqx_uint    FTE_LWGPIO_INT_setEnable(FTE_LWGPIO_PTR pLWGPIO, boolean enable)
     {
         return  MQX_INVALID_COMPONENT_HANDLE;
     }
-    
+
     lwgpio_int_enable(&pLWGPIO->xLWGPIO, enable);
 
     return  MQX_OK;

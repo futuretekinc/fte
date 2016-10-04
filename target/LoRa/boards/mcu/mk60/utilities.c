@@ -38,6 +38,7 @@ void srand( unsigned int seed )
 {
     next = seed;
 }
+
 // Standard random functions redefinition end
 
 int32_t randr( int32_t min, int32_t max )

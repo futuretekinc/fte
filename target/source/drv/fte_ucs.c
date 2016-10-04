@@ -95,7 +95,10 @@ _mqx_uint       FTE_UCS_attach(FTE_UCS_PTR pUCS, uint_32 nParent)
         }
     }
 
-    FTE_LIST_pushBack(&pUCS->xParents, (pointer)nParent);
+    if (nParent != 0)
+    {
+        FTE_LIST_pushBack(&pUCS->xParents, (pointer)nParent);
+    }
 
     return  MQX_OK;
 }
@@ -104,7 +107,10 @@ _mqx_uint       FTE_UCS_detach(FTE_UCS_PTR pUCS, uint_32 nParent)
 {
     ASSERT(pUCS != NULL);
 
-    FTE_LIST_remove(&pUCS->xParents, (pointer)nParent);
+    if (nParent != 0)
+    {
+        FTE_LIST_remove(&pUCS->xParents, (pointer)nParent);
+    }
 
     if (FTE_LIST_count(&pUCS->xParents) == 0)
     {

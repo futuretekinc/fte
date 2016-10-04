@@ -156,6 +156,7 @@ typedef uint_32 FTE_OBJECT_ID;
 #define FTE_OBJ_FIELD_CTRL              0x00004000
 #define FTE_OBJ_FIELD_INIT              0x00010000
 #define FTE_OBJ_FIELD_INIT_EDIT         0x00020000
+#define FTE_OBJ_FIELD_DID               0x01000000
 #define FTE_OBJ_FIELD_END               0x80000000
 
 

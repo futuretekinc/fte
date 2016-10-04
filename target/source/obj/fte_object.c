@@ -16,6 +16,7 @@ const char_ptr FTE_JSON_DEV_EP_STRING     = "value";
 #endif
 const char_ptr FTE_JSON_DEV_EPS_STRING    = "eps";
 
+const char_ptr FTE_JSON_OBJ_DID_STRING     = "did";
 const char_ptr FTE_JSON_OBJ_ID_STRING     = "id";
 const char_ptr FTE_JSON_OBJ_NAME_STRING   = "name";
 const char_ptr FTE_JSON_OBJ_VALUE_STRING  = "value";
@@ -689,6 +690,31 @@ FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON(FTE_OBJECT_PTR pObj, uint_32 xOptions)
         
         switch(nOption)
         {
+        case    FTE_OBJ_FIELD_DID:
+            {
+                _enet_address       xMACAddress;
+                char                pBuff[20];
+                
+                FTE_SYS_getMAC(xMACAddress);                
+                snprintf(pBuff, sizeof(pBuff), "%02x%02x%02x%02x%02x%02x", 
+                                    xMACAddress[0], xMACAddress[1],
+                                    xMACAddress[2], xMACAddress[3],
+                                    xMACAddress[4], xMACAddress[5]);
+                
+                pValue = FTE_JSON_VALUE_createString(pBuff);
+                if (pValue == NULL)
+                {
+                    goto error;
+                }
+
+                if (FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_DID_STRING, pValue) != FTE_JSON_RET_OK)
+                {
+                    FTE_JSON_VALUE_destroy(pValue);
+                    goto error;
+                }
+            }
+            break;
+            
         case    FTE_OBJ_FIELD_ID:
             {
                 char    pBuff[16];

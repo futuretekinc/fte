@@ -27,13 +27,13 @@ _mqx_uint   FTE_LORA_init(void)
     
     SX1276LoRaInit( );
    
-    _task_create(0, FTE_TASK_LORA_COMM, 0);
+    _task_create(0, FTE_TASK_LORAWAN_CTRL, 0);
     _task_create(0, FTE_TASK_LORA, 0);
 
     return  MQX_OK;
 }
 
-void FTE_LORA_comm(uint_32 params)
+void FTE_LORA_ctrl(uint_32 params)
 {
     uint_8      pInternalBuffer[RF_BUFFER_SIZE_MAX];
     uint_16     usBufferSize = RF_BUFFER_SIZE_MAX;
@@ -47,7 +47,7 @@ void FTE_LORA_comm(uint_32 params)
         boolean     bTxON = FALSE;
          
         ulState = SX1276LoRaProcess();
-        
+       
         switch( ulState )
         {
         case    RF_RX_DONE:
@@ -55,7 +55,7 @@ void FTE_LORA_comm(uint_32 params)
                 SX1276LoRaGetRxPacket( pInternalBuffer, ( uint16_t* )&usBufferSize );
                 if (usBufferSize != 0)
                 {
-#if 0                    
+#if 1                    
                     FTE_FBM_BUFF_PTR pBlock = FTE_FBM_alloc(pFBM, usBufferSize);
                     if (pBlock != NULL)
                     {
@@ -87,10 +87,27 @@ void FTE_LORA_comm(uint_32 params)
                 }
             }
         case    RF_IDLE:
+            {
+                DEBUG("RF_IDLE\n");
+             //   bTxON = TRUE;
+            }
+            break;
+            
         case    RF_BUSY:
+            {
+            }
+            break;
+
         case    RF_RX_TIMEOUT:
+            {
+                DEBUG("RF_RX_TIMEOUT\n");
+                bTxON = TRUE;
+            }
+            break;
+
         case    RF_TX_DONE:
             {
+                DEBUG("RF_TX_DONE\n");
                 bTxON = TRUE;
             }
             break;
@@ -145,9 +162,8 @@ void FTE_LORA_process(uint_32 params)
             FTE_FBM_BUFF_PTR pBlock;
             if (FTE_LIST_popFront(&xRcvdList, (pointer *)&pBlock) == MQX_OK)
             {
-
-//                DEBUG("Packet Received : %d\n", pBlock->ulSize);
-//                DEUMP(pBlock->pBuff, pBlock->ulSize);
+                pBlock->pBuff[pBlock->ulSize] = 0;
+                DEBUG("Packet Received : %s\n", pBlock->pBuff);
                 
                 FTE_FBM_free(pFBM, pBlock);
             }
@@ -185,6 +201,7 @@ int_32  FTE_LORA_SHELL_cmd(int_32 argc, char_ptr argv[])
         {
         case    1:
             {                
+#if 0
                 printf("%16s : %s\n", "Op Mode", FTE_LORA_getOpModeString(SX1276LoRaGetOpMode( )));
                 printf("%16s : %d\n", "RF Frequency", SX1276LoRaGetRFFrequency( ));
                 printf("%16s : %d\n", "Spreading Factor", SX1276LoRaGetSpreadingFactor( )); // SF6 only operates in implicit header mode.
@@ -194,6 +211,19 @@ int_32  FTE_LORA_SHELL_cmd(int_32 argc, char_ptr argv[])
                 printf("%16s : %d dBm\n", "RSSI", (int_32)SX1276LoRaGetPacketRssi( ));
                 printf("%16s : %d\n", "Rx Packets", SX1276LoRaGetRxPacketCount());
                 printf("%16s : %d\n", "Tx Packets", SX1276LoRaGetTxPacketCount());
+#else
+                for(int i = 0 ; i < 256 ; i++)
+                {
+                    uint_8 bReg;
+                   
+                   SX1276Read( i & 0xFF, &bReg);
+                    printf("%02x ", bReg);
+                    if (((i + 1) % 16) == 0)
+                    {
+                        printf("\n");
+                    }
+                }
+#endif
             }
             break;
             

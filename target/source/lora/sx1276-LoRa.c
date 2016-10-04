@@ -25,6 +25,9 @@
 #include "sx1276-LoRaMisc.h"
 #include "sx1276-LoRa.h"
 
+#include "fte_target.h"
+#include "fte_common.h"
+#
 /*!
  * Constant values need to compute the RSSI value
  */
@@ -92,19 +95,19 @@ const int32_t HoppingFrequencies[] =
 // Default settings
 tLoRaSettings LoRaSettings =
 {
-    915000000,        // RFFrequency
-    20,               // Power
-    9,                // SignalBw [0: 7.8kHz, 1: 10.4 kHz, 2: 15.6 kHz, 3: 20.8 kHz, 4: 31.2 kHz,
+    920000000,        // RFFrequency
+    14,               // Power
+    8,                // SignalBw [0: 7.8kHz, 1: 10.4 kHz, 2: 15.6 kHz, 3: 20.8 kHz, 4: 31.2 kHz,
                       // 5: 41.6 kHz, 6: 62.5 kHz, 7: 125 kHz, 8: 250 kHz, 9: 500 kHz, other: Reserved]
-    9,                // SpreadingFactor [6: 64, 7: 128, 8: 256, 9: 512, 10: 1024, 11: 2048, 12: 4096  chips]
+    7,                // SpreadingFactor [6: 64, 7: 128, 8: 256, 9: 512, 10: 1024, 11: 2048, 12: 4096  chips]
     2,                // ErrorCoding [1: 4/5, 2: 4/6, 3: 4/7, 4: 4/8]
-    true,             // CrcOn [0: OFF, 1: ON]
+    false,             // CrcOn [0: OFF, 1: ON]
     false,            // ImplicitHeaderOn [0: OFF, 1: ON]
     0,                // RxSingleOn [0: Continuous, 1 Single]
     0,                // FreqHopOn [0: OFF, 1: ON]
     4,                // HopPeriod Hops every frequency hopping period symbols
-    100,              // TxPacketTimeout
-    100,              // RxPacketTimeout
+    200,              // TxPacketTimeout
+    200,              // RxPacketTimeout
     64,              // PayloadLength (used for implicit header mode)
 };
 
@@ -213,6 +216,11 @@ void SX1276LoRaInit( void )
         LoRaSettings.Power = 14;
         SX1276LoRaSetRFPower( LoRaSettings.Power );
     } 
+#else
+        SX1276LoRaSetPAOutput( RFLR_PACONFIG_PASELECT_RFO );
+        SX1276LoRaSetPa20dBm( false );
+        LoRaSettings.Power = 14;
+        SX1276LoRaSetRFPower( LoRaSettings.Power );
 #endif
 
     SX1276LoRaSetOpMode( RFLR_OPMODE_STANDBY );
@@ -395,7 +403,7 @@ uint32_t SX1276LoRaProcess( void )
         }
         else
         {
-            SX1276LR->RegHopPeriod = 255;
+            SX1276LR->RegHopPeriod = 0;
         }
         
         SX1276Write( REG_LR_HOPPERIOD, SX1276LR->RegHopPeriod );
@@ -439,9 +447,17 @@ uint32_t SX1276LoRaProcess( void )
             SX1276Write( REG_LR_IRQFLAGS, RFLR_IRQFLAGS_RXDONE  );
             RFLRState = RFLR_STATE_RX_DONE;
         }
+        
+        if (DIO1 == 1 )
+        {
+            DEBUG("RxTimeout\n");                   
+        }
+        
         if( DIO2 == 1 ) // FHSS Changed Channel
         {
             RxTimeoutTimer = GET_TICK_COUNT( );
+                SX1276Read( REG_LR_HOPCHANNEL, &SX1276LR->RegHopChannel );
+                printf("HOP channel = %02x\n", SX1276LR->RegHopChannel);
             if( LoRaSettings.FreqHopOn == true )
             {
                 SX1276Read( REG_LR_HOPCHANNEL, &SX1276LR->RegHopChannel );
@@ -453,6 +469,16 @@ uint32_t SX1276LoRaProcess( void )
             RxGain = SX1276LoRaReadRxGain( );
         }
 
+        if( DIO3 == 1 )
+        {
+            DEBUG("CAD Done\n");                   
+        }
+        
+        if( DIO4 == 1 )
+        {
+            DEBUG("CAD Detected\n");                   
+        }
+        
         if( LoRaSettings.RxSingleOn == true ) // Rx single mode
         {
             if( ( GET_TICK_COUNT( ) - RxTimeoutTimer ) > PacketTimeout )

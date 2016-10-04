@@ -12,5 +12,7 @@ typedef struct
 }   FTE_SHELL_CONFIG, _PTR_ FTE_SHELL_CONFIG_PTR;
 
 _mqx_uint   FTE_SHELL_proc(void);
+_mqx_int    FTE_SHELL_printHexString(uint_8 *pData, uint_32 ulSize, uint_32 ulColumn);
+_mqx_int    FTE_SHELL_printNumString(uint_8 *pData, uint_32 ulSize, uint_32 ulColumn);
 
 #endif

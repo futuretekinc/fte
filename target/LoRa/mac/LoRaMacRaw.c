@@ -338,7 +338,7 @@ LoRaMac_t *LoRaMacInit( LoRaMacConfig_t *pConfig, LoRaMacEvent_t *pEvents )
     LoRaMac.Status.JoinAcceptDelay2 = JOIN_ACCEPT_DELAY2;
 
     TimerInit( &LoRaMac.Status.MacStateCheckTimer, OnMacStateCheckTimerEvent, (void *)&LoRaMac );
-    TimerSetValue( &LoRaMac.Status.MacStateCheckTimer, MAC_STATE_CHECK_TIMEOUT);
+    TimerSetValue( &LoRaMac.Status.MacStateCheckTimer, MAC_STATE_CHECK_TIMEOUT );
 
     TimerInit( &LoRaMac.Status.ChannelCheckTimer, OnChannelCheckTimerEvent, (void *)&LoRaMac );
     TimerInit( &LoRaMac.Status.TxDelayedTimer, OnTxDelayedTimerEvent, (void *)&LoRaMac );
@@ -386,6 +386,7 @@ LoRaMac_t *LoRaMacInit( LoRaMacConfig_t *pConfig, LoRaMacEvent_t *pEvents )
     {
         Radio.Sleep( );
     }
+    
     
     return  &LoRaMac;
 }
@@ -570,6 +571,26 @@ uint8_t LoRaMacJoinAccept( LoRaMac_t *pLoRaMac, uint32_t devAddr, uint8_t DLSett
     return LoRaMacSendFrameOnChannel( pLoRaMac, pLoRaMac->Config.Channels[pLoRaMac->Status.Channel] );
 }
 
+uint8_t LoRaMacSendRaw( LoRaMac_t *pLoRaMac, uint8_t fPort, void *fBuffer, uint16_t fBufferSize )
+{
+    ASSERT(pLoRaMac != NULL);
+
+    if (fBufferSize > sizeof(pLoRaMac->Status.Buffer))
+    {
+        return  5;
+    }
+    
+    memcpy(pLoRaMac->Status.Buffer, fBuffer, fBufferSize);
+    pLoRaMac->Status.BufferPktLen = fBufferSize;
+
+    if( LoRaMacSetNextChannel( pLoRaMac ) == 0 )
+    {
+        return  LoRaMacSendFrameOnChannel( pLoRaMac, pLoRaMac->Config.Channels[pLoRaMac->Status.Channel]);
+    }
+    
+    return 5;
+}
+
 uint8_t LoRaMacSendFrame( LoRaMac_t *pLoRaMac, uint8_t fPort, void *fBuffer, uint16_t fBufferSize )
 {
     LoRaMacHeader_t macHdr;
@@ -600,6 +621,7 @@ uint8_t LoRaMacSendConfirmedFrame( LoRaMac_t *pLoRaMac, uint8_t fPort, void *fBu
     macHdr.Bits.MType = FRAME_TYPE_DATA_CONFIRMED_UP;
     return LoRaMacSend( pLoRaMac, &macHdr, NULL, fPort, fBuffer, fBufferSize );
 }
+
 
 uint8_t LoRaMacSend( LoRaMac_t *pLoRaMac, LoRaMacHeader_t *macHdr, uint8_t *fOpts, uint8_t fPort, void *fBuffer, uint16_t fBufferSize )
 {
@@ -867,7 +889,7 @@ uint8_t LoRaMacSendFrameOnChannel( LoRaMac_t *pLoRaMac, ChannelParams_t channel 
     {
         pLoRaMac->Status.AggregatedTimeOff = 0;
     }
-
+    
     pLoRaMac->Status.State |= MAC_TX_RUNNING;
     // Starts the MAC layer status check timer
     TimerStart( &pLoRaMac->Status.MacStateCheckTimer );
@@ -897,7 +919,7 @@ uint8_t LoRaMacSendFrameOnChannel( LoRaMac_t *pLoRaMac, ChannelParams_t channel 
             }
             printf("\n");
         }
-    
+        
         Radio.Send( pLoRaMac->Status.Buffer, pLoRaMac->Status.BufferPktLen );
     }
     return 0;
@@ -1224,23 +1246,6 @@ static void OnRadioRxDone( void *obj, uint8_t *payload, uint16_t size, int16_t r
     LoRaMac_t *pLoRaMac = (LoRaMac_t *)obj;
     
     ASSERT(pLoRaMac != NULL);
-        
-    uint8_t pktHeaderLen = 0;
-    uint32_t address = 0;
-    uint16_t sequenceCounter = 0;
-    int32_t sequence = 0;
-    uint8_t appPayloadStartIndex = 0;
-    uint8_t port = 0xFF;
-    uint8_t frameLen = 0;
-    uint32_t mic = 0;
-    uint32_t micRx = 0;
-   
-    MulticastParams_t *curMulticastParams = NULL;
-    uint8_t *nwkSKey = pLoRaMac->Config.NwkSKey;
-    uint8_t *appSKey = pLoRaMac->Config.AppSKey;
-    uint32_t downLinkCounter = 0;
-   
-    bool isMicOk = false;
 
     if (pLoRaMac->Config.Debug.TrafficMonitorOn)
     {
@@ -1259,290 +1264,322 @@ static void OnRadioRxDone( void *obj, uint8_t *payload, uint16_t size, int16_t r
         printf("\n");
     }
     
-    if( pLoRaMac->Config.DeviceClass != CLASS_C )
+    if (pLoRaMac->Config.Bypass)
     {
-        Radio.Sleep( );
+        pLoRaMac->Status.State |= MAC_RX;
+        TimerStart( &pLoRaMac->Status.MacStateCheckTimer );
+        
+        pLoRaMac->Status.EventFlags.Bits.Rx = 1;
+        pLoRaMac->Status.EventFlags.Bits.RxData = 1;
+        memcpy(pLoRaMac->Status.RxPayload, payload, size);
+        pLoRaMac->EventInfo.RxBuffer = pLoRaMac->Status.RxPayload;
+        pLoRaMac->EventInfo.RxBufferSize = size;
+        pLoRaMac->EventInfo.Status = LORAMAC_EVENT_INFO_STATUS_OK;
     }
     else
     {
-        if( pLoRaMac->Status.EventFlags.Bits.RxSlot == 0 )
+        uint8_t pktHeaderLen = 0;
+        uint32_t address = 0;
+        uint16_t sequenceCounter = 0;
+        int32_t sequence = 0;
+        uint8_t appPayloadStartIndex = 0;
+        uint8_t port = 0xFF;
+        uint8_t frameLen = 0;
+        uint32_t mic = 0;
+        uint32_t micRx = 0;
+       
+        MulticastParams_t *curMulticastParams = NULL;
+        uint8_t *nwkSKey = pLoRaMac->Config.NwkSKey;
+        uint8_t *appSKey = pLoRaMac->Config.AppSKey;
+        uint32_t downLinkCounter = 0;
+       
+        bool isMicOk = false;
+        
+        if( pLoRaMac->Config.DeviceClass != CLASS_C )
         {
-            OnRxWindow2TimerEvent(obj);
+            Radio.Sleep( );
         }
-    }
-    TimerStop( &pLoRaMac->Status.RxWindowTimer2 );
-
-    macHdr.Value = payload[pktHeaderLen++];
-   
-    switch( macHdr.Bits.MType )
-    {
-        case FRAME_TYPE_JOIN_ACCEPT:
-            if( pLoRaMac->Status.IsNetworkJoined == true )
+        else
+        {
+            if( pLoRaMac->Status.EventFlags.Bits.RxSlot == 0 )
             {
-                break;
+                OnRxWindow2TimerEvent(obj);
             }
-            LoRaMacJoinDecrypt( payload + 1, size - 1, pLoRaMac->Config.AppKey, pLoRaMac->Status.RxPayload + 1 );
+        }
+        TimerStop( &pLoRaMac->Status.RxWindowTimer2 );
 
-            pLoRaMac->Status.RxPayload[0] = macHdr.Value;
-
-            LoRaMacJoinComputeMic( pLoRaMac->Status.RxPayload, size - LORAMAC_MFR_LEN, pLoRaMac->Config.AppKey, &mic );
-           
-            micRx |= pLoRaMac->Status.RxPayload[size - LORAMAC_MFR_LEN];
-            micRx |= ( pLoRaMac->Status.RxPayload[size - LORAMAC_MFR_LEN + 1] << 8 );
-            micRx |= ( pLoRaMac->Status.RxPayload[size - LORAMAC_MFR_LEN + 2] << 16 );
-            micRx |= ( pLoRaMac->Status.RxPayload[size - LORAMAC_MFR_LEN + 3] << 24 );
-           
-            if( micRx == mic )
-            {
-                pLoRaMac->Status.EventFlags.Bits.Rx = 1;
-                pLoRaMac->EventInfo.RxSnr = snr;
-                pLoRaMac->EventInfo.RxRssi = rssi;
-
-                LoRaMacJoinComputeSKeys( pLoRaMac->Config.AppKey, pLoRaMac->Status.RxPayload + 1, pLoRaMac->Status.DevNonce, pLoRaMac->Config.NwkSKey, pLoRaMac->Config.AppSKey );
-
-                pLoRaMac->Config.NetID = pLoRaMac->Status.RxPayload[4];
-                pLoRaMac->Config.NetID |= ( pLoRaMac->Status.RxPayload[5] << 8 );
-                pLoRaMac->Config.NetID |= ( pLoRaMac->Status.RxPayload[6] << 16 );
-               
-                pLoRaMac->Config.DevAddr = pLoRaMac->Status.RxPayload[7];
-                pLoRaMac->Config.DevAddr |= ( pLoRaMac->Status.RxPayload[8] << 8 );
-                pLoRaMac->Config.DevAddr |= ( pLoRaMac->Status.RxPayload[9] << 16 );
-                pLoRaMac->Config.DevAddr |= ( pLoRaMac->Status.RxPayload[10] << 24 );
-               
-                // DLSettings
-                pLoRaMac->Status.Rx1DrOffset = ( pLoRaMac->Status.RxPayload[11] >> 4 ) & 0x07;
-                pLoRaMac->Config.Rx2Channel.Datarate = pLoRaMac->Status.RxPayload[11] & 0x0F;
-               
-                // RxDelay
-                pLoRaMac->Status.ReceiveDelay1 = ( pLoRaMac->Status.RxPayload[12] & 0x0F );
-                if( pLoRaMac->Status.ReceiveDelay1 == 0 )
+        macHdr.Value = payload[pktHeaderLen++];
+       
+        switch( macHdr.Bits.MType )
+        {
+            case FRAME_TYPE_JOIN_ACCEPT:
+                if( pLoRaMac->Status.IsNetworkJoined == true )
                 {
-                    pLoRaMac->Status.ReceiveDelay1 = 1;
+                    break;
                 }
-                pLoRaMac->Status.ReceiveDelay1 *= 1e6;
-                pLoRaMac->Status.ReceiveDelay2 = (uint32_t)(pLoRaMac->Status.ReceiveDelay1 + 1e6);
+                LoRaMacJoinDecrypt( payload + 1, size - 1, pLoRaMac->Config.AppKey, pLoRaMac->Status.RxPayload + 1 );
+
+                pLoRaMac->Status.RxPayload[0] = macHdr.Value;
+
+                LoRaMacJoinComputeMic( pLoRaMac->Status.RxPayload, size - LORAMAC_MFR_LEN, pLoRaMac->Config.AppKey, &mic );
                
-                //CFList
-                if( ( size - 1 ) > 16 )
-                {
-                    ChannelParams_t param;
-                    param.DrRange.Value = ( DR_5 << 4 ) | DR_0;
-
-                    for( uint8_t i = 3, j = 0; i < ( 5 + 3 ); i++, j += 3 )
-                    {
-                        param.Frequency = ( pLoRaMac->Status.RxPayload[13 + j] | ( pLoRaMac->Status.RxPayload[14 + j] << 8 ) | ( pLoRaMac->Status.RxPayload[15 + j] << 16 ) ) * 100;
-                        LoRaMacSetChannel( pLoRaMac, i, param );
-                    }
-                }
+                micRx |= pLoRaMac->Status.RxPayload[size - LORAMAC_MFR_LEN];
+                micRx |= ( pLoRaMac->Status.RxPayload[size - LORAMAC_MFR_LEN + 1] << 8 );
+                micRx |= ( pLoRaMac->Status.RxPayload[size - LORAMAC_MFR_LEN + 2] << 16 );
+                micRx |= ( pLoRaMac->Status.RxPayload[size - LORAMAC_MFR_LEN + 3] << 24 );
                
-                pLoRaMac->Status.EventFlags.Bits.JoinAccept = 1;
-                pLoRaMac->Status.IsNetworkJoined = true;
-                pLoRaMac->Status.ChannelsDatarate = pLoRaMac->Config.ChannelsDefaultDatarate;
-                pLoRaMac->EventInfo.Status = LORAMAC_EVENT_INFO_STATUS_OK;
-            }
-            else
-            {
-                pLoRaMac->EventInfo.Status = LORAMAC_EVENT_INFO_STATUS_JOIN_FAIL;
-            }
-
-            pLoRaMac->Status.EventFlags.Bits.Tx = 1;
-            break;
-        case FRAME_TYPE_DATA_CONFIRMED_DOWN:
-        case FRAME_TYPE_DATA_UNCONFIRMED_DOWN:
-            {
-                address = payload[pktHeaderLen++];
-                address |= ( payload[pktHeaderLen++] << 8 );
-                address |= ( payload[pktHeaderLen++] << 16 );
-                address |= ( payload[pktHeaderLen++] << 24 );
-
-                if( address != pLoRaMac->Config.DevAddr )
-                {
-                    curMulticastParams = pLoRaMac->Status.MulticastChannels;
-                    while( curMulticastParams != NULL )
-                    {
-                        if( address == curMulticastParams->Address )
-                        {
-                            pLoRaMac->Status.EventFlags.Bits.Multicast = 1;
-                            nwkSKey = curMulticastParams->NwkSKey;
-                            appSKey = curMulticastParams->AppSKey;
-                            downLinkCounter = curMulticastParams->DownLinkCounter;
-                            break;
-                        }
-                        curMulticastParams = curMulticastParams->Next;
-                    }
-                    if( pLoRaMac->Status.EventFlags.Bits.Multicast == 0 )
-                    {
-                        // We are not the destination of this frame.
-                        pLoRaMac->Status.EventFlags.Bits.Tx = 1;
-                        pLoRaMac->EventInfo.Status = LORAMAC_EVENT_INFO_STATUS_ADDRESS_FAIL;
-                        pLoRaMac->Status.State &= ~MAC_TX_RUNNING;
-                        return;
-                    }
-                }
-                else
-                {
-                    pLoRaMac->Status.EventFlags.Bits.Multicast = 0;
-                    nwkSKey = pLoRaMac->Config.NwkSKey;
-                    appSKey = pLoRaMac->Config.AppSKey;
-                    downLinkCounter = pLoRaMac->Status.DownLinkCounter;
-                }
-               
-                if( pLoRaMac->Config.DeviceClass != CLASS_A )
-                {
-                    pLoRaMac->Status.State |= MAC_RX;
-                    // Starts the MAC layer status check timer
-                    TimerStart( &pLoRaMac->Status.MacStateCheckTimer );
-                }
-                fCtrl.Value = payload[pktHeaderLen++];
-               
-                sequenceCounter |= payload[pktHeaderLen++];
-                sequenceCounter |= payload[pktHeaderLen++] << 8;
-
-                appPayloadStartIndex = 8 + fCtrl.Bits.FOptsLen;
-
-                micRx |= payload[size - LORAMAC_MFR_LEN];
-                micRx |= ( payload[size - LORAMAC_MFR_LEN + 1] << 8 );
-                micRx |= ( payload[size - LORAMAC_MFR_LEN + 2] << 16 );
-                micRx |= ( payload[size - LORAMAC_MFR_LEN + 3] << 24 );
-
-                sequence = ( int32_t )sequenceCounter - ( int32_t )( downLinkCounter & 0xFFFF );
-                if( sequence < 0 )
-                {
-                    // sequence reset or roll over happened
-                    downLinkCounter = ( downLinkCounter & 0xFFFF0000 ) | ( sequenceCounter + ( uint32_t )0x10000 );
-                    LoRaMacComputeMic( payload, size - LORAMAC_MFR_LEN, nwkSKey, address, DOWN_LINK, downLinkCounter, &mic );
-                    if( micRx == mic )
-                    {
-                        isMicOk = true;
-                    }
-                    else
-                    {
-                        isMicOk = false;
-                        // sequence reset
-                        if( pLoRaMac->Status.EventFlags.Bits.Multicast == 1 )
-                        {
-                            curMulticastParams->DownLinkCounter = downLinkCounter = sequenceCounter;
-                        }
-                        else
-                        {
-                            pLoRaMac->Status.DownLinkCounter = downLinkCounter = sequenceCounter;
-                        }
-                        LoRaMacComputeMic( payload, size - LORAMAC_MFR_LEN, nwkSKey, address, DOWN_LINK, downLinkCounter, &mic );
-                    }
-                }
-                else
-                {
-                    downLinkCounter = ( downLinkCounter & 0xFFFF0000 ) | sequenceCounter;
-                    LoRaMacComputeMic( payload, size - LORAMAC_MFR_LEN, nwkSKey, address, DOWN_LINK, downLinkCounter, &mic );
-                }
-
-                if( ( isMicOk == true ) ||
-                    ( micRx == mic ) )
+                if( micRx == mic )
                 {
                     pLoRaMac->Status.EventFlags.Bits.Rx = 1;
                     pLoRaMac->EventInfo.RxSnr = snr;
                     pLoRaMac->EventInfo.RxRssi = rssi;
-                    pLoRaMac->EventInfo.RxBufferSize = 0;
-                    pLoRaMac->Status.AdrAckCounter = 0;
-                    if( pLoRaMac->Status.EventFlags.Bits.Multicast == 1 )
-                    {
-                        curMulticastParams->DownLinkCounter = downLinkCounter;
-                    }
-                    else
-                    {
-                        pLoRaMac->Status.DownLinkCounter = downLinkCounter;
-                    }
 
-                    if( macHdr.Bits.MType == FRAME_TYPE_DATA_CONFIRMED_DOWN )
-                    {
-                        pLoRaMac->Status.SrvAckRequested = true;
-                    }
-                    else
-                    {
-                        pLoRaMac->Status.SrvAckRequested = false;
-                    }
-                    // Check if the frame is an acknowledgement
-                    if( fCtrl.Bits.Ack == 1 )
-                    {
-                        pLoRaMac->EventInfo.TxAckReceived = true;
+                    LoRaMacJoinComputeSKeys( pLoRaMac->Config.AppKey, pLoRaMac->Status.RxPayload + 1, pLoRaMac->Status.DevNonce, pLoRaMac->Config.NwkSKey, pLoRaMac->Config.AppSKey );
 
-                        // Stop the AckTimeout timer as no more retransmissions
-                        // are needed.
-                        TimerStop( &pLoRaMac->Status.AckTimeoutTimer );
-                    }
-                    else
+                    pLoRaMac->Config.NetID = pLoRaMac->Status.RxPayload[4];
+                    pLoRaMac->Config.NetID |= ( pLoRaMac->Status.RxPayload[5] << 8 );
+                    pLoRaMac->Config.NetID |= ( pLoRaMac->Status.RxPayload[6] << 16 );
+                   
+                    pLoRaMac->Config.DevAddr = pLoRaMac->Status.RxPayload[7];
+                    pLoRaMac->Config.DevAddr |= ( pLoRaMac->Status.RxPayload[8] << 8 );
+                    pLoRaMac->Config.DevAddr |= ( pLoRaMac->Status.RxPayload[9] << 16 );
+                    pLoRaMac->Config.DevAddr |= ( pLoRaMac->Status.RxPayload[10] << 24 );
+                   
+                    // DLSettings
+                    pLoRaMac->Status.Rx1DrOffset = ( pLoRaMac->Status.RxPayload[11] >> 4 ) & 0x07;
+                    pLoRaMac->Config.Rx2Channel.Datarate = pLoRaMac->Status.RxPayload[11] & 0x0F;
+                   
+                    // RxDelay
+                    pLoRaMac->Status.ReceiveDelay1 = ( pLoRaMac->Status.RxPayload[12] & 0x0F );
+                    if( pLoRaMac->Status.ReceiveDelay1 == 0 )
                     {
-                        pLoRaMac->EventInfo.TxAckReceived = false;
-                        if( pLoRaMac->Status.AckTimeoutRetriesCounter > pLoRaMac->Status.AckTimeoutRetries )
+                        pLoRaMac->Status.ReceiveDelay1 = 1;
+                    }
+                    pLoRaMac->Status.ReceiveDelay1 *= 1e6;
+                    pLoRaMac->Status.ReceiveDelay2 = (uint32_t)(pLoRaMac->Status.ReceiveDelay1 + 1e6);
+                   
+                    //CFList
+                    if( ( size - 1 ) > 16 )
+                    {
+                        ChannelParams_t param;
+                        param.DrRange.Value = ( DR_5 << 4 ) | DR_0;
+
+                        for( uint8_t i = 3, j = 0; i < ( 5 + 3 ); i++, j += 3 )
                         {
-                            // Stop the AckTimeout timer as no more retransmissions
-                            // are needed.
-                            TimerStop( &pLoRaMac->Status.AckTimeoutTimer );
+                            param.Frequency = ( pLoRaMac->Status.RxPayload[13 + j] | ( pLoRaMac->Status.RxPayload[14 + j] << 8 ) | ( pLoRaMac->Status.RxPayload[15 + j] << 16 ) ) * 100;
+                            LoRaMacSetChannel( pLoRaMac, i, param );
                         }
                     }
                    
-                    if( fCtrl.Bits.FOptsLen > 0 )
-                    {
-                        // Decode Options field MAC commands
-                        LoRaMacProcessMacCommands( pLoRaMac, payload, 8, appPayloadStartIndex );
-                    }
-                   
-                    if( ( ( size - 4 ) - appPayloadStartIndex ) > 0 )
-                    {
-                        port = payload[appPayloadStartIndex++];
-                        frameLen = ( size - 4 ) - appPayloadStartIndex;
-                       
-                        if( port == 0 )
-                        {
-                            LoRaMacPayloadDecrypt( payload + appPayloadStartIndex,
-                                                   frameLen,
-                                                   nwkSKey,
-                                                   address,
-                                                   DOWN_LINK,
-                                                   downLinkCounter,
-                                                   pLoRaMac->Status.RxPayload );
-                           
-                            // Decode frame payload MAC commands
-                            LoRaMacProcessMacCommands( pLoRaMac, pLoRaMac->Status.RxPayload, 0, frameLen );
-                        }
-                        else
-                        {
-                            LoRaMacPayloadDecrypt( payload + appPayloadStartIndex,
-                                                   frameLen,
-                                                   appSKey,
-                                                   address,
-                                                   DOWN_LINK,
-                                                   downLinkCounter,
-                                                   pLoRaMac->Status.RxPayload );
-
-                            pLoRaMac->Status.EventFlags.Bits.RxData = 1;
-                            pLoRaMac->EventInfo.RxPort = port;
-                            pLoRaMac->EventInfo.RxBuffer = pLoRaMac->Status.RxPayload;
-                            pLoRaMac->EventInfo.RxBufferSize = frameLen;
-                        }
-                    }
-
-                    pLoRaMac->Status.EventFlags.Bits.Tx = 1;
+                    pLoRaMac->Status.EventFlags.Bits.JoinAccept = 1;
+                    pLoRaMac->Status.IsNetworkJoined = true;
+                    pLoRaMac->Status.ChannelsDatarate = pLoRaMac->Config.ChannelsDefaultDatarate;
                     pLoRaMac->EventInfo.Status = LORAMAC_EVENT_INFO_STATUS_OK;
                 }
                 else
                 {
-                    pLoRaMac->EventInfo.TxAckReceived = false;
-                   
-                    pLoRaMac->Status.EventFlags.Bits.Tx = 1;
-                    pLoRaMac->EventInfo.Status = LORAMAC_EVENT_INFO_STATUS_MIC_FAIL;
-                    pLoRaMac->Status.State &= ~MAC_TX_RUNNING;
+                    pLoRaMac->EventInfo.Status = LORAMAC_EVENT_INFO_STATUS_JOIN_FAIL;
                 }
-            }
-            break;
-     
-         case FRAME_TYPE_PROPRIETARY:
-            //Intentional falltrough
-        default:
-            pLoRaMac->Status.EventFlags.Bits.Tx = 1;
-            pLoRaMac->EventInfo.Status = LORAMAC_EVENT_INFO_STATUS_ERROR;
-            pLoRaMac->Status.State &= ~MAC_TX_RUNNING;
-            break;
+
+                pLoRaMac->Status.EventFlags.Bits.Tx = 1;
+                break;
+            case FRAME_TYPE_DATA_CONFIRMED_DOWN:
+            case FRAME_TYPE_DATA_UNCONFIRMED_DOWN:
+                {
+                    address = payload[pktHeaderLen++];
+                    address |= ( payload[pktHeaderLen++] << 8 );
+                    address |= ( payload[pktHeaderLen++] << 16 );
+                    address |= ( payload[pktHeaderLen++] << 24 );
+
+                    if( address != pLoRaMac->Config.DevAddr )
+                    {
+                        curMulticastParams = pLoRaMac->Status.MulticastChannels;
+                        while( curMulticastParams != NULL )
+                        {
+                            if( address == curMulticastParams->Address )
+                            {
+                                pLoRaMac->Status.EventFlags.Bits.Multicast = 1;
+                                nwkSKey = curMulticastParams->NwkSKey;
+                                appSKey = curMulticastParams->AppSKey;
+                                downLinkCounter = curMulticastParams->DownLinkCounter;
+                                break;
+                            }
+                            curMulticastParams = curMulticastParams->Next;
+                        }
+                        if( pLoRaMac->Status.EventFlags.Bits.Multicast == 0 )
+                        {
+                            // We are not the destination of this frame.
+                            pLoRaMac->Status.EventFlags.Bits.Tx = 1;
+                            pLoRaMac->EventInfo.Status = LORAMAC_EVENT_INFO_STATUS_ADDRESS_FAIL;
+                            pLoRaMac->Status.State &= ~MAC_TX_RUNNING;
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        pLoRaMac->Status.EventFlags.Bits.Multicast = 0;
+                        nwkSKey = pLoRaMac->Config.NwkSKey;
+                        appSKey = pLoRaMac->Config.AppSKey;
+                        downLinkCounter = pLoRaMac->Status.DownLinkCounter;
+                    }
+                   
+                    if( pLoRaMac->Config.DeviceClass != CLASS_A )
+                    {
+                        pLoRaMac->Status.State |= MAC_RX;
+                        // Starts the MAC layer status check timer
+                        TimerStart( &pLoRaMac->Status.MacStateCheckTimer );
+                    }
+                    fCtrl.Value = payload[pktHeaderLen++];
+                   
+                    sequenceCounter |= payload[pktHeaderLen++];
+                    sequenceCounter |= payload[pktHeaderLen++] << 8;
+
+                    appPayloadStartIndex = 8 + fCtrl.Bits.FOptsLen;
+
+                    micRx |= payload[size - LORAMAC_MFR_LEN];
+                    micRx |= ( payload[size - LORAMAC_MFR_LEN + 1] << 8 );
+                    micRx |= ( payload[size - LORAMAC_MFR_LEN + 2] << 16 );
+                    micRx |= ( payload[size - LORAMAC_MFR_LEN + 3] << 24 );
+
+                    sequence = ( int32_t )sequenceCounter - ( int32_t )( downLinkCounter & 0xFFFF );
+                    if( sequence < 0 )
+                    {
+                        // sequence reset or roll over happened
+                        downLinkCounter = ( downLinkCounter & 0xFFFF0000 ) | ( sequenceCounter + ( uint32_t )0x10000 );
+                        LoRaMacComputeMic( payload, size - LORAMAC_MFR_LEN, nwkSKey, address, DOWN_LINK, downLinkCounter, &mic );
+                        if( micRx == mic )
+                        {
+                            isMicOk = true;
+                        }
+                        else
+                        {
+                            isMicOk = false;
+                            // sequence reset
+                            if( pLoRaMac->Status.EventFlags.Bits.Multicast == 1 )
+                            {
+                                curMulticastParams->DownLinkCounter = downLinkCounter = sequenceCounter;
+                            }
+                            else
+                            {
+                                pLoRaMac->Status.DownLinkCounter = downLinkCounter = sequenceCounter;
+                            }
+                            LoRaMacComputeMic( payload, size - LORAMAC_MFR_LEN, nwkSKey, address, DOWN_LINK, downLinkCounter, &mic );
+                        }
+                    }
+                    else
+                    {
+                        downLinkCounter = ( downLinkCounter & 0xFFFF0000 ) | sequenceCounter;
+                        LoRaMacComputeMic( payload, size - LORAMAC_MFR_LEN, nwkSKey, address, DOWN_LINK, downLinkCounter, &mic );
+                    }
+
+                    if( ( isMicOk == true ) ||
+                        ( micRx == mic ) )
+                    {
+                        pLoRaMac->Status.EventFlags.Bits.Rx = 1;
+                        pLoRaMac->EventInfo.RxSnr = snr;
+                        pLoRaMac->EventInfo.RxRssi = rssi;
+                        pLoRaMac->EventInfo.RxBufferSize = 0;
+                        pLoRaMac->Status.AdrAckCounter = 0;
+                        if( pLoRaMac->Status.EventFlags.Bits.Multicast == 1 )
+                        {
+                            curMulticastParams->DownLinkCounter = downLinkCounter;
+                        }
+                        else
+                        {
+                            pLoRaMac->Status.DownLinkCounter = downLinkCounter;
+                        }
+
+                        if( macHdr.Bits.MType == FRAME_TYPE_DATA_CONFIRMED_DOWN )
+                        {
+                            pLoRaMac->Status.SrvAckRequested = true;
+                        }
+                        else
+                        {
+                            pLoRaMac->Status.SrvAckRequested = false;
+                        }
+                        // Check if the frame is an acknowledgement
+                        if( fCtrl.Bits.Ack == 1 )
+                        {
+                            pLoRaMac->EventInfo.TxAckReceived = true;
+
+                            // Stop the AckTimeout timer as no more retransmissions
+                            // are needed.
+                            TimerStop( &pLoRaMac->Status.AckTimeoutTimer );
+                        }
+                        else
+                        {
+                            pLoRaMac->EventInfo.TxAckReceived = false;
+                            if( pLoRaMac->Status.AckTimeoutRetriesCounter > pLoRaMac->Status.AckTimeoutRetries )
+                            {
+                                // Stop the AckTimeout timer as no more retransmissions
+                                // are needed.
+                                TimerStop( &pLoRaMac->Status.AckTimeoutTimer );
+                            }
+                        }
+                       
+                        if( fCtrl.Bits.FOptsLen > 0 )
+                        {
+                            // Decode Options field MAC commands
+                            LoRaMacProcessMacCommands( pLoRaMac, payload, 8, appPayloadStartIndex );
+                        }
+                       
+                        if( ( ( size - 4 ) - appPayloadStartIndex ) > 0 )
+                        {
+                            port = payload[appPayloadStartIndex++];
+                            frameLen = ( size - 4 ) - appPayloadStartIndex;
+                           
+                            if( port == 0 )
+                            {
+                                LoRaMacPayloadDecrypt( payload + appPayloadStartIndex,
+                                                       frameLen,
+                                                       nwkSKey,
+                                                       address,
+                                                       DOWN_LINK,
+                                                       downLinkCounter,
+                                                       pLoRaMac->Status.RxPayload );
+                               
+                                // Decode frame payload MAC commands
+                                LoRaMacProcessMacCommands( pLoRaMac, pLoRaMac->Status.RxPayload, 0, frameLen );
+                            }
+                            else
+                            {
+                                LoRaMacPayloadDecrypt( payload + appPayloadStartIndex,
+                                                       frameLen,
+                                                       appSKey,
+                                                       address,
+                                                       DOWN_LINK,
+                                                       downLinkCounter,
+                                                       pLoRaMac->Status.RxPayload );
+
+                                pLoRaMac->Status.EventFlags.Bits.RxData = 1;
+                                pLoRaMac->EventInfo.RxPort = port;
+                                pLoRaMac->EventInfo.RxBuffer = pLoRaMac->Status.RxPayload;
+                                pLoRaMac->EventInfo.RxBufferSize = frameLen;
+                            }
+                        }
+
+                        pLoRaMac->Status.EventFlags.Bits.Tx = 1;
+                        pLoRaMac->EventInfo.Status = LORAMAC_EVENT_INFO_STATUS_OK;
+                    }
+                    else
+                    {
+                        pLoRaMac->EventInfo.TxAckReceived = false;
+                       
+                        pLoRaMac->Status.EventFlags.Bits.Tx = 1;
+                        pLoRaMac->EventInfo.Status = LORAMAC_EVENT_INFO_STATUS_MIC_FAIL;
+                        pLoRaMac->Status.State &= ~MAC_TX_RUNNING;
+                    }
+                }
+                break;
+         
+             case FRAME_TYPE_PROPRIETARY:
+                //Intentional falltrough
+            default:
+                pLoRaMac->Status.EventFlags.Bits.Tx = 1;
+                pLoRaMac->EventInfo.Status = LORAMAC_EVENT_INFO_STATUS_ERROR;
+                pLoRaMac->Status.State &= ~MAC_TX_RUNNING;
+                break;
+        }
     }
 }
 

@@ -18,6 +18,7 @@ typedef double      FTE_FLOAT, _PTR_ FTE_FLOAT_PTR;
 #define MQX_INVALID_OBJECT          (MQX_ERROR_BASE|0x82)
 #define MQX_ALREADY_EXISTS          (MQX_ERROR_BASE|0x83)
 
+#define MQX_LORAWAN_BUSY            (MQX_ERROR_BASE|0xA3)
 
 #define FTE_RET_OK                  (MQX_OK)
 #define FTE_RET_ERROR               (MQX_ERROR)

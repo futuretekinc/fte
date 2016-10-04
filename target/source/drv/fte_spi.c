@@ -263,7 +263,7 @@ _mqx_uint   FTE_SPI_write(FTE_SPI_PTR pSPI, uint_8_ptr cmd, uint_32 cmd_len, uin
     }
             
     _FTE_SPI_lock(pSPI);
-
+#if 1
 #ifdef  DEBUG_SPI
     printf("WR : ");
     for(int i = 0 ; i < cmd_len ; i++)
@@ -292,7 +292,22 @@ _mqx_uint   FTE_SPI_write(FTE_SPI_PTR pSPI, uint_8_ptr cmd, uint_32 cmd_len, uin
             goto error;
         }
     }
-
+#else
+    static uint_8 pBuff[64];
+    static uint_8 ulBuffLen = 0;
+    
+    memcpy(&pBuff[ulBuffLen], cmd, cmd_len);
+    ulBuffLen = cmd_len;
+    memcpy(&pBuff[ulBuffLen], buff, buff_len);
+    ulBuffLen += buff_len;
+   
+    if (ulBuffLen != fwrite(pBuff, 1, ulBuffLen, pSPI->pChannel->xFD))
+    {
+        goto error;
+    }
+    
+#endif
+    fflush(pSPI->pChannel->xFD);
     
     _FTE_SPI_unlock(pSPI);
     
@@ -537,10 +552,12 @@ error:
 _mqx_uint   _FTE_SPI_lock(FTE_SPI_PTR pSPI)
 {
     assert(pSPI != NULL);
+
+    //_int_enable();    
     
     if (_lwsem_wait(&pSPI->pChannel->xLWSEM) != MQX_OK)
     {  
-        DEBUG("\n_lwsem_wait failed");
+//        DEBUG("\n_lwsem_wait failed");
         goto error;
     }
     
@@ -552,6 +569,7 @@ _mqx_uint   _FTE_SPI_lock(FTE_SPI_PTR pSPI)
     return  MQX_OK;
 error:
     
+    //_int_disable();    
     return  MQX_ERROR;
 }
 
@@ -566,8 +584,11 @@ _mqx_uint   _FTE_SPI_unlock(FTE_SPI_PTR pSPI)
     if (_lwsem_post(&pSPI->pChannel->xLWSEM) != MQX_OK)
     {
         DEBUG("\n_lwsem_post failed");
+    //_int_disable();    
         return  MQX_ERROR;
     }
+    
+    //_int_disable();    
     
     return  MQX_OK;
 }
