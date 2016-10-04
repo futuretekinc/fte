@@ -185,7 +185,7 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state>FTE_ES20=1</state>
+          <state>FTE_ES21=1</state>
           <state>FTE_V2=1</state>
           <state>FTE_DEBUG=1</state>
           <state>FREESCALE_MQX</state>
@@ -2150,6 +2150,9 @@
     <group>
       <name>target</name>
       <file>
+        <name>$PROJ_DIR$\include\target\fte_common.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\include\target\fte_eh1.h</name>
       </file>
       <file>
@@ -2193,6 +2196,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_es2.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\target\fte_es21.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_es4.h</name>
@@ -2707,6 +2713,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\source\obj\fte_do.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\obj\fte_dotech.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\source\obj\fte_ds18b20.c</name>

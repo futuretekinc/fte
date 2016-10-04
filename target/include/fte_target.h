@@ -192,6 +192,8 @@ _mqx_uint               FTE_PLATFORM_run(void);
 #include "fte_es19.h"
 #elif defined(FTE_ES20)
 #include "fte_es20.h"
+#elif defined(FTE_ES21)
+#include "fte_es21.h"
 #elif defined(FTE_EH1)
 #include "fte_eh1.h"
 #elif defined(FTE_MN1)
@@ -219,6 +221,7 @@ _mqx_uint               FTE_PLATFORM_run(void);
 #define FTE_TASK_15_4_STACK             15
 #define FTE_TASK_NS_STACK               16
 #endif
+#define FTE_TASK_DOTECH                 17
      
 #define FTE_TASK_DEFAULT_STACK          512
 
@@ -275,6 +278,11 @@ _mqx_uint               FTE_PLATFORM_run(void);
 #if FTE_TASK_IOEX
     #define FTE_TASK_IOEX_STACK         (FTE_TASK_DEFAULT_STACK * 2)
     #define FTE_TASK_IOEX_PRIO          9
+#endif
+
+#if FTE_TASK_DOTECH
+    #define FTE_TASK_DOTECH_STACK         (FTE_TASK_DEFAULT_STACK * 2)
+    #define FTE_TASK_DOTECH_PRIO          9
 #endif
 
 #if FTE_TASK_LORA

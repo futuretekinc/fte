@@ -531,6 +531,148 @@ boolean FTE_UCS_waitForSendCompletion(FTE_UCS_PTR pUCS, uint_32 nTimeout)
     return  FALSE;
 }
 
+/******************************************************************************
+ * MODBUS operation
+ ******************************************************************************/
+uint_32 FTE_UCS_MODBUS_getRegs
+(
+    FTE_UCS_PTR     pUCS, 
+    uint_8          ucDeviceID,
+    uint_16         usAddr, 
+    uint_16_ptr     pRegs, 
+    uint_8          nCount, 
+    uint_32         nTimeout
+)
+{
+    ASSERT((pUCS != NULL) && (pRegs != NULL));
+    
+    uint_8      pReqFrame[10];
+    uint_32     ulReqLen;
+    uint_8_ptr  pRecvFrame;
+    uint_8_ptr  pRecvBuff;
+    uint_16     uiCRC;
+    uint_32     ulRecvLen;
+    uint_32     ulValidRespFrameLen;
+    uint_32     i;
+    
+    ulValidRespFrameLen = (5 + sizeof(uint_16)*nCount);
+    pRecvBuff = (uint_8_ptr)FTE_MEM_allocZero(ulValidRespFrameLen * 2);
+    if (pRecvBuff == NULL)
+    {
+        return  MQX_OUT_OF_MEMORY;
+    }    
+        
+    ulReqLen = 0;
+    pReqFrame[ulReqLen++] = ucDeviceID;
+    pReqFrame[ulReqLen++] = 0x03;
+    pReqFrame[ulReqLen++] = (usAddr >> 8) & 0xFF;
+    pReqFrame[ulReqLen++] = (usAddr     ) & 0xFF;
+    pReqFrame[ulReqLen++] = 0x00;
+    pReqFrame[ulReqLen++] = nCount;
+    uiCRC = fte_crc16(pReqFrame, ulReqLen);
+    pReqFrame[ulReqLen++] = (uiCRC     ) & 0xFF;
+    pReqFrame[ulReqLen++] = (uiCRC >> 8) & 0xFF;
+    pReqFrame[ulReqLen++] = 0;
+                
+    ulRecvLen = FTE_UCS_sendAndRecv(pUCS, pReqFrame, ulReqLen, pRecvBuff, ulValidRespFrameLen * 2, 0, nTimeout);
+    if (ulRecvLen < ulValidRespFrameLen)
+    {
+        FTE_MEM_free(pRecvBuff);
+        return  MQX_ERROR;
+    }
+    
+    pRecvFrame = NULL;
+    for(i = 0 ; i <= (ulRecvLen - ulValidRespFrameLen) ; i++)
+    {
+        if ((pRecvBuff[i] == ucDeviceID) && (pRecvBuff[i + 1] == 0x03) && (pRecvBuff[i + 2] == nCount * 2))
+        {
+            uiCRC = fte_crc16(&pRecvBuff[i], ulValidRespFrameLen - 2);
+            if (uiCRC == *((uint_16_ptr)&pRecvBuff[i+ ulValidRespFrameLen - 2]))
+            {            
+                pRecvFrame = &pRecvBuff[i];
+                break;
+            }
+        }
+    }
+    
+    if (pRecvFrame == NULL)
+    {
+        FTE_MEM_free(pRecvBuff);
+        return  MQX_ERROR;
+    }
+    
+    for(i = 0 ; i < nCount ; i++)
+    {
+        pRegs[i] = ((uint_16)pRecvFrame[3+i*2] << 8) | (uint_16)pRecvFrame[3+i*2+1];
+    }
+    
+    FTE_MEM_free(pRecvBuff);
+    return  MQX_OK;
+}
+
+uint_32 FTE_UCS_MODBUS_setReg
+(
+    FTE_UCS_PTR     pUCS, 
+    uint_8          ucDeviceID,
+    uint_16         usAddr, 
+    uint_16         usValue, 
+    uint_32         nTimeout
+)
+{
+    ASSERT(pUCS != NULL);
+    
+    uint_8      pReqFrame[10];
+    uint_32     ulReqLen;
+    uint_8      pRecvBuff[10];
+    uint_32     ulRecvLen;
+    uint_8_ptr  pRecvFrame;
+    uint_32     ulValidFrameLen;
+    uint_32     uiCRC;
+    uint_32     i;
+    
+    ulReqLen = 0;
+    pReqFrame[ulReqLen++] = ucDeviceID;
+    pReqFrame[ulReqLen++] = 0x06;
+    pReqFrame[ulReqLen++] = (usAddr >> 8) & 0xFF;
+    pReqFrame[ulReqLen++] = (usAddr     ) & 0xFF;
+    pReqFrame[ulReqLen++] = (usValue>> 8) & 0xFF;
+    pReqFrame[ulReqLen++] = (usValue    ) & 0xFF;
+    uiCRC = fte_crc16(pReqFrame, ulReqLen);
+    pReqFrame[ulReqLen++] = (uiCRC     ) & 0xFF;
+    pReqFrame[ulReqLen++] = (uiCRC >> 8) & 0xFF;
+    pReqFrame[ulReqLen++] = 0;
+                
+    ulValidFrameLen = 8;
+    
+    ulRecvLen = FTE_UCS_sendAndRecv(pUCS, pReqFrame, ulReqLen, pRecvBuff, sizeof(pRecvBuff), 0, nTimeout);
+    if (ulRecvLen < ulValidFrameLen)
+    {
+        return  MQX_ERROR;
+    }
+    
+    pRecvFrame = NULL;
+    for(i = 0 ; i <= (ulRecvLen - ulValidFrameLen) ; i++)
+    {
+        if ((pRecvBuff[i] == ucDeviceID) && (pRecvBuff[i + 1] == 0x06))
+        {
+            uiCRC = fte_crc16(&pRecvBuff[i], ulValidFrameLen - 2);
+            if (uiCRC == *((uint_16_ptr)&pRecvBuff[i+ ulValidFrameLen - 2]))
+            {            
+                pRecvFrame = &pRecvBuff[i];
+                break;
+            }
+        }
+    }
+    
+    if (pRecvFrame == NULL)
+    {
+        return  MQX_ERROR;
+    }
+    
+    return  MQX_OK;
+}
+
+
 _mqx_uint   _FTE_UCS_lock(FTE_UCS_PTR pUCS)
 {
     ASSERT(pUCS != NULL);

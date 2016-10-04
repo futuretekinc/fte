@@ -538,97 +538,139 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
             {
                 FTE_EVENT_PTR           pEvent;
                 uint_32                 ulIndex;
-                
-                if (!Shell_parse_number(pArgv[1], &ulIndex))
-                {
-                    bPrintUsage = TRUE;
-                    break;
-                }
-                
-                if ((pEvent = FTE_EVENT_getAt(ulIndex - 1)) == NULL)                        
-                {
-                    printf("Error : Invalid index[%lu]\n", ulIndex);
-                    break;
-                }
-                
-                if (strcmp(pArgv[2], "interval") == 0)
-                {
-                    uint_32 ulInterval;
-                    
-                    if (pEvent->pConfig->xCondition != FTE_EVENT_CONDITION_INTERVAL)
-                    {
-                        printf("Invalid condition parameter!\n");
-                        bPrintUsage = TRUE;
-                        break;
-                    }
-                    
-                    if ((!Shell_parse_number(pArgv[3], &ulInterval)) || (ulInterval > 60*60*24*31))
-                    {
-                        printf("Invalid interval[%s]!\n", pArgv[3]);
-                        bPrintUsage = TRUE;
-                        break;
-                    }
-                    
-                    pEvent->pConfig->xParams.ulInterval = ulInterval;
-                    FTE_CFG_save(TRUE);
-                }
-                else if (strcmp(pArgv[2], "enable") == 0)
-                {
-                    uint_32 ulFlag;
-                    
-                    if (strcmp(pArgv[3], "log") == 0)
-                    {
-                        ulFlag = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_LOG;    
-                    }
-                    else if (strcmp(pArgv[3], "snmp") == 0)
-                    {
-                        ulFlag = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP;    
-                    }
-                    else if (strcmp(pArgv[3], "mqtt") == 0)
-                    {
-                        ulFlag = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_MQTT_PUB;    
-                    }
-                    else
-                    {
-                        bPrintUsage = TRUE;
-                        goto error;
-                    }
-                    
-                    if (FTE_FLAG_IS_CLR(pEvent->pConfig->xType, ulFlag))
-                    {
-                        pEvent->pConfig->xType = FTE_FLAG_SET(pEvent->pConfig->xType, ulFlag);
-                        FTE_CFG_save(TRUE);
-                    }
-                }
-                else if (strcmp(pArgv[2], "disable") == 0)
-                {
-                    uint_32 ulFlag;
-                    
-                    if (strcmp(pArgv[3], "log") == 0)
-                    {
-                        ulFlag = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_LOG;    
-                    }
-                    else if (strcmp(pArgv[3], "snmp") == 0)
-                    {
-                        ulFlag = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP;    
-                    }
-                    else if (strcmp(pArgv[3], "mqtt") == 0)
-                    {
-                        ulFlag = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_MQTT_PUB;    
-                    }
-                    else
-                    {
-                        bPrintUsage = TRUE;
-                        goto error;
-                    }
 
-                    if (FTE_FLAG_IS_SET(pEvent->pConfig->xType, ulFlag))
+                if (strcmp(pArgv[1], "add") == 0)
+                {
+                    FTE_CFG_EVENT_PTR pEventConfig;
+                    FTE_EVENT_PTR     pEvent;
+                    FTE_OBJECT_PTR    pObject;
+                    uint_32           ulEPID;
+                    uint_32           ulInterval;
+                    
+                    if (!Shell_parse_hexnum(pArgv[2], &ulEPID))
                     {
-                        pEvent->pConfig->xType = FTE_FLAG_CLR(pEvent->pConfig->xType, ulFlag);
+                        bPrintUsage = TRUE;
+                        break;
+                    }
+                    
+                    pObject = FTE_OBJ_get(ulEPID);
+                    if (pObject == NULL)
+                    {
+                        printf("The object[%08lx] not found!\n", ulEPID);
+                        break;
+                    }
+                    
+                    if (strcmp(pArgv[3], "change") == 0)
+                    {
+                        pEventConfig = FTE_CFG_EVENT_alloc(ulEPID);
+                        if (pEventConfig == NULL)
+                        {
+                            bPrintUsage = TRUE;
+                            break;
+                        }
+                        
+                        pEventConfig->xCondition= FTE_EVENT_CONDITION_CHANGED;
+                        
+                        FTE_EVENT_create(pEventConfig, &pEvent);
+                        
+                        FTE_OBJ_EVENT_attach(pObject, pEvent);
+                        
                         FTE_CFG_save(TRUE);
+
                     }
                 }
-                 
+                else
+                    {
+                    if (!Shell_parse_number(pArgv[1], &ulIndex))
+                    {
+                        bPrintUsage = TRUE;
+                        break;
+                    }
+                    
+                    if ((pEvent = FTE_EVENT_getAt(ulIndex - 1)) == NULL)                        
+                    {
+                        printf("Error : Invalid index[%lu]\n", ulIndex);
+                        break;
+                    }
+                    
+                    if (strcmp(pArgv[2], "interval") == 0)
+                    {
+                        uint_32 ulInterval;
+                        
+                        if (pEvent->pConfig->xCondition != FTE_EVENT_CONDITION_INTERVAL)
+                        {
+                            printf("Invalid condition parameter!\n");
+                            bPrintUsage = TRUE;
+                            break;
+                        }
+                        
+                        if ((!Shell_parse_number(pArgv[3], &ulInterval)) || (ulInterval > 60*60*24*31))
+                        {
+                            printf("Invalid interval[%s]!\n", pArgv[3]);
+                            bPrintUsage = TRUE;
+                            break;
+                        }
+                        
+                        pEvent->pConfig->xParams.ulInterval = ulInterval;
+                        FTE_CFG_save(TRUE);
+                    }
+                    else if (strcmp(pArgv[2], "enable") == 0)
+                    {
+                        uint_32 ulFlag;
+                        
+                        if (strcmp(pArgv[3], "log") == 0)
+                        {
+                            ulFlag = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_LOG;    
+                        }
+                        else if (strcmp(pArgv[3], "snmp") == 0)
+                        {
+                            ulFlag = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP;    
+                        }
+                        else if (strcmp(pArgv[3], "mqtt") == 0)
+                        {
+                            ulFlag = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_MQTT_PUB;    
+                        }
+                        else
+                        {
+                            bPrintUsage = TRUE;
+                            goto error;
+                        }
+                        
+                        if (FTE_FLAG_IS_CLR(pEvent->pConfig->xType, ulFlag))
+                        {
+                            pEvent->pConfig->xType = FTE_FLAG_SET(pEvent->pConfig->xType, ulFlag);
+                            FTE_CFG_save(TRUE);
+                        }
+                    }
+                    else if (strcmp(pArgv[2], "disable") == 0)
+                    {
+                        uint_32 ulFlag;
+                        
+                        if (strcmp(pArgv[3], "log") == 0)
+                        {
+                            ulFlag = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_LOG;    
+                        }
+                        else if (strcmp(pArgv[3], "snmp") == 0)
+                        {
+                            ulFlag = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP;    
+                        }
+                        else if (strcmp(pArgv[3], "mqtt") == 0)
+                        {
+                            ulFlag = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_MQTT_PUB;    
+                        }
+                        else
+                        {
+                            bPrintUsage = TRUE;
+                            goto error;
+                        }
+
+                        if (FTE_FLAG_IS_SET(pEvent->pConfig->xType, ulFlag))
+                        {
+                            pEvent->pConfig->xType = FTE_FLAG_CLR(pEvent->pConfig->xType, ulFlag);
+                            FTE_CFG_save(TRUE);
+                        }
+                    }
+                 }
                  return  SHELL_EXIT_SUCCESS;                                                    
             }
             break;

@@ -53,7 +53,10 @@ boolean fte_parse_ip_address( char_ptr pIPString, uint_32 _PTR_ pIP)
    return TRUE;
 }
 
-boolean fte_parse_enet_address( char_ptr arg, _enet_address enet_address)
+boolean fte_parse_enet_address
+(   char_ptr         arg, 
+   _enet_address    enet_address
+)
 {
    int i,j=0;
    
@@ -69,4 +72,84 @@ boolean fte_parse_enet_address( char_ptr arg, _enet_address enet_address)
       }
    } 
    return TRUE;   
+}
+
+boolean fte_parse_float
+(    char_ptr    pString, 
+    double _PTR_ pValue
+)
+{
+    int     i;
+    double  dValue = 0;
+    boolean bNagative = FALSE;
+    boolean bInteger = TRUE;
+    double  dDevider = 10;
+    
+    if ((pString == NULL) && (strlen(pString) == 0))
+    {
+        return  FALSE;
+    }
+
+    for(i = 0 ; i < strlen(pString) ; i++)
+    {
+        if (!isspace(pString[i])) 
+        {   
+            break;
+        }
+    }
+    
+    if (pString[i] == '-')
+    {
+        bNagative = TRUE;
+        i++;
+    }
+    else if (pString[i] == '+')
+    {
+        i++;
+    }
+    else if (!isdigit(pString[i]))
+    {
+        return  FALSE;
+    }
+    
+    for(; i < strlen(pString) ; i++)
+    {
+        if (isdigit(pString[i]))
+        {
+            if (bInteger)
+            {
+                dValue = dValue * 10 + (pString[i] - '0');
+            }
+            else
+            {
+                dValue += (pString[i] - '0') / dDevider;
+                dDevider *= 10;
+            }
+        }
+        else if (pString[i] == '.')
+        {
+            if (!bInteger)
+            {
+                return  FALSE;
+            }
+            
+            bInteger = FALSE;
+        }
+        else
+        {
+            return  FALSE;
+        }
+    }
+    
+    if (bNagative)
+    {
+        *pValue = 0 - dValue;
+    }
+    else
+    {
+        *pValue = dValue;
+    }
+    
+    return  TRUE;
+
 }

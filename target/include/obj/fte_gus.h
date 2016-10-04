@@ -15,6 +15,7 @@
 #define FTE_GUS_MODEL_FTLM                  12
 #define FTE_GUS_MODEL_CIAS_SIOUX_CU         13
 #define FTE_GUS_MODEL_IOEX                  14
+#define FTE_GUS_MODEL_DOTECH_FX3D           15
 #define FTE_GUS_RESPONSE_TIME   500
 
 typedef struct FTE_GUS_MODEL_INFO_STRUCT
@@ -34,6 +35,8 @@ typedef struct FTE_GUS_MODEL_INFO_STRUCT
     _mqx_uint           (*f_get)(FTE_OBJECT_PTR pObject, uint_32 nIndex, FTE_VALUE_PTR pValue);
     _mqx_uint           (*f_set_config)(FTE_OBJECT_PTR pObject, char_ptr pBuff);
     _mqx_uint           (*f_get_config)(FTE_OBJECT_PTR pObject, char_ptr pBuff, uint_32 ulBuffLen);
+    _mqx_uint           (*f_set_child_config)(FTE_OBJECT_PTR pChild, char_ptr pBuff);
+    _mqx_uint           (*f_get_child_config)(FTE_OBJECT_PTR pChild, char_ptr pBuff, uint_32 ulBuffLen);
 
 } FTE_GUS_MODEL_INFO, _PTR_ FTE_GUS_MODEL_INFO_PTR;
 

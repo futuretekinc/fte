@@ -5,6 +5,7 @@
 #define DEBUG_OBJECT        0x00000001
 #define DEBUG_EVENT         0x00000002
 #define DEBUG_DI            0x00000004
+#define DEBUG_DEVICE        0x00000008
 #define DEBUG_NET_MQTT      0x00000100
 #define DEBUG_NET_CGI       0x00000200
 #define DEBUG_NET_SMNG      0x00000400

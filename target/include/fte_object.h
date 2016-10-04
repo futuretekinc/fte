@@ -69,7 +69,7 @@
 #define FTE_OBJ_TYPE_FLEXIFORCE         ((FTE_OBJ_CLASS_AI          ) | (0x01 << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_DUST               ((FTE_OBJ_CLASS_AI          ) | (0x02 << FTE_OBJ_TYPE_SHIFT))
 
-#define FTE_OBJ_TYPE_MULTI_VALUE        ((FTE_OBJ_CLASS_AI          ) | (0x81 << FTE_OBJ_TYPE_SHIFT))
+#define FTE_OBJ_TYPE_MULTI_AI           ((FTE_OBJ_CLASS_AI          ) | (0x81 << FTE_OBJ_TYPE_SHIFT))
 
 #define FTE_OBJ_TYPE_GAS                ((FTE_OBJ_CLASS_GAS         ) | (0x00 << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_CO2                ((FTE_OBJ_CLASS_GAS         ) | (0x01 << FTE_OBJ_TYPE_SHIFT))
@@ -95,6 +95,7 @@
 #define FTE_OBJ_TYPE_MULTI_TEMP_CTRL    ((FTE_OBJ_CLASS_TEMP_CTRL   ) | (0x80 << FTE_OBJ_TYPE_SHIFT))
 
 #define FTE_OBJ_TYPE_MULTI              ((FTE_OBJ_CLASS_MULTI       ) | (0x00 << FTE_OBJ_TYPE_SHIFT))
+#define FTE_OBJ_TYPE_MULTI_VALUE        ((FTE_OBJ_CLASS_MULTI       ) | (0x00 << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_MULTI_SHT          ((FTE_OBJ_CLASS_MULTI       ) | (0x01 << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_MULTI_SH_MV250     ((FTE_OBJ_CLASS_MULTI       ) | (0x02 << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_MULTI_AQM100       ((FTE_OBJ_CLASS_MULTI       ) | (0x03 << FTE_OBJ_TYPE_SHIFT))
@@ -107,6 +108,7 @@
 #define FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU ((FTE_OBJ_CLASS_MULTI      ) | (0x0A << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_MULTI_IOEX         ((FTE_OBJ_CLASS_MULTI      )  | (0x0B << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_MULTI_HEM12        ((FTE_OBJ_CLASS_MULTI       ) | (0x0C << FTE_OBJ_TYPE_SHIFT))
+#define FTE_OBJ_TYPE_MULTI_DOTECH_FX3D  ((FTE_OBJ_CLASS_MULTI      )  | (0x0D << FTE_OBJ_TYPE_SHIFT))
 
 #define FTE_OBJ_ID_MASK                     0xFFFFFFFF
 typedef uint_32 FTE_OBJECT_ID;
@@ -248,6 +250,8 @@ typedef struct _fte_object_action_struct
     _mqx_uint       (*f_get_child)(FTE_OBJECT_PTR pSelf, uint_32 ulIndex, FTE_OBJECT_ID _PTR_ pxID);
     _mqx_uint       (*f_set_config)(FTE_OBJECT_PTR pSelf, char_ptr pJSON);
     _mqx_uint       (*f_get_config)(FTE_OBJECT_PTR pSelf, char_ptr pBuff, uint_32 ulBuffLen);
+    _mqx_uint       (*f_set_child_config)(FTE_OBJECT_PTR pSelf, FTE_OBJECT_PTR pChild, char_ptr pJSON);
+    _mqx_uint       (*f_get_child_config)(FTE_OBJECT_PTR pSelf, FTE_OBJECT_PTR pChild, char_ptr pBuff, uint_32 ulBuffLen);
     
 }   FTE_OBJECT_ACTION, _PTR_ FTE_OBJECT_ACTION_PTR;
 
@@ -258,7 +262,7 @@ typedef struct _fte_object_status_struct
     FTE_VALUE_PTR           pValue;
     TIME_STRUCT             xEventTimeStamp;
     MQX_TICK_STRUCT         xStartTicks;            
-    FTE_OBJECT_STATISTICS    xStatistics;
+    FTE_OBJECT_STATISTICS   xStatistics;
 }   FTE_OBJECT_STATUS, _PTR_ FTE_OBJECT_STATUS_PTR;
 
 typedef struct _fte_object_desc_struct
@@ -383,5 +387,6 @@ int_32          FTE_OBJ_SHELL_cmd(int_32 argc, char_ptr argv[]);
 #include "obj/fte_ftlm.h"
 #include "obj/fte_cias.h"
 #include "obj/fte_ioex.h"
+#include "obj/fte_dotech.h"
 
 #endif

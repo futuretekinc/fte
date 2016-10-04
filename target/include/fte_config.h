@@ -48,7 +48,13 @@ _mqx_uint           FTE_CFG_NET_TRAP_clear(void);
 FTE_OBJECT_CONFIG_PTR   FTE_CFG_OBJ_alloc(uint_32 nID);
 _mqx_uint               FTE_CFG_OBJ_free(uint_32 oid);
 
-FTE_OBJECT_CONFIG_PTR   FTE_CFG_OBJ_create(FTE_OBJECT_CONFIG_PTR pConfig);
+FTE_OBJECT_CONFIG_PTR   FTE_CFG_OBJ_create
+(
+    FTE_OBJECT_CONFIG_PTR pConfig,
+    FTE_OBJECT_CONFIG_PTR _PTR_ pChildConfigs,
+    uint_32             ulMaxCount,
+    uint_32_ptr         pulCount
+);
 pointer                 FTE_CFG_OBJ_get(uint_32 oid);
 pointer                 FTE_CFG_OBJ_getAt(uint_32 oid, uint_32 ulMask, uint_32 ulIdx);
 
@@ -74,6 +80,9 @@ _mqx_uint               FTE_CFG_CIAS_setExtConfig(void _PTR_ pCIAS, uint_32 ulCI
 
 _mqx_uint               FTE_CFG_IOEX_getExtConfig(void _PTR_ pBuff, uint_32 ulBuffLen);
 _mqx_uint               FTE_CFG_IOEX_setExtConfig(void _PTR_ pCIAS, uint_32 ulIOEXLen);
+
+_mqx_uint               FTE_CFG_DOTECH_getExtConfig(void _PTR_ pBuff, uint_32 ulBuffLen);
+_mqx_uint               FTE_CFG_DOTECH_setExtConfig(void _PTR_ pBuff, uint_32 ulBuffLen);
 
 boolean                 FTE_CFG_CERT_valid(void);
 uint_32                 FTE_CFG_CERT_size(void);

@@ -12,6 +12,10 @@ static void         _ifce_restart_convert(_timer_id id, pointer data_ptr, MQX_TI
 static _mqx_uint    _ifce_set(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue);
 static uint_32      _ifce_get_update_interval(FTE_OBJECT_PTR pObj);
 static _mqx_uint    _ifce_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInterval);
+static uint_32      _ifce_get_update_interval(FTE_OBJECT_PTR pObj);
+static _mqx_uint    _ifce_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInterval);
+static _mqx_uint   _iface_set_config(FTE_OBJECT_PTR pObj, char_ptr pBuff);
+static _mqx_uint   _iface_get_config(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 ulBuffLen);
 
 static  FTE_OBJECT_ACTION _ifce_action = 
 {
@@ -20,7 +24,10 @@ static  FTE_OBJECT_ACTION _ifce_action =
     .f_stop         = _ifce_stop,
     .f_set          = _ifce_set,
     .f_get_update_interval  = _ifce_get_update_interval,
-    .f_set_update_interval  = _ifce_set_update_interval
+    .f_set_update_interval  = _ifce_set_update_interval,
+    .f_get_config   = _iface_get_config,   \
+    .f_set_config   = _iface_set_config,   \
+
 };
 
 _mqx_uint   fte_ifce_attach(FTE_OBJECT_PTR pObj)
@@ -84,7 +91,7 @@ _mqx_uint   fte_ifce_attach(FTE_OBJECT_PTR pObj)
     pStatus->pParent = pParent;    
     if ((pParent != NULL) && (pParent->pAction->f_attach_child != NULL))
     {
-        if (pParent->pAction->f_attach_child(pParent, pConfig->xCommon.nID) != MQX_OK)
+        if (pParent->pAction->f_attach_child(pParent, pConfig->xCommon.nID) != FTE_RET_OK)
         {
             goto error;
         }
@@ -92,7 +99,7 @@ _mqx_uint   fte_ifce_attach(FTE_OBJECT_PTR pObj)
     
     _ifce_init(pObj);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
     
@@ -132,19 +139,24 @@ _mqx_uint fte_ifce_detach(FTE_OBJECT_PTR pObj)
      pObj->pAction = NULL;
      pObj->pStatus = NULL;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 _mqx_uint   _ifce_init(FTE_OBJECT_PTR pObj)
 {
-    assert(pObj != NULL);
-    
-    return  MQX_OK;
+    ASSERT(pObj != NULL);
+
+    if (FTE_OBJ_IS_ENABLED(pObj))
+    {
+        return  _ifce_run(pObj);
+    }
+        
+    return  FTE_RET_OK;
 }
 
 _mqx_uint   _ifce_run(FTE_OBJECT_PTR pObj)
 {
-    assert(pObj != NULL);
+    ASSERT(pObj != NULL);
 
     MQX_TICK_STRUCT     xTicks;            
     MQX_TICK_STRUCT     xDTicks;
@@ -164,12 +176,19 @@ _mqx_uint   _ifce_run(FTE_OBJECT_PTR pObj)
     
     pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(_ifce_restart_convert, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
  
 _mqx_uint   _ifce_stop(FTE_OBJECT_PTR pObj)
 { 
-    return  MQX_OK;
+    ASSERT(pObj != NULL);
+    
+    FTE_IFCE_STATUS_PTR  pStatus = (FTE_IFCE_STATUS_PTR)pObj->pStatus;
+
+    _timer_cancel(pStatus->hRepeatTimer);
+    pStatus->hRepeatTimer = 0;
+
+    return  FTE_RET_OK;
 }
 
 static void _ifce_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
@@ -204,7 +223,7 @@ static void _ifce_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUC
 
 _mqx_uint    _ifce_set(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue)
 {
-    assert(pObj != NULL);
+    ASSERT(pObj != NULL);
     
     FTE_IFCE_STATUS_PTR  pStatus = (FTE_IFCE_STATUS_PTR)pObj->pStatus;
     FTE_IFCE_CONFIG_PTR  pConfig = (FTE_IFCE_CONFIG_PTR)pObj->pConfig;
@@ -213,7 +232,7 @@ _mqx_uint    _ifce_set(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue)
     {
         if (pStatus->pParent->pAction->f_set_multi != NULL)
         {
-            if (pStatus->pParent->pAction->f_set_multi(pStatus->pParent, pConfig->nRegID, pValue) == MQX_OK)
+            if (pStatus->pParent->pAction->f_set_multi(pStatus->pParent, pConfig->nRegID, pValue) == FTE_RET_OK)
             {
                 FTE_VALUE   xValue;
                 
@@ -230,7 +249,7 @@ _mqx_uint    _ifce_set(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue)
                     FTE_OBJ_wasUpdated(pObj);
                 }
                 
-                return  MQX_OK;
+                return  FTE_RET_OK;
             }
             else
             {
@@ -257,8 +276,42 @@ _mqx_uint    _ifce_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInterval)
     
     FTE_CFG_OBJ_save(pObj);
  
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
+_mqx_uint   _iface_set_config
+(
+    FTE_OBJECT_PTR  pObj, 
+    char_ptr        pBuff
+)
+{
+    ASSERT(pObj != NULL && pBuff != NULL);
+    FTE_OBJECT_PTR  pParent = ((FTE_IFCE_STATUS_PTR)pObj->pStatus)->pParent;
+    
+    if ((pParent == NULL) || (pParent->pAction->f_set_child_config == NULL))
+    {
+        return  MQX_ERROR;
+    }
+
+    return  pParent->pAction->f_set_child_config(pParent, pObj, pBuff);
+}
+
+_mqx_uint   _iface_get_config
+(
+    FTE_OBJECT_PTR  pObj, 
+    char_ptr        pBuff, 
+    uint_32         ulBuffLen
+)
+{
+    ASSERT(pObj != NULL && pBuff != NULL);
+    FTE_OBJECT_PTR  pParent = ((FTE_IFCE_STATUS_PTR)pObj->pStatus)->pParent;
+    
+    if ((pParent == NULL) || (pParent->pAction->f_get_child_config == NULL))
+    {
+        return  MQX_ERROR;
+    }
+
+    return  pParent->pAction->f_get_child_config(pParent, pObj, pBuff, ulBuffLen);
+}
 
 #endif

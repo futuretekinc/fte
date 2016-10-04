@@ -551,6 +551,25 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
         .f_detach           = fte_ifce_detach
     },
 #endif
+#if FTE_MULTI_AI_SUPPORTED
+    {   
+        .nType              = FTE_OBJ_TYPE_MULTI_AI,   
+        .pName              = "VALUE",
+        .nMaxCount          = 1,
+        .xFlags             = 0,
+        .xSupportedFields   = FTE_OBJ_FIELD_ID | 
+                              FTE_OBJ_FIELD_NAME |
+                              FTE_OBJ_FIELD_NAME_EDIT |
+                              FTE_OBJ_FIELD_VALUE |
+                              FTE_OBJ_FIELD_STATE |
+                              FTE_OBJ_FIELD_ENABLE |
+                              FTE_OBJ_FIELD_ENABLE_EDIT,                
+        .nConfigSize        = sizeof(FTE_IFCE_CONFIG),
+        .nStatusSize        = sizeof(FTE_IFCE_STATUS),
+        .f_attach           = fte_ifce_attach, 
+        .f_detach           = fte_ifce_detach
+    },
+#endif
 #if FTE_MULTI_VALUE_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_VALUE,   
@@ -828,6 +847,25 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
         .nConfigSize        = sizeof(FTE_IOEX_CONFIG),
         .nStatusSize        = sizeof(FTE_IOEX_STATUS),
+        .f_attach           = FTE_GUS_attach, 
+        .f_detach           = FTE_GUS_detach
+    },
+#endif
+#if FTE_DOTECH_SUPPORTED
+    {   
+        .nType              = FTE_OBJ_TYPE_MULTI_DOTECH_FX3D,
+        .pName              = "FX3D",
+        .nMaxCount          = FTE_DOTECH_FX3D_MAX,
+        .xFlags             = 0,
+        .xSupportedFields   = FTE_OBJ_FIELD_ID | 
+                              FTE_OBJ_FIELD_NAME |
+                              FTE_OBJ_FIELD_NAME_EDIT |
+                              FTE_OBJ_FIELD_VALUE |
+                              FTE_OBJ_FIELD_STATE |
+                              FTE_OBJ_FIELD_ENABLE |
+                              FTE_OBJ_FIELD_ENABLE_EDIT,                
+        .nConfigSize        = sizeof(FTE_DOTECH_CONFIG),
+        .nStatusSize        = sizeof(FTE_DOTECH_FX3D_STATUS),
         .f_attach           = FTE_GUS_attach, 
         .f_detach           = FTE_GUS_detach
     },

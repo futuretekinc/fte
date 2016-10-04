@@ -22,6 +22,8 @@ static  _mqx_uint   _gus_setUpdateInterval(FTE_OBJECT_PTR pObj, uint_32 nInterva
 static  _mqx_uint   _gus_getStatistics(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTICS_PTR pStatistic);
 static  _mqx_uint   _gus_setConfig(FTE_OBJECT_PTR pObj, char_ptr pJSON);
 static  _mqx_uint   _gus_getConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 ulBuffLen);
+static  _mqx_uint   _gus_setChildConfig(FTE_OBJECT_PTR pObj, FTE_OBJECT_PTR pChild, char_ptr pJSON);
+static  _mqx_uint   _gus_getChildConfig(FTE_OBJECT_PTR pObj, FTE_OBJECT_PTR pChild, char_ptr pBuff, uint_32 ulBuffLen);
 static  _mqx_uint   _gus_attachChild(FTE_OBJECT_PTR pObj, uint_32 nChild);
 static  _mqx_uint   _gus_detachChild(FTE_OBJECT_PTR pObj, uint_32 nChild);
 static  _mqx_uint   _gus_child_count(FTE_OBJECT_PTR pObj, uint_32_ptr pulCount);
@@ -43,7 +45,9 @@ static  FTE_OBJECT_ACTION _Action =
     .f_attach_child         = _gus_attachChild,
     .f_detach_child         = _gus_detachChild,
     .f_get_child_count      = _gus_child_count,
-    .f_get_child            = _gus_get_child
+    .f_get_child            = _gus_get_child,
+    .f_set_child_config     = _gus_setChildConfig,
+    .f_get_child_config     = _gus_getChildConfig,
 }; 
  
 const FTE_GUS_MODEL_INFO  _pGUSModelInfos[] =
@@ -89,6 +93,9 @@ const FTE_GUS_MODEL_INFO  _pGUSModelInfos[] =
 #endif
 #if FTE_IOEX_SUPPORTED
     FTE_IOEX_DESCRIPTOR,
+#endif
+#if FTE_DOTECH_SUPPORTED
+    FTE_DOTECH_FX3D_DESCRIPTOR,
 #endif
 };
  
@@ -424,6 +431,40 @@ _mqx_uint   _gus_getConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 ulBuffLe
         if (pStatus->pModelInfo->f_get_config != NULL)
         {
             return  pStatus->pModelInfo->f_get_config(pObj, pBuff, ulBuffLen);
+        }
+    }
+
+    return  MQX_ERROR;
+}
+
+_mqx_uint   _gus_setChildConfig(FTE_OBJECT_PTR pObj, FTE_OBJECT_PTR pChild, char_ptr pJSON)
+{
+    ASSERT((pObj != NULL) && (pJSON != NULL));
+    
+    FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
+    
+    if (FTE_OBJ_IS_ENABLED(pObj))
+    {
+        if (pStatus->pModelInfo->f_set_child_config != NULL)
+        {
+            return  pStatus->pModelInfo->f_set_child_config(pChild, pJSON);
+        }
+    }
+
+    return  MQX_ERROR;
+}
+
+_mqx_uint   _gus_getChildConfig(FTE_OBJECT_PTR pObj, FTE_OBJECT_PTR pChild, char_ptr pBuff, uint_32 ulBuffLen)
+{
+    ASSERT((pObj != NULL) && (pBuff != NULL));
+    
+    FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
+    
+    if (FTE_OBJ_IS_ENABLED(pObj))
+    {
+        if (pStatus->pModelInfo->f_get_child_config != NULL)
+        {
+            return  pStatus->pModelInfo->f_get_child_config(pChild, pBuff, ulBuffLen);
         }
     }
 

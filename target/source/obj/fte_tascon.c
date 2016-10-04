@@ -4,6 +4,8 @@
 #include "fte_time.h"
 #include "nxjson.h"
 
+#if FTE_TASCON_HEM12_SUPPORTED || FTE_TASCON_HEM12_06M_SUPPORTED
+
 #define FTE_TASCON_PACKET_DEBUG 1
 
 #define FTE_HEM12_FRAME_START               0x69
@@ -986,3 +988,4 @@ int_32  FTE_TASCON_HEM12_SHELL_cmd(int_32 argc, char_ptr argv[])
     }
     return   return_code;
 }
+#endif

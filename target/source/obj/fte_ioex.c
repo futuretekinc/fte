@@ -44,6 +44,7 @@ static  FTE_IOEX_EXT_CONFIG xGlobalConfig =
     .ulLoopPeriod = FTE_IOEX_DEFAULT_LOOP_PERIOD,
     .ulUpdatePeriod = FTE_IOEX_DEFAULT_UPDATE_PERIOD
 };
+
 FTE_VALUE_TYPE  FTE_IOEX_valueTypes[] =
 {
     FTE_VALUE_TYPE_DIO,

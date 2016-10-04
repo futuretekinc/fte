@@ -19,4 +19,10 @@ void    fte_system_reset(void);
 uint_16 fte_crc16(const uint_8 *pData, uint_16 uiLen);
 uint_32 fte_crc32(uint_32 crc, const void *buf, uint_32 size);
 
+boolean fte_parse_float
+(
+    char_ptr    pString, 
+    double _PTR_ pValue
+);
+
 #endif

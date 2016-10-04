@@ -300,14 +300,32 @@ void FTE_SNMPD_TRAP_processing(void)
 
 _mqx_uint   FTE_SNMPD_TRAP_sendAlert(uint_32 nOID, boolean bOccurred)
 {
-    FTE_TRAP_MSG_PTR    pMsg = (FTE_TRAP_MSG_PTR)FTE_MEM_allocZero(sizeof(FTE_TRAP_MSG));
+    FTE_TRAP_MSG_PTR    pMsg;
+    
+    if (FTE_LIST_count(&_trapList) > 100)
+    {
+        FTE_TRAP_MSG_PTR pTempTrapMsg = NULL;
+
+        if (FTE_LIST_popFront(&_trapList, (pointer _PTR_)&pTempTrapMsg) != MQX_OK)
+        {
+            return  MQX_ERROR;
+        }
+        
+        if (pTempTrapMsg->pBuff != NULL)
+        {
+            FTE_MEM_free(pTempTrapMsg->pBuff);
+        }
+        FTE_MEM_free(pTempTrapMsg);
+    }
+
+    
+    ++ulReqAlertCount;
+    
+    pMsg = (FTE_TRAP_MSG_PTR)FTE_MEM_allocZero(sizeof(FTE_TRAP_MSG));
     if (pMsg == NULL)
     {
         return   MQX_ERROR;
     }
-        
-    ++ulReqAlertCount;
-    
     pMsg->xType                     = FTE_NET_SNMP_TRAP_TYPE_ALERT;
     pMsg->xParams.xAlert.nOID      = nOID;
     pMsg->xParams.xAlert.bOccurred = bOccurred;

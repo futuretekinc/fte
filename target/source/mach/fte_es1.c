@@ -468,7 +468,7 @@ static const FTE_IFCE_CONFIG xAirQTemperatureConfig =
         .pName      = "AIRQ-TEMP",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
-    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_AIRQ, 0x0001),
+    .nDevID     = MAKE_ID(RQ, 0x0001),
     .nRegID     = 1,
     .nInterval  = 2
 };
@@ -481,7 +481,7 @@ static const FTE_IFCE_CONFIG xAirQHumidityConfig =
         .pName      = "AIRQ-HUMI",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
-    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_AIRQ, 0x0001),
+    .nDevID     = MAKE_ID(RQ, 0x0001),
     .nRegID     = 2,
     .nInterval  = 2
 };
@@ -494,7 +494,7 @@ static const FTE_IFCE_CONFIG xAirQCO2Config =
         .pName      = "AIRQ-CO2",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
-    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_AIRQ, 0x0001),
+    .nDevID     = MAKE_ID(RQ, 0x0001),
     .nRegID     = 0,
     .nInterval  = 2
 };
@@ -510,7 +510,7 @@ static const FTE_GUS_CONFIG fte_init_airq_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AIRQ, 0x0001),
+        .nID        = MAKE_ID(RQ, 0x0001),
         .pName      = "AIRQ",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
         .ulChild    = sizeof(pAirQChildConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR),
@@ -1175,7 +1175,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led0_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED0",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1188,7 +1188,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led1_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED1",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1201,7 +1201,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led2_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED2",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1214,7 +1214,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led3_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED3",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1227,7 +1227,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led4_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED4",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1240,7 +1240,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led5_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED5",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1253,7 +1253,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led6_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED6",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1266,7 +1266,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led7_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED7",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1279,7 +1279,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led8_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED8",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1292,7 +1292,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led9_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED9",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1305,7 +1305,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led10_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED10",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1318,7 +1318,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led11_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED11",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1331,7 +1331,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led12_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED12",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1344,7 +1344,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led13_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED13",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1357,7 +1357,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led14_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED14",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1370,7 +1370,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led15_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED15",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1383,7 +1383,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led16_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED16",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1396,7 +1396,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led17_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED17",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1409,7 +1409,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led18_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED18",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1422,7 +1422,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led19_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED19",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1435,7 +1435,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led20_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED20",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1448,7 +1448,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led21_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED21",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1461,7 +1461,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led22_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED22",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1474,7 +1474,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led23_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED23",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1487,7 +1487,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led24_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED24",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1500,7 +1500,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led25_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED25",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -1513,7 +1513,7 @@ static const FTE_IFCE_CONFIG ifte_init_ftlm_led26_config =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0001),
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0001),
         .pName      = "LED26",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
     },
@@ -2033,12 +2033,15 @@ const FTE_OBJECT_CONFIG_PTR pInitObjConfigs[] =
 #if FTE_IOEX_SUPPORTED
     (FTE_OBJECT_CONFIG_PTR)&fte_init_ioex_config,
 #endif
+#if FTE_DOTECH_SUPPORTED
+    (FTE_OBJECT_CONFIG_PTR)&FTE_DOTECH_FX3D_defaultConfig,
+#endif
 };
 
 #if FTE_GPIO_DI_SUPPORTED
 static const FTE_EVENT_CONFIG fte_report_di_config = 
 {
-    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DI, 0x0001),
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DI, 0x0000),
     .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
     .xLevel     = FTE_EVENT_LEVEL_INFO,
     .xCondition = FTE_EVENT_CONDITION_INTERVAL,
@@ -2050,7 +2053,7 @@ static const FTE_EVENT_CONFIG fte_report_di_config =
 
 static const FTE_EVENT_CONFIG fte_occurred_di_config = 
 {
-    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DI, 0x0001),
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DI, 0x0000),
     .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
     .xLevel     = FTE_EVENT_LEVEL_WARNING,
     .xCondition = FTE_EVENT_CONDITION_ABOVE,
@@ -2083,7 +2086,7 @@ static const FTE_EVENT_CONFIG fte_release_di_config =
 
 static const FTE_EVENT_CONFIG fte_changed_di_config = 
 {
-    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DI, 0x0001),
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DI, 0x0000),
     .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
     .xLevel     = FTE_EVENT_LEVEL_WARNING,
     .xCondition = FTE_EVENT_CONDITION_CHANGED,
@@ -2544,7 +2547,7 @@ static const FTE_EVENT_CONFIG fte_changed_count_config =
 #if FTE_FTLM_SUPPORTED
 static const FTE_EVENT_CONFIG fte_changed_led0_config = 
 {
-    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0901),
+    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0901),
     .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
     .xLevel     = FTE_EVENT_LEVEL_INFO,
     .xCondition = FTE_EVENT_CONDITION_CHANGED,
@@ -2552,7 +2555,7 @@ static const FTE_EVENT_CONFIG fte_changed_led0_config =
 
 static const FTE_EVENT_CONFIG fte_changed_led1_config = 
 {
-    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0902),
+    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0902),
     .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
     .xLevel     = FTE_EVENT_LEVEL_INFO,
     .xCondition = FTE_EVENT_CONDITION_CHANGED,
@@ -2560,7 +2563,7 @@ static const FTE_EVENT_CONFIG fte_changed_led1_config =
 
 static const FTE_EVENT_CONFIG fte_changed_led2_config = 
 {
-    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0903),
+    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0903),
     .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
     .xLevel     = FTE_EVENT_LEVEL_INFO,
     .xCondition = FTE_EVENT_CONDITION_CHANGED,
@@ -2568,7 +2571,7 @@ static const FTE_EVENT_CONFIG fte_changed_led2_config =
 
 static const FTE_EVENT_CONFIG fte_changed_led3_config = 
 {
-    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0904),
+    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0904),
     .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
     .xLevel     = FTE_EVENT_LEVEL_INFO,
     .xCondition = FTE_EVENT_CONDITION_CHANGED,
@@ -2576,7 +2579,7 @@ static const FTE_EVENT_CONFIG fte_changed_led3_config =
 
 static const FTE_EVENT_CONFIG fte_changed_led4_config = 
 {
-    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0905),
+    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0905),
     .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
     .xLevel     = FTE_EVENT_LEVEL_INFO,
     .xCondition = FTE_EVENT_CONDITION_CHANGED,
@@ -2584,7 +2587,7 @@ static const FTE_EVENT_CONFIG fte_changed_led4_config =
 
 static const FTE_EVENT_CONFIG fte_changed_led5_config = 
 {
-    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0906),
+    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0906),
     .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
     .xLevel     = FTE_EVENT_LEVEL_INFO,
     .xCondition = FTE_EVENT_CONDITION_CHANGED,
@@ -2592,7 +2595,7 @@ static const FTE_EVENT_CONFIG fte_changed_led5_config =
 
 static const FTE_EVENT_CONFIG fte_changed_led6_config = 
 {
-    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0907),
+    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0907),
     .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
     .xLevel     = FTE_EVENT_LEVEL_INFO,
     .xCondition = FTE_EVENT_CONDITION_CHANGED,
@@ -2600,7 +2603,7 @@ static const FTE_EVENT_CONFIG fte_changed_led6_config =
 
 static const FTE_EVENT_CONFIG fte_changed_led7_config = 
 {
-    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0908),
+    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0908),
     .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
     .xLevel     = FTE_EVENT_LEVEL_INFO,
     .xCondition = FTE_EVENT_CONDITION_CHANGED,
@@ -2608,12 +2611,13 @@ static const FTE_EVENT_CONFIG fte_changed_led7_config =
 
 static const FTE_EVENT_CONFIG fte_changed_led8_config = 
 {
-    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0x0909),
+    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_AI, 0x0909),
     .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
     .xLevel     = FTE_EVENT_LEVEL_INFO,
     .xCondition = FTE_EVENT_CONDITION_CHANGED,
 };
 #endif
+
 #if FTE_CIAS_SIOUX_CU_SUPPORTED
 static const FTE_EVENT_CONFIG fte_changed_di0_config = 
 {
@@ -2850,6 +2854,28 @@ static const FTE_EVENT_CONFIG fte_changed_zone19_device_config =
 };
 #endif
 
+#if FTE_DOTECH_SUPPORTED
+static const FTE_EVENT_CONFIG fte_report_di_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DI, 0x0000),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_INFO,
+    .xCondition = FTE_EVENT_CONDITION_INTERVAL,
+    .xParams    =
+    {
+        .ulInterval = 60
+    }
+};
+
+static const FTE_EVENT_CONFIG fte_changed_di_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DI, 0x0000),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+#endif
+
 const FTE_CFG_EVENT_PTR pInitEventConfigs[] =
 {
 #if FTE_GPIO_DI_SUPPORTED
@@ -2941,5 +2967,9 @@ const FTE_CFG_EVENT_PTR pInitEventConfigs[] =
     (FTE_CFG_EVENT_PTR)&fte_changed_zone17_device_config, 
     (FTE_CFG_EVENT_PTR)&fte_changed_zone19_device_config, 
 #endif
+#if FTE_DOTECH_SUPPORTED
+    (FTE_CFG_EVENT_PTR)&fte_report_di_config,    
+    (FTE_CFG_EVENT_PTR)&fte_changed_di_config,    
+#endif    
 
 };

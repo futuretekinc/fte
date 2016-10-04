@@ -2231,6 +2231,9 @@
     <group>
       <name>target</name>
       <file>
+        <name>$PROJ_DIR$\include\target\fte_common.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\include\target\fte_eh1.h</name>
       </file>
       <file>
@@ -2274,6 +2277,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_es2.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\target\fte_es21.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_es4.h</name>
@@ -2757,6 +2763,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\source\obj\fte_do.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\obj\fte_dotech.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\source\obj\fte_ds18b20.c</name>

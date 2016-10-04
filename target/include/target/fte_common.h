@@ -268,6 +268,12 @@
 #define FTE_UCS_3_DATABITS                  8
 #define FTE_UCS_3_PARITY                    FTE_UART_PARITY_NONE
 #define FTE_UCS_3_STOPBITS                  FTE_UART_STOP_BITS_1
+#elif FTE_DOTECH_SUPPORTED
+#define FTE_UCS_1_FULL_DUPLEX               FALSE
+#define FTE_UCS_1_BAUDRATE                  38400
+#define FTE_UCS_1_DATABITS                  8
+#define FTE_UCS_1_PARITY                    FTE_UART_PARITY_NONE
+#define FTE_UCS_1_STOPBITS                  FTE_UART_STOP_BITS_1
 #endif
 
 #ifndef FTE_UCS_1_FULL_DUPLEX

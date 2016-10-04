@@ -104,6 +104,9 @@ uint_32         FTE_UCS_send(FTE_UCS_PTR pUCS, uint_8_ptr pData, uint_32 nDataLe
 boolean         FTE_UCS_waitForSendCompletion(FTE_UCS_PTR pUCS, uint_32 nTimeout);
 uint_32         FTE_UCS_sendAndRecv(FTE_UCS_PTR pUCS, uint_8_ptr pData, uint_32 nDataLen, uint_8_ptr pBuff, uint_32 nBuffLen, uint_32 nDelay, uint_32 nTimeout);
 
+uint_32         FTE_UCS_MODBUS_getRegs(FTE_UCS_PTR pUCS, uint_8 ucDeviceID, uint_16 usAddr, uint_16_ptr pRegs, uint_8 nCount, uint_32 nTimeout);
+uint_32         FTE_UCS_MODBUS_setReg(FTE_UCS_PTR pUCS, uint_8 ucDeviceID, uint_16 usAddr, uint_16 usValue, uint_32 nTimeout);
+
 int_32          FTE_UCS_SHELL_cmd(int_32 argc, char_ptr argv[] );
 
 void            FTE_UCS_TASK_send(uint_32 nParams);

@@ -206,6 +206,18 @@ const TASK_TEMPLATE_STRUCT  MQX_template_list[] =
     },
 
 #endif
+#if FTE_DOTECH_SUPPORTED
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_DOTECH,        /* Task Index */
+        .TASK_ADDRESS           =   FTE_DOTECH_task,        /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_DOTECH_STACK,  /* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_DOTECH_PRIO,   /* Priority */
+        .TASK_NAME              =   "DOTECH",               /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   0,                      /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+#endif
     { 0 }
 };
 

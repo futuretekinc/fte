@@ -30,6 +30,8 @@
 #define FTE_UCM_SUPPORTED                   0
 #define FTE_DEV_LWGPIO_UCS1_RCTRL_SUPPORTED 0
 #define FTE_DEV_LWGPIO_UCS1_WCTRL_SUPPORTED 1
+#define FTE_DEV_LWGPIO_UCS2_RCTRL_SUPPORTED 0
+#define FTE_DEV_LWGPIO_UCS2_WCTRL_SUPPORTED 0
 
 #define FTE_RTD_SUPPORTED                   0
 #define FTE_RTD0_SUPPORTED                  0
@@ -52,6 +54,7 @@
 #define FTE_GPIO_DI_SUPPORTED               1
 #define FTE_MULTI_DI_SUPPORTED              1
 #define FTE_MULTI_DO_SUPPORTED              1
+#define FTE_MULTI_AI_SUPPORTED              0
 #define FTE_MULTI_TEMP_SUPPORTED            1
 #define FTE_MULTI_HUMI_SUPPORTED            1
 #define FTE_MULTI_CO2_SUPPORTED             1
@@ -61,6 +64,8 @@
 #define FTE_MULTI_VOLTAGE_SUPPORTED         0
 #define FTE_MULTI_CURRENT_SUPPORTED         0
 #define FTE_MULTI_POWER_SUPPORTED           0
+#define FTE_MULTI_VALUE_SUPPORTED           0
+#define FTE_MULTI_DISCRETE_SUPPORTED        0
 
 // CO2 Sensors
 #define FTE_SH_MV250_SUPPORTED              1

@@ -32,7 +32,6 @@ void    FTE_CFG_lock(void);
 void    FTE_CFG_unlock(void);
 void    _FTE_CFG_auto_save(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
 
-FTE_OBJECT_CONFIG_PTR   FTE_CFG_OBJ_create(FTE_OBJECT_CONFIG_PTR pConfig);
 FTE_CFG_EVENT_PTR       FTE_CFG_EVENT_create(FTE_CFG_EVENT_PTR pConfig);
 _mqx_uint               FTE_CFG_CERT_load(void);
 _mqx_uint               FTE_CFG_CERT_save(void);
@@ -83,6 +82,9 @@ typedef struct _FTE_CFG_EXT_POOL_STRUCT
 #endif
 #if FTE_IOEX_SUPPORTED
     FTE_IOEX_EXT_CONFIG xIOEX;
+#endif
+#if FTE_DOTECH_SUPPORTED
+    FTE_DOTECH_EXT_CONFIG xDOTECH;
 #endif
 }   FTE_CFG_EXT_POOL, _PTR_ FTE_CFG_EXT_POOL_PTR;
 
@@ -306,7 +308,7 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
         
         for( i = 0 ; i < desc->nObjects ; i++)
         {
-            FTE_CFG_OBJ_create(desc->pObjects[i]);
+            FTE_CFG_OBJ_create(desc->pObjects[i], NULL, 0, NULL);
         }
     } 
     
@@ -556,7 +558,7 @@ _mqx_uint FTE_CFG_clear(void)
     _config.xObjectPool.tag    = FTE_CFG_OBJECT_POOL_VERSION;    
     for( i = 0 ; i < _config.pDESC->nObjects ; i++)
     {
-        FTE_CFG_OBJ_create(_config.pDESC->pObjects[i]);
+        FTE_CFG_OBJ_create(_config.pDESC->pObjects[i], NULL, 0, NULL);
     }
     
     FTE_CFG_lock();
@@ -732,8 +734,16 @@ _mqx_uint   FTE_CFG_OBJ_free(uint_32 oid)
     return  MQX_ERROR;
 }
 
-FTE_OBJECT_CONFIG_PTR FTE_CFG_OBJ_create(FTE_OBJECT_CONFIG_PTR pConfig)
+FTE_OBJECT_CONFIG_PTR FTE_CFG_OBJ_create
+(
+    FTE_OBJECT_CONFIG_PTR   pConfig,
+    FTE_OBJECT_CONFIG_PTR _PTR_ pChildObjects,
+    uint_32                 ulMaxCount,
+    uint_32_ptr             pulCount
+)
 {
+    uint_32 ulChildCount = 0;
+    
     FTE_OBJECT_CONFIG_PTR pObject = FTE_CFG_OBJ_alloc(pConfig->xCommon.nID);
     if (pObject != NULL)
     {
@@ -743,7 +753,7 @@ FTE_OBJECT_CONFIG_PTR FTE_CFG_OBJ_create(FTE_OBJECT_CONFIG_PTR pConfig)
         
         memcpy(pObject, pConfig, sizeof(FTE_OBJECT_CONFIG));
         pObject->xCommon.nID = (pConfig->xCommon.nID & FTE_OBJ_TYPE_MASK) | (ulCount + 1);
-    
+        snprintf(pObject->xCommon.pName, MAX_OBJECT_NAME_LEN, "%s-%04x",  pConfig->xCommon.pName, (uint_16)pObject->xCommon.nID);                
         ulGroupID = (pObject->xCommon.nID >> 16) & 0xFF;
         
         for(i = 0 ; i < pObject->xCommon.ulChild ; i++)
@@ -754,11 +764,27 @@ FTE_OBJECT_CONFIG_PTR FTE_CFG_OBJ_create(FTE_OBJECT_CONFIG_PTR pConfig)
                 ulCount = FTE_CFG_OBJ_count(pObject->xCommon.pChild[i]->xCommon.nID & FTE_OBJ_CLASS_MASK, FTE_OBJ_CLASS_MASK);
                 
                 memcpy(pChild, pObject->xCommon.pChild[i], sizeof(FTE_OBJECT_CONFIG));
+                memset(pChild->xCommon.pName, 0, sizeof(pChild->xCommon.pName));
+                snprintf(pChild->xCommon.pName, MAX_OBJECT_NAME_LEN, "%s-%04x",  pObject->xCommon.pChild[i]->xCommon.pName, (uint_16)pObject->xCommon.nID);                
                 ((FTE_IFCE_CONFIG_PTR)pChild)->nDevID = pObject->xCommon.nID;
                 pChild->xCommon.nID = (pObject->xCommon.pChild[i]->xCommon.nID & FTE_OBJ_TYPE_MASK) | (ulGroupID << 8) | (ulCount + 1);
+                
+                if ((pChildObjects != NULL) && (ulChildCount < ulMaxCount))
+                {
+                    pChildObjects[ulChildCount++] = pChild;
+                }
+                else
+                {
+                    ulCount++;
+                }
             }
         }
 
+        if ((pulCount != NULL) && (ulChildCount <= ulMaxCount))
+        {
+            *pulCount = ulChildCount;
+        }
+        
         _config.bObjectPoolModified = TRUE;
     }
     
@@ -935,6 +961,9 @@ _mqx_uint   FTE_CFG_EXT_init(void)
 #if FTE_IOEX_SUPPORTED
     FTE_IOEX_initDefaultExtConfig(&_config.xExtPool.xIOEX);
 #endif
+#if FTE_DOTECH_SUPPORTED
+    FTE_DOTECH_initDefaultExtConfig(&_config.xExtPool.xDOTECH);
+#endif
     _config.bExtPoolModified = TRUE;
      
     return  MQX_OK;
@@ -988,6 +1017,33 @@ _mqx_uint   FTE_CFG_IOEX_setExtConfig(void _PTR_ pIOEX, uint_32 ulIOEXLen)
     }
 
     memcpy(&_config.xExtPool.xIOEX, pIOEX, sizeof(_config.xExtPool.xIOEX));
+    _config.bExtPoolModified = TRUE;
+    
+    return  MQX_OK;    
+}
+#endif
+
+#if FTE_DOTECH_SUPPORTED
+_mqx_uint   FTE_CFG_DOTECH_getExtConfig(void _PTR_ pBuff, uint_32 ulBuffLen)
+{
+    if ((_config.pDESC == NULL) || (ulBuffLen != sizeof(_config.xExtPool.xDOTECH)))
+    {
+        return  MQX_ERROR;
+    }
+
+    memcpy(pBuff, &_config.xExtPool.xDOTECH, sizeof(_config.xExtPool.xDOTECH));
+    
+    return  MQX_OK;    
+}
+
+_mqx_uint   FTE_CFG_DOTECH_setExtConfig(void _PTR_ pDOTECH, uint_32 ulLen)
+{
+    if ((_config.pDESC == NULL) || (ulLen != sizeof(_config.xExtPool.xDOTECH)))
+    {
+        return  MQX_ERROR;
+    }
+
+    memcpy(&_config.xExtPool.xDOTECH, pDOTECH, sizeof(_config.xExtPool.xDOTECH));
     _config.bExtPoolModified = TRUE;
     
     return  MQX_OK;    

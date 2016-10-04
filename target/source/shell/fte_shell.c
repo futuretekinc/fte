@@ -16,6 +16,7 @@
 #include "fte_db.h"
 #include "fte_cias.h"
 #include "fte_lora.h"
+#include "fte_dotech.h"
 
 uint_32     FTE_SHELL_getPasswd(MQX_FILE_PTR pFile, char_ptr pPasswd, uint_32 ulMaxLen, uint_32 ulTimeout);
 int_32      FTE_SHELL_cmdPasswd(int_32 nArgc, char_ptr pArgv[]);
@@ -45,6 +46,9 @@ const SHELL_COMMAND_STRUCT pSHELLCommands[] =
     { "db",         FTE_DB_SHELL_cmd},
 #if FTE_DO_SUPPORTED
     { "do",         FTE_DO_SHELL_cmd},
+#endif
+#if FTE_DOTECH_SUPPORTED
+    { "dotech",     FTE_DOTECH_SHELL_cmd},
 #endif
 #if FTE_DS18B20_SUPPORTED
     { "ds",         FTE_DS18B20_SHELL_cmd},

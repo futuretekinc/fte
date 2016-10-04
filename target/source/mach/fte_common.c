@@ -1416,7 +1416,7 @@ FTE_MCP23S08_GPIO_CONFIG pMCP23S08GPIOConfigs[] =
 #if FTE_UCS_SUPPORTED
 const FTE_UCS_CONFIG pUCSConfigs[] =
 {
-#if FTE_DEV_UCS_1
+#if FTE_DEV_UCS_1 
     {
         .nID        = FTE_DEV_UCS_1,
         .pName      = "UCS_1",
