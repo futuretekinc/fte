@@ -176,6 +176,30 @@ const TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
     },
 #endif
+#if FTE_SOHA_SUPPORTED
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_SOHA,          /* Task Index */
+        .TASK_ADDRESS           =   FTE_SOHA_task,          /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_SOHA_STACK,    /* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_SOHA_PRIO,     /* Priority */
+        .TASK_NAME              =   "SOHA",                 /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   0,                      /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+#endif    
+#if FTE_ELT_AQM100_SUPPORTED
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_ELT,          /* Task Index */
+        .TASK_ADDRESS           =   FTE_ELT_task,          /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_ELT_STACK,    /* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_ELT_PRIO,     /* Priority */
+        .TASK_NAME              =   "ELT",                 /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   0,                      /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+#endif    
 #if FTE_DOTECH_SUPPORTED
     { 
         .TASK_TEMPLATE_INDEX    =   FTE_TASK_DOTECH,        /* Task Index */
@@ -198,7 +222,7 @@ FTE_LIST    _taskList =
     .pLockKey   = NULL
 };
 
-_mqx_uint   FTE_TASK_create(_processor_number xProcessorID, _mqx_uint nTemplateIndex, uint_32 ulParameter)
+FTE_RET   FTE_TASK_create(_processor_number xProcessorID, FTE_RET nTemplateIndex, uint_32 ulParameter)
 {
     _task_id            xTaskID;
     FTE_TASK_INFO_PTR   pTaskInfo;
@@ -232,7 +256,7 @@ _mqx_uint   FTE_TASK_create(_processor_number xProcessorID, _mqx_uint nTemplateI
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_TASK_append
+FTE_RET   FTE_TASK_append
 (
     FTE_TASK_TYPE   xType,
     _task_id        xTaskID
@@ -254,7 +278,7 @@ _mqx_uint   FTE_TASK_append
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_TASK_remove
+FTE_RET   FTE_TASK_remove
 (
     _task_id        xTaskID
 )

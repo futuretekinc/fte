@@ -10,22 +10,49 @@
 #define FTE_DIO_REMOVE_GLITCH   1
 #endif
  
-static  _mqx_uint   _FTE_DI_init(FTE_OBJECT_PTR pObj);
-static  _mqx_uint   _FTE_DI_run(FTE_OBJECT_PTR pObj);
-static  _mqx_uint   _FTE_DI_stop(FTE_OBJECT_PTR pObj);
-static  void        _di_int(pointer);
+static  
+FTE_RET   _FTE_DI_init(FTE_OBJECT_PTR pObj);
 
-void _FTE_DI_ISR(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
+static  
+FTE_RET   _FTE_DI_run(FTE_OBJECT_PTR pObj);
 
-static  FTE_LIST                _xObjList = { 0, NULL, NULL}; 
-static  FTE_OBJECT_ACTION       _xAction = 
+static  
+FTE_RET   _FTE_DI_stop(FTE_OBJECT_PTR pObj);
+
+static  
+void        FTE_DI_ISR(pointer);
+
+void _FTE_DI_ISR(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
+
+FTE_DI_CONFIG FTE_GPIO_DI_defaultConfig =
 {
-    .f_init             =   _FTE_DI_init,
-    .f_run              =   _FTE_DI_run,
-    .f_stop             =   _FTE_DI_stop
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_DI, 1),
+        .pName      = "DI0",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE | FTE_OBJ_CONFIG_FLAG_TRAP_DIFF,
+    },
+    .nGPIO      = FTE_DEV_GPIO_DI_0,
+    .ulDelay    = 0,
+    .ulHold     = 0
 };
 
-_mqx_uint FTE_DI_attach(FTE_OBJECT_PTR pObj)
+static  
+FTE_LIST                _xObjList = { 0, NULL, NULL}; 
+
+static  
+FTE_OBJECT_ACTION       _xAction = 
+{
+    .fInit  =   _FTE_DI_init,
+    .fRun   =   _FTE_DI_run,
+    .fStop  =   _FTE_DI_stop
+};
+
+FTE_RET FTE_DI_attach
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_VOID_PTR    pOpts
+)
 {
     ASSERT(pObj != NULL);
     
@@ -74,7 +101,10 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint FTE_DI_detach (FTE_OBJECT_PTR pObj)
+FTE_RET FTE_DI_detach
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     if (!FTE_LIST_isExist(&_xObjList, pObj))
     {
@@ -90,7 +120,10 @@ error:
     return  MQX_ERROR;
 }
 
-FTE_OBJECT_PTR _di_get_object(FTE_OBJECT_ID nID)
+FTE_OBJECT_PTR _di_get_object
+(
+    FTE_OBJECT_ID   nID
+)
 {
     FTE_OBJECT_PTR      pObj;
     FTE_LIST_ITERATOR   xIter;
@@ -109,12 +142,16 @@ FTE_OBJECT_PTR _di_get_object(FTE_OBJECT_ID nID)
     return  NULL;
 }
 
-uint_32     FTE_DI_count(void)
+FTE_UINT32  FTE_DI_count(void)
 {
     return  FTE_LIST_count(&_xObjList);
 }
 
-_mqx_uint   FTE_DI_getValue(FTE_OBJECT_ID  nID, uint_32_ptr pValue)
+FTE_RET   FTE_DI_getValue
+(
+    FTE_OBJECT_ID   nID, 
+    FTE_UINT32_PTR  pValue
+)
 {
     ASSERT(pValue != NULL);
     
@@ -129,7 +166,10 @@ _mqx_uint   FTE_DI_getValue(FTE_OBJECT_ID  nID, uint_32_ptr pValue)
     return  MQX_OK;    
 }
 
-boolean     FTE_DI_isActive(FTE_OBJECT_ID  nID)
+FTE_BOOL     FTE_DI_isActive
+(
+    FTE_OBJECT_ID  nID
+)
 {
     FTE_OBJECT_PTR pObj = _di_get_object(nID);
     if (pObj == NULL)
@@ -140,7 +180,7 @@ boolean     FTE_DI_isActive(FTE_OBJECT_ID  nID)
     return  pObj->pStatus->pValue->xData.bValue;    
 }
 
-_mqx_uint       FTE_DI_update(void)
+FTE_RET       FTE_DI_update(void)
 {
     FTE_OBJECT_PTR      pObj;
     FTE_LIST_ITERATOR   xIter;
@@ -154,16 +194,16 @@ _mqx_uint       FTE_DI_update(void)
             
             if (pStatus->xCommon.pValue->xData.bValue != pStatus->xPresetValue.xData.bValue)
             {
-                uint_32     ulDelayTime = 0;
-                uint_32     ulHoldTime = 0;
+                FTE_INT32   nDelayTime = 0;
+                FTE_INT32   nHoldTime = 0;
                 TIME_STRUCT xTime;
 
                 _time_get(&xTime);
 
-                ulDelayTime = FTE_TIME_diffMilliseconds(&pStatus->xPresetValue.xTimeStamp, &xTime);
-                ulHoldTime = FTE_TIME_diffMilliseconds(&pStatus->xCommon.pValue->xTimeStamp, &xTime);
+                FTE_TIME_diffMilliseconds(&pStatus->xPresetValue.xTimeStamp, &xTime, &nDelayTime);
+                FTE_TIME_diffMilliseconds(&pStatus->xCommon.pValue->xTimeStamp, &xTime, &nHoldTime);
                 
-                if (((ulHoldTime == 0) || (ulHoldTime >= pConfig->ulHold)) && ((pConfig->ulDelay == 0) || (ulDelayTime >= pConfig->ulDelay)))
+                if (((nHoldTime == 0) || (nHoldTime >= pConfig->ulHold)) && ((pConfig->ulDelay == 0) || (nDelayTime >= pConfig->ulDelay)))
                 {
                     FTE_VALUE_copy(pStatus->xCommon.pValue, &pStatus->xPresetValue);
                     
@@ -173,7 +213,7 @@ _mqx_uint       FTE_DI_update(void)
                     }
 
                     FTE_OBJ_wasChanged(pObj);
-                    TRACE(DEBUG_DI, "The DI detection applied.[ Interval > %d msecs]\n", ulDelayTime);
+                    TRACE(DEBUG_DI, "The DI detection applied.[ Interval > %d msecs]\n", nDelayTime);
                 }
             }
             else if (pStatus->xPresetValue.bChanged)
@@ -187,7 +227,10 @@ _mqx_uint       FTE_DI_update(void)
 
 }
 
-_mqx_uint   FTE_DI_INT_lock(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_DI_INT_lock
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     if (pObj != NULL)
     {
@@ -209,26 +252,32 @@ _mqx_uint   FTE_DI_INT_lock(FTE_OBJECT_PTR pObj)
     }
 }
 
-_mqx_uint   FTE_DI_INT_unlock(FTE_OBJECT_PTR  pObj)
+FTE_RET   FTE_DI_INT_unlock
+(
+    FTE_OBJECT_PTR      pObj
+)
 {
     if (pObj != NULL)
     {
         FTE_DI_STATUS_PTR   pStatus;
         TIME_STRUCT xTime;
+        FTE_INT32   nDiffTime = 0;
         
         pStatus = (FTE_DI_STATUS_PTR)pObj->pStatus;
         
         _time_get(&xTime);
         
 #if FTE_DIO_REMOVE_GLITCH
-        if (FTE_TIME_diffMilliseconds(&xTime, &pStatus->xPresetValue.xTimeStamp) < 200)
+        FTE_TIME_diffMilliseconds(&xTime, &pStatus->xPresetValue.xTimeStamp, &nDiffTime);
+        if (nDiffTime < 200)
         {
             return  0;
         }
         
         if (pStatus->xPresetValue.xData.bValue == TRUE)
 #else
-        if (FTE_TIME_diffMilliseconds(&xTime, &pStatus->xCommon.xValue.xTimeStamp) < 200)
+        FTE_TIME_diffMilliseconds(&xTime, &pStatus->xCommon.xValue.xTimeStamp, &nDiffTime);
+        if (nDiffTime < 200)
         {
             return  0;
         }
@@ -276,11 +325,14 @@ _mqx_uint   FTE_DI_INT_unlock(FTE_OBJECT_PTR  pObj)
 }
 
 /******************************************************************************/
-_mqx_uint   _FTE_DI_init(FTE_OBJECT_PTR pObj)
+FTE_RET   _FTE_DI_init
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
     
-    uint_32             nValue;
+    FTE_UINT32             nValue;
     FTE_DI_CONFIG_PTR   pConfig = (FTE_DI_CONFIG_PTR)pObj->pConfig;
     FTE_DI_STATUS_PTR   pStatus = (FTE_DI_STATUS_PTR)pObj->pStatus;
     
@@ -305,13 +357,16 @@ _mqx_uint   _FTE_DI_init(FTE_OBJECT_PTR pObj)
     return  MQX_OK;
 }
 
-_mqx_uint   _FTE_DI_run(FTE_OBJECT_PTR pObj)
+FTE_RET   _FTE_DI_run
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
         
     FTE_DI_STATUS_PTR   pStatus = (FTE_DI_STATUS_PTR)pObj->pStatus;
 
-    FTE_GPIO_setISR(pStatus->pGPIO, _di_int, pObj);
+    FTE_GPIO_setISR(pStatus->pGPIO, FTE_DI_ISR, pObj);
     FTE_GPIO_INT_init(pStatus->pGPIO, 3, 0, TRUE);
 
     FTE_DI_INT_unlock(pObj);
@@ -319,7 +374,10 @@ _mqx_uint   _FTE_DI_run(FTE_OBJECT_PTR pObj)
     return  MQX_OK;
 }
 
-static _mqx_uint    _FTE_DI_stop(FTE_OBJECT_PTR pObj)
+FTE_RET    _FTE_DI_stop
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_DI_STATUS_PTR   pStatus = (FTE_DI_STATUS_PTR)pObj->pStatus;
 
@@ -329,7 +387,7 @@ static _mqx_uint    _FTE_DI_stop(FTE_OBJECT_PTR pObj)
     return  MQX_OK;
 }
  
-_mqx_uint   FTE_DI_setPolarity(FTE_OBJECT_PTR pObj, boolean bActiveHI)
+FTE_RET   FTE_DI_setPolarity(FTE_OBJECT_PTR pObj, FTE_BOOL bActiveHI)
 {
     ASSERT(pObj != NULL);
     
@@ -351,11 +409,14 @@ _mqx_uint   FTE_DI_setPolarity(FTE_OBJECT_PTR pObj, boolean bActiveHI)
 * Comments     :
 * Digital Input Signal ISR
 *END*-----------------------------------------------------*/
-void _di_int(void *params)
+void FTE_DI_ISR
+(
+    FTE_VOID_PTR    pParams
+)
 {
-    if (params != NULL)
+    if (pParams != NULL)
     {
-        FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)params;
+        FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)pParams;
         FTE_DI_CONFIG_PTR   pConfig;
         
         pConfig = (FTE_DI_CONFIG_PTR)pObj->pConfig;
@@ -363,7 +424,7 @@ void _di_int(void *params)
         if (FTE_FLAG_IS_SET(pConfig->xCommon.xFlags, FTE_OBJ_CONFIG_FLAG_ENABLE))
         {
             FTE_DI_STATUS_PTR   pStatus;
-            boolean             bFlag = FALSE;
+            FTE_BOOL             bFlag = FALSE;
             
             pStatus  = (FTE_DI_STATUS_PTR)pObj->pStatus;
             
@@ -371,7 +432,7 @@ void _di_int(void *params)
             
             if (bFlag)
             {   
-                boolean             bValue = FALSE;
+                FTE_BOOL             bValue = FALSE;
                 
                 FTE_GPIO_getValue(pStatus->pGPIO, &bValue);
                 if (FTE_OBJ_FLAG_isSet(pObj, FTE_OBJ_CONFIG_FLAG_REVERSE))
@@ -417,14 +478,14 @@ void _di_int(void *params)
                 if (FTE_FLAG_IS_SET(pConfig->xCommon.xFlags, FTE_OBJ_CONFIG_FLAG_ENABLE))
                 {
                     FTE_DI_STATUS_PTR   pStatus;
-                    boolean             flag = FALSE;
+                    FTE_BOOL             flag = FALSE;
                     pStatus  = (FTE_DI_STATUS_PTR)pObj->pStatus;
                     
                     FTE_GPIO_INT_getFlag(pStatus->pGPIO, &flag);
                     
                     if (flag)
                     {       
-                        boolean             bValue = FALSE;
+                        FTE_BOOL             bValue = FALSE;
                         
                         FTE_GPIO_getValue(pStatus->pGPIO, &bValue);
                         if (FTE_OBJ_FLAG_isSet(pObj, FTE_OBJ_CONFIG_FLAG_REVERSE))
@@ -459,16 +520,25 @@ void _di_int(void *params)
         
 }
 
-void _FTE_DI_ISR(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
+void _FTE_DI_ISR
+(
+    _timer_id   id, 
+    pointer     pData, 
+    MQX_TICK_STRUCT_PTR pTick
+)
 {
-//    _di_int(NULL);    
+//    FTE_DI_ISR(NULL);    
     FTE_DI_INT_unlock(NULL);
 }
 
-int_32      FTE_DI_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
+FTE_INT32      FTE_DI_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[]
+)
 { /* Body */
-    boolean              bPrintUsage, bShortHelp = FALSE;
-    int_32               nReturnCode = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   nReturnCode = SHELL_EXIT_SUCCESS;
     
     bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
@@ -507,7 +577,7 @@ int_32      FTE_DI_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
             
         case    2:
             {
-                uint_32 nID;
+                FTE_UINT32 nID;
                 FTE_OBJECT_PTR  pObj = NULL;
                 
                 if (!Shell_parse_number(pArgv[1], &nID))

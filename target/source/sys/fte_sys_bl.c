@@ -4,19 +4,21 @@
 #include "fte_sys_bl.h"
 
 #define IPBYTES(a)            ((a)&0xFF),(((a)>>8)&0xFF),(((a)>> 16)&0xFF),(((a)>>24)&0xFF)
-#define IPADDR(a,b,c,d)       (((uint_32)(a)&0xFF)|(((uint_32)(b)&0xFF)<<8)|(((uint_32)(c)&0xFF)<<16)|(((uint_32)(d)&0xFF)<<24))
+#define IPADDR(a,b,c,d)       (((uFTE_INT32)(a)&0xFF)|(((uFTE_INT32)(b)&0xFF)<<8)|(((uFTE_INT32)(c)&0xFF)<<16)|(((uFTE_INT32)(d)&0xFF)<<24))
 
-static FTE_BL_STATIC_PARAMS     *pBLStaticParams = (FTE_BL_STATIC_PARAMS *)FTE_BL_STATIC_PARAMS_ADDRESS;
-static FTE_BL_DYNAMIC_PARAMS    *pBLDynamicParams = NULL;
+static 
+FTE_BL_STATIC_PARAMS _PTR_  pBLStaticParams = (FTE_BL_STATIC_PARAMS _PTR_)FTE_BL_STATIC_PARAMS_ADDRESS;
+static 
+FTE_BL_DYNAMIC_PARAMS _PTR_ pBLDynamicParams = NULL;
 
-boolean FTE_SYS_BL_checkStaticParams(void)
+FTE_BOOL FTE_SYS_BL_checkStaticParams(void)
 {
     if (pBLStaticParams == NULL)
     {
-        FTE_BL_STATIC_PARAMS *pParams = (FTE_BL_STATIC_PARAMS *)FTE_BL_STATIC_PARAMS_ADDRESS;
+        FTE_BL_STATIC_PARAMS _PTR_ pParams = (FTE_BL_STATIC_PARAMS _PTR_)FTE_BL_STATIC_PARAMS_ADDRESS;
 
         if ((strcmp(pParams->signature, FTE_BL_PARAMS_SIGNATURE) != 0) || 
-            (pParams->ulCRC32 != fte_crc32(0, pParams, sizeof(FTE_BL_STATIC_PARAMS) - sizeof(unsigned long))))
+            (pParams->ulCRC32 != FTE_CRC32(0, (FTE_UINT8_PTR)pParams, sizeof(FTE_BL_STATIC_PARAMS) - sizeof(unsigned long))))
         {
             return  FALSE;
         }
@@ -25,7 +27,10 @@ boolean FTE_SYS_BL_checkStaticParams(void)
     return  TRUE;
 } 
 
-_mqx_uint       FTE_SYS_BL_getOID(uint_8_ptr pOID)
+FTE_RET       FTE_SYS_BL_getOID
+(
+    FTE_UINT8_PTR   pOID
+)
 {
     ASSERT(pOID != NULL);
 
@@ -40,7 +45,10 @@ _mqx_uint       FTE_SYS_BL_getOID(uint_8_ptr pOID)
 }
 
 
-_mqx_uint       FTE_SYS_BL_getMAC(uint_8_ptr pMAC)
+FTE_RET       FTE_SYS_BL_getMAC
+(
+    FTE_UINT8_PTR   pMAC
+)
 {
     ASSERT(pMAC != NULL);
     
@@ -54,7 +62,7 @@ _mqx_uint       FTE_SYS_BL_getMAC(uint_8_ptr pMAC)
     return  MQX_OK;   
 }
 
-_mqx_uint   FTE_SYS_BL_startUpgrade(void)
+FTE_RET   FTE_SYS_BL_startUpgrade(void)
 {
     if (FTE_SYS_BL_load() != MQX_OK)
     {
@@ -70,13 +78,13 @@ _mqx_uint   FTE_SYS_BL_startUpgrade(void)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SYS_BL_load(void)
+FTE_RET   FTE_SYS_BL_load(void)
 {
     MQX_FILE_PTR    fp;
     
     if (pBLDynamicParams == NULL)
     {
-        pBLDynamicParams = (FTE_BL_DYNAMIC_PARAMS *)FTE_MEM_allocZero(sizeof(FTE_BL_DYNAMIC_PARAMS));
+        pBLDynamicParams = (FTE_BL_DYNAMIC_PARAMS _PTR_)FTE_MEM_allocZero(sizeof(FTE_BL_DYNAMIC_PARAMS));
         if (pBLDynamicParams == NULL)
         {
             return  MQX_ERROR;
@@ -111,7 +119,7 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint   FTE_SYS_BL_save(void)
+FTE_RET   FTE_SYS_BL_save(void)
 {
     MQX_FILE_PTR    fp;
     
@@ -125,7 +133,7 @@ _mqx_uint   FTE_SYS_BL_save(void)
     {
         ioctl(fp, FLASH_IOCTL_ENABLE_SECTOR_CACHE, NULL);
         
-        pBLDynamicParams->ulCRC32 = fte_crc32(0, pBLDynamicParams, sizeof(FTE_BL_DYNAMIC_PARAMS) - sizeof(unsigned long));
+        pBLDynamicParams->ulCRC32 = FTE_CRC32(0, pBLDynamicParams, sizeof(FTE_BL_DYNAMIC_PARAMS) - sizeof(unsigned long));
         if (sizeof(FTE_BL_DYNAMIC_PARAMS) != write(fp, (pointer)pBLDynamicParams, sizeof(FTE_BL_DYNAMIC_PARAMS)))
         {
             fprintf(stderr, "\nError writing to the file. Error code: %d", _io_ferror(fp));
@@ -144,10 +152,14 @@ error:
     return  MQX_ERROR;
 }
 
-int_32  FTE_SYS_BL_cmd(int_32 nArgc, char_ptr pArgv[])
+FTE_INT32  FTE_SYS_BL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[]
+)
 {
-    boolean bPrintUsage, bShortHelp = FALSE;
-    int_32  nReturnCode = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   nReturnCode = SHELL_EXIT_SUCCESS;
     
     if (FTE_SYS_BL_load() != MQX_OK)
     {

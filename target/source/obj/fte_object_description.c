@@ -4,7 +4,7 @@
 typedef struct 
 {
     FTE_OBJECT_ID   xClass;
-    char_ptr        pName;
+    FTE_CHAR_PTR        pName;
 } FTE_CLASS_DESC;
 
 static const FTE_CLASS_DESC _pClassDescs[] =
@@ -62,6 +62,10 @@ static const FTE_CLASS_DESC _pClassDescs[] =
         .pName  = "Discrete"
     },
     {
+        .xClass = FTE_OBJ_CLASS_CTRL,
+        .pName  = "Control"
+    },
+    {
         .xClass = FTE_OBJ_CLASS_MULTI,
         .pName  = "Multi Function Device"
     }
@@ -84,16 +88,15 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
         .nConfigSize        = sizeof(FTE_RTD_CONFIG),
         .nStatusSize        = sizeof(FTE_RTD_STATUS),
-        .f_attach           = fte_rtd_attach,     
-        .f_detach           = fte_rtd_detach
+        .f_attach           = FTE_RTD_attach,     
+        .f_detach           = FTE_RTD_detach
     },
 #endif
 #if FTE_DS18B20_SUPPORTED
     {    
         .nType              = FTE_OBJ_TYPE_DS18B20,   
-        .pName              = "TEMPERATURE",
-        .nMaxCount          = FTE_DS18B20_MAX_COUNT,
-        .xFlags             = FTE_OBJ_HAVE_SN,
+        .pName              = "DS18B20",
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC | FTE_OBJ_FLAG_SN,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
                               FTE_OBJ_FIELD_NAME_EDIT |
@@ -113,7 +116,6 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_TEMP,   
         .pName              = "TEMPERATURE",
-        .nMaxCount          = 1,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
@@ -124,16 +126,16 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
         .nConfigSize        = sizeof(FTE_IFCE_CONFIG),
         .nStatusSize        = sizeof(FTE_IFCE_STATUS),
-        .f_attach           = fte_ifce_attach, 
-        .f_detach           = fte_ifce_detach
+        .f_attach           = FTE_IFCE_attach, 
+        .f_detach           = FTE_IFCE_detach
     },
 #endif
 #if FTE_SHT_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_SHT,   
         .pName              = "SHT",
-        .nMaxCount          = FTE_SHT_MAX_COUNT,
-        .xFlags             = 0,
+        .pVendor            = "Sensirion AG",
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
                               FTE_OBJ_FIELD_NAME_EDIT |
@@ -143,6 +145,7 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_ENABLE_EDIT,   
         .nConfigSize        = sizeof(FTE_SHT_CONFIG),
         .nStatusSize        = sizeof(FTE_SHT_STATUS),
+        .f_create           = FTE_SHT_create,
         .f_attach           = FTE_SHT_attach, 
         .f_detach           = FTE_SHT_detach
 
@@ -152,7 +155,6 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_HUMI,   
         .pName              = "HUMIDITY",
-        .nMaxCount          = 1,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
@@ -163,8 +165,8 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
         .nConfigSize        = sizeof(FTE_IFCE_CONFIG),
         .nStatusSize        = sizeof(FTE_IFCE_STATUS),
-        .f_attach           = fte_ifce_attach, 
-        .f_detach           = fte_ifce_detach
+        .f_attach           = FTE_IFCE_attach, 
+        .f_detach           = FTE_IFCE_detach
     },
 #endif
 
@@ -210,7 +212,6 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
     {   
         .nType              = FTE_OBJ_TYPE_DI,        
         .pName              = "DI",
-        .nMaxCount          = FTE_DI_MAX_COUNT,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
@@ -229,7 +230,6 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_DI,   
         .pName              = "DI",
-        .nMaxCount          = 1,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
@@ -240,16 +240,15 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
         .nConfigSize        = sizeof(FTE_IFCE_CONFIG),
         .nStatusSize        = sizeof(FTE_IFCE_STATUS),
-        .f_attach           = fte_ifce_attach, 
-        .f_detach           = fte_ifce_detach
+        .f_attach           = FTE_IFCE_attach, 
+        .f_detach           = FTE_IFCE_detach
     },
 #endif
 #if FTE_DO_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_DO,        
         .pName              = "DO",
-        .nMaxCount          = FTE_DO_MAX_COUNT,
-        .xFlags             = FTE_OBJ_HAVE_CTRL,
+        .xFlags             = FTE_OBJ_FLAG_CTRL,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
                               FTE_OBJ_FIELD_NAME_EDIT |
@@ -268,7 +267,6 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_DO,   
         .pName              = "DO",
-        .nMaxCount          = 1,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
@@ -279,8 +277,8 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
         .nConfigSize        = sizeof(FTE_IFCE_CONFIG),
         .nStatusSize        = sizeof(FTE_IFCE_STATUS),
-        .f_attach           = fte_ifce_attach, 
-        .f_detach           = fte_ifce_detach
+        .f_attach           = FTE_IFCE_attach, 
+        .f_detach           = FTE_IFCE_detach
     },
 #endif
 #if FTE_RL_SUPPORTED
@@ -288,7 +286,7 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
         .nType              = FTE_OBJ_TYPE_RL,        
         .pName              = "RELAY",
         .nMaxCount          = FTE_RL_MAX_COUNT,
-        .xFlags             = FTE_OBJ_HAVE_CTRL,
+        .xFlags             = FTE_OBJ_FLAG_CTRL,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
                               FTE_OBJ_FIELD_NAME_EDIT |
@@ -309,8 +307,7 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
     {   
         .nType              = FTE_OBJ_TYPE_LED,        
         .pName              = "LED",
-        .nMaxCount          = FTE_LED_MAX_COUNT,
-        .xFlags             = FTE_OBJ_HAVE_CTRL,
+        .xFlags             = FTE_OBJ_FLAG_CTRL,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
                               FTE_OBJ_FIELD_NAME_EDIT |
@@ -329,7 +326,6 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
     {   
         .nType              = FTE_OBJ_TYPE_LPG,   
         .pName              = "LPG",
-        .nMaxCount          = 1,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
@@ -348,8 +344,7 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
     {   
         .nType              = FTE_OBJ_TYPE_CO2,   
         .pName              = "CO2",
-        .nMaxCount          = 1,
-        .xFlags             = 0,
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC | FTE_OBJ_FLAG_GUS,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
                               FTE_OBJ_FIELD_NAME_EDIT |
@@ -360,14 +355,14 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
         .nConfigSize        = sizeof(FTE_GUS_CONFIG),
         .nStatusSize        = sizeof(FTE_GUS_STATUS),
         .f_attach           = FTE_GUS_attach, 
-        .f_detach           = FTE_GUS_detach
+        .f_detach           = FTE_GUS_detach,
+        .pOpts              = (FTE_VOID_PTR)&FTE_COZIR_AX5000_GUSModelInfo
     },
 #endif
 #if FTE_SRF_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_SRF,   
         .pName              = "SONIC RANGE METER",
-        .nMaxCount          = 1,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
@@ -384,8 +379,7 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
     {   
         .nType              = FTE_OBJ_TYPE_DUST,   
         .pName              = "DUST",
-        .nMaxCount          = 1,
-        .xFlags             = 0,
+        .xFlags             = FTE_OBJ_FLAG_GUS,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
                               FTE_OBJ_FIELD_NAME_EDIT |
@@ -396,14 +390,14 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
         .nConfigSize        = sizeof(FTE_GUS_CONFIG),
         .nStatusSize        = sizeof(FTE_GUS_STATUS),
         .f_attach           = FTE_GUS_attach, 
-        .f_detach           = FTE_GUS_detach
+        .f_detach           = FTE_GUS_detach,
+        .pOpts              = (FTE_VOID_PTR)&FTE_HM1001_GUSModelInfo
     },
 #endif
 #if FTE_MULTI_COUNT_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_COUNT,   
         .pName              = "COUNT",
-        .nMaxCount          = 1,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
@@ -414,15 +408,14 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
         .nConfigSize        = sizeof(FTE_IFCE_CONFIG),
         .nStatusSize        = sizeof(FTE_IFCE_STATUS),
-        .f_attach           = fte_ifce_attach, 
-        .f_detach           = fte_ifce_detach
+        .f_attach           = FTE_IFCE_attach, 
+        .f_detach           = FTE_IFCE_detach
     },
 #endif
 #if FTE_PRESSURE_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_FLEXIFORCE,   
         .pName              = "PRESSURE",
-        .nMaxCount          = 1,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
@@ -441,7 +434,6 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_PRESSURE,   
         .pName              = "PRESSURE",
-        .nMaxCount          = 1,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
@@ -452,15 +444,14 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
         .nConfigSize        = sizeof(FTE_IFCE_CONFIG),
         .nStatusSize        = sizeof(FTE_IFCE_STATUS),
-        .f_attach           = fte_ifce_attach, 
-        .f_detach           = fte_ifce_detach
+        .f_attach           = FTE_IFCE_attach, 
+        .f_detach           = FTE_IFCE_detach
     },
 #endif
 #if FTE_MULTI_CO2_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_CO2,   
         .pName              = "CO2",
-        .nMaxCount          = 1,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
@@ -471,15 +462,14 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
         .nConfigSize        = sizeof(FTE_GUS_CONFIG),
         .nStatusSize        = sizeof(FTE_GUS_STATUS),
-        .f_attach           = fte_ifce_attach, 
-        .f_detach           = fte_ifce_detach
+        .f_attach           = FTE_IFCE_attach, 
+        .f_detach           = FTE_IFCE_detach
     },
 #endif
 #if FTE_MULTI_VOC_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_VOC,   
         .pName              = "VOC",
-        .nMaxCount          = 1,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
@@ -490,15 +480,14 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
         .nConfigSize        = sizeof(FTE_GUS_CONFIG),
         .nStatusSize        = sizeof(FTE_GUS_STATUS),
-        .f_attach           = fte_ifce_attach, 
-        .f_detach           = fte_ifce_detach
+        .f_attach           = FTE_IFCE_attach, 
+        .f_detach           = FTE_IFCE_detach
     },
 #endif
 #if FTE_MULTI_VOLTAGE_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_VOLTAGE,   
         .pName              = "VOLTAGE",
-        .nMaxCount          = 1,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
@@ -509,15 +498,14 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
         .nConfigSize        = sizeof(FTE_IFCE_CONFIG),
         .nStatusSize        = sizeof(FTE_IFCE_STATUS),
-        .f_attach           = fte_ifce_attach, 
-        .f_detach           = fte_ifce_detach
+        .f_attach           = FTE_IFCE_attach, 
+        .f_detach           = FTE_IFCE_detach
     },
 #endif
 #if FTE_MULTI_CURRENT_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_CURRENT,   
         .pName              = "CURRENT",
-        .nMaxCount          = 1,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
@@ -528,15 +516,14 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
         .nConfigSize        = sizeof(FTE_IFCE_CONFIG),
         .nStatusSize        = sizeof(FTE_IFCE_STATUS),
-        .f_attach           = fte_ifce_attach, 
-        .f_detach           = fte_ifce_detach
+        .f_attach           = FTE_IFCE_attach, 
+        .f_detach           = FTE_IFCE_detach
     },
 #endif
 #if FTE_MULTI_POWER_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_POWER,   
         .pName              = "POWER",
-        .nMaxCount          = 1,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
@@ -547,15 +534,14 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
         .nConfigSize        = sizeof(FTE_IFCE_CONFIG),
         .nStatusSize        = sizeof(FTE_IFCE_STATUS),
-        .f_attach           = fte_ifce_attach, 
-        .f_detach           = fte_ifce_detach
+        .f_attach           = FTE_IFCE_attach, 
+        .f_detach           = FTE_IFCE_detach
     },
 #endif
 #if FTE_MULTI_AI_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_AI,   
         .pName              = "VALUE",
-        .nMaxCount          = 1,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
@@ -566,15 +552,14 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
         .nConfigSize        = sizeof(FTE_IFCE_CONFIG),
         .nStatusSize        = sizeof(FTE_IFCE_STATUS),
-        .f_attach           = fte_ifce_attach, 
-        .f_detach           = fte_ifce_detach
+        .f_attach           = FTE_IFCE_attach, 
+        .f_detach           = FTE_IFCE_detach
     },
 #endif
 #if FTE_MULTI_VALUE_SUPPORTED
     {   
-        .nType              = FTE_OBJ_TYPE_MULTI_VALUE,   
-        .pName              = "VALUE",
-        .nMaxCount          = 1,
+        .nType              = FTE_OBJ_TYPE_CTRL,   
+        .pName              = "CTRL",
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
@@ -585,15 +570,14 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
         .nConfigSize        = sizeof(FTE_IFCE_CONFIG),
         .nStatusSize        = sizeof(FTE_IFCE_STATUS),
-        .f_attach           = fte_ifce_attach, 
-        .f_detach           = fte_ifce_detach
+        .f_attach           = FTE_IFCE_attach, 
+        .f_detach           = FTE_IFCE_detach
     },
 #endif
 #if FTE_MULTI_DISCRETE_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_DISCRETE,   
         .pName              = "DISCRETE",
-        .nMaxCount          = 1,
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
@@ -604,16 +588,16 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
         .nConfigSize        = sizeof(FTE_IFCE_CONFIG),
         .nStatusSize        = sizeof(FTE_IFCE_STATUS),
-        .f_attach           = fte_ifce_attach, 
-        .f_detach           = fte_ifce_detach
+        .f_attach           = FTE_IFCE_attach, 
+        .f_detach           = FTE_IFCE_detach
     },
 #endif
-#if FTE_SH_MV250_SUPPORTED
+#if FTE_SOHA_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_SH_MV250,   
-        .pName              = "MV250",
-        .nMaxCount          = 1,
-        .xFlags             = 0,
+        .pName              = "MV250HT",
+        .pVendor            = "SOHA",
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC | FTE_OBJ_FLAG_GUS,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
                               FTE_OBJ_FIELD_NAME_EDIT |
@@ -621,18 +605,19 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_STATE |
                               FTE_OBJ_FIELD_ENABLE |
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
-        .nConfigSize        = sizeof(FTE_GUS_CONFIG),
-        .nStatusSize        = sizeof(FTE_GUS_STATUS),
+        .nConfigSize        = sizeof(FTE_SOHA_CONFIG),
+        .nStatusSize        = sizeof(FTE_SOHA_STATUS),
         .f_attach           = FTE_GUS_attach, 
-        .f_detach           = FTE_GUS_detach
+        .f_detach           = FTE_GUS_detach,
+        .pOpts              = (FTE_VOID_PTR)&FTE_SOHA_MV250_GUSModelInfo
     },
 #endif
 #if FTE_TRUEYES_AIRQ_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_AIRQ,   
         .pName              = "AIRQ",
-        .nMaxCount          = 1,
-        .xFlags             = 0,
+        .pVendor            = "Trueyes",
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC | FTE_OBJ_FLAG_GUS,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
                               FTE_OBJ_FIELD_NAME_EDIT |
@@ -643,15 +628,16 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
         .nConfigSize        = sizeof(FTE_GUS_CONFIG),
         .nStatusSize        = sizeof(FTE_GUS_STATUS),
         .f_attach           = FTE_GUS_attach, 
-        .f_detach           = FTE_GUS_detach
+        .f_detach           = FTE_GUS_detach,
+        .pOpts              = (FTE_VOID_PTR)&FTE_TRUEYES_AIRQ_GUSModelInfo
     },
 #endif
 #if FTE_ELT_AQM100_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_AQM100,   
         .pName              = "AQM100",
-        .nMaxCount          = 4,
-        .xFlags             = 0,
+        .pVendor            = "ELT",
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC | FTE_OBJ_FLAG_GUS,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
                               FTE_OBJ_FIELD_NAME_EDIT |
@@ -659,18 +645,37 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_STATE |
                               FTE_OBJ_FIELD_ENABLE |
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
-        .nConfigSize        = sizeof(FTE_GUS_CONFIG),
-        .nStatusSize        = sizeof(FTE_GUS_STATUS),
+        .nConfigSize        = sizeof(FTE_ELT_CONFIG),
+        .nStatusSize        = sizeof(FTE_ELT_STATUS),
         .f_attach           = FTE_GUS_attach, 
-        .f_detach           = FTE_GUS_detach
+        .f_detach           = FTE_GUS_detach,
+        .pOpts              = (FTE_VOID_PTR)&FTE_ELT_AQM100_GUSModelInfo
+    },
+    {   
+        .nType              = FTE_OBJ_TYPE_MULTI_AQM100M,   
+        .pName              = "AQM100M",
+        .pVendor            = "ELT",
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC | FTE_OBJ_FLAG_GUS,
+        .xSupportedFields   = FTE_OBJ_FIELD_ID | 
+                              FTE_OBJ_FIELD_NAME |
+                              FTE_OBJ_FIELD_NAME_EDIT |
+                              FTE_OBJ_FIELD_VALUE |
+                              FTE_OBJ_FIELD_STATE |
+                              FTE_OBJ_FIELD_ENABLE |
+                              FTE_OBJ_FIELD_ENABLE_EDIT,                
+        .nConfigSize        = sizeof(FTE_ELT_CONFIG),
+        .nStatusSize        = sizeof(FTE_ELT_STATUS),
+        .f_attach           = FTE_GUS_attach, 
+        .f_detach           = FTE_GUS_detach,
+        .pOpts              = (FTE_VOID_PTR)&FTE_ELT_AQM100M_GUSModelInfo
     },
 #endif
 #if FTE_MST_MEX510C_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_MEX510C,   
         .pName              = "MEX510C",
-        .nMaxCount          = 1,
-        .xFlags             = 0,
+        .pVendor            = "MST",
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC | FTE_OBJ_FLAG_GUS,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
                               FTE_OBJ_FIELD_NAME_EDIT |
@@ -681,15 +686,16 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
         .nConfigSize        = sizeof(FTE_GUS_CONFIG),
         .nStatusSize        = sizeof(FTE_GUS_STATUS),
         .f_attach           = FTE_GUS_attach, 
-        .f_detach           = FTE_GUS_detach
+        .f_detach           = FTE_GUS_detach,
+        .pOpts              = (FTE_VOID_PTR)&FTE_MST_MEX510C_GUSModelInfo
     },
 #endif
 #if FTE_GS_DPC_HL_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_DPC_HL,   
         .pName              = "DPC-HL",
-        .nMaxCount          = 1,
-        .xFlags             = 0,
+        .pVendor            = "Green System",
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC | FTE_OBJ_FLAG_GUS,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
                               FTE_OBJ_FIELD_NAME_EDIT |
@@ -700,15 +706,16 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
         .nConfigSize        = sizeof(FTE_GUS_CONFIG),
         .nStatusSize        = sizeof(FTE_GUS_STATUS),
         .f_attach           = FTE_GUS_attach, 
-        .f_detach           = FTE_GUS_detach
+        .f_detach           = FTE_GUS_detach,
+        .pOpts              = (FTE_VOID_PTR)&FTE_GS_DPC_GUSModelInfo
     },
 #endif
 #if FTE_BOTEM_PN1500_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_PN1500,   
         .pName              = "PN1500",
-        .nMaxCount          = 1,
-        .xFlags             = 0,
+        .pVendor            = "Botem",
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC | FTE_OBJ_FLAG_GUS,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
                               FTE_OBJ_FIELD_NAME_EDIT |
@@ -719,32 +726,16 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
         .nConfigSize        = sizeof(FTE_GUS_CONFIG),
         .nStatusSize        = sizeof(FTE_GUS_STATUS),
         .f_attach           = FTE_GUS_attach, 
-        .f_detach           = FTE_GUS_detach
+        .f_detach           = FTE_GUS_detach,
+        .pOpts              = (FTM_VOID_PTR)&FTE_MOTEM_PN1500_GUSModelInfo
     },
 #endif
 #if FTE_TASCON_HEM12_SUPPORTED
     {   
-        .nType              = FTE_OBJ_TYPE_POWER,   
-        .pName              = "HEM12",
-        .nMaxCount          = 1,
-        .xFlags             = 0,
-        .xSupportedFields   = FTE_OBJ_FIELD_ID | 
-                              FTE_OBJ_FIELD_NAME |
-                              FTE_OBJ_FIELD_NAME_EDIT |
-                              FTE_OBJ_FIELD_VALUE |
-                              FTE_OBJ_FIELD_STATE |
-                              FTE_OBJ_FIELD_ENABLE |
-                              FTE_OBJ_FIELD_ENABLE_EDIT,                
-        .nConfigSize        = sizeof(FTE_GUS_CONFIG),
-        .nStatusSize        = sizeof(FTE_GUS_STATUS),
-        .f_attach           = FTE_GUS_attach, 
-        .f_detach           = FTE_GUS_detach
-    },
-    {   
         .nType              = FTE_OBJ_TYPE_MULTI_HEM12,   
         .pName              = "HEM12",
-        .nMaxCount          = 1,
-        .xFlags             = 0,
+        .pVendor            = "Tascon",
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC | FTE_OBJ_FLAG_GUS,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
                               FTE_OBJ_FIELD_NAME_EDIT |
@@ -752,18 +743,19 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_STATE |
                               FTE_OBJ_FIELD_ENABLE |
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
-        .nConfigSize        = sizeof(FTE_HEM12_06M_CONFIG),
-        .nStatusSize        = sizeof(FTE_HEM12_06M_STATUS),
+        .nConfigSize        = sizeof(FTE_TASCON_HEM12_CONFIG),
+        .nStatusSize        = sizeof(FTE_TASCON_HEM12_STATUS),
         .f_attach           = FTE_GUS_attach, 
-        .f_detach           = FTE_GUS_detach
+        .f_detach           = FTE_GUS_detach,
+        .pOpts              = (FTE_VOID_PTR)&FTE_TASCON_HEM12_GUSModelInfo
     },
 #endif
 #if FTE_TASCON_HEM12_06M_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_HEM12_06M,   
         .pName              = "HEM12-06M",
-        .nMaxCount          = 4,
-        .xFlags             = 0,
+        .pVendor            = "Tascon",
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC | FTE_OBJ_FLAG_GUS,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
                               FTE_OBJ_FIELD_NAME_EDIT |
@@ -771,18 +763,18 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_STATE |
                               FTE_OBJ_FIELD_ENABLE |
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
-        .nConfigSize        = sizeof(FTE_HEM12_06M_CONFIG),
-        .nStatusSize        = sizeof(FTE_HEM12_06M_STATUS),
+        .nConfigSize        = sizeof(FTE_TASCON_HEM12_CONFIG),
+        .nStatusSize        = sizeof(FTE_TASCON_HEM12_STATUS),
         .f_attach           = FTE_GUS_attach, 
-        .f_detach           = FTE_GUS_detach
+        .f_detach           = FTE_GUS_detach,
+        .pOpts              = (FTE_VOID_PTR)&FTE_TASCON_HEM12_06M_GUSModelInfo
     },
 #endif
 #if FTE_FTLM_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_FTLM,   
         .pName              = "FTLM",
-        .nMaxCount          = 1,
-        .xFlags             = 0,
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC | FTE_OBJ_FLAG_GUS,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
                               FTE_OBJ_FIELD_NAME_EDIT |
@@ -793,14 +785,15 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
         .nConfigSize        = sizeof(FTE_GUS_CONFIG),
         .nStatusSize        = sizeof(FTE_GUS_STATUS),
         .f_attach           = FTE_GUS_attach, 
-        .f_detach           = FTE_GUS_detach
+        .f_detach           = FTE_GUS_detach,
+        .pOpts              = (FTE_VOID_PTR)&FTE_FTLM_GUSModelInfo
     },
 #endif
 #if FTE_CIAS_SIOUX_CU_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_CIAS_ZONE,   
         .pName              = "CU ZONE",
-        .nMaxCount          = 1,
+        .pVendor            = "CIAS",
         .xFlags             = 0,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
@@ -811,14 +804,14 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
                               FTE_OBJ_FIELD_ENABLE_EDIT,                
         .nConfigSize        = sizeof(FTE_IFCE_CONFIG),
         .nStatusSize        = sizeof(FTE_IFCE_STATUS),
-        .f_attach           = fte_ifce_attach, 
-        .f_detach           = fte_ifce_detach
+        .f_attach           = FTE_IFCE_attach, 
+        .f_detach           = FTE_IFCE_detach
     },
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU,
         .pName              = "SIOUX_CU",
-        .nMaxCount          = 1,
-        .xFlags             = 0,
+        .pVendor            = "CIAS",
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC | FTE_OBJ_FLAG_GUS,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
                               FTE_OBJ_FIELD_NAME_EDIT |
@@ -829,15 +822,16 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
         .nConfigSize        = sizeof(FTE_CIAS_SIOUX_CU_CONFIG),
         .nStatusSize        = sizeof(FTE_CIAS_SIOUX_CU_STATUS),
         .f_attach           = FTE_GUS_attach, 
-        .f_detach           = FTE_GUS_detach
+        .f_detach           = FTE_GUS_detach,
+        .pOpts              = (FTE_VOID_PTR)&FTE_CIAS_SIOUX_CU_GUSModelInfo
     },
 #endif
 #if FTE_IOEX_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_IOEX,
         .pName              = "IOEX",
-        .nMaxCount          = 1,
-        .xFlags             = 0,
+        .pVendor            = "FutureTek,Inc.",
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC | FTE_OBJ_FLAG_GUS,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
                               FTE_OBJ_FIELD_NAME_EDIT |
@@ -848,15 +842,17 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
         .nConfigSize        = sizeof(FTE_IOEX_CONFIG),
         .nStatusSize        = sizeof(FTE_IOEX_STATUS),
         .f_attach           = FTE_GUS_attach, 
-        .f_detach           = FTE_GUS_detach
+        .f_detach           = FTE_GUS_detach,
+        .pOpts              = (FTE_VOID_PTR)&FTE_IOEX_GUSModelInfo
+        
     },
 #endif
 #if FTE_DOTECH_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_DOTECH_FX3D,
         .pName              = "FX3D",
-        .nMaxCount          = FTE_DOTECH_FX3D_MAX,
-        .xFlags             = 0,
+        .pVendor            = "Dotech Inc.",
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC | FTE_OBJ_FLAG_GUS,
         .xSupportedFields   = FTE_OBJ_FIELD_ID | 
                               FTE_OBJ_FIELD_NAME |
                               FTE_OBJ_FIELD_NAME_EDIT |
@@ -867,19 +863,20 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
         .nConfigSize        = sizeof(FTE_DOTECH_CONFIG),
         .nStatusSize        = sizeof(FTE_DOTECH_FX3D_STATUS),
         .f_attach           = FTE_GUS_attach, 
-        .f_detach           = FTE_GUS_detach
+        .f_detach           = FTE_GUS_detach,
+        .pOpts              = (FTE_VOID_PTR)&FTE_DOTECH_FX3D_GUSModelInfo
     },
 #endif
 };
 
-static const uint_32 _nObjDescs  = sizeof(_pObjDescs) / sizeof(FTE_OBJECT_DESC); 
+static const FTE_UINT32 _nObjDescs  = sizeof(_pObjDescs) / sizeof(FTE_OBJECT_DESC); 
  
-uint_32 FTE_OBJ_DESC_count(void)
+FTE_UINT32 FTE_OBJ_DESC_count(void)
 {
     return  _nObjDescs;
 }
 
-FTE_OBJECT_DESC_PTR FTE_OBJ_DESC_getAt(uint_32 ulIndex)
+FTE_OBJECT_DESC_PTR FTE_OBJ_DESC_getAt(FTE_UINT32 ulIndex)
 {
     if (ulIndex >= _nObjDescs)
     {
@@ -889,9 +886,9 @@ FTE_OBJECT_DESC_PTR FTE_OBJ_DESC_getAt(uint_32 ulIndex)
     return  (FTE_OBJECT_DESC_PTR)&_pObjDescs[ulIndex];
 }
 
-FTE_OBJECT_DESC_PTR FTE_OBJ_DESC_get(uint_32 nType)
+FTE_OBJECT_DESC_PTR FTE_OBJ_DESC_get(FTE_UINT32 nType)
 {
-    uint_32 ulCount;
+    FTE_UINT32 ulCount;
     
     ulCount = FTE_OBJ_DESC_count();
     
@@ -906,22 +903,25 @@ FTE_OBJECT_DESC_PTR FTE_OBJ_DESC_get(uint_32 nType)
     return  NULL;
 }
 
-static uint_32_ptr  _pClass = NULL;
-static uint_32      _nClass = 0;
+static 
+FTE_UINT32_PTR  _pClass = NULL;
 
-uint_32 FTE_OBJ_DESC_CLASS_count(void)
+static 
+FTE_UINT32      _nClass = 0;
+
+FTE_UINT32 FTE_OBJ_DESC_CLASS_count(void)
 {
-    uint_32 i, j;
+    FTE_UINT32 i, j;
     
-    uint_32_ptr pClass = NULL;
-    uint_32     nClass = 0;
+    FTE_UINT32_PTR pClass = NULL;
+    FTE_UINT32     nClass = 0;
     
     if (_pClass != NULL)
     {
         return  _nClass;
     }
     
-    pClass = FTE_MEM_allocZero(sizeof(uint_32) * _nObjDescs);    
+    pClass = FTE_MEM_allocZero(sizeof(FTE_UINT32) * _nObjDescs);    
     if (pClass == NULL)
     {
         return  0;
@@ -942,13 +942,13 @@ uint_32 FTE_OBJ_DESC_CLASS_count(void)
             pClass[nClass++] = _pObjDescs[i].nType & FTE_OBJ_CLASS_MASK;
         }
     }
-    _pClass = FTE_MEM_allocZero(sizeof(uint_32) * nClass);
+    _pClass = FTE_MEM_allocZero(sizeof(FTE_UINT32) * nClass);
     if (_pClass == NULL)
     {
         goto error;
     }
 
-    memcpy(_pClass, pClass, sizeof(uint_32) * nClass);
+    memcpy(_pClass, pClass, sizeof(FTE_UINT32) * nClass);
     _nClass = nClass;
     
     FTE_MEM_free(pClass);
@@ -965,7 +965,7 @@ error:
     return  0;
 }
 
-uint_32 FTE_OBJ_DESC_CLASS_getAt(uint_32 ulIndex)
+FTE_UINT32 FTE_OBJ_DESC_CLASS_getAt(FTE_UINT32 ulIndex)
 {
     if (ulIndex >= _nClass)
     {
@@ -975,9 +975,14 @@ uint_32 FTE_OBJ_DESC_CLASS_getAt(uint_32 ulIndex)
     return  _pClass[ulIndex];
 }
 
-_mqx_uint       FTE_OBJ_CLASS_getName(FTE_OBJECT_ID nID, char_ptr pName, uint_32 nBuffLen)
+FTE_RET FTE_OBJ_CLASS_getName
+(   
+    FTE_OBJECT_ID   nID, 
+    FTE_CHAR_PTR    pName, 
+    FTE_UINT32      nBuffLen
+)
 {
-    uint_32 i;
+    FTE_UINT32 i;
     
     if (nBuffLen > 1)
     {

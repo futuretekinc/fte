@@ -185,7 +185,7 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state>FTE_ES21=1</state>
+          <state>FTE_ES22=1</state>
           <state>FTE_V2=1</state>
           <state>FTE_DEBUG=1</state>
           <state>FREESCALE_MQX</state>
@@ -2200,6 +2200,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_es21.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\target\fte_es22.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_es4.h</name>

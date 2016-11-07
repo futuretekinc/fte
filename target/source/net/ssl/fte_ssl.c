@@ -11,7 +11,10 @@
 
 #define CLIENT_DEFAULT_VERSION 3
 
-FTE_SSL_CONTEXT_PTR FTE_SSL_create(FTE_SSL_CONFIG_PTR pConfig)
+FTE_SSL_CONTEXT_PTR FTE_SSL_create
+(
+    FTE_SSL_CONFIG_PTR pConfig
+)
 {
     FTE_SSL_CONTEXT_PTR     pxCTX   = NULL;
     CYASSL_METHOD*          pxMETHOD= NULL;
@@ -120,7 +123,10 @@ error:
     return  NULL;
 }
 
-_mqx_uint   FTE_SSL_destroy(FTE_SSL_CONTEXT_PTR pxCTX)
+FTE_RET   FTE_SSL_destroy
+(
+    FTE_SSL_CONTEXT_PTR     pxCTX
+)
 {
     ASSERT(pxCTX != NULL);
     
@@ -141,7 +147,11 @@ _mqx_uint   FTE_SSL_destroy(FTE_SSL_CONTEXT_PTR pxCTX)
     return  RTCS_OK;
 }
 
-_mqx_uint   FTE_SSL_connect(FTE_SSL_CONTEXT_PTR pxCTX, int nSocketID)
+FTE_RET   FTE_SSL_connect
+(
+    FTE_SSL_CONTEXT_PTR     pxCTX, 
+    FTE_INT32               nSocketID
+)
 {
     CyaSSL_set_fd(pxCTX->pxSSL, nSocketID);        
     CyaSSL_set_using_nonblock(pxCTX->pxSSL, TRUE);
@@ -189,7 +199,10 @@ _mqx_uint   FTE_SSL_connect(FTE_SSL_CONTEXT_PTR pxCTX, int nSocketID)
     return  RTCS_OK;
 }
 
-_mqx_uint   FTE_SSL_disconnect(FTE_SSL_CONTEXT_PTR pxCTX)
+FTE_RET   FTE_SSL_disconnect
+(
+    FTE_SSL_CONTEXT_PTR pxCTX
+)
 {
     ASSERT(pxCTX != NULL);
     
@@ -198,17 +211,32 @@ _mqx_uint   FTE_SSL_disconnect(FTE_SSL_CONTEXT_PTR pxCTX)
     return  RTCS_OK;
 }
 
-int FTE_SSL_send(FTE_SSL_CONTEXT_PTR pxCTX, const void *pMsg, int nMsgLen)
+FTE_INT32   FTE_SSL_send
+(
+    FTE_SSL_CONTEXT_PTR pxCTX, 
+    const FTE_VOID_PTR  pMsg, 
+    FTE_INT32           nMsgLen
+)
 {
     return  CyaSSL_write(pxCTX->pxSSL, pMsg, nMsgLen);
 }
 
-int FTE_SSL_recv(FTE_SSL_CONTEXT_PTR pxCTX, void *pBuff, int nBuffLen)
+FTE_INT32   FTE_SSL_recv
+(
+    FTE_SSL_CONTEXT_PTR     pxCTX, 
+    FTE_VOID_PTR            pBuff, 
+    FTE_INT32               nBuffLen
+)
 {
     return  CyaSSL_read(pxCTX->pxSSL, pBuff, nBuffLen);
 }
 
-int ValidateDate(const uint_8* date, uint_8 format, int dateType)
+FTE_INT32   ValidateDate
+(
+    const FTE_UINT8_PTR pDate, 
+    FTE_UINT8           ubFormat, 
+    FTE_INT32           nDateType
+)
 {
     return  1;
 }

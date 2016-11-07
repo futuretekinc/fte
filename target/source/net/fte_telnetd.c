@@ -4,9 +4,13 @@
 
 extern const SHELL_COMMAND_STRUCT pSHELLCommands[];
 
-static void FTE_TELNETD_proc(pointer dummy);
+static 
+void FTE_TELNETD_proc(FTE_VOID_PTR  pDummy);
 
-_mqx_uint   FTE_TELNETD_init(void _PTR_ pParams)
+FTE_RET   FTE_TELNETD_init
+(   
+    FTE_VOID_PTR pParams
+)
 {
     static  RTCS_TASK _TaskTemplate = 
     {   
@@ -32,7 +36,10 @@ _mqx_uint   FTE_TELNETD_init(void _PTR_ pParams)
     return  MQX_OK;
 }
 
-void FTE_TELNETD_proc(pointer pShellCmds) 
+void FTE_TELNETD_proc
+(
+    FTE_VOID_PTR    pShellCmds
+) 
 {  
     FTE_SHELL_proc();
 }

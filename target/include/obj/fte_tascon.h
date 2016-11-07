@@ -1,60 +1,89 @@
 #ifndef __FTE_TASCON_H__
 #define __FTE_TASCON_H__
 
+#define FTE_TASCON_MAX                  3
+
+typedef enum    FTE_TASCON_MODEL_ENUM
+{
+    FTE_TASCON_MODEL_HEM12,
+    FTE_TASCON_MODEL_HEM12_06M
+}   FTE_TASCON_MODEL, _PTR_ FTE_TASCON_MODEL_PTR;
+
 #define FTE_HEM12_FIELD_POWER           0 
 #define FTE_HEM12_FIELD_VOLTAGE         1 
 #define FTE_HEM12_FIELD_CURRENT         2 
+#define FTE_TASCON_HEM12_FIELD_MAX          3
 
-typedef struct FTE_HEM12_06M_CONFIG_STRUCT
+#define FTE_TASCON_HEM12_DEFAULT_UPDATE_INTERVAL   10000
+
+#define FTE_HEM12_EVENT_TYPE                FTE_OBJ_EVENT_TYPE_NONE
+#define FTE_HEM12_EVENT_DELAY               0   // 0 seconds
+#define FTE_HEM12_EVENT_THRESHOLD           0   // 0 ppm
+#define FTE_HEM12_EVENT_UPPER_LIMIT         0   // 0 ppm
+#define FTE_HEM12_EVENT_LOWER_LIMIT         0
+
+#define FTE_TASCON_HEM12_DEFAULT_FULL_DUPLEX    FALSE
+#define FTE_TASCON_HEM12_DEFAULT_BAUDRATE       1200
+#define FTE_TASCON_HEM12_DEFAULT_DATABITS       8
+#define FTE_TASCON_HEM12_DEFAULT_PARITY         FTE_UART_PARITY_EVEN
+#define FTE_TASCON_HEM12_DEFAULT_STOPBITS       FTE_UART_STOP_BITS_1
+
+#define FTE_TASCON_HEM12_06M_DEFAULT_FULL_DUPLEX    FALSE
+#define FTE_TASCON_HEM12_06M_DEFAULT_BAUDRATE       19200
+#define FTE_TASCON_HEM12_06M_DEFAULT_DATABITS       8
+#define FTE_TASCON_HEM12_06M_DEFAULT_PARITY         FTE_UART_PARITY_EVEN
+#define FTE_TASCON_HEM12_06M_DEFAULT_STOPBITS       FTE_UART_STOP_BITS_1
+
+typedef struct FTE_TASCON_HEM12_CONFIG_STRUCT
 {
     FTE_COMMON_CONFIG   xCommon;
-    uint_32             nModel;
-    uint_32             nUCSID;
-    uint_32             nInterval;
-    uint_8              pSensorID[6];
-}   FTE_HEM12_06M_CONFIG, _PTR_ FTE_HEM12_06M_CONFIG_PTR;
+    FTE_UINT32             nModel;
+    FTE_UINT32             nUCSID;
+    FTE_UINT32             nInterval;
+    FTE_UINT8              pSensorID[6];
+}   FTE_TASCON_HEM12_CONFIG, _PTR_ FTE_TASCON_HEM12_CONFIG_PTR;
 
-typedef struct FTE_HEM12_06M_STATUS_STRUCT
+typedef struct FTE_TASCON_HEM12_STATUS_STRUCT
 {
     FTE_GUS_STATUS      xGUS;
-    uint_32             nField;
-}   FTE_HEM12_06M_STATUS, _PTR_ FTE_HEM12_06M_STATUS_PTR;
+    FTE_UINT32             nField;
+}   FTE_TASCON_HEM12_STATUS, _PTR_ FTE_TASCON_HEM12_STATUS_PTR;
 
-uint_32     FTE_TASCON_HEM12_request(FTE_OBJECT_PTR pObj);
-_mqx_uint   FTE_TASCON_HEM12_received(FTE_OBJECT_PTR pObj);
+FTE_RET FTE_TASCON_HEM12_init(FTE_OBJECT_PTR pObj);
 
-uint_32     FTE_TASCON_HEM12_06M_request(FTE_OBJECT_PTR pObj);
-_mqx_uint   FTE_TASCON_HEM12_06M_received(FTE_OBJECT_PTR pObj);
-_mqx_uint   FTE_TASCON_HEM12_06M_setConfig(FTE_OBJECT_PTR pDevice, char_ptr pJSON);
-_mqx_uint   FTE_TASCON_HEM12_06M_getConfig(FTE_OBJECT_PTR pDevice, char_ptr pBuff, uint_32 ulBuffLen);
+FTE_RET FTE_TASCON_HEM12_attach(FTE_OBJECT_PTR pObj);
+FTE_RET FTE_TASCON_HEM12_detach(FTE_OBJECT_PTR pObj);
 
-extern  FTE_VALUE_TYPE  FTE_TASCON_HEM12_valueTypes[];
+FTE_RET FTE_TASCON_HEM12_get(FTE_OBJECT_PTR  pObject, FTE_UINT32 ulIndex, FTE_VALUE_PTR   pValue);
 
-#define FTE_TASCON_HEM12_DESCRIPTOR  {\
-        .nModel     = FTE_GUS_MODEL_TASCON_HEM12,   \
-        .pName      = "TASCON HEM12",               \
-        .nFieldCount= 1,                            \
-        .pValueTypes= FTE_TASCON_HEM12_valueTypes,  \
-        .f_request  = FTE_TASCON_HEM12_request,\
-        .f_received = FTE_TASCON_HEM12_received,\
-        .f_set_config = FTE_TASCON_HEM12_06M_setConfig, \
-        .f_get_config = FTE_TASCON_HEM12_06M_getConfig, \
-    }
+FTE_UINT32  FTE_TASCON_HEM12_request(FTE_OBJECT_PTR pObj);
+FTE_RET     FTE_TASCON_HEM12_received(FTE_OBJECT_PTR pObj);
+
+FTE_UINT32  FTE_TASCON_HEM12_06M_request(FTE_OBJECT_PTR pObj);
+FTE_RET     FTE_TASCON_HEM12_06M_received(FTE_OBJECT_PTR pObj);
+FTE_RET     FTE_TASCON_HEM12_06M_setConfig(FTE_OBJECT_PTR pDevice, FTE_CHAR_PTR pJSON);
+FTE_RET     FTE_TASCON_HEM12_06M_getConfig(FTE_OBJECT_PTR pDevice, FTE_CHAR_PTR pBuff, FTE_UINT32 ulBuffLen);
+
+extern  
+FTE_VALUE_TYPE  FTE_TASCON_HEM12_valueTypes[];
+
+extern  
+FTE_TASCON_HEM12_CONFIG FTE_TASCON_HEM12_defaultConfig;
+
+extern  
+FTE_TASCON_HEM12_CONFIG FTE_TASCON_HEM12_06M_defaultConfig;
+
+extern  const 
+FTE_GUS_MODEL_INFO  FTE_TASCON_HEM12_GUSModelInfo;
+
+extern  const 
+FTE_GUS_MODEL_INFO  FTE_TASCON_HEM12_06M_GUSModelInfo;
 
 
-extern  FTE_VALUE_TYPE  FTE_TASCON_HEM12_06M_valueTypes[];
+extern  
+FTE_VALUE_TYPE  FTE_TASCON_HEM12_06M_valueTypes[];
 
-#define FTE_TASCON_HEM12_06M_DESCRIPTOR  {\
-        .nModel     = FTE_GUS_MODEL_TASCON_HEM12_06M,   \
-        .pName      = "TASCON HEM12-06M",               \
-        .nFieldCount= 4,                                \
-        .pValueTypes= FTE_TASCON_HEM12_06M_valueTypes,  \
-        .f_request  = FTE_TASCON_HEM12_06M_request,     \
-        .f_received = FTE_TASCON_HEM12_06M_received,    \
-        .f_set_config = FTE_TASCON_HEM12_06M_setConfig, \
-        .f_get_config = FTE_TASCON_HEM12_06M_getConfig, \
-    }
 
-int_32  FTE_TASCON_HEM12_SHELL_cmd(int_32 argc, char_ptr argv[]);
+FTE_INT32  FTE_TASCON_HEM12_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
 
 #endif

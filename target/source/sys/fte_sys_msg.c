@@ -9,7 +9,7 @@
 static  _queue_id   _sys_msg_qid;
 static  _pool_id    _sys_msg_pool;
 
-_mqx_uint   fte_sys_msg_q_init(void)
+FTE_RET   fte_sys_msg_q_init(void)
 {
     /* open a message queue */
     _sys_msg_qid = _msgq_open(MSGQ_FREE_QUEUE, 0);   
@@ -30,7 +30,7 @@ _mqx_uint   fte_sys_msg_q_init(void)
     return  MQX_OK;    
 }
 
-_mqx_uint   fte_sys_msg_q_final(void)
+FTE_RET   fte_sys_msg_q_final(void)
 {
     if (_sys_msg_pool != MSGPOOL_NULL_POOL_ID)
     {
@@ -57,7 +57,7 @@ pointer fte_sys_msg_q_receive(void)
     return  _msgq_receive(_sys_msg_qid, 1);
 }
 
-_mqx_uint   fte_sys_msg_send(void)
+FTE_RET   fte_sys_msg_send(void)
 {
     FTE_SYS_MESSAGE_PTR pMsg = (FTE_SYS_MESSAGE_PTR)_msg_alloc(_sys_msg_pool);
     if (pMsg == NULL)

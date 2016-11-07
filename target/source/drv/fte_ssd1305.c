@@ -9,22 +9,33 @@
     FTE_I2C_write_command(higherAddr); 
 
 // Clipping region control
-static uint_32  _clipRgn = 0;
+static 
+FTE_UINT32  _clipRgn = 0;
 
 // Clipping region borders
-static uint_32  _clipLeft;
-static uint_32  _clipRight;
-static uint_32  _clipTop;
-static uint_32  _clipBottom;
+static 
+FTE_UINT32  _clipLeft;
+
+static 
+FTE_UINT32  _clipRight;
+
+static 
+FTE_UINT32  _clipTop;
+
+static 
+FTE_UINT32  _clipBottom;
 
 // Color
 //GFX_COLOR   _color;
 
 
 static FTE_SSD1305_PTR  _pHead      = NULL;
-static uint_32          _nSSD1305s  = 0;
+static FTE_UINT32       _nSSD1305s  = 0;
 
-FTE_SSD1305_PTR  FTE_SSD1305_get(uint_32 nOID)
+FTE_SSD1305_PTR  FTE_SSD1305_get
+(
+    FTE_UINT32  nOID
+)
 {
     FTE_SSD1305_PTR  pSSD1305;
     
@@ -42,7 +53,10 @@ FTE_SSD1305_PTR  FTE_SSD1305_get(uint_32 nOID)
     return  NULL;
 }
 
-_mqx_uint   FTE_SSD1305_create(FTE_SSD1305_CONFIG_PTR pConfig)
+FTE_RET   FTE_SSD1305_create
+(
+    FTE_SSD1305_CONFIG_PTR pConfig
+)
 {
     FTE_SSD1305_PTR  pSSD1305;
     
@@ -64,7 +78,11 @@ _mqx_uint   FTE_SSD1305_create(FTE_SSD1305_CONFIG_PTR pConfig)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_attach(FTE_SSD1305_PTR pSSD1305, uint_32 nParent)
+FTE_RET   FTE_SSD1305_attach
+(
+    FTE_SSD1305_PTR     pSSD1305, 
+    FTE_UINT32          nParent
+)
 {
     ASSERT(pSSD1305 != NULL);
     
@@ -99,7 +117,10 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint   FTE_SSD1305_detach(FTE_SSD1305_PTR pSSD1305)
+FTE_RET   FTE_SSD1305_detach
+(
+    FTE_SSD1305_PTR     pSSD1305
+)
 {
     if (pSSD1305 == NULL)
     {
@@ -134,10 +155,15 @@ error:
 * Note: none
 *
 ********************************************************************/
-void FTE_SSD1305_put_pixel(FTE_SSD1305_PTR pSSD1305, uint_32   x, uint_32  y)
+void FTE_SSD1305_put_pixel
+(
+    FTE_SSD1305_PTR     pSSD1305, 
+    FTE_UINT32      x, 
+    FTE_UINT32      y
+)
 {
-    uint_8      page, add, lAddr, hAddr;
-    uint_8      mask, display;
+    FTE_UINT8      page, add, lAddr, hAddr;
+    FTE_UINT8      mask, display;
 
     // check if point is in clipping region
     if(_clipRgn)
@@ -196,9 +222,13 @@ void FTE_SSD1305_put_pixel(FTE_SSD1305_PTR pSSD1305, uint_32   x, uint_32  y)
     
 }
 
-_mqx_uint   FTE_SSD1305_SetDisplayMode(FTE_SSD1305_PTR pSSD1305, uint_32 xMode)
+FTE_RET   FTE_SSD1305_SetDisplayMode
+(
+    FTE_SSD1305_PTR     pSSD1305, 
+    FTE_UINT32          xMode
+)
 {
-    uint_8  pData[2] = { 0x00};
+    FTE_UINT8  pData[2] = { 0x00};
     
     switch(xMode)
     {
@@ -214,9 +244,13 @@ _mqx_uint   FTE_SSD1305_SetDisplayMode(FTE_SSD1305_PTR pSSD1305, uint_32 xMode)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_SetInverseMode(FTE_SSD1305_PTR pSSD1305, boolean bInverse)
+FTE_RET   FTE_SSD1305_SetInverseMode
+(
+    FTE_SSD1305_PTR     pSSD1305, 
+    FTE_BOOL             bInverse
+)
 {
-    uint_8  pData[2] = { 0x00};
+    FTE_UINT8  pData[2] = { 0x00};
     
     pData[1] = (bInverse)?0xA7:0xA6;
     
@@ -225,22 +259,30 @@ _mqx_uint   FTE_SSD1305_SetInverseMode(FTE_SSD1305_PTR pSSD1305, boolean bInvers
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_SetStartLine(FTE_SSD1305_PTR pSSD1305, uint_32 ulLine)
+FTE_RET   FTE_SSD1305_SetStartLine
+(
+    FTE_SSD1305_PTR     pSSD1305, 
+    FTE_UINT32          ulLine
+)
 {
-    uint_8  pData[2] = { 0x00};
+    FTE_UINT8  pData[2] = { 0x00};
     
-    pData[1] = 0x40 | ((uint_8)ulLine & 0x3F);
+    pData[1] = 0x40 | ((FTE_UINT8)ulLine & 0x3F);
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_SetMemoryAddressingMode(FTE_SSD1305_PTR pSSD1305, uint_32 ulMode)
+FTE_RET   FTE_SSD1305_SetMemoryAddressingMode
+(
+    FTE_SSD1305_PTR     pSSD1305, 
+    FTE_UINT32          ulMode
+)
 {
-    uint_8  pData[4] = { 0x00, 0x20, 0x00};
+    FTE_UINT8  pData[4] = { 0x00, 0x20, 0x00};
     
-    pData[3] = ((uint_8)ulMode & 0x03);
+    pData[3] = ((FTE_UINT8)ulMode & 0x03);
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
@@ -248,12 +290,17 @@ _mqx_uint   FTE_SSD1305_SetMemoryAddressingMode(FTE_SSD1305_PTR pSSD1305, uint_3
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_SetColumnAddress(FTE_SSD1305_PTR pSSD1305, uint_32 ulStart, uint_32 ulEnd)
+FTE_RET   FTE_SSD1305_SetColumnAddress
+(
+    FTE_SSD1305_PTR     pSSD1305, 
+    FTE_UINT32          ulStart, 
+    FTE_UINT32          ulEnd
+)
 {
-    uint_8  pData[6] = { 0x00, 0x21, 0x00, 0x00, 0x00, 0x00};
+    FTE_UINT8  pData[6] = { 0x00, 0x21, 0x00, 0x00, 0x00, 0x00};
     
-    pData[3] = ((uint_8)ulStart);
-    pData[5] = ((uint_8)ulEnd);
+    pData[3] = ((FTE_UINT8)ulStart);
+    pData[5] = ((FTE_UINT8)ulEnd);
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
@@ -262,12 +309,17 @@ _mqx_uint   FTE_SSD1305_SetColumnAddress(FTE_SSD1305_PTR pSSD1305, uint_32 ulSta
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_SetPageAddress(FTE_SSD1305_PTR pSSD1305, uint_32 ulStart, uint_32 ulEnd)
+FTE_RET   FTE_SSD1305_SetPageAddress
+(
+    FTE_SSD1305_PTR pSSD1305, 
+    FTE_UINT32      ulStart,
+    FTE_UINT32      ulEnd
+)
 {
-    uint_8  pData[6] = { 0x00, 0x22, 0x00, 0x00, 0x00, 0x00};
+    FTE_UINT8  pData[6] = { 0x00, 0x22, 0x00, 0x00, 0x00, 0x00};
     
-    pData[3] = ((uint_8)ulStart & 0x07);
-    pData[5] = ((uint_8)ulStart & ulEnd);
+    pData[3] = ((FTE_UINT8)ulStart & 0x07);
+    pData[5] = ((FTE_UINT8)ulStart & ulEnd);
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
@@ -276,9 +328,13 @@ _mqx_uint   FTE_SSD1305_SetPageAddress(FTE_SSD1305_PTR pSSD1305, uint_32 ulStart
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_SetOrientation(FTE_SSD1305_PTR pSSD1305, boolean bReserve)
+FTE_RET   FTE_SSD1305_SetOrientation
+(
+    FTE_SSD1305_PTR pSSD1305, 
+    FTE_BOOL        bReserve
+)
 {
-    uint_8  pData[2] = { 0x00, 0x00};
+    FTE_UINT8  pData[2] = { 0x00, 0x00};
     
     if (bReserve)
     {
@@ -294,9 +350,13 @@ _mqx_uint   FTE_SSD1305_SetOrientation(FTE_SSD1305_PTR pSSD1305, boolean bReserv
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_SetDisplayEnable(FTE_SSD1305_PTR pSSD1305, boolean bEnable)
+FTE_RET   FTE_SSD1305_SetDisplayEnable
+(
+    FTE_SSD1305_PTR pSSD1305, 
+    FTE_BOOL        bEnable
+)
 {
-    uint_8  pData[2] = { 0x00, 0x00};
+    FTE_UINT8  pData[2] = { 0x00, 0x00};
     
     if (bEnable)
     {
@@ -313,11 +373,15 @@ _mqx_uint   FTE_SSD1305_SetDisplayEnable(FTE_SSD1305_PTR pSSD1305, boolean bEnab
 }
 
 
-_mqx_uint   FTE_SSD1305_SetMultiplexRatio(FTE_SSD1305_PTR pSSD1305, uint_32 ulRatio)
+FTE_RET   FTE_SSD1305_SetMultiplexRatio
+(
+    FTE_SSD1305_PTR pSSD1305, 
+    FTE_UINT32      ulRatio
+)
 {
-    uint_8  pData[4] = { 0x00, 0xA8, 0x00, 0x00};
+    FTE_UINT8  pData[4] = { 0x00, 0xA8, 0x00, 0x00};
     
-    pData[3] = ((uint_8)ulRatio & 0x3F);
+    pData[3] = ((FTE_UINT8)ulRatio & 0x3F);
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
@@ -325,11 +389,15 @@ _mqx_uint   FTE_SSD1305_SetMultiplexRatio(FTE_SSD1305_PTR pSSD1305, uint_32 ulRa
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_SetOffset(FTE_SSD1305_PTR pSSD1305, uint_32 ulOffset)
+FTE_RET   FTE_SSD1305_SetOffset
+(
+    FTE_SSD1305_PTR pSSD1305, 
+    FTE_UINT32      ulOffset
+)
 {
-    uint_8  pData[4] = { 0x00, 0xD3, 0x00, 0x00};
+    FTE_UINT8  pData[4] = { 0x00, 0xD3, 0x00, 0x00};
     
-    pData[3] = ((uint_8)ulOffset & 0x3F);
+    pData[3] = ((FTE_UINT8)ulOffset & 0x3F);
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
@@ -337,11 +405,15 @@ _mqx_uint   FTE_SSD1305_SetOffset(FTE_SSD1305_PTR pSSD1305, uint_32 ulOffset)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_SetStartPage(FTE_SSD1305_PTR pSSD1305, uint_32 ulPage)
+FTE_RET   FTE_SSD1305_SetStartPage
+(
+    FTE_SSD1305_PTR pSSD1305, 
+    FTE_UINT32      ulPage
+)
 {
-    uint_8  pData[2] = { 0x00, };
+    FTE_UINT8  pData[2] = { 0x00, };
     
-    pData[1] = 0xB0 | ((uint_8)ulPage& 0x07);
+    pData[1] = 0xB0 | ((FTE_UINT8)ulPage& 0x07);
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     
@@ -349,11 +421,15 @@ _mqx_uint   FTE_SSD1305_SetStartPage(FTE_SSD1305_PTR pSSD1305, uint_32 ulPage)
 }
 
 
-_mqx_uint   FTE_SSD1305_SetFrameFrequency(FTE_SSD1305_PTR pSSD1305, uint_32 ulFrequency)
+FTE_RET   FTE_SSD1305_SetFrameFrequency
+(
+    FTE_SSD1305_PTR pSSD1305, 
+    FTE_UINT32      ulFrequency
+)
 {
-    uint_8  pData[4] = { 0x00, 0xD5, 0x00, 0x00};
+    FTE_UINT8  pData[4] = { 0x00, 0xD5, 0x00, 0x00};
     
-    pData[3] = ((uint_8)ulFrequency & 0xFF);
+    pData[3] = ((FTE_UINT8)ulFrequency & 0xFF);
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
@@ -361,11 +437,15 @@ _mqx_uint   FTE_SSD1305_SetFrameFrequency(FTE_SSD1305_PTR pSSD1305, uint_32 ulFr
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_SetColorMode(FTE_SSD1305_PTR pSSD1305, uint_32 ulMode)
+FTE_RET   FTE_SSD1305_SetColorMode
+(
+    FTE_SSD1305_PTR pSSD1305,
+    FTE_UINT32      ulMode
+)
 {
-    uint_8  pData[4] = { 0x00, 0xD8, 0x00};
+    FTE_UINT8  pData[4] = { 0x00, 0xD8, 0x00};
     
-    pData[3] = ((uint_8)ulMode & 0x35);
+    pData[3] = ((FTE_UINT8)ulMode & 0x35);
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
      FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
@@ -373,11 +453,15 @@ _mqx_uint   FTE_SSD1305_SetColorMode(FTE_SSD1305_PTR pSSD1305, uint_32 ulMode)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_SetBank0Contrast(FTE_SSD1305_PTR pSSD1305, uint_32 ulContrast)
+FTE_RET   FTE_SSD1305_SetBank0Contrast
+(   
+    FTE_SSD1305_PTR pSSD1305, 
+    FTE_UINT32      ulContrast
+)
 {
-    uint_8  pData[4] = { 0x00, 0x81, 0x00};
+    FTE_UINT8  pData[4] = { 0x00, 0x81, 0x00};
     
-    pData[3] = ((uint_8)ulContrast & 0xFF);
+    pData[3] = ((FTE_UINT8)ulContrast & 0xFF);
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
@@ -385,11 +469,15 @@ _mqx_uint   FTE_SSD1305_SetBank0Contrast(FTE_SSD1305_PTR pSSD1305, uint_32 ulCon
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_SetColorBrightness(FTE_SSD1305_PTR pSSD1305, uint_32 ulBrightness)
+FTE_RET   FTE_SSD1305_SetColorBrightness
+(
+    FTE_SSD1305_PTR pSSD1305, 
+    FTE_UINT32      ulBrightness
+)
 {
-    uint_8  pData[4] = { 0x00, 0x82, 0x00};
+    FTE_UINT8  pData[4] = { 0x00, 0x82, 0x00};
     
-    pData[3] = ((uint_8)ulBrightness & 0xFF);
+    pData[3] = ((FTE_UINT8)ulBrightness & 0xFF);
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
@@ -397,11 +485,15 @@ _mqx_uint   FTE_SSD1305_SetColorBrightness(FTE_SSD1305_PTR pSSD1305, uint_32 ulB
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_SetPrechargePeriod(FTE_SSD1305_PTR pSSD1305, uint_32 ulPeriod)
+FTE_RET   FTE_SSD1305_SetPrechargePeriod
+(
+    FTE_SSD1305_PTR pSSD1305, 
+    FTE_UINT32      ulPeriod
+)
 {
-    uint_8  pData[4] = { 0x00, 0xD9, 0x00};
+    FTE_UINT8  pData[4] = { 0x00, 0xD9, 0x00};
     
-    pData[3] = ((uint_8)ulPeriod & 0xFF);
+    pData[3] = ((FTE_UINT8)ulPeriod & 0xFF);
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
@@ -409,9 +501,12 @@ _mqx_uint   FTE_SSD1305_SetPrechargePeriod(FTE_SSD1305_PTR pSSD1305, uint_32 ulP
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_SetCommonPadsHardware(FTE_SSD1305_PTR pSSD1305)
+FTE_RET   FTE_SSD1305_SetCommonPadsHardware
+(
+    FTE_SSD1305_PTR pSSD1305
+)
 {
-    uint_8  pData[4] = { 0x00, 0xDA, 0x00, 0x12};
+    FTE_UINT8  pData[4] = { 0x00, 0xDA, 0x00, 0x12};
     
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
@@ -420,9 +515,13 @@ _mqx_uint   FTE_SSD1305_SetCommonPadsHardware(FTE_SSD1305_PTR pSSD1305)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_SetOutputScanDirection(FTE_SSD1305_PTR pSSD1305, boolean bNormal)
+FTE_RET   FTE_SSD1305_SetOutputScanDirection
+(
+    FTE_SSD1305_PTR pSSD1305, 
+    FTE_BOOL        bNormal
+)
 {
-    uint_8  pData[2] = { 0x00, 0x00};
+    FTE_UINT8  pData[2] = { 0x00, 0x00};
     
     if (bNormal)
     {
@@ -438,11 +537,15 @@ _mqx_uint   FTE_SSD1305_SetOutputScanDirection(FTE_SSD1305_PTR pSSD1305, boolean
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_SetVCOMDeselectLevel(FTE_SSD1305_PTR pSSD1305, uint_32 ulMode)
+FTE_RET   FTE_SSD1305_SetVCOMDeselectLevel
+(
+    FTE_SSD1305_PTR pSSD1305, 
+    FTE_UINT32      ulMode
+)
 {
-    uint_8  pData[4] = { 0x00, 0xDB, 0x00};
+    FTE_UINT8  pData[4] = { 0x00, 0xDB, 0x00};
     
-    pData[3] = ((uint_8)ulMode & 0x3C);
+    pData[3] = ((FTE_UINT8)ulMode & 0x3C);
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
@@ -451,9 +554,13 @@ _mqx_uint   FTE_SSD1305_SetVCOMDeselectLevel(FTE_SSD1305_PTR pSSD1305, uint_32 u
 }
 
 
-_mqx_uint   FTE_SSD1305_SetExternalVCC(FTE_SSD1305_PTR pSSD1305, boolean bExternalVCC)
+FTE_RET   FTE_SSD1305_SetExternalVCC
+(
+    FTE_SSD1305_PTR pSSD1305, 
+    FTE_BOOL        bExternalVCC
+)
 {
-    uint_8  pData[4] = { 0x00, 0xAD, 0x00};
+    FTE_UINT8  pData[4] = { 0x00, 0xAD, 0x00};
     
     if (bExternalVCC)
     {
@@ -469,29 +576,40 @@ _mqx_uint   FTE_SSD1305_SetExternalVCC(FTE_SSD1305_PTR pSSD1305, boolean bExtern
     
     return  MQX_OK;
 }
-_mqx_uint   FTE_SSD1305_EnterReadModifyWrite(FTE_SSD1305_PTR pSSD1305)
+FTE_RET   FTE_SSD1305_EnterReadModifyWrite
+(
+    FTE_SSD1305_PTR pSSD1305
+)
 {
-    uint_8  pData[2] = { 0x00, 0xE0};
+    FTE_UINT8  pData[2] = { 0x00, 0xE0};
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_WriteData(FTE_SSD1305_PTR pSSD1305, uint_32 ulData)
+FTE_RET   FTE_SSD1305_WriteData
+(
+    FTE_SSD1305_PTR pSSD1305, 
+    FTE_UINT32      ulData
+)
 {
-    uint_8  pData[2] = { 0x40, };
+    FTE_UINT8  pData[2] = { 0x40, };
     
-    pData[1] = (uint_8)ulData;
+    pData[1] = (FTE_UINT8)ulData;
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_ReadData(FTE_SSD1305_PTR pSSD1305, uint_8_ptr puiData)
+FTE_RET   FTE_SSD1305_ReadData
+(
+    FTE_SSD1305_PTR pSSD1305, 
+    FTE_UINT8_PTR   puiData
+)
 {
-    uint_8  pData[2] = { 0x00, };
+    FTE_UINT8  pData[2] = { 0x00, };
     
     FTE_I2C_read(pSSD1305->pI2C, 0x3C, pData, 2);
     
@@ -500,13 +618,19 @@ _mqx_uint   FTE_SSD1305_ReadData(FTE_SSD1305_PTR pSSD1305, uint_8_ptr puiData)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SSD1305_SetAddress(FTE_SSD1305_PTR pSSD1305,uint_32 page, uint_32 lAddr, uint_32 hAddr)
+FTE_RET   FTE_SSD1305_SetAddress
+(
+    FTE_SSD1305_PTR pSSD1305,
+    FTE_UINT32      page, 
+    FTE_UINT32      lAddr, 
+    FTE_UINT32      hAddr
+)
 {
-    uint_8  pData[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    FTE_UINT8  pData[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     
-    pData[1] = (uint_8)page;
-    pData[1] = (uint_8)lAddr;
-    pData[1] = (uint_8)hAddr;
+    pData[1] = (FTE_UINT8)page;
+    pData[1] = (FTE_UINT8)lAddr;
+    pData[1] = (FTE_UINT8)hAddr;
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
@@ -519,7 +643,10 @@ _mqx_uint   FTE_SSD1305_SetAddress(FTE_SSD1305_PTR pSSD1305,uint_32 page, uint_3
 /******************************************************************************
  * Internal Static Functions
  ******************************************************************************/
-_mqx_uint   FTE_SSD1305_init(FTE_SSD1305_PTR pSSD1305)
+FTE_RET   FTE_SSD1305_init
+(
+    FTE_SSD1305_PTR     pSSD1305
+)
 {
    assert(pSSD1305 != NULL);
    
@@ -582,15 +709,22 @@ _mqx_uint   FTE_SSD1305_init(FTE_SSD1305_PTR pSSD1305)
     return  MQX_OK;
 }
 
-void FTE_SSD1305_clear(FTE_SSD1305_PTR pSSD1305) 
+void FTE_SSD1305_clear
+(
+    FTE_SSD1305_PTR pSSD1305
+) 
 {
     FTE_SSD1305_SetStartLine(pSSD1305, 0);
 }
 
-int_32  FTE_SSD1305_shell_cmd(int_32 argc, char_ptr argv[] )
+FTE_INT32  FTE_SSD1305_shell_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[] 
+)
 { 
-    boolean             print_usage, shorthelp = FALSE;
-    int_32              return_code = SHELL_EXIT_SUCCESS;
+    FTE_BOOL             print_usage, shorthelp = FALSE;
+    FTE_INT32              return_code = SHELL_EXIT_SUCCESS;
     FTE_SSD1305_PTR     pSSD1305 = (FTE_SSD1305_PTR)FTE_SSD1305_get(FTE_DEV_SSD1305_0);
 
     if (pSSD1305 == NULL)
@@ -598,17 +732,17 @@ int_32  FTE_SSD1305_shell_cmd(int_32 argc, char_ptr argv[] )
         goto error;
     }
     
-    print_usage = Shell_check_help_request (argc, argv, &shorthelp);
+    print_usage = Shell_check_help_request (nArgc, pArgv, &shorthelp);
     if (print_usage)
     {
         goto error;
     }
     
-    switch(argc)
+    switch(nArgc)
     {
     case    2:
         {
-            if (strcmp(argv[1], "init") == 0)
+            if (strcmp(pArgv[1], "init") == 0)
             {
                 FTE_SSD1305_init(pSSD1305);
 
@@ -629,11 +763,11 @@ error:
     {
         if (shorthelp)
         {
-            printf ("%s \n", argv[0]);
+            printf ("%s \n", pArgv[0]);
         }
         else
         {
-            printf("Usage : %s \n", argv[0]);
+            printf("Usage : %s \n", pArgv[0]);
             printf("        id       - I2C Channel \n");
             printf("        baudrate - I2C speed \n");
         }

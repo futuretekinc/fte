@@ -4,8 +4,9 @@
 #include "fte_config.h"
 #include "fte_time.h"
 #include "fte_log.h"
+#include "fte_object.h"
 
-static _mqx_uint    FTE_EVENT_proc(FTE_EVENT_PTR pEvent, TIME_STRUCT_PTR pTime);
+static FTE_RET    FTE_EVENT_proc(FTE_EVENT_PTR pEvent, TIME_STRUCT_PTR pTime);
 
 static FTE_LIST         _eventList =
 {
@@ -15,24 +16,28 @@ static FTE_LIST         _eventList =
 
 static FTE_SYS_LOCK_PTR    pListLockKey = NULL;
 
-_mqx_uint   FTE_EVENT_init(void)
+FTE_RET   FTE_EVENT_init(void)
 {
     FTE_LIST_init(&_eventList);
     fte_sys_lock_create(&pListLockKey);
 
     _task_create(0, FTE_TASK_EVENT, 0);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint   FTE_EVENT_final(void)
+FTE_RET   FTE_EVENT_final(void)
 {
     fte_sys_lock_destroy(pListLockKey);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint   FTE_EVENT_create(FTE_CFG_EVENT_PTR pConfig, FTE_EVENT_PTR _PTR_ ppEvent)
+FTE_RET   FTE_EVENT_create
+(
+    FTE_CFG_EVENT_PTR   pConfig, 
+    FTE_EVENT_PTR _PTR_ ppEvent
+)
 {
     FTE_EVENT_PTR   pEvent;
     
@@ -60,10 +65,13 @@ _mqx_uint   FTE_EVENT_create(FTE_CFG_EVENT_PTR pConfig, FTE_EVENT_PTR _PTR_ ppEv
         *ppEvent = pEvent;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint   FTE_EVENT_destroy(FTE_EVENT_PTR pEvent)
+FTE_RET   FTE_EVENT_destroy
+(
+    FTE_EVENT_PTR   pEvent
+)
 {
     fte_sys_lock_enable(pListLockKey);
     
@@ -75,36 +83,94 @@ _mqx_uint   FTE_EVENT_destroy(FTE_EVENT_PTR pEvent)
     
     FTE_MEM_free(pEvent);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint   FTE_EVENT_count(uint_32_ptr pulCount)
+FTE_RET   FTE_EVENT_count
+(
+    FTE_UINT32_PTR  pulCount
+)
 {
     *pulCount = FTE_LIST_count(&_eventList);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-FTE_EVENT_PTR   FTE_EVENT_getAt(uint_32 ulIndex)
+FTE_RET FTE_EVENT_getAt
+(
+    FTE_UINT32  ulIndex,
+    FTE_EVENT_PTR _PTR_ ppEvent
+)
 {
-    return  (FTE_EVENT_PTR)FTE_LIST_getAt(&_eventList, ulIndex);
+    FTE_EVENT_PTR pEvent = (FTE_EVENT_PTR)FTE_LIST_getAt(&_eventList, ulIndex);
+    if (pEvent == NULL)
+    {
+        return  FTE_RET_EXCEEDS_THE_RANGE;
+    }
+    
+    *ppEvent = pEvent;
+    
+    return  FTE_RET_OK;
 }
 
-_mqx_uint   FTE_EVENT_attachObject(FTE_EVENT_PTR pEvent, struct _FTE_OBJECT_STRUCT _PTR_ pObj)
+FTE_RET     FTE_EVENT_getList
+(
+    FTE_OBJECT_ID   xEPID, 
+    FTE_EVENT_PTR   pEvents[],
+    FTE_UINT32      ulMaxCount, 
+    FTE_UINT32_PTR  pulCount
+)
+{
+    ASSERT((pEvents != NULL) && (pulCount != NULL));
+    FTE_UINT32  ulEventCount = 0;
+    
+    for(FTE_INT32 i = 0 ; i < FTE_LIST_count(&_eventList) ; i++)
+    {
+        FTE_EVENT_PTR   pEvent;
+        
+        pEvent = FTE_LIST_getAt(&_eventList, i);
+        if (pEvent != NULL)
+        {
+            if ((pEvent->pConfig->ulEPID == xEPID) && (ulEventCount < ulMaxCount))
+            {
+                pEvents[ulEventCount++] = pEvent;
+            }
+        }
+    }
+    
+    *pulCount = ulEventCount;
+    
+    return  FTE_RET_OK;
+}
+
+FTE_RET   FTE_EVENT_attachObject
+(
+    FTE_EVENT_PTR   pEvent, 
+    struct FTE_OBJECT_STRUCT _PTR_ pObj
+)
 {
     FTE_LIST_pushBack(&pEvent->xState.xObjectList, pObj);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint   FTE_EVENT_detachObject(FTE_EVENT_PTR pEvent, struct _FTE_OBJECT_STRUCT _PTR_ pObj)
+FTE_RET   FTE_EVENT_detachObject
+(
+    FTE_EVENT_PTR   pEvent, 
+    struct FTE_OBJECT_STRUCT _PTR_ pObj
+)
 {
     FTE_LIST_remove(&pEvent->xState.xObjectList, pObj);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint   FTE_EVENT_isSatisfied(FTE_EVENT_PTR pEvent, int_32 nValue, boolean *bResult)
+FTE_RET   FTE_EVENT_isSatisfied
+(
+    FTE_EVENT_PTR   pEvent, 
+    FTE_INT32       nValue, 
+    FTE_BOOL_PTR    bResult
+)
 {
     switch(pEvent->pConfig->xCondition)
     {
@@ -136,21 +202,26 @@ _mqx_uint   FTE_EVENT_isSatisfied(FTE_EVENT_PTR pEvent, int_32 nValue, boolean *
         return  MQX_INVALID_PARAMETER;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 
-_mqx_uint    FTE_EVENT_check(FTE_EVENT_PTR pEvent, struct _FTE_OBJECT_STRUCT _PTR_ pObj)
+FTE_RET    FTE_EVENT_check
+(
+    FTE_EVENT_PTR   pEvent, 
+    struct FTE_OBJECT_STRUCT _PTR_ pObj
+)
 {
     FTE_VALUE           xValue;
     boolean             bChanged = FALSE;
     TIME_STRUCT         xCurrentTime;
+    FTE_INT32           nDiffTime;
     
     if (FTE_FLAG_IS_CLR(pEvent->pConfig->xType, FTE_EVENT_TYPE_ENABLE) || 
         (pEvent->pConfig->xCondition == FTE_EVENT_CONDITION_INTERVAL) ||
         (pEvent->pConfig->xCondition == FTE_EVENT_CONDITION_TIME))
     {
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
 
     if (pObj == NULL)
@@ -170,16 +241,18 @@ _mqx_uint    FTE_EVENT_check(FTE_EVENT_PTR pEvent, struct _FTE_OBJECT_STRUCT _PT
         }
     }
     
-    if (FTE_OBJ_getValue(pObj, &xValue) != MQX_OK)
+    if (FTE_OBJ_getValue(pObj, &xValue) != FTE_RET_OK)
     {
         return   MQX_ERROR;
     }
 
     _time_get (&xCurrentTime);
     
-    if (pEvent->xState.bOccurred && (FTE_TIME_diffMilliseconds(&xCurrentTime, &pEvent->xState.xTimeStamp) <= pEvent->pConfig->ulHoldTime))
+    FTE_TIME_diffMilliseconds(&xCurrentTime, &pEvent->xState.xTimeStamp, &nDiffTime);
+     
+    if (pEvent->xState.bOccurred &&  nDiffTime <= pEvent->pConfig->ulHoldTime)
     {
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }    
     
     switch(pEvent->pConfig->xCondition)
@@ -287,14 +360,18 @@ _mqx_uint    FTE_EVENT_check(FTE_EVENT_PTR pEvent, struct _FTE_OBJECT_STRUCT _PT
         pEvent->xState.bOccurred    = ! pEvent->xState.bOccurred;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint    FTE_EVENT_proc(FTE_EVENT_PTR pEvent, TIME_STRUCT_PTR pTime)
+FTE_RET    FTE_EVENT_proc
+(
+    FTE_EVENT_PTR   pEvent, 
+    TIME_STRUCT_PTR pTime
+)
 {
     if (FTE_FLAG_IS_CLR(pEvent->pConfig->xType, FTE_EVENT_TYPE_ENABLE))
     {
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
     
     if (pEvent->pConfig->xCondition == FTE_EVENT_CONDITION_INTERVAL)
@@ -305,7 +382,7 @@ _mqx_uint    FTE_EVENT_proc(FTE_EVENT_PTR pEvent, TIME_STRUCT_PTR pTime)
         }
         else if (pEvent->xState.xTimeStamp.SECONDS < pTime->SECONDS)
         {
-            uint_32 i;
+            FTE_UINT32 i;
             
             for(i = 0 ; i < FTE_LIST_count(&_eventList); i++)
             {
@@ -361,10 +438,13 @@ _mqx_uint    FTE_EVENT_proc(FTE_EVENT_PTR pEvent, TIME_STRUCT_PTR pTime)
         pEvent->xState.bChanged = FALSE;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-char_ptr FTE_EVENT_CONDITION_string(uint_32 ulType)
+FTE_CHAR_PTR FTE_EVENT_CONDITION_string
+(
+    FTE_UINT32  ulType
+)
 {
     switch(ulType)
     {
@@ -381,10 +461,14 @@ char_ptr FTE_EVENT_CONDITION_string(uint_32 ulType)
        
 }
 
-int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
+FTE_INT32 FTE_EVENT_shell_cmd
+(
+    FTE_INT32   nArgc, 
+    FTE_CHAR_PTR pArgv[]
+)
 {
     boolean              bPrintUsage, bShortHelp = FALSE;
-    int_32               nReturnCode = SHELL_EXIT_SUCCESS;
+    FTE_INT32               nReturnCode = SHELL_EXIT_SUCCESS;
     
     bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
@@ -396,11 +480,12 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
             {
                 FTE_EVENT_PTR       pEvent;
                 FTE_LIST_ITERATOR   xIter;
-                uint_32             ulIndex = 0;
+                FTE_UINT32             ulIndex = 0;
                 char                pTypeString[64];
                 
                 FTE_LIST_ITER_init(&_eventList, &xIter);
                 printf("     %8s %-4s %-10s %s\n", "ID/GROUP", "CODE", "TYPE", "CONDITION");
+                printf("     %s\n", "OBJECTS");
                 while((pEvent = FTE_LIST_ITER_getNext(&xIter)) != 0)
                 {
                     ulIndex++;
@@ -458,11 +543,22 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                     case    FTE_EVENT_CONDITION_TIME:
                         {
                             char    pTimeString[64];
-                            FTE_TIME_toString(&pEvent->pConfig->xParams.xTime, pTimeString, sizeof(pTimeString));
+                            FTE_TIME_toStr(&pEvent->pConfig->xParams.xTime, pTimeString, sizeof(pTimeString));
                             printf("%s", pTimeString);
                         }
                         break;                        
                     }
+                    printf("\n    ");
+                    
+                    for( FTE_INT32 i = 0 ; i < FTE_LIST_count(&pEvent->xState.xObjectList); i++)
+                    {
+                        FTE_OBJECT_PTR pObj = (FTE_OBJECT_PTR)FTE_LIST_getAt(&pEvent->xState.xObjectList, i);
+                        if (pObj != NULL)
+                        {
+                            printf("%08x ", pObj->pConfig->xCommon.nID);
+                        }
+                    }
+                    
                     printf("\n");
                 }
                 printf("   * e : enable, d : disable, l : log, s : snmp, m : mqtt\n");
@@ -474,7 +570,7 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                 if (strcmp(pArgv[1], "del") == 0)
                 {
                     FTE_EVENT_PTR           pEvent;
-                    uint_32                 ulIndex;
+                    FTE_UINT32                 ulIndex;
                     
                     if (!Shell_parse_number(pArgv[2], &ulIndex))
                     {
@@ -482,7 +578,7 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                         break;
                     }
                     
-                    if ((pEvent = FTE_EVENT_getAt(ulIndex)) != NULL)                        
+                    if (FTE_EVENT_getAt(ulIndex, &pEvent) == FTE_RET_OK)                        
                     {
                          FTE_OBJECT_PTR pObject = FTE_OBJ_get(pEvent->pConfig->ulEPID);
                          if (pObject != NULL)
@@ -498,7 +594,7 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                 else
                 {
                     FTE_EVENT_PTR           pEvent;
-                    uint_32                 ulIndex;
+                    FTE_UINT32                 ulIndex;
                     
                     if (!Shell_parse_number(pArgv[1], &ulIndex))
                     {
@@ -506,7 +602,7 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                         break;
                     }
                     
-                    if ((pEvent = FTE_EVENT_getAt(ulIndex - 1)) == NULL)                        
+                    if (FTE_EVENT_getAt(ulIndex - 1, &pEvent) == FTE_RET_OK)                        
                     {
                         printf("Error : Invalid index[%lu]\n", ulIndex);
                         break;
@@ -537,15 +633,14 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
         case    4:
             {
                 FTE_EVENT_PTR           pEvent;
-                uint_32                 ulIndex;
+                FTE_UINT32                 ulIndex;
 
                 if (strcmp(pArgv[1], "add") == 0)
                 {
                     FTE_CFG_EVENT_PTR pEventConfig;
                     FTE_EVENT_PTR     pEvent;
                     FTE_OBJECT_PTR    pObject;
-                    uint_32           ulEPID;
-                    uint_32           ulInterval;
+                    FTE_UINT32           ulEPID;
                     
                     if (!Shell_parse_hexnum(pArgv[2], &ulEPID))
                     {
@@ -587,7 +682,7 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                         break;
                     }
                     
-                    if ((pEvent = FTE_EVENT_getAt(ulIndex - 1)) == NULL)                        
+                    if (FTE_EVENT_getAt(ulIndex - 1, &pEvent) == FTE_RET_OK)                        
                     {
                         printf("Error : Invalid index[%lu]\n", ulIndex);
                         break;
@@ -595,7 +690,7 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                     
                     if (strcmp(pArgv[2], "interval") == 0)
                     {
-                        uint_32 ulInterval;
+                        FTE_UINT32 ulInterval;
                         
                         if (pEvent->pConfig->xCondition != FTE_EVENT_CONDITION_INTERVAL)
                         {
@@ -616,7 +711,7 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                     }
                     else if (strcmp(pArgv[2], "enable") == 0)
                     {
-                        uint_32 ulFlag;
+                        FTE_UINT32 ulFlag;
                         
                         if (strcmp(pArgv[3], "log") == 0)
                         {
@@ -644,7 +739,7 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                     }
                     else if (strcmp(pArgv[2], "disable") == 0)
                     {
-                        uint_32 ulFlag;
+                        FTE_UINT32 ulFlag;
                         
                         if (strcmp(pArgv[3], "log") == 0)
                         {
@@ -682,8 +777,8 @@ int_32 FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[])
                     FTE_CFG_EVENT_PTR pEventConfig;
                     FTE_EVENT_PTR     pEvent;
                     FTE_OBJECT_PTR    pObject;
-                    uint_32           ulEPID;
-                    uint_32           ulInterval;
+                    FTE_UINT32           ulEPID;
+                    FTE_UINT32           ulInterval;
                     
                     if (!Shell_parse_hexnum(pArgv[2], &ulEPID))
                     {
@@ -764,7 +859,12 @@ error:
     return  nReturnCode;
 }
 
-_mqx_uint    FTE_EVENT_type_string(uint_32 xType, char_ptr pBuff, int_32 nBuffLen)
+FTE_RET    FTE_EVENT_type_string
+(   
+    FTE_UINT32  xType, 
+    FTE_CHAR_PTR pBuff, 
+    FTE_INT32 nBuffLen
+)
 {
     int nLen = 0;
     
@@ -801,10 +901,15 @@ _mqx_uint    FTE_EVENT_type_string(uint_32 xType, char_ptr pBuff, int_32 nBuffLe
         snprintf(pBuff, nLen, "undefined");
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint    FTE_EVENT_condition_string(FTE_EVENT_CONDITION xCondition, char_ptr pBuff, int_32 nBuffLen)
+FTE_RET    FTE_EVENT_condition_string
+(
+    FTE_EVENT_CONDITION     xCondition, 
+    FTE_CHAR_PTR    pBuff, 
+    FTE_INT32       nBuffLen
+)
 {
     switch(xCondition)
     {
@@ -817,11 +922,16 @@ _mqx_uint    FTE_EVENT_condition_string(FTE_EVENT_CONDITION xCondition, char_ptr
     case    FTE_EVENT_CONDITION_TIME:       snprintf(pBuff, nBuffLen, "time");
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
         
 }
 
-_mqx_uint    FTE_EVENT_level_string(FTE_EVENT_LEVEL  xLevel, char_ptr pBuff, int_32 nBuffLen)
+FTE_RET    FTE_EVENT_level_string
+(
+    FTE_EVENT_LEVEL xLevel, 
+    FTE_CHAR_PTR    pBuff, 
+    FTE_INT32       nBuffLen
+)
 {
     switch(xLevel)
     {
@@ -830,14 +940,17 @@ _mqx_uint    FTE_EVENT_level_string(FTE_EVENT_LEVEL  xLevel, char_ptr pBuff, int
     case    FTE_EVENT_LEVEL_CRITICAL:   snprintf(pBuff, nBuffLen, "critical");
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
         
 }
 
-void FTE_EVENT_task(uint_32 params)
+void FTE_EVENT_task
+(
+    FTE_UINT32  params
+)
 {
     TIME_STRUCT     xTime;
-    uint_32         ulTime, ulNextTime;
+    FTE_UINT32         ulTime, ulNextTime;
 
     FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
     

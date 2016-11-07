@@ -8,11 +8,18 @@ typedef struct
 {
     char    pUserID[FTE_SHELL_USER_ID_LENGTH+1];
     char    pPasswd[FTE_SHELL_PASSWD_LENGTH+1];
-    uint_32 ulTimeout;
+    FTE_UINT32 ulTimeout;
 }   FTE_SHELL_CONFIG, _PTR_ FTE_SHELL_CONFIG_PTR;
 
-_mqx_uint   FTE_SHELL_proc(void);
-_mqx_int    FTE_SHELL_printHexString(uint_8 *pData, uint_32 ulSize, uint_32 ulColumn);
-_mqx_int    FTE_SHELL_printNumString(uint_8 *pData, uint_32 ulSize, uint_32 ulColumn);
+typedef struct FTE_SHELL_CMD_STRUCT
+{   
+    FTE_CHAR_PTR    pStrCmd;
+    FTE_RET         (*fCmd)(FTE_INT32, FTE_CHAR_PTR []);
+    FTE_CHAR_PTR    pUsage;
+}   FTE_SHELL_CMD, _PTR_ FTE_SHELL_CMD_PTR;
+
+FTE_RET     FTE_SHELL_proc(void);
+FTE_UINT32  FTE_SHELL_printHexString(FTE_UINT8_PTR pData, FTE_UINT32 ulSize, FTE_UINT32 ulColumn);
+FTE_UINT32  FTE_SHELL_printNumString(FTE_UINT8_PTR pData, FTE_UINT32 ulSize, FTE_UINT32 ulColumn);
 
 #endif

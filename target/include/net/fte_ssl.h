@@ -14,9 +14,9 @@ typedef enum
 
 typedef struct FTE_SSL_CONFIG_STRUCT
 {
-    boolean         bEnabled;
+    FTE_BOOL        bEnabled;
     FTE_SSL_METHOD  nMethod;
-    char            pCipher[FTE_SSL_CIPHER_NAME_MAX_LEN+1];
+    FTE_CHAR        pCipher[FTE_SSL_CIPHER_NAME_MAX_LEN+1];
 }   FTE_SSL_CONFIG, _PTR_ FTE_SSL_CONFIG_PTR;
 
 typedef struct  FTE_SSL_CONTEXT_STRUCT
@@ -26,11 +26,11 @@ typedef struct  FTE_SSL_CONTEXT_STRUCT
 }   FTE_SSL_CONTEXT, _PTR_ FTE_SSL_CONTEXT_PTR;
 
 FTE_SSL_CONTEXT_PTR FTE_SSL_create(FTE_SSL_CONFIG_PTR pConfig);
-_mqx_uint   FTE_SSL_destroy(FTE_SSL_CONTEXT_PTR pxCTX);
+FTE_RET     FTE_SSL_destroy(FTE_SSL_CONTEXT_PTR pxCTX);
 
-_mqx_uint   FTE_SSL_connect(FTE_SSL_CONTEXT_PTR pCTX, int nSocketID);
-_mqx_uint   FTE_SSL_disconnect(FTE_SSL_CONTEXT_PTR pxCTX);
-int         FTE_SSL_send(FTE_SSL_CONTEXT_PTR pCTX, const void *pMsg, int nMsgLen);
-int         FTE_SSL_recv(FTE_SSL_CONTEXT_PTR pCTX, void *pBuff, int nBuffLen);
+FTE_RET     FTE_SSL_connect(FTE_SSL_CONTEXT_PTR pCTX, FTE_INT32   nSocketID);
+FTE_RET     FTE_SSL_disconnect(FTE_SSL_CONTEXT_PTR pxCTX);
+FTE_INT32   FTE_SSL_send(FTE_SSL_CONTEXT_PTR pCTX, const FTE_VOID_PTR pMsg, FTE_INT32    nMsgLen);
+FTE_INT32   FTE_SSL_recv(FTE_SSL_CONTEXT_PTR pCTX, FTE_VOID_PTR pBuff, FTE_INT32    nBuffLen);
 
 #endif

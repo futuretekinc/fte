@@ -93,10 +93,13 @@ void FTE_SMNG_task(pointer pParams, pointer pCreator)
         case    FTE_SMNG_MSG_TYPE_DISCOVERY_WITH_TRAPS:
             {
                 TIME_STRUCT xCurrentTime;
+                FTE_INT32   nDiffTime;
                 
                 _time_get(&xCurrentTime);
                 
-                if ((xLastRequestHost != xRecvAddr.sin_addr.s_addr) || (FTE_TIME_diff(&xCurrentTime, &xLastResponseTime) > 10))
+                FTE_TIME_diff(&xCurrentTime, &xLastResponseTime, &nDiffTime);
+                
+                if ((xLastRequestHost != xRecvAddr.sin_addr.s_addr) || ( nDiffTime > 10))
                 {
 #if FTE_SNMPD_SUPPORTED
                     FTE_SNMPD_TRAP_discovery(xRecvAddr.sin_addr.s_addr);

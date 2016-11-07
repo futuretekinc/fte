@@ -17,13 +17,24 @@ uint_32 fte_parse_hex_string(char_ptr pString, uint_8 *pBuff, uint_32 ulBuffLen)
 
 void    fte_system_reset(void);
 
-uint_16 fte_crc16(const uint_8 *pData, uint_16 uiLen);
-uint_32 fte_crc32(uint_32 crc, const void *buf, uint_32 size);
-
-boolean fte_parse_float
+FTE_RET FTE_strToFLOAT
 (
-    char_ptr    pString, 
-    double _PTR_ pValue
+    FTE_CHAR_PTR    pString, 
+    FTE_FLOAT_PTR   pValue
 );
+
+FTE_RET FTE_strToUINT32
+(
+   FTE_CHAR_PTR     pString,
+   FTE_UINT32_PTR   pValue
+);
+
+FTE_RET FTE_strToHex
+(
+    FTE_CHAR_PTR     pString,
+    FTE_UINT32_PTR   pValue
+);
+
+#include "fte_crc.h"
 
 #endif

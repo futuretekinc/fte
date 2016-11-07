@@ -4,30 +4,49 @@
 
 #if FTE_SRF_SUPPORTED
 
-static  _mqx_uint   _srf_init(FTE_OBJECT_PTR pObj);
-static  _mqx_uint   _srf_run(FTE_OBJECT_PTR pObj);
-static  _mqx_uint   _srf_stop(FTE_OBJECT_PTR pObj);
-static  void        _srf_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
-static _mqx_uint    _srf_get(FTE_OBJECT_PTR pObj, uint_32_ptr pValue, TIME_STRUCT *xTimeStamp);
-static void         _srf_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
-static uint_32      _srf_get_update_interval(FTE_OBJECT_PTR pObj);
-static _mqx_uint    _srf_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInterval);
+static  
+FTE_RET   FTE_SRF_init(FTE_OBJECT_PTR pObj);
 
-static  FTE_OBJECT_ACTION _Action = 
+static  
+FTE_RET   FTE_SRF_run(FTE_OBJECT_PTR pObj);
+
+static  
+FTE_RET FTE_SRF_stop(FTE_OBJECT_PTR pObj);
+
+static  
+void    FTE_SRF_done(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
+
+static 
+FTE_RET FTE_SRF_get(FTE_OBJECT_PTR pObj, FTE_UINT32_ptr pValue, TIME_STRUCT *xTimeStamp);
+
+static 
+void    FTE_SRF_restartConvert(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
+
+static 
+FTE_UINT32 FTE_SRF_getUpdateInterval(FTE_OBJECT_PTR pObj);
+
+static 
+FTE_RET FTE_SRF_setUpdateInterval(FTE_OBJECT_PTR pObj, FTE_UINT32 nInterval);
+
+static  FTE_OBJECT_ACTION FTE_SRF_action = 
 {
-    .f_init         = _srf_init,
-    .f_run          = _srf_run,
-    .f_stop         = _srf_stop, 
-    .f_get          = _srf_get,
+    .f_init         = FTE_SRF_init,
+    .f_run          = FTE_SRF_run,
+    .f_stop         = FTE_SRF_stop, 
+    .f_get          = FTE_SRF_get,
     .f_set          = NULL,
-    .f_get_update_interval = _srf_get_update_interval,
-    .f_set_update_interval = _srf_set_update_interval
+    .f_get_update_interval = FTE_SRF_getUpdateInterval,
+    .f_set_update_interval = FTE_SRF_setUpdateInterval
 };
 
-static  uint_32        _nObjects = 0;
-static  FTE_OBJECT_PTR _pHead = NULL;
+static  FTE_UINT32      _nObjects = 0;
+static  FTE_OBJECT_PTR  _pHead = NULL;
 
-_mqx_uint   fte_srf_attach(FTE_OBJECT_PTR pObj)
+FTE_RET   fte_srf_attach
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_VOID_PTR    pOpts
+)
 {
     FTE_SRF_STATUS_PTR   pStatus;
     if (pObj == NULL)
@@ -41,24 +60,27 @@ _mqx_uint   fte_srf_attach(FTE_OBJECT_PTR pObj)
         goto error;
     }
     
-    pObj->pAction = (FTE_OBJECT_ACTION_PTR)&_Action;
+    pObj->pAction = (FTE_OBJECT_ACTION_PTR)&FTE_SRF_action;
     pObj->pStatus = (FTE_OBJECT_STATUS_PTR)pStatus;
     pObj->pSibling = _pHead;
     _nObjects++;
     _pHead = pObj;
    
-    _srf_init(pObj);
+    FTE_SRF_init(pObj);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
     return  MQX_ERROR;
     
 }
 
-_mqx_uint fte_srf_detach(FTE_OBJECT_PTR pObj)
+FTE_RET fte_srf_detach
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
-    boolean bFound = FALSE;
+    FTE_BOOL bFound = FALSE;
     
     if (pObj == NULL)
     {
@@ -93,20 +115,23 @@ _mqx_uint fte_srf_detach(FTE_OBJECT_PTR pObj)
          _nObjects--;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:    
     return  MQX_ERROR;
 }
 
-_mqx_uint   _srf_init(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_SRF_init
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
     FTE_SRF_STATUS_PTR   pStatus = (FTE_SRF_STATUS_PTR)pObj->pStatus;
    
     if (pStatus->pFP == NULL)
     {
-        uint_32 nValue;
+        FTE_UINT32 nValue;
         pStatus->pFP = fopen("ittyb:", 0);
         
         nValue = 9600;
@@ -119,10 +144,13 @@ _mqx_uint   _srf_init(FTE_OBJECT_PTR pObj)
         ioctl (pStatus->pFP, IO_IOCTL_SERIAL_SET_STOP_BITS, &nValue);
     }
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint   _srf_run(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_SRF_run
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
 
@@ -138,29 +166,37 @@ _mqx_uint   _srf_run(FTE_OBJECT_PTR pObj)
     }
     
     _time_init_ticks(&xDTicks, 0);
-    _time_add_sec_to_ticks(&xDTicks, pConfig->nInterval);
+    _time_add_msec_to_ticks(&xDTicks, pConfig->nInterval);
     _time_get_elapsed_ticks(&xTicks);
-    _time_add_sec_to_ticks(&xTicks, 1);
+    _time_add_msec_to_ticks(&xTicks, 1000);
     
-    pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(_srf_restart_convert, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);    
+    pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(FTE_SRF_restartConvert, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);    
     
     _time_init_ticks(&xDTicks, _time_get_ticks_per_sec());
-    pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_srf_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
+    pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(FTE_SRF_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint   _srf_stop(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_SRF_stop
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 }
 
-static void _srf_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
+void FTE_SRF_done
+(
+    _timer_id   id, 
+    pointer     pData, 
+    MQX_TICK_STRUCT_PTR pTick
+)
 {
-    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)data_ptr;
+    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)pData;
     FTE_SRF_STATUS_PTR  pStatus = (FTE_SRF_STATUS_PTR)pObj->pStatus;
     char    _buff[16];
     
@@ -176,16 +212,21 @@ static void _srf_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_p
 }
 
 
-static void _srf_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
+void FTE_SRF_restartConvert
+(
+    _timer_id   id, 
+    pointer     pData, 
+    MQX_TICK_STRUCT_PTR pTick
+)
 {
-    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)data_ptr;
+    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)pData;
     MQX_TICK_STRUCT     xDTicks;            
     FTE_SRF_STATUS_PTR  pStatus = (FTE_SRF_STATUS_PTR)pObj->pStatus;
 
     if (FTE_OBJ_IS_ENABLED(pObj))
     {
         _time_init_ticks(&xDTicks, _time_get_ticks_per_sec());
-        pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_srf_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
+        pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(FTE_SRF_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
     }
     else
     {
@@ -195,7 +236,12 @@ static void _srf_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT
     }
 }
 
-_mqx_uint    _srf_get(FTE_OBJECT_PTR pObj, uint_32 *pValue, TIME_STRUCT *xTimeStamp)
+FTE_RET    FTE_SRF_get
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32_PTR  pValue, 
+    TIME_STRUCT_PTR pTimeStamp
+)
 {
     ASSERT(pObj != NULL && pValue != NULL);
     
@@ -203,28 +249,32 @@ _mqx_uint    _srf_get(FTE_OBJECT_PTR pObj, uint_32 *pValue, TIME_STRUCT *xTimeSt
     
     if (FTE_OBJ_IS_ENABLED(pObj))
     {
-        if (xTimeStamp != NULL)
+        if (pTimeStamp != NULL)
         {
-            *xTimeStamp = pStatus->xTimeStamp;
+            *pTimeStamp = pStatus->xTimeStamp;
         }
         
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
 
     return  MQX_ERROR;
 }
 
 
-int_32  shell_srf(int_32 argc, char_ptr argv[] )
+FTE_INT32  shell_srf
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[] 
+)
 { 
-    boolean              print_usage, shorthelp = FALSE;
-    int_32               return_code = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   xRet = SHELL_EXIT_SUCCESS;
     
-    print_usage = Shell_check_help_request (argc, argv, &shorthelp);
+    bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
-    if (!print_usage)
+    if (!bPrintUsage)
     { 
-        switch(argc)
+        switch(nArgc)
         {
         case    1:
             { 
@@ -240,26 +290,26 @@ int_32  shell_srf(int_32 argc, char_ptr argv[] )
             break;
         case    4:
             {
-                if (strcmp(argv[1], "attach") == 0)
+                if (strcmp(pArgv[1], "attach") == 0)
                 {
-                    uint_32 nValue;
+                    FTE_UINT32 nValue;
                     
-                    if (! Shell_parse_number( argv[2], &nValue))  
+                    if (! Shell_parse_number( pArgv[2], &nValue))  
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                        goto error;
                     }
                     
                     FTE_OBJECT_PTR          pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_SRF, nValue, FALSE);
                     if (pObj == NULL)
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                        goto error;
                     }
                     
-                    if (! Shell_parse_number( argv[3], &nValue))  
+                    if (! Shell_parse_number( pArgv[3], &nValue))  
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                        goto error;
                     }                
 
@@ -270,30 +320,37 @@ int_32  shell_srf(int_32 argc, char_ptr argv[] )
     }
     
 error:    
-    if (print_usage || (return_code !=SHELL_EXIT_SUCCESS))
+    if (bPrintUsage || (xRet !=SHELL_EXIT_SUCCESS))
     {
-        if (shorthelp)
+        if (bShortHelp)
         {
-            printf ("%s [<id>]\n", argv[0]);
+            printf ("%s [<id>]\n", pArgv[0]);
         }
         else
         {
-            printf("Usage : %s [<id>]\n", argv[0]);
+            printf("Usage : %s [<id>]\n", pArgv[0]);
             printf("        id - SRF Index \n");
         }
     }
 
-    return   return_code;
+    return   xRet;
 }
             
-uint_32      _srf_get_update_interval(FTE_OBJECT_PTR pObj)
+FTE_UINT32      FTE_SRF_getUpdateInterval
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_SRF_CONFIG_PTR  pConfig = (FTE_SRF_CONFIG_PTR)pObj->pConfig;
     
     return  pConfig->nInterval;
 }
 
-_mqx_uint    _srf_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInterval)
+FTE_RET    FTE_SRF_setUpdateInterval
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nInterval
+)
 {
     FTE_SRF_CONFIG_PTR  pConfig = (FTE_SRF_CONFIG_PTR)pObj->pConfig;
     
@@ -301,7 +358,7 @@ _mqx_uint    _srf_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInterval)
     
     fte_config_object_config_save(pObj);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 

@@ -3,23 +3,46 @@
 #include <shell.h>
 #include <stdlib.h>
 #include <timer.h>
+#include "fte_type.h"
 #include "fte_sys.h"
 #include "fte_time.h"
 #include "fte_debug.h"
 #include "fte_assert.h"
 
-_mqx_uint   FTE_TIME_init(void)
+FTE_RET FTE_TIME_init
+(
+    FTE_VOID
+)
 {
     _rtc_init(RTC_INIT_FLAG_ENABLE);    
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-uint_32     FTE_TIME_diff(TIME_STRUCT_PTR pTime1, TIME_STRUCT_PTR pTime2)
+FTE_RET FTE_TIME_getCurrent
+(   
+    FTE_TIME_PTR pTime
+)
 {
+    ASSERT(pTime != NULL);
+    
+    _time_get(pTime);
+
+    return  FTE_RET_OK;
+}
+
+FTE_RET FTE_TIME_diff
+(   
+    FTE_TIME_PTR    pTime1, 
+    FTE_TIME_PTR    pTime2, 
+    FTE_INT32_PTR   pDiffSec
+)
+{
+    ASSERT((pTime1 != NULL) && (pTime2 != NULL) && (pDiffSec != NULL));
+    
     MQX_TICK_STRUCT xTick1, xTick2;
-    boolean         bOverflow = FALSE;
-    int_32          nDiffTime;
+    FTE_BOOL        bOverflow = FALSE;
+    FTE_INT32       nDiffTime;
     
     _time_to_ticks(pTime1, &xTick1);
     _time_to_ticks(pTime2, &xTick2);
@@ -31,14 +54,23 @@ uint_32     FTE_TIME_diff(TIME_STRUCT_PTR pTime1, TIME_STRUCT_PTR pTime2)
         nDiffTime = _time_diff_seconds(&xTick2, &xTick1, &bOverflow);
     }
     
-    return  nDiffTime;
+    *pDiffSec = nDiffTime;
+    
+    return  FTE_RET_OK;
 }
 
-uint_32     FTE_TIME_diffMilliseconds(TIME_STRUCT_PTR pTime1, TIME_STRUCT_PTR pTime2)
+FTE_RET FTE_TIME_diffMilliseconds
+(
+    FTE_TIME_PTR    pTime1, 
+    FTE_TIME_PTR    pTime2,
+    FTE_INT32_PTR   pDiffMSec
+)
 {
+     ASSERT((pTime1 != NULL) && (pTime2 != NULL) && (pDiffMSec != NULL));
+    
     MQX_TICK_STRUCT xTick1, xTick2;
-    boolean         bOverflow = FALSE;
-    int_32          nDiffTime;
+    FTE_BOOL        bOverflow = FALSE;
+    FTE_INT32       nDiffTime;
     
     _time_to_ticks(pTime1, &xTick1);
     _time_to_ticks(pTime2, &xTick2);
@@ -50,26 +82,42 @@ uint_32     FTE_TIME_diffMilliseconds(TIME_STRUCT_PTR pTime1, TIME_STRUCT_PTR pT
         nDiffTime = _time_diff_milliseconds(&xTick2, &xTick1, &bOverflow);
     }
     
-    return  nDiffTime;
+    *pDiffMSec = nDiffTime;
+    
+    return  FTE_RET_OK;
 }
 
-uint_32 FTE_TIME_toString(TIME_STRUCT *pTime, char_ptr pBuff, uint_32 nBuffLen)
+FTE_RET FTE_TIME_toStr
+(
+    FTE_TIME_PTR    pTime, 
+    FTE_CHAR_PTR    pBuff, 
+    FTE_UINT32      nBuffLen
+)
 {
+    ASSERT((pTime != NULL) && (pBuff != NULL));
+    
     DATE_STRUCT     xDate;
    
     _time_to_date (pTime, &xDate);
-    return  snprintf(pBuff, nBuffLen, "%04d-%02d-%02d %02d:%02d:%02d", xDate.YEAR, xDate.MONTH, xDate.DAY, xDate.HOUR, xDate.MINUTE, xDate.SECOND);
+    
+    snprintf(pBuff, nBuffLen, "%04d-%02d-%02d %02d:%02d:%02d", xDate.YEAR, xDate.MONTH, xDate.DAY, xDate.HOUR, xDate.MINUTE, xDate.SECOND);
+    
+    return  FTE_RET_OK;
 }
 
-uint_32 FTE_TIME_toTime(char_ptr pBuff, TIME_STRUCT *pTime)
+FTE_RET FTE_TIME_toTime
+(
+    FTE_CHAR_PTR    pBuff, 
+    FTE_TIME_PTR    pTime
+)
 {
     DATE_STRUCT xDate;
-    char_ptr    pEnd, pStart = pBuff;
+    FTE_CHAR_PTR    pEnd, pStart = pBuff;
     
     pEnd = strchr(pStart, '-');
     if (pEnd == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     *pEnd = '\0';
     xDate.YEAR = atoi(pStart);
@@ -78,7 +126,7 @@ uint_32 FTE_TIME_toTime(char_ptr pBuff, TIME_STRUCT *pTime)
     pEnd = strchr(pStart, '-');
     if (pEnd == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     *pEnd = '\0';
     xDate.MONTH = atoi(pStart);
@@ -87,7 +135,7 @@ uint_32 FTE_TIME_toTime(char_ptr pBuff, TIME_STRUCT *pTime)
     pEnd = strchr(pStart, ' ');
     if (pEnd == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     *pEnd = '\0';
     xDate.DAY = atoi(pStart);
@@ -96,7 +144,7 @@ uint_32 FTE_TIME_toTime(char_ptr pBuff, TIME_STRUCT *pTime)
     pEnd = strchr(pStart, ':');
     if (pEnd == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     *pEnd = '\0';
     xDate.HOUR = atoi(pStart);
@@ -105,7 +153,7 @@ uint_32 FTE_TIME_toTime(char_ptr pBuff, TIME_STRUCT *pTime)
     pEnd = strchr(pStart, ':');
     if (pEnd == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     *pEnd = '\0';
     xDate.MINUTE = atoi(pStart);
@@ -115,33 +163,49 @@ uint_32 FTE_TIME_toTime(char_ptr pBuff, TIME_STRUCT *pTime)
 
     _time_from_date (&xDate, pTime);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-uint_64     FTE_TIME_getMilliSeconds(void)
+FTE_RET FTE_TIME_getMilliSeconds
+(
+    FTE_UINT64_PTR  pMSec
+)
 {
+    ASSERT(pMSec != NULL);
+    
     TIME_STRUCT         xTime;
 
     _time_get(&xTime);
     
-    return  xTime.SECONDS * 1000 + xTime.MILLISECONDS;
+    *pMSec = xTime.SECONDS * 1000 + xTime.MILLISECONDS;
+    
+    return  FTE_RET_OK;
 }
 
-_mqx_uint   FTE_TIME_DELAY_init(FTE_TIME_DELAY_PTR pObj, uint_32 ulDelayMS)
+FTE_RET FTE_TIME_DELAY_init
+(
+    FTE_TIME_DELAY_PTR  pObj, 
+    FTE_UINT32          ulDelayMS
+)
 {
     ASSERT(pObj != NULL);
     
     _time_get_elapsed_ticks(&pObj->xNextTicks);        
     pObj->ulDelayMS = ulDelayMS;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-void    FTE_TIME_DELAY_waitingAndSetNext(FTE_TIME_DELAY_PTR pObj)
+FTE_RET FTE_TIME_DELAY_waitingAndSetNext
+(
+    FTE_TIME_DELAY_PTR pObj
+)
 {
+    ASSERT(pObj != NULL);
+    
     MQX_TICK_STRUCT xCurrentTicks;
-    boolean         bOverflow = FALSE;
-    int_32          nDiffTime;
+    FTE_BOOL    bOverflow = FALSE;
+    FTE_INT32   nDiffTime;
     
     ASSERT(pObj != NULL);
     
@@ -157,20 +221,26 @@ void    FTE_TIME_DELAY_waitingAndSetNext(FTE_TIME_DELAY_PTR pObj)
     }
     
     _time_add_msec_to_ticks(&pObj->xNextTicks, pObj->ulDelayMS);
+    
+    return  FTE_RET_OK;
 }
 
-int_32  FTE_TIME_SHELL_cmd(int_32 argc, char_ptr argv[] )
+FTE_INT32   FTE_TIME_SHELL_cmd
+(
+    FTE_INT32   nArgc, 
+    FTE_CHAR_PTR pArgv[]
+)
 { /* Body */
-    boolean              print_usage, shorthelp = FALSE;
-    int_32               return_code = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    print_usage, shorthelp = FALSE;
+    FTE_INT32   nRet = SHELL_EXIT_SUCCESS;
     
-    print_usage = Shell_check_help_request (argc, argv, &shorthelp);
+    print_usage = Shell_check_help_request (nArgc, pArgv, &shorthelp);
 
     if (!print_usage)
     {
-        uint_32 tmp;
+        FTE_UINT32 tmp;
         
-        switch(argc)
+        switch(nArgc)
         {
         case    1:
             { 
@@ -185,7 +255,7 @@ int_32  FTE_TIME_SHELL_cmd(int_32 argc, char_ptr argv[] )
 #else                
                 _time_get (&xTime);
 #endif
-                FTE_TIME_toString(&xTime, pBuff, sizeof(pBuff));
+                FTE_TIME_toStr(&xTime, pBuff, sizeof(pBuff));
                 printf("%s\n", pBuff);
             }
             break;
@@ -196,13 +266,13 @@ int_32  FTE_TIME_SHELL_cmd(int_32 argc, char_ptr argv[] )
                 DATE_STRUCT     xDate;
                 TIME_STRUCT     xTime;
                 
-                if (!Shell_parse_number( argv[1], &tmp) || (strlen(argv[1]) != 14))
+                if (!Shell_parse_number( pArgv[1], &tmp) || (strlen(pArgv[1]) != 14))
                 {
                     print_usage = TRUE;
                 }
                 else
                 {
-                    strcpy(buff, argv[1]);
+                    strcpy(buff, pArgv[1]);
                     
                     xDate.MILLISEC= 0;
                     Shell_parse_number( &buff[12], &tmp);
@@ -263,7 +333,7 @@ int_32  FTE_TIME_SHELL_cmd(int_32 argc, char_ptr argv[] )
                                             _time_set(&xTime);
                                             //_rtc_init(RTC_INIT_FLAG_CLEAR | RTC_INIT_FLAG_ENABLE);
                                             _rtc_init(RTC_INIT_FLAG_ENABLE);
-                                            if( _rtc_sync_with_mqx(FALSE) != MQX_OK )
+                                            if( _rtc_sync_with_mqx(FALSE) != FTE_RET_OK )
                                             {
                                                 printf("\nError synchronize time!\n");
                                             }
@@ -284,15 +354,15 @@ int_32  FTE_TIME_SHELL_cmd(int_32 argc, char_ptr argv[] )
         }
     }
     
-    if (print_usage || (return_code !=SHELL_EXIT_SUCCESS))
+    if (print_usage || (nRet !=SHELL_EXIT_SUCCESS))
     {
         if (shorthelp)
         {
-            printf ("%s [yyyymmddHHMMSS]\n", argv[0]);
+            printf ("%s [yyyymmddHHMMSS]\n", pArgv[0]);
         }
         else
         {
-            printf("Usage : %s [yyyymmddHHMMSS]\n", argv[0]);
+            printf("Usage : %s [yyyymmddHHMMSS]\n", pArgv[0]);
             printf("        yyyy - Year\n");
             printf("        mm   - Numeric month, a number from 1 to 12.\n");
             printf("        dd   - Day, a number from 1 to 31.\n");
@@ -301,7 +371,7 @@ int_32  FTE_TIME_SHELL_cmd(int_32 argc, char_ptr argv[] )
             printf("        SS   - Seconds, a number from 0 to 59.\n");
         }
     }
-    return   return_code;
+    return   nRet;
 }
 
 
@@ -319,7 +389,7 @@ static FTE_TIMER_EVENT_PTR pTimerListHead = NULL;
  * \param [IN]  obj Timer object to be become the new head
  * \param [IN]  remainingTime Remaining time of the previous head to be replaced
  */
-static void FTE_TIMER_insertNewHeadTimer( FTE_TIMER_EVENT_PTR obj, uint_32 remainingTime );
+static void FTE_TIMER_insertNewHeadTimer( FTE_TIMER_EVENT_PTR obj, FTE_UINT32 remainingTime );
 
 /*!
  * \brief Adds a timer to the list.
@@ -330,7 +400,7 @@ static void FTE_TIMER_insertNewHeadTimer( FTE_TIMER_EVENT_PTR obj, uint_32 remai
  * \param [IN]  obj Timer object to be added to the list
  * \param [IN]  remainingTime Remaining time of the running head after which the object may be added
  */
-static void FTE_TIMER_insertTimer( FTE_TIMER_EVENT_PTR obj, uint_32 remainingTime );
+static void FTE_TIMER_insertTimer( FTE_TIMER_EVENT_PTR obj, FTE_UINT32 remainingTime );
 
 /*!
  * \brief Sets a timeout with the duration "timestamp"
@@ -345,14 +415,17 @@ static void FTE_TIMER_setTimeout( FTE_TIMER_EVENT_PTR obj );
  * \param [IN] timestamp Delay duration
  * \retval TRUE (the object is already in the list) or FALSE  
  */
-static boolean FTE_TIMER_exists( FTE_TIMER_EVENT_PTR obj );
+static 
+FTE_BOOL FTE_TIMER_exists
+(   FTE_TIMER_EVENT_PTR obj 
+);
 
 /*!
  * \brief Read the timer value of the currently running timer
  *
  * \retval value current timer value
  */
-uint_32 FTE_TIMER_getValue( void );
+FTE_UINT32 FTE_TIMER_getValue( void );
 
 void FTE_TIMER_init( FTE_TIMER_EVENT_PTR obj, void ( *callback )( void ) )
 {
@@ -365,8 +438,8 @@ void FTE_TIMER_init( FTE_TIMER_EVENT_PTR obj, void ( *callback )( void ) )
 
 void FTE_TIMER_start( FTE_TIMER_EVENT_PTR obj )
 {
-    uint_32 elapsedTime = 0;
-    uint_32 remainingTime = 0;
+    FTE_UINT32 elapsedTime = 0;
+    FTE_UINT32 remainingTime = 0;
 
     //__disable_irq( );
 
@@ -415,10 +488,10 @@ void FTE_TIMER_start( FTE_TIMER_EVENT_PTR obj )
     //__enable_irq( );
 }
 
-static void FTE_TIMER_insertTimer( FTE_TIMER_EVENT_PTR obj, uint_32 remainingTime )
+static void FTE_TIMER_insertTimer( FTE_TIMER_EVENT_PTR obj, FTE_UINT32 remainingTime )
 {
-    uint_32 aggregatedTimestamp = 0;      // hold the sum of timestamps 
-    uint_32 aggregatedTimestampNext = 0;  // hold the sum of timestamps up to the next event
+    FTE_UINT32 aggregatedTimestamp = 0;      // hold the sum of timestamps 
+    FTE_UINT32 aggregatedTimestampNext = 0;  // hold the sum of timestamps up to the next event
 
     FTE_TIMER_EVENT_PTR prev = pTimerListHead;
     FTE_TIMER_EVENT_PTR cur = pTimerListHead->Next;
@@ -469,7 +542,7 @@ static void FTE_TIMER_insertTimer( FTE_TIMER_EVENT_PTR obj, uint_32 remainingTim
     }
 }
 
-static void FTE_TIMER_insertNewHeadTimer( FTE_TIMER_EVENT_PTR obj, uint_32 remainingTime )
+static void FTE_TIMER_insertNewHeadTimer( FTE_TIMER_EVENT_PTR obj, FTE_UINT32 remainingTime )
 {
     FTE_TIMER_EVENT_PTR cur = pTimerListHead;
 
@@ -487,7 +560,7 @@ static void FTE_TIMER_insertNewHeadTimer( FTE_TIMER_EVENT_PTR obj, uint_32 remai
 
 void FTE_TIMER_handler(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
 {
-    uint_32 elapsedTime = 0;
+    FTE_UINT32 elapsedTime = 0;
  
     DEBUG("FTE_TIMER_hander[%d]\n", id);
     if( pTimerListHead == NULL )
@@ -547,8 +620,8 @@ void FTE_TIMER_stop( FTE_TIMER_EVENT_PTR obj )
 {
     //__disable_irq( );
 
-    uint_32 elapsedTime = 0;
-    uint_32 remainingTime = 0;
+    FTE_UINT32 elapsedTime = 0;
+    FTE_UINT32 remainingTime = 0;
 
     FTE_TIMER_EVENT_PTR prev = pTimerListHead;
     FTE_TIMER_EVENT_PTR cur = pTimerListHead;
@@ -630,7 +703,10 @@ void FTE_TIMER_stop( FTE_TIMER_EVENT_PTR obj )
     //__enable_irq( );
 }    
     
-static boolean FTE_TIMER_exists( FTE_TIMER_EVENT_PTR obj )
+static 
+FTE_BOOL FTE_TIMER_exists
+(    FTE_TIMER_EVENT_PTR obj 
+)
 {
     FTE_TIMER_EVENT_PTR cur = pTimerListHead;
 
@@ -651,9 +727,9 @@ void FTE_TIMER_reset( FTE_TIMER_EVENT_PTR obj )
     FTE_TIMER_start( obj );
 }
 
-void FTE_TIMER_setValue( FTE_TIMER_EVENT_PTR pObj, uint_32 ulValue)
+void FTE_TIMER_setValue( FTE_TIMER_EVENT_PTR pObj, FTE_UINT32 ulValue)
 {
-    uint_32 ulMinValue = 0;
+    FTE_UINT32 ulMinValue = 0;
 
     FTE_TIMER_stop( pObj );
 
@@ -668,7 +744,7 @@ void FTE_TIMER_setValue( FTE_TIMER_EVENT_PTR pObj, uint_32 ulValue)
     pObj->ulReloadValue = ulValue;
 }
 
-uint_32 FTE_TIMER_getValue( void )
+FTE_UINT32 FTE_TIMER_getValue( void )
 {
     TIME_STRUCT xTime;
     

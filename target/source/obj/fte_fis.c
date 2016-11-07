@@ -9,9 +9,22 @@ FTE_VALUE_TYPE  FTE_FIS_valueTypes[] =
 
 typedef struct  
 {
-    uint_32     nADC;
-    uint_32     nPPM;
+    FTE_UINT32     nADC;
+    FTE_UINT32     nPPM;
 }   FTE_FIS_VALUE_PAIR;
+
+
+const FTE_GUS_MODEL_INFO    FTE_FIS3061_GUSModelInfo = 
+{
+    .nModel     = FTE_GUS_MODEL_FIS3061,
+    .pName      = "FIS3061",
+    .nFieldCount= 1,
+    .pValueTypes= FTE_FIS_valueTypes,
+    .fAttach   = FTE_FIS_attach,
+    .fDetach   = FTE_FIS_detach,
+    .fRequest  = FTE_FIS_request,
+    .fReceived = FTE_FIS_received
+};
 
 const FTE_FIS_VALUE_PAIR    _pFIS3061ValuePairs[] = 
 {
@@ -41,7 +54,10 @@ FTE_VALUE_TYPE  pValueTypes[] =
     FTE_VALUE_TYPE_PPM
 };
 
-_mqx_uint   FTE_FIS_attach(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_FIS_attach
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_FIS_STATUS_PTR  pStatus;
     FTE_UCS_PTR         pUCS = NULL;
@@ -100,7 +116,10 @@ error:
     
 }
 
-_mqx_uint FTE_FIS_detach(FTE_OBJECT_PTR pObj)
+FTE_RET FTE_FIS_detach
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_FIS_STATUS_PTR  pStatus;
     if (pObj == NULL)
@@ -131,7 +150,10 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint   FTE_FIS_request(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_FIS_request
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
 
@@ -142,15 +164,18 @@ _mqx_uint   FTE_FIS_request(FTE_OBJECT_PTR pObj)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_FIS_received(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_FIS_received
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
-    char_ptr    pToken = NULL;
-    uint_32     nCount = 0;  
-    uint_8      pBuff[64];
-    char_ptr    pHead;
-    uint_32     nLen;
-    int_32      nPPM = 0, nTemp = 0, nGAS = 0;
-//    uint_32     nDate = 0, nAlarm = 0, nStat = 0;
+    FTE_CHAR_PTR    pToken = NULL;
+    FTE_UINT32      nCount = 0;  
+    FTE_UINT8       pBuff[64];
+    FTE_CHAR_PTR    pHead;
+    FTE_UINT32      nLen;
+    FTE_INT32       nPPM = 0, nTemp = 0, nGAS = 0;
+//    FTE_UINT32     nDate = 0, nAlarm = 0, nStat = 0;
     FTE_FIS_STATUS_PTR  pStatus = (FTE_FIS_STATUS_PTR)pObj->pStatus;    
    
     nLen = FTE_UCS_recv(pStatus->pUCS, pBuff, sizeof(pBuff));
@@ -159,7 +184,7 @@ _mqx_uint   FTE_FIS_received(FTE_OBJECT_PTR pObj)
         return  MQX_ERROR;
     }
     
-    pHead = (char_ptr)pBuff;
+    pHead = (FTE_CHAR_PTR)pBuff;
     
     while((pToken = strtok(pHead, " \t\r\n")) != NULL)
     {
@@ -189,7 +214,7 @@ _mqx_uint   FTE_FIS_received(FTE_OBJECT_PTR pObj)
         return  MQX_ERROR;
     }
     
-    for(int i = 0 ; i < sizeof(_pFIS3061ValuePairs) / sizeof(FTE_FIS_VALUE_PAIR) ; i++)
+    for(FTE_INT32 i = 0 ; i < sizeof(_pFIS3061ValuePairs) / sizeof(FTE_FIS_VALUE_PAIR) ; i++)
     {
         if (nGAS < _pFIS3061ValuePairs[i].nADC)
         {

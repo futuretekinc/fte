@@ -3,16 +3,28 @@
 
 #if FTE_UCS_SUPPORTED
 
-static  _mqx_uint   _FTE_UCS_lock(FTE_UCS_PTR pUCS);
-static  _mqx_uint   _FTE_UCS_unlock(FTE_UCS_PTR pUCS);
+static  
+FTE_RET     _FTE_UCS_lock(FTE_UCS_PTR pUCS);
 
-static  uint_32     _FTE_UCS_clear(FTE_UCS_PTR pUCS);
-static  uint_32     _FTE_UCS_recv(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, uint_32 nBuffLen);
-static  uint_32     _FTE_UCS_send(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, uint_32 nBuffLen);
+static  
+FTE_RET     _FTE_UCS_unlock(FTE_UCS_PTR pUCS);
 
-static  FTE_LIST    xUCSList = { 0, NULL };
+static  
+FTE_UINT32  _FTE_UCS_clear(FTE_UCS_PTR pUCS);
 
-_mqx_uint   FTE_UCS_create(FTE_UCS_CONFIG_CONST_PTR pConfig)
+static  
+FTE_UINT32  _FTE_UCS_recv(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, FTE_UINT32 nBuffLen);
+
+static  
+FTE_UINT32  _FTE_UCS_send(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, FTE_UINT32 nBuffLen);
+
+static  
+FTE_LIST    xUCSList = { 0, NULL };
+
+FTE_RET   FTE_UCS_create
+(   
+    FTE_UCS_CONFIG_CONST_PTR pConfig
+)
 {
     FTE_UCS_PTR pUCS = NULL;
 
@@ -50,7 +62,10 @@ _mqx_uint   FTE_UCS_create(FTE_UCS_CONFIG_CONST_PTR pConfig)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_UCS_destroy(FTE_UCS_PTR pUCS)
+FTE_RET   FTE_UCS_destroy
+(
+    FTE_UCS_PTR pUCS
+)
 {
     _lwsem_destroy(&pUCS->xSEMLock);
     _lwsem_destroy(&pUCS->xSEMSend);
@@ -68,7 +83,11 @@ _mqx_uint   FTE_UCS_destroy(FTE_UCS_PTR pUCS)
     return  MQX_OK;
 }
 
-_mqx_uint       FTE_UCS_attach(FTE_UCS_PTR pUCS, uint_32 nParent)
+FTE_RET FTE_UCS_attach
+(
+    FTE_UCS_PTR     pUCS, 
+    FTE_UINT32         nParent
+)
 {
     ASSERT(pUCS != NULL);
 
@@ -103,7 +122,11 @@ _mqx_uint       FTE_UCS_attach(FTE_UCS_PTR pUCS, uint_32 nParent)
     return  MQX_OK;
 }
 
-_mqx_uint       FTE_UCS_detach(FTE_UCS_PTR pUCS, uint_32 nParent)
+FTE_RET       FTE_UCS_detach
+(
+    FTE_UCS_PTR     pUCS, 
+    FTE_UINT32         nParent
+)
 {
     ASSERT(pUCS != NULL);
 
@@ -145,7 +168,10 @@ _mqx_uint       FTE_UCS_detach(FTE_UCS_PTR pUCS, uint_32 nParent)
      return  MQX_OK;
 }
 
-FTE_UCS_PTR     FTE_UCS_get(uint_32 nID)
+FTE_UCS_PTR FTE_UCS_get
+(
+    FTE_UINT32 nID
+)
 {
     FTE_UCS_PTR         pUCS;
     FTE_LIST_ITERATOR   xIter;
@@ -162,19 +188,28 @@ FTE_UCS_PTR     FTE_UCS_get(uint_32 nID)
     return  NULL;
 }
 
-uint_32         FTE_UCS_count(void)
+FTE_UINT32  FTE_UCS_count
+(
+    void
+)
 {
     return  FTE_LIST_count(&xUCSList);
 }
 
-FTE_UCS_PTR FTE_UCS_getAt(uint_32 ulIndex)
+FTE_UCS_PTR FTE_UCS_getAt
+(
+    FTE_UINT32 ulIndex
+)
 {
     return  (FTE_UCS_PTR)FTE_LIST_getAt(&xUCSList, ulIndex);
 }
 
-_mqx_uint   FTE_UCS_init(FTE_UCS_PTR pUCS)
+FTE_RET   FTE_UCS_init
+(
+    FTE_UCS_PTR     pUCS
+)
 {
-    uint_32 nValue;
+    FTE_UINT32 nValue;
 
     if (pUCS->pFD == NULL)
     {
@@ -241,7 +276,11 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint   FTE_UCS_setBaudrate(FTE_UCS_PTR pUCS, uint_32 nBaudrate)
+FTE_RET   FTE_UCS_setBaudrate
+(   
+    FTE_UCS_PTR     pUCS, 
+    FTE_UINT32      nBaudrate
+)
 {
     ASSERT(pUCS != NULL);
     if (pUCS == NULL)
@@ -249,17 +288,24 @@ _mqx_uint   FTE_UCS_setBaudrate(FTE_UCS_PTR pUCS, uint_32 nBaudrate)
         return  MQX_INVALID_DEVICE;
     }
 
-    if (IO_OK != ioctl (pUCS->pFD, IO_IOCTL_SERIAL_SET_BAUD, &nBaudrate))
+    if (pUCS->nBaudrate != nBaudrate)
     {
-        return  MQX_ERROR;
+        if (IO_OK != ioctl (pUCS->pFD, IO_IOCTL_SERIAL_SET_BAUD, &nBaudrate))
+        {
+            return  MQX_ERROR;
+        }
+
+        pUCS->nBaudrate = nBaudrate;
     }
-
-    pUCS->nBaudrate = nBaudrate;
-
+    
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_UCS_getBaudrate(FTE_UCS_PTR pUCS, uint_32 *pBaudrate)
+FTE_RET   FTE_UCS_getBaudrate
+(
+    FTE_UCS_PTR     pUCS, 
+    FTE_UINT32_PTR  pBaudrate
+)
 {
     ASSERT(pUCS != NULL);
     if (pUCS == NULL)
@@ -272,7 +318,11 @@ _mqx_uint   FTE_UCS_getBaudrate(FTE_UCS_PTR pUCS, uint_32 *pBaudrate)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_UCS_setDatabits(FTE_UCS_PTR pUCS, uint_32 nDataBits)
+FTE_RET   FTE_UCS_setDatabits
+(   
+    FTE_UCS_PTR     pUCS, 
+    FTE_UINT32      nDataBits
+)
 {
     ASSERT(pUCS != NULL);
     if (pUCS == NULL)
@@ -280,17 +330,24 @@ _mqx_uint   FTE_UCS_setDatabits(FTE_UCS_PTR pUCS, uint_32 nDataBits)
         return  MQX_INVALID_DEVICE;
     }
 
-    if (IO_OK != ioctl (pUCS->pFD, IO_IOCTL_SERIAL_SET_DATA_BITS, &nDataBits))
+    if (pUCS->nDataBits != nDataBits)
     {
-        return  MQX_ERROR;
-    }
+        if (IO_OK != ioctl (pUCS->pFD, IO_IOCTL_SERIAL_SET_DATA_BITS, &nDataBits))
+        {
+            return  MQX_ERROR;
+        }
 
-    pUCS->nDataBits = nDataBits;
+        pUCS->nDataBits = nDataBits;
+    }
 
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_UCS_getDatabits(FTE_UCS_PTR pUCS, uint_32 *pDataBits)
+FTE_RET   FTE_UCS_getDatabits
+(
+    FTE_UCS_PTR     pUCS, 
+    FTE_UINT32_PTR  pDataBits
+)
 {
     ASSERT(pUCS != NULL);
     if (pUCS == NULL)
@@ -303,7 +360,11 @@ _mqx_uint   FTE_UCS_getDatabits(FTE_UCS_PTR pUCS, uint_32 *pDataBits)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_UCS_setParity(FTE_UCS_PTR pUCS, uint_32 nParity)
+FTE_RET   FTE_UCS_setParity
+(   
+    FTE_UCS_PTR     pUCS, 
+    FTE_UINT32      nParity
+)
 {
     ASSERT(pUCS != NULL);
     if (pUCS == NULL)
@@ -311,17 +372,24 @@ _mqx_uint   FTE_UCS_setParity(FTE_UCS_PTR pUCS, uint_32 nParity)
         return  MQX_INVALID_DEVICE;
     }
 
-    if (IO_OK != ioctl (pUCS->pFD, IO_IOCTL_SERIAL_SET_PARITY, &nParity))
+    if (pUCS->nParity != nParity)
     {
-        return  MQX_ERROR;
-    }
+        if (IO_OK != ioctl (pUCS->pFD, IO_IOCTL_SERIAL_SET_PARITY, &nParity))
+        {
+            return  MQX_ERROR;
+        }
 
-    pUCS->nParity = nParity;
+        pUCS->nParity = nParity;
+    }
 
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_UCS_getParity(FTE_UCS_PTR pUCS, uint_32_ptr pParity)
+FTE_RET   FTE_UCS_getParity
+(
+    FTE_UCS_PTR     pUCS, 
+    FTE_UINT32_PTR  pParity
+)
 {
     ASSERT(pUCS != NULL);
     if (pUCS == NULL)
@@ -334,7 +402,11 @@ _mqx_uint   FTE_UCS_getParity(FTE_UCS_PTR pUCS, uint_32_ptr pParity)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_UCS_setStopbits(FTE_UCS_PTR pUCS, uint_32 nStopBits)
+FTE_RET   FTE_UCS_setStopbits
+(
+    FTE_UCS_PTR     pUCS, 
+    FTE_UINT32      nStopBits
+)
 {
     ASSERT(pUCS != NULL);
     if (pUCS == NULL)
@@ -342,17 +414,24 @@ _mqx_uint   FTE_UCS_setStopbits(FTE_UCS_PTR pUCS, uint_32 nStopBits)
         return  MQX_INVALID_DEVICE;
     }
 
-    if (IO_OK != ioctl (pUCS->pFD, IO_IOCTL_SERIAL_SET_STOP_BITS, &nStopBits))
+    if (pUCS->nStopBits != nStopBits)
     {
-        return  MQX_ERROR;
+        if (IO_OK != ioctl (pUCS->pFD, IO_IOCTL_SERIAL_SET_STOP_BITS, &nStopBits))
+        {
+            return  MQX_ERROR;
+        }
+
+        pUCS->nStopBits= nStopBits;
     }
-
-    pUCS->nStopBits= nStopBits;
-
+    
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_UCS_getStopbits(FTE_UCS_PTR pUCS, uint_32_ptr pStopBits)
+FTE_RET   FTE_UCS_getStopbits
+(
+    FTE_UCS_PTR     pUCS, 
+    FTE_UINT32_PTR  pStopBits
+)
 {
     ASSERT(pUCS != NULL);
     if (pUCS == NULL)
@@ -366,7 +445,11 @@ _mqx_uint   FTE_UCS_getStopbits(FTE_UCS_PTR pUCS, uint_32_ptr pStopBits)
 }
 
 
-_mqx_uint   FTE_UCS_setDuplexMode(FTE_UCS_PTR pUCS, boolean bFullDuplex)
+FTE_RET   FTE_UCS_setDuplexMode
+(   
+    FTE_UCS_PTR     pUCS, 
+    FTE_BOOL         bFullDuplex
+)
 {
     ASSERT(pUCS != NULL);
     if (pUCS == NULL)
@@ -379,7 +462,11 @@ _mqx_uint   FTE_UCS_setDuplexMode(FTE_UCS_PTR pUCS, boolean bFullDuplex)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_UCS_getDuplexMode(FTE_UCS_PTR pUCS, boolean *pFullDuplex)
+FTE_RET   FTE_UCS_getDuplexMode
+(
+    FTE_UCS_PTR     pUCS, 
+    FTE_BOOL_PTR    pFullDuplex
+)
 {
     ASSERT(pUCS != NULL);
     if (pUCS == NULL)
@@ -392,9 +479,42 @@ _mqx_uint   FTE_UCS_getDuplexMode(FTE_UCS_PTR pUCS, boolean *pFullDuplex)
     return  MQX_OK;
 }
 
-uint_32         FTE_UCS_clear(FTE_UCS_PTR pUCS)
+FTE_RET     FTE_UCS_setUART
+(
+    FTE_UCS_PTR pUCS,
+    FTE_UCS_UART_CONFIG const _PTR_ pConfig
+)
 {
-    uint_32 nCount;
+    FTE_UCS_setBaudrate(pUCS, pConfig->nBaudrate);    
+    FTE_UCS_setDatabits(pUCS, pConfig->nDataBits);
+    FTE_UCS_setParity(pUCS, pConfig->nParity);
+    FTE_UCS_setStopbits(pUCS, pConfig->nStopBits);
+    FTE_UCS_setDuplexMode(pUCS, pConfig->bFullDuplex);
+    
+    return  FTE_RET_OK;
+}
+    
+FTE_RET     FTE_UCS_getUART
+(
+    FTE_UCS_PTR     pUCS,
+    FTE_UCS_UART_CONFIG_PTR pConfig
+)
+{
+    FTE_UCS_getBaudrate(pUCS, &pConfig->nBaudrate);    
+    FTE_UCS_getDatabits(pUCS, &pConfig->nDataBits);
+    FTE_UCS_getParity(pUCS, &pConfig->nParity);
+    FTE_UCS_getStopbits(pUCS, &pConfig->nStopBits);
+    FTE_UCS_getDuplexMode(pUCS, &pConfig->bFullDuplex);
+    
+    return  FTE_RET_OK;
+}
+
+FTE_UINT32  FTE_UCS_clear
+(   
+    FTE_UCS_PTR     pUCS
+)
+{
+    FTE_UINT32 nCount;
 
     _lwsem_wait(&pUCS->xSEMRecv);
     nCount = _FTE_UCS_clear(pUCS);
@@ -403,19 +523,25 @@ uint_32         FTE_UCS_clear(FTE_UCS_PTR pUCS)
     return  nCount;
 }
 
-uint_32     FTE_UCS_recvdLen(FTE_UCS_PTR pUCS)
+FTE_UINT32     FTE_UCS_recvdLen
+(
+    FTE_UCS_PTR     pUCS
+)
 {
     return  pUCS->nRecvCount;
 }
 
-boolean         FTE_UCS_sendBufferIsEmpty(FTE_UCS_PTR pUCS)
+FTE_BOOL    FTE_UCS_sendBufferIsEmpty
+(
+    FTE_UCS_PTR     pUCS
+)
 {
     return  (pUCS->nSendCount == 0);
 }
 
-uint_32     FTE_UCS_recv(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, uint_32 nBuffLen)
+FTE_UINT32     FTE_UCS_recv(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, FTE_UINT32 nBuffLen)
 {
-    uint_32 nCount = 0;
+    FTE_UINT32 nCount = 0;
 
     _FTE_UCS_lock(pUCS);
     
@@ -430,9 +556,9 @@ uint_32     FTE_UCS_recv(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, uint_32 nBuffLen)
     return  nCount;
 }
 
-uint_32         FTE_UCS_recvLast(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, uint_32 nBuffLen)
+FTE_UINT32         FTE_UCS_recvLast(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, FTE_UINT32 nBuffLen)
 {
-    uint_32 nCount = 0;
+    FTE_UINT32 nCount = 0;
 
     _FTE_UCS_lock(pUCS);
     
@@ -441,7 +567,7 @@ uint_32         FTE_UCS_recvLast(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, uint_32 nBu
     if (pUCS->nRecvCount > nBuffLen)
     {
         pUCS->nRecvHead = (pUCS->nRecvHead + (pUCS->nRecvCount - nBuffLen)) % pUCS->pConfig->nRecvBufLen;
-        pUCS->nRecvCount -=nBuffLen;
+        pUCS->nRecvCount = nBuffLen;
     }
     
     nCount = _FTE_UCS_recv(pUCS, pBuff, nBuffLen);
@@ -453,9 +579,9 @@ uint_32         FTE_UCS_recvLast(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, uint_32 nBu
     return  nCount;
 }
 
-uint_32       FTE_UCS_send(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, uint_32 nBuffLen, boolean bHold)
+FTE_UINT32       FTE_UCS_send(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, FTE_UINT32 nBuffLen, FTE_BOOL bHold)
 {
-    uint_32 nCount;
+    FTE_UINT32 nCount;
 
     _FTE_UCS_lock(pUCS);
 
@@ -471,11 +597,11 @@ uint_32       FTE_UCS_send(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, uint_32 nBuffLen,
     return  nCount;
 }
 
-uint_32 FTE_UCS_sendAndRecv(FTE_UCS_PTR pUCS, uint_8_ptr pData, uint_32 nDataLen, uint_8_ptr pBuff, uint_32 nBuffLen, uint_32 nDelay, uint_32 nTimeout)
+FTE_UINT32 FTE_UCS_sendAndRecv(FTE_UCS_PTR pUCS, uint_8_ptr pData, FTE_UINT32 nDataLen, uint_8_ptr pBuff, FTE_UINT32 nBuffLen, FTE_UINT32 nDelay, FTE_UINT32 nTimeout)
 {
     MQX_TICK_STRUCT xStart, xCurrent;
-    uint_32 nCount = 0;
-    boolean bOverflow;
+    FTE_UINT32 nCount = 0;
+    FTE_BOOL bOverflow;
 
     _FTE_UCS_lock(pUCS);    
     
@@ -513,10 +639,10 @@ uint_32 FTE_UCS_sendAndRecv(FTE_UCS_PTR pUCS, uint_8_ptr pData, uint_32 nDataLen
     return  nCount;
 }
 
-boolean FTE_UCS_waitForSendCompletion(FTE_UCS_PTR pUCS, uint_32 nTimeout)
+FTE_BOOL FTE_UCS_waitForSendCompletion(FTE_UCS_PTR pUCS, FTE_UINT32 nTimeout)
 {
     MQX_TICK_STRUCT xStart, xCurrent;
-    boolean bOverflow;
+    FTE_BOOL bOverflow;
 
     _time_get_elapsed_ticks(&xStart);
 
@@ -540,26 +666,26 @@ boolean FTE_UCS_waitForSendCompletion(FTE_UCS_PTR pUCS, uint_32 nTimeout)
 /******************************************************************************
  * MODBUS operation
  ******************************************************************************/
-uint_32 FTE_UCS_MODBUS_getRegs
+FTE_UINT32 FTE_UCS_MODBUS_getRegs
 (
     FTE_UCS_PTR     pUCS, 
     uint_8          ucDeviceID,
     uint_16         usAddr, 
     uint_16_ptr     pRegs, 
     uint_8          nCount, 
-    uint_32         nTimeout
+    FTE_UINT32         nTimeout
 )
 {
     ASSERT((pUCS != NULL) && (pRegs != NULL));
     
     uint_8      pReqFrame[10];
-    uint_32     ulReqLen;
+    FTE_UINT32     ulReqLen;
     uint_8_ptr  pRecvFrame;
     uint_8_ptr  pRecvBuff;
     uint_16     uiCRC;
-    uint_32     ulRecvLen;
-    uint_32     ulValidRespFrameLen;
-    uint_32     i;
+    FTE_UINT32     ulRecvLen;
+    FTE_UINT32     ulValidRespFrameLen;
+    FTE_UINT32     i;
     
     ulValidRespFrameLen = (5 + sizeof(uint_16)*nCount);
     pRecvBuff = (uint_8_ptr)FTE_MEM_allocZero(ulValidRespFrameLen * 2);
@@ -575,10 +701,9 @@ uint_32 FTE_UCS_MODBUS_getRegs
     pReqFrame[ulReqLen++] = (usAddr     ) & 0xFF;
     pReqFrame[ulReqLen++] = 0x00;
     pReqFrame[ulReqLen++] = nCount;
-    uiCRC = fte_crc16(pReqFrame, ulReqLen);
+    uiCRC = FTE_CRC16(pReqFrame, ulReqLen);
     pReqFrame[ulReqLen++] = (uiCRC     ) & 0xFF;
     pReqFrame[ulReqLen++] = (uiCRC >> 8) & 0xFF;
-    pReqFrame[ulReqLen++] = 0;
                 
     ulRecvLen = FTE_UCS_sendAndRecv(pUCS, pReqFrame, ulReqLen, pRecvBuff, ulValidRespFrameLen * 2, 0, nTimeout);
     if (ulRecvLen < ulValidRespFrameLen)
@@ -592,7 +717,7 @@ uint_32 FTE_UCS_MODBUS_getRegs
     {
         if ((pRecvBuff[i] == ucDeviceID) && (pRecvBuff[i + 1] == 0x03) && (pRecvBuff[i + 2] == nCount * 2))
         {
-            uiCRC = fte_crc16(&pRecvBuff[i], ulValidRespFrameLen - 2);
+            uiCRC = FTE_CRC16(&pRecvBuff[i], ulValidRespFrameLen - 2);
             if (uiCRC == *((uint_16_ptr)&pRecvBuff[i+ ulValidRespFrameLen - 2]))
             {            
                 pRecvFrame = &pRecvBuff[i];
@@ -616,25 +741,25 @@ uint_32 FTE_UCS_MODBUS_getRegs
     return  MQX_OK;
 }
 
-uint_32 FTE_UCS_MODBUS_setReg
+FTE_UINT32 FTE_UCS_MODBUS_setReg
 (
     FTE_UCS_PTR     pUCS, 
     uint_8          ucDeviceID,
     uint_16         usAddr, 
     uint_16         usValue, 
-    uint_32         nTimeout
+    FTE_UINT32         nTimeout
 )
 {
     ASSERT(pUCS != NULL);
     
     uint_8      pReqFrame[10];
-    uint_32     ulReqLen;
+    FTE_UINT32     ulReqLen;
     uint_8      pRecvBuff[10];
-    uint_32     ulRecvLen;
+    FTE_UINT32     ulRecvLen;
     uint_8_ptr  pRecvFrame;
-    uint_32     ulValidFrameLen;
-    uint_32     uiCRC;
-    uint_32     i;
+    FTE_UINT32     ulValidFrameLen;
+    FTE_UINT32     uiCRC;
+    FTE_UINT32     i;
     
     ulReqLen = 0;
     pReqFrame[ulReqLen++] = ucDeviceID;
@@ -643,7 +768,7 @@ uint_32 FTE_UCS_MODBUS_setReg
     pReqFrame[ulReqLen++] = (usAddr     ) & 0xFF;
     pReqFrame[ulReqLen++] = (usValue>> 8) & 0xFF;
     pReqFrame[ulReqLen++] = (usValue    ) & 0xFF;
-    uiCRC = fte_crc16(pReqFrame, ulReqLen);
+    uiCRC = FTE_CRC16(pReqFrame, ulReqLen);
     pReqFrame[ulReqLen++] = (uiCRC     ) & 0xFF;
     pReqFrame[ulReqLen++] = (uiCRC >> 8) & 0xFF;
     pReqFrame[ulReqLen++] = 0;
@@ -661,7 +786,7 @@ uint_32 FTE_UCS_MODBUS_setReg
     {
         if ((pRecvBuff[i] == ucDeviceID) && (pRecvBuff[i + 1] == 0x06))
         {
-            uiCRC = fte_crc16(&pRecvBuff[i], ulValidFrameLen - 2);
+            uiCRC = FTE_CRC16(&pRecvBuff[i], ulValidFrameLen - 2);
             if (uiCRC == *((uint_16_ptr)&pRecvBuff[i+ ulValidFrameLen - 2]))
             {            
                 pRecvFrame = &pRecvBuff[i];
@@ -679,7 +804,7 @@ uint_32 FTE_UCS_MODBUS_setReg
 }
 
 
-_mqx_uint   _FTE_UCS_lock(FTE_UCS_PTR pUCS)
+FTE_RET   _FTE_UCS_lock(FTE_UCS_PTR pUCS)
 {
     ASSERT(pUCS != NULL);
 
@@ -695,7 +820,7 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint   _FTE_UCS_unlock(FTE_UCS_PTR pUCS)
+FTE_RET   _FTE_UCS_unlock(FTE_UCS_PTR pUCS)
 {
     ASSERT(pUCS != NULL);
 
@@ -711,7 +836,7 @@ _mqx_uint   _FTE_UCS_unlock(FTE_UCS_PTR pUCS)
 
 int_32  FTE_UCS_SHELL_cmd(int_32 argc, char_ptr argv[] )
 {
-    boolean              print_usage, shorthelp = FALSE;
+    FTE_BOOL              print_usage, shorthelp = FALSE;
     int_32               return_code = SHELL_EXIT_SUCCESS;
 
     print_usage = Shell_check_help_request (argc, argv, &shorthelp);
@@ -722,7 +847,7 @@ int_32  FTE_UCS_SHELL_cmd(int_32 argc, char_ptr argv[] )
         {
         case    1:
             {
-                uint_32 ulCount;
+                FTE_UINT32 ulCount;
 
                 ulCount = FTE_UCS_count();
 
@@ -736,9 +861,9 @@ int_32  FTE_UCS_SHELL_cmd(int_32 argc, char_ptr argv[] )
                         printf("%16s : %s\n",   "Name", pUCS->pConfig->pName);
                         printf("%16s : %s\n",   "UART", pUCS->pConfig->pUART);
                         printf("%16s : %08x\n", "FlowCtrl", pUCS->pConfig->nFlowCtrlID);
-                        printf("%16s : %d bps\n", "Baudrate", pUCS->pConfig->nBaudrate);
-                        printf("%16s : %d bits\n", "Data Bits", pUCS->pConfig->nDataBits);
-                        switch(pUCS->pConfig->nParity)
+                        printf("%16s : %d bps\n", "Baudrate", pUCS->nBaudrate);
+                        printf("%16s : %d bits\n", "Data Bits", pUCS->nDataBits);
+                        switch(pUCS->nParity)
                         {
                         case    FTE_UART_PARITY_NONE:   printf("%16s : %s\n", "Parity", "none"); break;
                         case    FTE_UART_PARITY_ODD:    printf("%16s : %s\n", "Parity", "odd"); break;
@@ -748,7 +873,7 @@ int_32  FTE_UCS_SHELL_cmd(int_32 argc, char_ptr argv[] )
                         case    FTE_UART_PARITY_SPACE:  printf("%16s : %s\n", "Parity", "space"); break;
                         }
 
-                        printf("%16s : %d bits\n", "Stop Bits", pUCS->pConfig->nStopBits);
+                        printf("%16s : %d bits\n", "Stop Bits", pUCS->nStopBits);
                     }
                 }
             }
@@ -778,7 +903,7 @@ int_32  FTE_UCS_SHELL_cmd(int_32 argc, char_ptr argv[] )
  ******************************************************************************/
 void FTE_UCS_TASK_send
 (
-      uint_32 nParams
+      FTE_UINT32 nParams
 )
 {
     FTE_UCS_PTR pUCS = FTE_UCS_get(nParams);
@@ -791,7 +916,7 @@ void FTE_UCS_TASK_send
     
     while(1)
     {
-        uint_32 nWrittenCount;
+        FTE_UINT32 nWrittenCount;
 
         _lwsem_wait(&pUCS->xSEMSendNotEmtry);
         _lwsem_wait(&pUCS->xSEMSend);
@@ -821,13 +946,13 @@ void FTE_UCS_TASK_send
             pUCS->nSendCount -= nWrittenCount;
         }
 
-        fflush(pUCS->pFD);
+        _time_delay(1);
         ioctl( pUCS->pFD, IO_IOCTL_SERIAL_WAIT_FOR_TC, NULL );
-        fflush(pUCS->pFD);
 
         pUCS->nSendHead = 0;
         pUCS->nSendTail = 0;
 
+        
         if (pUCS->pFlowCtrl != NULL)
         {
             for(int i = 0; i < 20 ;i++)
@@ -851,7 +976,7 @@ error:
 
 void    FTE_UCS_TASK_recv
 (
-      uint_32 nParams
+      FTE_UINT32 nParams
 )
 {
     FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
@@ -887,9 +1012,9 @@ error:
 }
 
 
-uint_32 _FTE_UCS_clear(FTE_UCS_PTR pUCS)
+FTE_UINT32 _FTE_UCS_clear(FTE_UCS_PTR pUCS)
 {
-    uint_32 nCount;
+    FTE_UINT32 nCount;
 
     nCount = pUCS->nRecvCount;
     pUCS->nRecvCount = 0;
@@ -897,9 +1022,9 @@ uint_32 _FTE_UCS_clear(FTE_UCS_PTR pUCS)
     return  nCount;
 }
 
-uint_32     _FTE_UCS_recv(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, uint_32 nBuffLen)
+FTE_UINT32     _FTE_UCS_recv(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, FTE_UINT32 nBuffLen)
 {
-    uint_32 nCount = 0;
+    FTE_UINT32 nCount = 0;
 
     if (pUCS->nRecvCount != 0)
     {
@@ -916,9 +1041,9 @@ uint_32     _FTE_UCS_recv(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, uint_32 nBuffLen)
         {
             memcpy(pBuff, &pUCS->pRecvBuf[pUCS->nRecvHead], nCount);
         }
-        else
+        else 
         {
-            uint_32 nTailCount = pUCS->pConfig->nRecvBufLen - pUCS->nRecvHead;
+            FTE_UINT32 nTailCount = pUCS->pConfig->nRecvBufLen - pUCS->nRecvHead;
 
             memcpy(pBuff, &pUCS->pRecvBuf[pUCS->nRecvHead], nTailCount);
             memcpy(&pBuff[nTailCount], &pUCS->pRecvBuf[0], nCount - nTailCount);
@@ -936,10 +1061,10 @@ uint_32     _FTE_UCS_recv(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, uint_32 nBuffLen)
 
     return  nCount;
 }
-
-uint_32       _FTE_UCS_send(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, uint_32 nBuffLen)
+ 
+FTE_UINT32       _FTE_UCS_send(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, FTE_UINT32 nBuffLen)
 {
-    uint_32 nCount;
+    FTE_UINT32 nCount;
 
     if (nBuffLen > (pUCS->pConfig->nSendBufLen - pUCS->nSendCount - 1))
     {
@@ -956,7 +1081,7 @@ uint_32       _FTE_UCS_send(FTE_UCS_PTR pUCS, uint_8_ptr pBuff, uint_32 nBuffLen
     }
     else
     {
-        uint_32 nTailCount = pUCS->pConfig->nRecvBufLen - pUCS->nSendTail;
+        FTE_UINT32 nTailCount = pUCS->pConfig->nRecvBufLen - pUCS->nSendTail;
 
         memcpy(&pUCS->pSendBuf[pUCS->nSendTail], pBuff, nTailCount);
         memcpy(&pUCS->pSendBuf[0], &pBuff[nTailCount], nCount - nTailCount);

@@ -9,7 +9,7 @@ _mqx_int    FTE_LIST_init(FTE_LIST_PTR pList)
     FTE_LIST_NODE_PTR   pNode = (FTE_LIST_NODE_PTR)FTE_MEM_allocZero(sizeof(FTE_LIST_NODE));
     if (pNode == NULL)
     {
-        return  MQX_OUT_OF_MEMORY;
+        return  FTE_RET_INSUFFICIENT_MEMORY;
     }
 
     pNode->pNext = pNode;
@@ -19,7 +19,7 @@ _mqx_int    FTE_LIST_init(FTE_LIST_PTR pList)
 
     fte_sys_lock_create(&pList->pLockKey);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 _mqx_int    FTE_LIST_final(FTE_LIST_PTR pList)

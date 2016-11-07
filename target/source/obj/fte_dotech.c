@@ -64,6 +64,20 @@ typedef struct  FTE_DOTECH_DEVICE_STRUCT
     FTE_OBJECT_PTR  pObj;
 }   FTE_DOTECH_DEVICE, _PTR_ FTE_DOTECH_DEVICE_PTR;
 
+FTE_RET FTE_DOTECH_FX3D_run
+(
+    FTE_OBJECT_PTR  pObj
+);
+
+FTE_RET FTE_DOTECH_FX3D_stop
+(
+    FTE_OBJECT_PTR  pObj
+);
+
+FTE_RET FTE_DOTECH_FX3D_loadConfig
+(
+    FTE_OBJECT_PTR pObj
+);
 
 FTE_RET FTE_DOTECH_FX3D_writeReg
 (
@@ -72,151 +86,142 @@ FTE_RET FTE_DOTECH_FX3D_writeReg
     FTE_INT32       nValue
 );
 
-static const FTE_IFCE_CONFIG fte_init_dotech_fx3d_temp_config =
+static const FTE_IFCE_CONFIG FTE_DOTECH_FX3D_TEMP_defaultConfig =
 {
     .xCommon    =
     {
         .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_TEMP, 0),
         .pName      = "TEMP0",
-        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE,
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE,
     },
     .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_DOTECH_FX3D, 0),
     .nRegID     = FTE_DOTECH_FX3D_FIELD_TEMP0,
-    .nInterval  = 2
+    .nInterval  = FTE_DOTECH_FX3D_DEFAULT_UPDATE_INTERVAL
 };
 
-static const FTE_IFCE_CONFIG fte_init_dotech_fx3d_ctrl_temp0_config =
+static const FTE_IFCE_CONFIG FTE_DOTECH_FX3D_TEMP_CTRL0_defaultConfig =
 {
     .xCommon    =
     {
         .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_TEMP, 0),
-        .pName      = "CTRL0",
-        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE,
+        .pName      = "TSET0",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE,
     },
     .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_DOTECH_FX3D, 0),
     .nRegID     = FTE_DOTECH_FX3D_FIELD_CTRL_TEMP0,
-    .nInterval  = 2
+    .nInterval  = FTE_DOTECH_FX3D_DEFAULT_UPDATE_INTERVAL
 };
 
-static const FTE_IFCE_CONFIG fte_init_dotech_fx3d_ctrl_temp1_config =
+static const FTE_IFCE_CONFIG FTE_DOTECH_FX3D_TEMP_CTRL1_defaultConfig =
 {
     .xCommon    =
     {
         .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_TEMP, 0),
-        .pName      = "CTRL1",
-        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE,
+        .pName      = "TSET1",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE,
     },
     .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_DOTECH_FX3D, 0),
     .nRegID     = FTE_DOTECH_FX3D_FIELD_CTRL_TEMP1,
-    .nInterval  = 2
+    .nInterval  = FTE_DOTECH_FX3D_DEFAULT_UPDATE_INTERVAL
 };
 
-static const FTE_IFCE_CONFIG fte_init_dotech_fx3d_ctrl_state0_config =
+static const FTE_IFCE_CONFIG FTE_DOTECH_FX3D_CTRL_STATE0_defaultConfig =
 {
     .xCommon    =
     {
         .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
-        .pName      = "CTRL0",
-        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+        .pName      = "RELAY0",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
     },
     .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_DOTECH_FX3D, 0),
     .nRegID     = FTE_DOTECH_FX3D_FIELD_CTRL_STATE0,
-    .nInterval  = 2
+    .nInterval  = FTE_DOTECH_FX3D_DEFAULT_UPDATE_INTERVAL
 };
 
-static const FTE_IFCE_CONFIG fte_init_dotech_fx3d_ctrl_state1_config =
+static const FTE_IFCE_CONFIG FTE_DOTECH_FX3D_CTRL_STATE1_defaultConfig =
 {
     .xCommon    =
     {
         .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
-        .pName      = "CTRL1",
-        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+        .pName      = "RELAY1",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
     },
     .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_DOTECH_FX3D, 0),
     .nRegID     = FTE_DOTECH_FX3D_FIELD_CTRL_STATE1,
-    .nInterval  = 2
+    .nInterval  = FTE_DOTECH_FX3D_DEFAULT_UPDATE_INTERVAL
 };
 
-static const FTE_IFCE_CONFIG fte_init_dotech_fx3d_outctrl0_config =
+static const FTE_IFCE_CONFIG FTE_DOTECH_FX3D_OUT_CTRL0_defaultconfig =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0),
-        .pName      = "CTRL0",
-        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_CTRL, 0),
+        .pName      = "TCTRL0",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
     },
     .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_DOTECH_FX3D, 0),
     .nRegID     = FTE_DOTECH_FX3D_FIELD_CTRL0,
-    .nInterval  = 2
+    .nInterval  = FTE_DOTECH_FX3D_DEFAULT_UPDATE_INTERVAL
 };
 
-static const FTE_IFCE_CONFIG fte_init_dotech_fx3d_outctrl1_config =
+static const FTE_IFCE_CONFIG FTE_DOTECH_FX3D_OUT_CTRL1_defaultconfig =
 {
     .xCommon    =
     {
-        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_VALUE, 0),
-        .pName      = "CTRL1",
-        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_CTRL, 0),
+        .pName      = "TCTRL1",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
     },
     .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_DOTECH_FX3D, 0),
     .nRegID     = FTE_DOTECH_FX3D_FIELD_CTRL1,
-    .nInterval  = 2
+    .nInterval  = FTE_DOTECH_FX3D_DEFAULT_UPDATE_INTERVAL
 };
 
 #ifdef FTE_DOTECH_FX3D_FIELD_SENSOR_ALARM
-static const FTE_IFCE_CONFIG fte_init_dotech_fx3d_sensor_state_config =
+static const FTE_IFCE_CONFIG FTE_DOTECH_FX3D_SENSOR_STATE_defaultconfig =
 {
     .xCommon    =
     {
         .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
         .pName      = "ALARM",
-        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
     },
     .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_DOTECH_FX3D, 0),
     .nRegID     = FTE_DOTECH_FX3D_FIELD_SENSOR_ALARM,
-    .nInterval  = 2
+    .nInterval  = FTE_DOTECH_FX3D_DEFAULT_UPDATE_INTERVAL
 };
 #endif
 
-static const FTE_EVENT_CONFIG fte_changed_ctrl_temp_config = 
+static const FTE_OBJECT_CONFIG_PTR FTE_DOTECH_FX3D_defaultChildConfigs[] =
 {
-    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_TEMP, 0x0000),
-    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
-    .xLevel     = FTE_EVENT_LEVEL_INFO,
-    .xCondition = FTE_EVENT_CONDITION_CHANGED,
-};
-
-static const FTE_OBJECT_CONFIG_PTR pDevicesChildConfigs[] =
-{
-    (FTE_OBJECT_CONFIG_PTR)&fte_init_dotech_fx3d_temp_config,
-    (FTE_OBJECT_CONFIG_PTR)&fte_init_dotech_fx3d_ctrl_temp0_config,
-    (FTE_OBJECT_CONFIG_PTR)&fte_init_dotech_fx3d_ctrl_temp1_config,
-    (FTE_OBJECT_CONFIG_PTR)&fte_init_dotech_fx3d_ctrl_state0_config,
-    (FTE_OBJECT_CONFIG_PTR)&fte_init_dotech_fx3d_ctrl_state1_config,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_DOTECH_FX3D_TEMP_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_DOTECH_FX3D_TEMP_CTRL0_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_DOTECH_FX3D_TEMP_CTRL1_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_DOTECH_FX3D_CTRL_STATE0_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_DOTECH_FX3D_CTRL_STATE1_defaultConfig,
 #ifdef FTE_DOTECH_FX3D_FIELD_SENSOR_ALARM
-    (FTE_OBJECT_CONFIG_PTR)&fte_init_dotech_fx3d_sensor_state_config,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_DOTECH_FX3D_SENSOR_STATE_defaultconfig,
 #endif
-    (FTE_OBJECT_CONFIG_PTR)&fte_init_dotech_fx3d_outctrl0_config,
-    (FTE_OBJECT_CONFIG_PTR)&fte_init_dotech_fx3d_outctrl1_config,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_DOTECH_FX3D_OUT_CTRL0_defaultconfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_DOTECH_FX3D_OUT_CTRL1_defaultconfig,
 };
 
 FTE_DOTECH_CONFIG FTE_DOTECH_FX3D_defaultConfig =
 {
-    .xModel     =       FTE_DOTECH_MODEL_FX3D,
     .xGUS       =
     {
         .xCommon    =
         {
             .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DOTECH_FX3D, 0),
             .pName      = "FX3D",
-            .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
-            .ulChild    = sizeof(pDevicesChildConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR),
-            .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)pDevicesChildConfigs
+            .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+            .ulChild    = sizeof(FTE_DOTECH_FX3D_defaultChildConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR),
+            .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)FTE_DOTECH_FX3D_defaultChildConfigs
         },
         .nModel     = FTE_GUS_MODEL_DOTECH_FX3D,
         .nSensorID  = 0x01,
         .nUCSID     = FTE_DEV_UCS_1,
-        .nInterval  = 10
+        .nInterval  = FTE_DOTECH_FX3D_DEFAULT_UPDATE_INTERVAL
     }
 };
 
@@ -242,22 +247,396 @@ static  FTE_DOTECH_EXT_CONFIG xGlobalConfig =
     .ulRetryCount       = FTE_DOTECH_DEFAULT_RETRY_COUNT
 };
 
+const FTE_GUS_MODEL_INFO    FTE_DOTECH_FX3D_GUSModelInfo = 
+{
+    .nModel         = FTE_GUS_MODEL_DOTECH_FX3D,
+    .pName          = "FX3D",
+    .xFlags         = FTE_GUS_FLAG_SHARED,
+    .xUARTConfig    = 
+    {
+        .nBaudrate  =   FTE_DOTECH_FX3D_DEFAULT_BAUDRATE,
+        .nDataBits  =   FTE_DOTECH_FX3D_DEFAULT_DATABITS,
+        .nParity    =   FTE_DOTECH_FX3D_DEFAULT_PARITY,
+        .nStopBits  =   FTE_DOTECH_FX3D_DEFAULT_STOPBITS,
+        .bFullDuplex=   FTE_DOTECH_FX3D_DEFAULT_FULL_DUPLEX
+    },
+    .nFieldCount    = FTE_DOTECH_FX3D_FIELD_MAX,
+    .pValueTypes    = FTE_DOTECH_FX3D_valueTypes,
+    .fCreate        = FTE_DOTECH_FX3D_create,
+    .fRun           = FTE_DOTECH_FX3D_run,
+    .fStop          = FTE_DOTECH_FX3D_stop,
+    .fAttach        = FTE_DOTECH_FX3D_attach,
+    .fDetach        = FTE_DOTECH_FX3D_detach,
+    .fGet           = FTE_DOTECH_FX3D_get,
+    .fGetChildConfig= FTE_DOTECH_FX3D_getChildConfig,
+    .fSetChildConfig= FTE_DOTECH_FX3D_setChildConfig,
+};
+
 static FTE_UINT32           ulDeviceCount=0;
 static FTE_DOTECH_DEVICE    pDevices[FTE_DOTECH_FX3D_MAX];
 static FTE_BOOL             bExtConfigLoaded = FALSE;
+
+FTE_RET     FTE_DOTECH_update
+(
+    FTE_OBJECT_PTR pObj
+)
+{ 
+    ASSERT(pObj != NULL);
+    
+    FTE_UINT32 xRet;    
+    FTE_DOTECH_CONFIG_PTR pConfig;
+    FTE_DOTECH_FX3D_STATUS_PTR pStatus;
+    FTE_UCS_PTR pUCS;
+    FTE_UINT16 pRegs[FTE_DOTECH_FX3D_REG_STAT_MAX];
+        
+    pConfig = (FTE_DOTECH_CONFIG_PTR)pObj->pConfig;
+    pStatus = (FTE_DOTECH_FX3D_STATUS_PTR)pObj->pStatus;
+    
+    pUCS = FTE_UCS_get(pConfig->xGUS.nUCSID);
+    if (pUCS == NULL)
+    {
+        ERROR("UCS[%d] is not exist\n", pConfig->xGUS.nUCSID);
+        return  FTE_RET_OBJECT_NOT_FOUND;
+    }
+ 
+    _time_get(&pStatus->xLastRequestTime);
+    
+    xRet = FTE_UCS_MODBUS_getRegs(pUCS, pConfig->xGUS.nSensorID, FTE_DOTECH_FX3D_REG_STAT_START, pRegs, FTE_DOTECH_FX3D_REG_STAT_MAX, xGlobalConfig.ulRequestTimeout);
+    if (xRet != FTE_RET_OK)
+    {
+        return  xRet;
+    }
+    
+    FTE_VALUE_setTemperature(&pStatus->xGUS.xCommon.pValue[FTE_DOTECH_FX3D_FIELD_TEMP0], ((FTE_INT16_PTR)pRegs)[FTE_DOTECH_FX3D_REG_STAT_CURR_TEMP - FTE_DOTECH_FX3D_REG_STAT_START] * 10);
+    FTE_VALUE_setDIO(&pStatus->xGUS.xCommon.pValue[FTE_DOTECH_FX3D_FIELD_CTRL_STATE0], (pRegs[FTE_DOTECH_FX3D_REG_STAT - FTE_DOTECH_FX3D_REG_STAT_START] & 0x01));
+    FTE_VALUE_setDIO(&pStatus->xGUS.xCommon.pValue[FTE_DOTECH_FX3D_FIELD_CTRL_STATE1], ((pRegs[FTE_DOTECH_FX3D_REG_STAT - FTE_DOTECH_FX3D_REG_STAT_START] >> 1) & 0x01));
+#ifdef FTE_DOTECH_FX3D_FIELD_SENSOR_ALARM
+    FTE_VALUE_setDIO(&pStatus->xGUS.xCommon.pValue[FTE_DOTECH_FX3D_FIELD_SENSOR_ALARM], ((pRegs[FTE_DOTECH_FX3D_REG_STAT - FTE_DOTECH_FX3D_REG_STAT_START] >> 14) & 0x01));
+#endif
+    FTE_VALUE_setTemperature(&pStatus->xGUS.xCommon.pValue[FTE_DOTECH_FX3D_FIELD_CTRL_TEMP0], ((FTE_INT16_PTR)pRegs)[FTE_DOTECH_FX3D_REG_STAT_CTRL_TEMP0 - FTE_DOTECH_FX3D_REG_STAT_START] * 10);
+    FTE_VALUE_setTemperature(&pStatus->xGUS.xCommon.pValue[FTE_DOTECH_FX3D_FIELD_CTRL_TEMP1], ((FTE_INT16_PTR)pRegs)[FTE_DOTECH_FX3D_REG_STAT_CTRL_TEMP1 - FTE_DOTECH_FX3D_REG_STAT_START] * 10);
+    
+    _time_get(&pStatus->xLastUpdateTime);
+    
+    return  FTE_RET_OK;
+}
+
+void FTE_DOTECH_task
+(
+    FTE_UINT32     ulObjectID
+)
+{
+    FTE_RET xRet;
+    FTE_OBJECT_PTR  pObj;
+    FTE_UCS_PTR pUCS;
+    FTE_TIME_DELAY xDelay;
+    FTE_DOTECH_CONFIG_PTR pConfig;
+    FTE_DOTECH_FX3D_STATUS_PTR pStatus;
+    FTE_UINT16 pRegs[FTE_DOTECH_FX3D_REG_CTRL_MAX];
+    FTE_UCS_UART_CONFIG xUARTConfig;
+          
+    pObj = FTE_OBJ_get(ulObjectID);
+    if (pObj == NULL)
+    {
+        ERROR("The object[%08x] is not exist\n", ulObjectID);
+        return;
+    }
+    
+    ASSERT((pObj->pConfig != NULL) && (pObj->pStatus != NULL));
+    
+    pConfig = (FTE_DOTECH_CONFIG_PTR)pObj->pConfig;
+    pStatus = (FTE_DOTECH_FX3D_STATUS_PTR)pObj->pStatus;
+    
+    pUCS = FTE_UCS_get(pConfig->xGUS.nUCSID);
+    if (pUCS == NULL)
+    {
+        ERROR("UCS[%d] is not exist\n", pConfig->xGUS.nUCSID);
+        return;
+    }
+ 
+    pStatus->ulRetryCount = 0;
+    _time_get(&pStatus->xLastUpdateTime);    
+    
+    while(TRUE)
+    {
+        FTE_UCS_getUART(pStatus->xGUS.pUCS, &xUARTConfig);
+        FTE_UCS_setUART(pStatus->xGUS.pUCS, &pStatus->xGUS.pModelInfo->xUARTConfig);    
+        
+        xRet = FTE_UCS_MODBUS_getRegs(pUCS, pConfig->xGUS.nSensorID, FTE_DOTECH_FX3D_REG_CTRL_START, pRegs, FTE_DOTECH_FX3D_REG_CTRL_MAX, xGlobalConfig.ulRequestTimeout);
+        
+        FTE_UCS_setUART(pStatus->xGUS.pUCS, &xUARTConfig);    
+        
+        if (xRet == FTE_RET_OK)
+        {
+            int i;
+            
+            for(i = 0 ; i < FTE_DOTECH_FX3D_CTRL_COUNT ; i++)
+            {
+                pStatus->pOutputConfigs[i].ulMode           = pRegs[i * 8 + 2];
+                pStatus->pOutputConfigs[i].ulDeviation      = pRegs[i * 8 + 3] * 10;
+                pStatus->pOutputConfigs[i].ulONDelay        = pRegs[i * 8 + 4];
+                pStatus->pOutputConfigs[i].ulOFFMin         = pRegs[i * 8 + 5];
+                pStatus->pOutputConfigs[i].ulONMin          = pRegs[i * 8 + 6];
+                pStatus->pOutputConfigs[i].ulDeviationMode  = pRegs[i * 8 + 7];
+                pStatus->pOutputConfigs[i].nMaxTemp         = (*(FTE_INT16_PTR)&pRegs[i * 8 + 8]) * 100;
+                pStatus->pOutputConfigs[i].nMinTemp         = (*(FTE_INT16_PTR)&pRegs[i * 8 + 9]) * 100;
+            }
+            
+            break;
+        }
+        
+        _time_delay(1000);
+    }
+
+    FTE_TIME_DELAY_init(&xDelay, xGlobalConfig.ulLoopPeriod);
+    
+    while(TRUE)
+    {
+        TIME_STRUCT xCurrentTime;
+        FTE_INT32   nElapsedUpdateTime = 0;
+        
+        _time_get(&xCurrentTime);
+        
+        FTE_TIME_diffMilliseconds(&xCurrentTime, &pStatus->xLastUpdateTime, &nElapsedUpdateTime);        
+        if (nElapsedUpdateTime >= xGlobalConfig.ulUpdatePeriod)
+        {   
+            FTE_INT32 nElapsedRequestTime = 0;
+            
+            FTE_TIME_diffMilliseconds(&xCurrentTime, &pStatus->xLastRequestTime, &nElapsedRequestTime);
+            if( nElapsedRequestTime >= xGlobalConfig.ulRequestTimeout)
+            {
+                FTE_UCS_getUART(pStatus->xGUS.pUCS, &xUARTConfig);
+                FTE_UCS_setUART(pStatus->xGUS.pUCS, &pStatus->xGUS.pModelInfo->xUARTConfig);    
+                
+                xRet = FTE_DOTECH_update(pObj);
+                
+                FTE_UCS_setUART(pStatus->xGUS.pUCS, &xUARTConfig);    
+                
+                if (xRet == FTE_RET_OK)
+                {
+                    FT_OBJ_STAT_incSucceed(&pStatus->xGUS.xCommon.xStatistics);
+                    pStatus->ulRetryCount=0;
+                }
+                else if (pStatus->ulRetryCount >= xGlobalConfig.ulRetryCount)
+                {
+                    FT_OBJ_STAT_incFailed(&pStatus->xGUS.xCommon.xStatistics);
+                    pStatus->ulRetryCount=0;
+                }
+                else
+                {
+                    pStatus->ulRetryCount++;
+                }
+                
+            }
+        }
+
+        FTE_TIME_DELAY_waitingAndSetNext(&xDelay);
+    }      
+}
+
+FTE_RET FTE_DOTECH_FX3D_create
+(
+    FTE_CHAR_PTR    pSlaveID,
+    FTE_OBJECT_PTR _PTR_ ppObj
+)
+{
+    ASSERT((pSlaveID != NULL) && (ppObj != NULL));
+    
+    int i;
+    FTE_RET xRet;
+    FTE_OBJECT_CONFIG_PTR   pConfig;
+    FTE_OBJECT_CONFIG_PTR   pChildConfig[FTE_DOTECH_FX3D_FIELD_MAX];
+    FTE_UINT32              ulChildCount = 0 ;
+    FTE_UINT32              ulSlaveID;
+    FTE_OBJECT_PTR  pObj;
+    
+    xRet = FTE_strToUINT32(pSlaveID, &ulSlaveID);
+    if (xRet != FTE_RET_OK)
+    {
+        return  xRet;
+    }
+    
+    for(i = 0 ; i < FTE_DOTECH_FX3D_MAX ; i++)
+    {
+        if (pDevices[i].pObj != NULL)
+        {
+            if (((FTE_DOTECH_CONFIG_PTR)pDevices[i].pObj->pConfig)->xGUS.nSensorID== ulSlaveID)
+            {
+                return  FTE_RET_OK;
+            }
+        }
+    }
+    
+    FTE_DOTECH_FX3D_defaultConfig.xGUS.nSensorID = ulSlaveID;
+    
+    xRet = FTE_CFG_OBJ_create((FTE_OBJECT_CONFIG_PTR)&FTE_DOTECH_FX3D_defaultConfig, &pConfig, pChildConfig, FTE_DOTECH_FX3D_FIELD_MAX, &ulChildCount);
+    if (xRet != FTE_RET_OK)
+    {
+        return  xRet;
+    }    
+    
+    pObj = FTE_OBJ_create(pConfig);
+    if (pObj == NULL)
+    {
+        return  FTE_RET_INSUFFICIENT_MEMORY;
+    }
+    
+    if (ulChildCount != 0)
+    {
+        for(i = 0 ; i < ulChildCount ; i++)
+        {
+            FTE_OBJECT_PTR  pChild;
+            
+            pChild = FTE_OBJ_create(pChildConfig[i]);
+            if (pChild == NULL)
+            {
+                ERROR("The child object creation failed.\n");
+            }
+        }
+    }
+    
+    *ppObj = pObj;
+        
+    return  FTE_RET_OK;    
+}
+
+FTE_RET FTE_DOTECH_FX3D_destroy
+(
+    FTE_OBJECT_PTR pObj
+)
+{
+    ASSERT(pObj != NULL);
+    
+    FTE_RET xRet;
+    FTE_UINT32              ulChildCount = 0 ;
+
+    xRet = FTE_OBJ_getChildCount(pObj, &ulChildCount);
+    if (xRet == FTE_RET_OK)
+    {
+        for(FTE_INT32 i = ulChildCount - 1; i >= 0; i--)
+        {
+            FTE_OBJECT_PTR  pChild;
+            
+            xRet = FTE_OBJ_getChild(pObj, i, &pChild);
+            if (xRet == FTE_RET_OK)
+            {
+                FTE_CFG_OBJ_free(pChild->pConfig->xCommon.nID);
+                FTE_OBJ_destroy(pChild);
+            }
+        }
+    }
+
+    FTE_CFG_OBJ_free(pObj->pConfig->xCommon.nID);
+    FTE_OBJ_destroy(pObj);
+        
+    return  FTE_RET_OK;    
+}
+
+FTE_RET FTE_DOTECH_FX3D_run
+(
+    FTE_OBJECT_PTR  pObj
+)
+{
+    ASSERT((pObj != NULL) && (pObj->pConfig != NULL));
+    
+    int i;
+    FTE_DOTECH_DEVICE_PTR   pDevice = NULL;
+    
+    for(i = 0 ; i < FTE_DOTECH_FX3D_MAX ; i++)
+    {
+        if (pDevices[i].pObj == pObj)
+        {   
+            pDevice = &pDevices[i];
+            break;
+        }
+    }
+    
+    if (pDevice == NULL)
+    {
+        return  FTE_RET_OBJECT_NOT_FOUND;
+    }
+    
+    if (pDevice->xTaskID != 0)
+    {
+        return  FTE_RET_OK;
+    }
+    
+    pDevice->xTaskID = _task_create(0, FTE_TASK_DOTECH, (FTE_UINT32)pObj->pConfig->xCommon.nID);
+    if (pDevice->xTaskID <= 0)
+    {
+        return  FTE_RET_TASK_CREATION_FAILED;
+    }             
+                
+    FTE_TASK_append(FTE_TASK_TYPE_MQX, pDevice->xTaskID);
+                
+    return  FTE_RET_OK;
+}
+
+FTE_RET FTE_DOTECH_FX3D_stop
+(
+    FTE_OBJECT_PTR  pObj
+)
+{
+    ASSERT((pObj != NULL) && (pObj->pConfig != NULL));
+    
+    int i;
+    FTE_DOTECH_DEVICE_PTR   pDevice = NULL;
+    
+    for(i = 0 ; i < FTE_DOTECH_FX3D_MAX ; i++)
+    {
+        if (pDevices[i].pObj == pObj)
+        {   
+            pDevice = &pDevices[i];
+            break;
+        }
+    }
+    
+    if (pDevice == NULL)
+    {
+        return  FTE_RET_OBJECT_NOT_FOUND;
+    }
+    
+    if (pDevice->xTaskID == 0)
+    {
+        return  FTE_RET_OK;
+    }
+    
+    _task_destroy(pDevice->xTaskID);
+    FTE_TASK_remove(pDevice->xTaskID);
+    pDevice->xTaskID = 0;
+                
+    return  FTE_RET_OK;
+}
 
 FTE_RET   FTE_DOTECH_FX3D_attach
 (
     FTE_OBJECT_PTR pObj
 )
 {
+    ASSERT((pObj != NULL) && (pObj->pConfig != NULL) && (pObj->pStatus != NULL));
+
     FTE_RET xRet;
-    FTE_DOTECH_CONFIG_PTR    pConfig;
+    FTE_DOTECH_DEVICE_PTR   pDevice = NULL;
+    FTE_DOTECH_CONFIG_PTR   pConfig;
     FTE_DOTECH_FX3D_STATUS_PTR    pStatus;
     FTE_UCS_PTR  pUCS;
     
-    ASSERT((pObj != NULL) && (pObj->pConfig != NULL) && (pObj->pStatus != NULL));
+    for(FTE_INT32 i = 0 ; i < FTE_DOTECH_FX3D_MAX ; i++)
+    {
+        if (pDevices[i].pObj == NULL)
+        {   
+            pDevice = &pDevices[i];
+            break;
+        }
+    }
+    
+    if (pDevice == NULL)
+    {
+        return  FTE_RET_OBJECT_FULL;
+    }
 
+    FTE_DOTECH_FX3D_loadConfig(pObj);
+    
     pConfig = (FTE_DOTECH_CONFIG_PTR)pObj->pConfig;
     pStatus = (FTE_DOTECH_FX3D_STATUS_PTR)pObj->pStatus;    
     
@@ -275,8 +654,9 @@ FTE_RET   FTE_DOTECH_FX3D_attach
     }
         
     pStatus->xGUS.pUCS = pUCS;
-    
-    FTE_DOTECH_FX3D_init(pObj);
+
+    pDevice->pObj = pObj;    
+    ulDeviceCount++;
     
     return  FTE_RET_OK;
 }
@@ -286,10 +666,31 @@ FTE_RET   FTE_DOTECH_FX3D_detach
     FTE_OBJECT_PTR pObj
 )
 {
-    FTE_DOTECH_FX3D_STATUS_PTR  pStatus;
 
     ASSERT((pObj != NULL) && (pObj->pStatus != NULL));
+  
+    FTE_DOTECH_DEVICE_PTR   pDevice = NULL;
+    FTE_DOTECH_FX3D_STATUS_PTR  pStatus;
+    
+    for(FTE_INT32 i = 0 ; i < FTE_DOTECH_FX3D_MAX ; i++)
+    {
+        if (pDevices[i].pObj == pObj)
+        {   
+            pDevice = &pDevices[i];
+            break;
+        }
+    }
+    
+    if (pDevice == NULL)
+    {
+        return  FTE_RET_OBJECT_NOT_FOUND;
+    }
 
+    if (pDevice->xTaskID != 0)
+    {
+        FTE_DOTECH_FX3D_stop(pObj);
+    }    
+    
     pStatus = (FTE_DOTECH_FX3D_STATUS_PTR)pObj->pStatus;    
     if (pStatus->xGUS.pUCS != NULL)
     {
@@ -297,28 +698,36 @@ FTE_RET   FTE_DOTECH_FX3D_detach
         pStatus->xGUS.pUCS = NULL;
     }
     
+    pDevice->pObj = NULL;
+    ulDeviceCount--;
+    
     return  FTE_RET_OK;
 }
 
-static const   char_ptr    pStringTargetTemperature= "targetTemperature";
-static const   char_ptr    pStringCoolingDeviation = "coolingDeviation";
-static const   char_ptr    pStringHeatingDeviation = "heatingDeviation";
+static const   
+FTE_CHAR_PTR    pStringTargetTemperature= "targetTemperature";
+
+static const   
+FTE_CHAR_PTR    pStringCoolingDeviation = "coolingDeviation";
+
+static const   
+FTE_CHAR_PTR    pStringHeatingDeviation = "heatingDeviation";
 
 FTE_RET FTE_DOTECH_FX3D_setChildConfig
 (
     FTE_OBJECT_PTR  pObj, 
-    char_ptr        pBuff
+    FTE_CHAR_PTR    pBuff
 )
 {
     FTE_RET xRet = FTE_RET_OK;
     FTE_IFCE_CONFIG_PTR         pConfig;
     FTE_OBJECT_PTR              pParent;
     FTE_DOTECH_FX3D_STATUS_PTR  pParentStatus;
-    FTE_UINT32                     nCtrlID;
-    FTE_INT32          nTargetTemperature;
-    FTE_UINT32         ulCoolingDeviation = 0, ulHeatingDeviation = 0;
-    FTE_UINT32         ulMode = FTE_DOTECH_FX3D_MODE_OFF;
-    FTE_INT32          nCurrentTemperature = 0;
+    FTE_UINT32          nCtrlID;
+    FTE_INT32           nTargetTemperature;
+    FTE_UINT32          ulCoolingDeviation = 0, ulHeatingDeviation = 0;
+    FTE_UINT32          ulMode = FTE_DOTECH_FX3D_MODE_OFF;
+    FTE_INT32           nCurrentTemperature = 0;
     
     ASSERT ((pObj != NULL) && (pObj->pConfig != NULL) && (pBuff != NULL));
 
@@ -332,7 +741,7 @@ FTE_RET FTE_DOTECH_FX3D_setChildConfig
     const nx_json* pxCoolingDeviation  = nx_json_get(pxJSON, pStringCoolingDeviation);
     const nx_json* pxHeatingDeviation  = nx_json_get(pxJSON, pStringHeatingDeviation);
     
-    if ((FTE_OBJ_TYPE(pObj) != FTE_OBJ_TYPE_MULTI_VALUE) || (((FTE_IFCE_STATUS_PTR)pObj->pStatus)->pParent == NULL))
+    if ((FTE_OBJ_TYPE(pObj) != FTE_OBJ_TYPE_CTRL) || (((FTE_IFCE_STATUS_PTR)pObj->pStatus)->pParent == NULL))
     {
         xRet = FTE_RET_ERROR;
         goto error;
@@ -419,17 +828,17 @@ FTE_RET FTE_DOTECH_FX3D_setChildConfig
     }
     else if (ulCoolingDeviation != 0)
     {
-        if (ulCoolingDeviation < 100)
+        if (ulCoolingDeviation < 10)
         {
-            ulCoolingDeviation = 100;
+            ulCoolingDeviation = 10;
         }
         ulMode = FTE_DOTECH_FX3D_MODE_COOLING;
     }
     else if (ulHeatingDeviation != 0)
     {
-        if (ulHeatingDeviation < 100)
+        if (ulHeatingDeviation < 10)
         {
-            ulHeatingDeviation = 100;
+            ulHeatingDeviation = 10;
         }
         ulMode = FTE_DOTECH_FX3D_MODE_HEATING;
     }
@@ -512,7 +921,7 @@ FTE_RET FTE_DOTECH_FX3D_getChildConfig
     
     ASSERT ((pObj != NULL) && (pObj->pStatus != NULL) && (pBuff != NULL));
 
-    if ((FTE_OBJ_TYPE(pObj) != FTE_OBJ_TYPE_MULTI_VALUE) || (((FTE_IFCE_STATUS_PTR)pObj->pStatus)->pParent == NULL))
+    if ((FTE_OBJ_TYPE(pObj) != FTE_OBJ_TYPE_CTRL) || (((FTE_IFCE_STATUS_PTR)pObj->pStatus)->pParent == NULL))
     {
         return  FTE_RET_ERROR;
     }
@@ -542,7 +951,7 @@ FTE_RET FTE_DOTECH_FX3D_getChildConfig
         return  FTE_RET_ERROR;
     }
     
-    FTE_VALUE_setTemperature(&pParentStatus->xGUS.xCommon.pValue[FTE_DOTECH_FX3D_FIELD_CTRL_TEMP0 + nCtrlID], (*(int_16_ptr)&pRegs[0]) * 10);
+    FTE_VALUE_setTemperature(&pParentStatus->xGUS.xCommon.pValue[FTE_DOTECH_FX3D_FIELD_CTRL_TEMP0 + nCtrlID], (*(FTE_INT16_PTR)&pRegs[0]) * 10);
     
     pJOSNObject = FTE_JSON_VALUE_createObject(3);
     if (pJOSNObject == NULL)
@@ -624,7 +1033,7 @@ FTE_RET FTE_DOTECH_FX3D_getChildConfig
     return  FTE_RET_OK;
 }
 
-_mqx_uint FTE_DOTECH_FX3D_loadConfig
+FTE_RET FTE_DOTECH_FX3D_loadConfig
 (
     FTE_OBJECT_PTR pObj
 )
@@ -641,7 +1050,7 @@ _mqx_uint FTE_DOTECH_FX3D_loadConfig
     return  FTE_RET_OK;
 }
 
-_mqx_uint FTE_DOTECH_FX3D_saveConfig
+FTE_RET FTE_DOTECH_FX3D_saveConfig
 (
     void
 )
@@ -667,7 +1076,7 @@ FTE_RET FTE_DOTECH_initDefaultExtConfig
 FTE_RET FTE_DOTECH_FX3D_get
 (
     FTE_OBJECT_PTR  pObject, 
-    FTE_UINT32         ulIndex, 
+    FTE_UINT32      ulIndex, 
     FTE_VALUE_PTR   pValue
 )
 {
@@ -684,252 +1093,12 @@ FTE_RET FTE_DOTECH_FX3D_get
     return  FTE_VALUE_copy(pValue, &pStatus->xGUS.xCommon.pValue[ulIndex]);
 }
 
-FTE_RET FTE_DOTECH_FX3D_init
-(
-    FTE_OBJECT_PTR  pObj
-)
-{
-    ASSERT((pObj != NULL) && (pObj->pConfig != NULL));
-    
-    int i;
-    FTE_DOTECH_DEVICE_PTR   pDevice = NULL;
-    
-    for(i = 0 ; i < FTE_DOTECH_FX3D_MAX ; i++)
-    {
-        if (pDevices[i].pObj == NULL)
-        {   
-            pDevice = &pDevices[i];
-            break;
-        }
-    }
-    
-    if (pDevice == NULL)
-    {
-        return  FTE_RET_OBJECT_FULL;
-    }
-    
-    FTE_DOTECH_FX3D_loadConfig(pObj);
-    
-    pDevice->xTaskID = _task_create(0, FTE_TASK_DOTECH, (FTE_UINT32)pObj->pConfig->xCommon.nID);
-    if (pDevice->xTaskID <= 0)
-    {
-        return  FTE_RET_TASK_CREATION_FAILED;
-    }             
-                
-    pDevice->pObj = pObj;    
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, pDevice->xTaskID);
-    ulDeviceCount++;
-                
-    return  FTE_RET_OK;
-}
-
-FTE_RET     FTE_DOTECH_update
-(
-    FTE_OBJECT_PTR pObj
-)
-{ 
-    ASSERT(pObj != NULL);
-    
-    FTE_UINT32 xRet;    
-    FTE_DOTECH_CONFIG_PTR pConfig;
-    FTE_DOTECH_FX3D_STATUS_PTR pStatus;
-    FTE_UCS_PTR pUCS;
-    FTE_UINT16 pRegs[FTE_DOTECH_FX3D_REG_STAT_MAX];
-        
-    pConfig = (FTE_DOTECH_CONFIG_PTR)pObj->pConfig;
-    pStatus = (FTE_DOTECH_FX3D_STATUS_PTR)pObj->pStatus;
-    
-    pUCS = FTE_UCS_get(pConfig->xGUS.nUCSID);
-    if (pUCS == NULL)
-    {
-        ERROR("UCS[%d] is not exist\n", pConfig->xGUS.nUCSID);
-        return  FTE_RET_OBJECT_NOT_FOUND;
-    }
- 
-    _time_get(&pStatus->xLastRequestTime);
-    
-    xRet = FTE_UCS_MODBUS_getRegs(pUCS, pConfig->xGUS.nSensorID, FTE_DOTECH_FX3D_REG_STAT_START, pRegs, FTE_DOTECH_FX3D_REG_STAT_MAX, xGlobalConfig.ulRequestTimeout);
-    if (xRet != FTE_RET_OK)
-    {
-        return  xRet;
-    }
-    
-    FTE_VALUE_setTemperature(&pStatus->xGUS.xCommon.pValue[FTE_DOTECH_FX3D_FIELD_TEMP0], ((int_16_ptr)pRegs)[FTE_DOTECH_FX3D_REG_STAT_CURR_TEMP - FTE_DOTECH_FX3D_REG_STAT_START] * 10);
-    FTE_VALUE_setDIO(&pStatus->xGUS.xCommon.pValue[FTE_DOTECH_FX3D_FIELD_CTRL_STATE0], (pRegs[FTE_DOTECH_FX3D_REG_STAT - FTE_DOTECH_FX3D_REG_STAT_START] & 0x01));
-    FTE_VALUE_setDIO(&pStatus->xGUS.xCommon.pValue[FTE_DOTECH_FX3D_FIELD_CTRL_STATE1], ((pRegs[FTE_DOTECH_FX3D_REG_STAT - FTE_DOTECH_FX3D_REG_STAT_START] >> 1) & 0x01));
-#ifdef FTE_DOTECH_FX3D_FIELD_SENSOR_ALARM
-    FTE_VALUE_setDIO(&pStatus->xGUS.xCommon.pValue[FTE_DOTECH_FX3D_FIELD_SENSOR_ALARM], ((pRegs[FTE_DOTECH_FX3D_REG_STAT - FTE_DOTECH_FX3D_REG_STAT_START] >> 14) & 0x01));
-#endif
-    FTE_VALUE_setTemperature(&pStatus->xGUS.xCommon.pValue[FTE_DOTECH_FX3D_FIELD_CTRL_TEMP0], ((int_16_ptr)pRegs)[FTE_DOTECH_FX3D_REG_STAT_CTRL_TEMP0 - FTE_DOTECH_FX3D_REG_STAT_START] * 10);
-    FTE_VALUE_setTemperature(&pStatus->xGUS.xCommon.pValue[FTE_DOTECH_FX3D_FIELD_CTRL_TEMP1], ((int_16_ptr)pRegs)[FTE_DOTECH_FX3D_REG_STAT_CTRL_TEMP1 - FTE_DOTECH_FX3D_REG_STAT_START] * 10);
-    
-    _time_get(&pStatus->xLastUpdateTime);
-    
-    return  FTE_RET_OK;
-}
-
-void FTE_DOTECH_task
-(
-    FTE_UINT32     ulObjectID
-)
-{
-    FTE_RET xRet;
-    FTE_OBJECT_PTR  pObj;
-    FTE_UCS_PTR pUCS;
-    FTE_TIME_DELAY xDelay;
-    FTE_DOTECH_CONFIG_PTR pConfig;
-    FTE_DOTECH_FX3D_STATUS_PTR pStatus;
-    FTE_UINT16 pRegs[FTE_DOTECH_FX3D_REG_CTRL_MAX];
-          
-    pObj = FTE_OBJ_get(ulObjectID);
-    if (pObj == NULL)
-    {
-        ERROR("The object[%08x] is not exist\n", ulObjectID);
-        return;
-    }
-    
-    ASSERT((pObj->pConfig != NULL) && (pObj->pStatus != NULL));
-    
-    pConfig = (FTE_DOTECH_CONFIG_PTR)pObj->pConfig;
-    pStatus = (FTE_DOTECH_FX3D_STATUS_PTR)pObj->pStatus;
-    
-    pUCS = FTE_UCS_get(pConfig->xGUS.nUCSID);
-    if (pUCS == NULL)
-    {
-        ERROR("UCS[%d] is not exist\n", pConfig->xGUS.nUCSID);
-        return;
-    }
- 
-    pStatus->ulRetryCount = 0;
-    _time_get(&pStatus->xLastUpdateTime);    
-    
-    while(TRUE)
-    {
-        xRet = FTE_UCS_MODBUS_getRegs(pUCS, pConfig->xGUS.nSensorID, FTE_DOTECH_FX3D_REG_CTRL_START, pRegs, FTE_DOTECH_FX3D_REG_CTRL_MAX, xGlobalConfig.ulRequestTimeout);
-        if (xRet == FTE_RET_OK)
-        {
-            int i;
-            
-            for(i = 0 ; i < FTE_DOTECH_FX3D_CTRL_COUNT ; i++)
-            {
-                pStatus->pOutputConfigs[i].ulMode           = pRegs[i * 8 + 2];
-                pStatus->pOutputConfigs[i].ulDeviation      = pRegs[i * 8 + 3] * 10;
-                pStatus->pOutputConfigs[i].ulONDelay        = pRegs[i * 8 + 4];
-                pStatus->pOutputConfigs[i].ulOFFMin         = pRegs[i * 8 + 5];
-                pStatus->pOutputConfigs[i].ulONMin          = pRegs[i * 8 + 6];
-                pStatus->pOutputConfigs[i].ulDeviationMode  = pRegs[i * 8 + 7];
-                pStatus->pOutputConfigs[i].nMaxTemp         = (*(int_16_ptr)&pRegs[i * 8 + 8]) * 100;
-                pStatus->pOutputConfigs[i].nMinTemp         = (*(int_16_ptr)&pRegs[i * 8 + 9]) * 100;
-            }
-            
-            break;
-        }
-        
-        _time_delay(1000);
-    }
-
-    FTE_TIME_DELAY_init(&xDelay, xGlobalConfig.ulLoopPeriod);
-    
-    while(TRUE)
-    {
-        TIME_STRUCT xCurrentTime;
-        FTE_UINT32 ulElapsedUpdateTime = 0;
-
-        _time_get(&xCurrentTime);
-        
-        ulElapsedUpdateTime = FTE_TIME_diffMilliseconds(&xCurrentTime, &pStatus->xLastUpdateTime);
-        
-        if (ulElapsedUpdateTime >= xGlobalConfig.ulUpdatePeriod)
-        {   
-            FTE_UINT32 ulElapsedRequestTime;
-            
-            ulElapsedRequestTime = FTE_TIME_diffMilliseconds(&xCurrentTime, &pStatus->xLastRequestTime);
-            if( ulElapsedRequestTime >= xGlobalConfig.ulRequestTimeout)
-            {
-                xRet = FTE_DOTECH_update(pObj);
-                if (xRet == FTE_RET_OK)
-                {
-                    FT_OBJ_STAT_incSucceed(&pStatus->xGUS.xCommon.xStatistics);
-                    pStatus->ulRetryCount=0;
-                }
-                else if (pStatus->ulRetryCount >= xGlobalConfig.ulRetryCount)
-                {
-                    FT_OBJ_STAT_incFailed(&pStatus->xGUS.xCommon.xStatistics);
-                    pStatus->ulRetryCount=0;
-                }
-                else
-                {
-                    pStatus->ulRetryCount++;
-                }
-                
-            }
-        }
-
-        FTE_TIME_DELAY_waitingAndSetNext(&xDelay);
-    }      
-}
-
-FTE_RET FTE_DOTECH_add
-(
-    FTE_UINT32 ulSlaveID, 
-    FTE_OBJECT_PTR _PTR_ ppObj
-)
-{
-    int i;
-    FTE_DOTECH_CONFIG_PTR   pConfig;
-    FTE_OBJECT_CONFIG_PTR   pChildConfig[FTE_DOTECH_FX3D_FIELD_MAX];
-    FTE_UINT32                 ulChildCount = 0 ;
-    FTE_OBJECT_PTR  pObj;
-    
-    for(i = 0 ; i < FTE_DOTECH_FX3D_MAX ; i++)
-    {
-        if (pDevices[i].pObj != NULL)
-        {
-            if (((FTE_DOTECH_CONFIG_PTR)pDevices[i].pObj->pConfig)->xGUS.nSensorID== ulSlaveID)
-            {
-                return  FTE_RET_OK;
-            }
-        }
-    }
-    
-    FTE_DOTECH_FX3D_defaultConfig.xGUS.nSensorID = ulSlaveID;
-    
-    pConfig = (FTE_DOTECH_CONFIG_PTR)FTE_CFG_OBJ_create((FTE_OBJECT_CONFIG_PTR)&FTE_DOTECH_FX3D_defaultConfig, pChildConfig, FTE_DOTECH_FX3D_FIELD_MAX, &ulChildCount);
-    if (pConfig == NULL)
-    {
-        return  FTE_RET_INSUFFICIENT_MEMORY;
-    }    
-    
-    pObj = FTE_OBJ_create((FTE_OBJECT_CONFIG_PTR)pConfig);
-    if (pObj == NULL)
-    {
-        return  FTE_RET_INSUFFICIENT_MEMORY;
-    }
-    
-    if (ulChildCount != 0)
-    {
-        for(i = 0 ; i < ulChildCount ; i++)
-        {
-            FTE_OBJECT_PTR  pChild;
-            
-            pChild = FTE_OBJ_create(pChildConfig[i]);
-            if (pChild == NULL)
-            {
-                ERROR("The child object creation failed.\n");
-            }
-        }
-    }
-    
-    *ppObj = pObj;
-        
-    return  FTE_RET_OK;    
-}
 
 FTE_RET     FTE_DOTECH_FX3D_writeReg
 (
     FTE_OBJECT_PTR  pObj,
-    FTE_UINT32         ulIndex,
-    FTE_INT32          nValue
+    FTE_UINT32      ulIndex,
+    FTE_INT32       nValue
 )
 {
     ASSERT((pObj != NULL) && (pObj->pConfig != NULL));
@@ -1063,7 +1232,7 @@ FTE_INT32 FTE_DOTECH_SHELL_cmd
                     printf("  Temp Min. : %4d.%02d\n", pStatus->pOutputConfigs[i].nMinTemp / 100, abs(pStatus->pOutputConfigs[i].nMinTemp) % 100);
                 }
             }
-            else if (FTE_OBJ_TYPE(pObject) == FTE_OBJ_TYPE_MULTI_VALUE)
+            else if (FTE_OBJ_TYPE(pObject) == FTE_OBJ_TYPE_MULTI_DOTECH_FX3D)
             {
                 FTE_OBJECT_PTR  pParent;
                 FTE_DOTECH_FX3D_STATUS_PTR  pStatus;
@@ -1094,28 +1263,6 @@ FTE_INT32 FTE_DOTECH_SHELL_cmd
                 printf("       Mode : %7d\n", pStatus->pOutputConfigs[ulCtrlID].ulDeviationMode);
                 printf("  Temp Max. : %4d.%02d\n", pStatus->pOutputConfigs[ulCtrlID].nMaxTemp / 100, abs(pStatus->pOutputConfigs[ulCtrlID].nMaxTemp) % 100);
                 printf("  Temp Min. : %4d.%02d\n", pStatus->pOutputConfigs[ulCtrlID].nMinTemp / 100, abs(pStatus->pOutputConfigs[ulCtrlID].nMinTemp) % 100);
-            }
-        }
-        break;
-        
-    case  3:
-        {
-            if (strcasecmp("add", pArgv[1]) == 0)
-            {
-                FTE_OBJECT_PTR pObj;
-                FTE_UINT32 ulSlaveID;
-                
-                if (!Shell_parse_uint_32(pArgv[2], &ulSlaveID))
-                {
-                    bPrintUsage = TRUE;
-                    goto error;
-                }
-       
-                xRet = FTE_DOTECH_add(ulSlaveID, (FTE_OBJECT_PTR _PTR_)&pObj);
-                if (xRet == FTE_RET_OK)
-                {
-                    printf("The object[%08x] is created successfully.\n", pObj->pConfig->xCommon.nID);
-                }
             }
         }
         break;
@@ -1204,7 +1351,7 @@ FTE_INT32 FTE_DOTECH_SHELL_cmd
                     FTE_FLOAT   fValue = 0;
                     FTE_INT32   nValue;
                     
-                    if (!fte_parse_float(pArgv[3], &fValue))
+                    if (FTE_strToFLOAT(pArgv[3], &fValue) != FTE_RET_OK)
                     {
                         bPrintUsage = TRUE;
                         goto error;
@@ -1223,7 +1370,7 @@ FTE_INT32 FTE_DOTECH_SHELL_cmd
                     FTE_FLOAT   fValue = 0;
                     FTE_INT32  nValue;
                     
-                    if (!fte_parse_float(pArgv[3], &fValue))
+                    if (FTE_strToFLOAT(pArgv[3], &fValue) != FTE_RET_OK)
                     {
                         bPrintUsage = TRUE;
                         goto error;

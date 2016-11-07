@@ -227,52 +227,6 @@
 #define FTE_GPIO_DI_0_MUX               (LWGPIO_MUX_C11_GPIO)
 #define FTE_GPIO_IOEX_RESET_MUX         (LWGPIO_MUX_C2_GPIO)
 
-#define FTE_TASCON_HEM12_BAUDRATE           1200
-#define FTE_TASCON_HEM12_06M_BAUDRATE       19200
-
-#if FTE_TASCON_HEM12_SUPPORTED
-#define FTE_UCS_1_FULL_DUPLEX               FALSE
-#define FTE_UCS_1_BAUDRATE                  FTE_TASCON_HEM12_BAUDRATE
-#define FTE_UCS_1_DATABITS                  8
-#define FTE_UCS_1_PARITY                    FTE_UART_PARITY_EVEN
-#define FTE_UCS_1_STOPBITS                  FTE_UART_STOP_BITS_1
-#elif FTE_TASCON_HEM12_06M_SUPPORTED
-#define FTE_UCS_1_FULL_DUPLEX               FALSE
-#define FTE_UCS_1_BAUDRATE                  FTE_TASCON_HEM12_06M_BAUDRATE
-#define FTE_UCS_1_DATABITS                  8
-#define FTE_UCS_1_PARITY                    FTE_UART_PARITY_EVEN
-#define FTE_UCS_1_STOPBITS                  FTE_UART_STOP_BITS_1
-#elif FTE_ELT_AQM100_SUPPORTED
-#define FTE_UCS_1_FULL_DUPLEX               FALSE
-#define FTE_UCS_1_BAUDRATE                  9600
-#define FTE_UCS_1_DATABITS                  8
-#define FTE_UCS_1_PARITY                    FTE_UART_PARITY_NONE
-#define FTE_UCS_1_STOPBITS                  FTE_UART_STOP_BITS_1
-#elif FTE_FTLM_SUPPORTED
-#define FTE_UCS_1_FULL_DUPLEX               FALSE
-#define FTE_UCS_1_BAUDRATE                  38400
-#define FTE_UCS_1_DATABITS                  8
-#define FTE_UCS_1_PARITY                    FTE_UART_PARITY_NONE
-#define FTE_UCS_1_STOPBITS                  FTE_UART_STOP_BITS_1
-#elif FTE_CIAS_SIOUX_CU_SUPPORTED
-#define FTE_UCS_1_FULL_DUPLEX               FALSE
-#define FTE_UCS_1_BAUDRATE                  115200
-#define FTE_UCS_1_DATABITS                  8
-#define FTE_UCS_1_PARITY                    FTE_UART_PARITY_NONE
-#define FTE_UCS_1_STOPBITS                  FTE_UART_STOP_BITS_1
-#define FTE_UCS_3_FULL_DUPLEX               FALSE
-#define FTE_UCS_3_BAUDRATE                  115200
-#define FTE_UCS_3_DATABITS                  8
-#define FTE_UCS_3_PARITY                    FTE_UART_PARITY_NONE
-#define FTE_UCS_3_STOPBITS                  FTE_UART_STOP_BITS_1
-#elif FTE_DOTECH_SUPPORTED
-#define FTE_UCS_1_FULL_DUPLEX               FALSE
-#define FTE_UCS_1_BAUDRATE                  38400
-#define FTE_UCS_1_DATABITS                  8
-#define FTE_UCS_1_PARITY                    FTE_UART_PARITY_NONE
-#define FTE_UCS_1_STOPBITS                  FTE_UART_STOP_BITS_1
-#endif
-
 #ifndef FTE_UCS_1_FULL_DUPLEX
 #define FTE_UCS_1_FULL_DUPLEX               FALSE
 #endif
@@ -331,36 +285,6 @@
 
 #ifndef FTE_UCS_3_STOPBITS
 #define FTE_UCS_3_STOPBITS                  FTE_UART_STOP_BITS_1
-#endif
-
-#if FTE_DS18B20_SUPPORTED
-#define FTE_DS18B20_INTERVAL                10
-#endif
-
-#if FTE_MST_MEX510C_SUPPORTED
-#define FTE_MST_MEX510C_INTERVAL            10
-#endif
-
-#if FTE_RTD_SUPPORTED
-#define FTE_RTD_INTERVAL                    10
-#endif
-
-#if FTE_SHT_SUPPORTED
-#define FTE_SHT_INTERVAL                    10
-#define FTE_SHT_SCL_INTERVAL                0
-#endif
-
-#if FTE_TASCON_HEM12_SUPPORTED || FTE_TASCON_HEM12_06M_SUPPORTED
-#define FTE_HEM12_INTERVAL                  10
-#define FTE_HEM12_EVENT_TYPE                FTE_OBJ_EVENT_TYPE_NONE
-#define FTE_HEM12_EVENT_DELAY               0   // 0 seconds
-#define FTE_HEM12_EVENT_THRESHOLD           0   // 0 ppm
-#define FTE_HEM12_EVENT_UPPER_LIMIT         0   // 0 ppm
-#define FTE_HEM12_EVENT_LOWER_LIMIT         0
-#endif
-
-#if FTE_MOTEM_PN1500_SUPPORTED
-#define FTE_BOTEM_PN1500_SENS_INTERVAL      2
 #endif
 
 #if FTE_GAI_VOLTAGE0_SUPPORTED || FTE_GAI_VOLTAGE1_SUPPORTED

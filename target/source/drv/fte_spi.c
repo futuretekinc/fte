@@ -2,11 +2,11 @@
 #include "fte_spi.h"
 
 #define MAX_SPI_COUNT   3
-static _mqx_int    _FTE_SPI_setCS(uint_32 cs_mask, pointer user_data);
-static _mqx_uint   _FTE_SPI_lock(FTE_SPI_PTR pSPI);
-static _mqx_uint   _FTE_SPI_unlock(FTE_SPI_PTR pSPI);
+static _mqx_int    _FTE_SPI_setCS(FTE_UINT32 cs_mask, pointer user_data);
+static FTE_RET  _FTE_SPI_lock(FTE_SPI_PTR pSPI);
+static FTE_RET  _FTE_SPI_unlock(FTE_SPI_PTR pSPI);
 
-static const   char_ptr channels[MAX_SPI_COUNT] = 
+static const   FTE_CHAR_PTR channels[MAX_SPI_COUNT] = 
 {
     "spi0:", 
     "spi1:",
@@ -21,10 +21,13 @@ static FTE_SPI_CHANNEL    _pChannels[MAX_SPI_COUNT] =
 };
 
 static FTE_SPI_PTR  _pHead  = NULL;
-static uint_32      _nSPI   = 0;
+static FTE_UINT32      _nSPI   = 0;
 
 
-_mqx_uint   FTE_SPI_create(FTE_SPI_CONFIG_PTR pConfig)
+FTE_RET   FTE_SPI_create
+(
+    FTE_SPI_CONFIG_PTR  pConfig
+)
 {
     FTE_SPI_PTR pSPI;
     
@@ -49,9 +52,13 @@ _mqx_uint   FTE_SPI_create(FTE_SPI_CONFIG_PTR pConfig)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SPI_attach(FTE_SPI_PTR pSPI, uint_32 nParent)
+FTE_RET   FTE_SPI_attach
+(
+    FTE_SPI_PTR     pSPI, 
+    FTE_UINT32      nParent
+)
 {
-    uint_32     nValue;
+    FTE_UINT32     nValue;
 
     assert(pSPI != NULL);
     if (pSPI == NULL)
@@ -90,8 +97,12 @@ _mqx_uint   FTE_SPI_attach(FTE_SPI_PTR pSPI, uint_32 nParent)
         {
             goto error;
         }
-
-        nValue = SPI_CLK_POL_PHA_MODE1;
+        
+#ifdef FTE_LORA_SUPPORTED
+        nValue = SPI_CLK_POL_PHA_MODE1; // use lora
+#else
+        nValue = SPI_CLK_POL_PHA_MODE3; // use mcp23s08
+#endif
          if (SPI_OK != ioctl (pSPI->pChannel->xFD, IO_IOCTL_SPI_SET_MODE, &nValue))
         {
             goto error;
@@ -135,7 +146,10 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint   FTE_SPI_detach(FTE_SPI_PTR pSPI)
+FTE_RET   FTE_SPI_detach
+(
+    FTE_SPI_PTR     pSPI
+)
 {
     assert(pSPI != NULL);
     if (pSPI == NULL)
@@ -162,7 +176,7 @@ _mqx_uint   FTE_SPI_detach(FTE_SPI_PTR pSPI)
     return  MQX_OK;
 }
 
-uint_32     FTE_SPI_count(void)
+FTE_UINT32     FTE_SPI_count(void)
 {
     return  _nSPI;
 }
@@ -172,7 +186,10 @@ FTE_SPI_PTR FTE_SPI_getFirst(void)
     return  _pHead;
 }
 
-FTE_SPI_PTR FTE_SPI_getNext(FTE_SPI_PTR pSPI)
+FTE_SPI_PTR FTE_SPI_getNext
+(
+    FTE_SPI_PTR     pSPI
+)
 {
     if (pSPI == NULL)
     {
@@ -182,7 +199,10 @@ FTE_SPI_PTR FTE_SPI_getNext(FTE_SPI_PTR pSPI)
     return  pSPI->pNext;
 }
 
-FTE_SPI_PTR FTE_SPI_get(uint_32 nID)
+FTE_SPI_PTR FTE_SPI_get
+(
+    FTE_UINT32  nID
+)
 {
     FTE_SPI_PTR pSPI;
     
@@ -200,7 +220,10 @@ FTE_SPI_PTR FTE_SPI_get(uint_32 nID)
     return  NULL;
 }
 
-uint_32     FTE_SPI_getParent(FTE_SPI_PTR pSPI)
+FTE_UINT32     FTE_SPI_getParent
+(
+    FTE_SPI_PTR     pSPI
+)
 {
     assert(pSPI != NULL);
     
@@ -208,7 +231,14 @@ uint_32     FTE_SPI_getParent(FTE_SPI_PTR pSPI)
 }
 
 
-_mqx_uint   FTE_SPI_read(FTE_SPI_PTR pSPI, uint_8_ptr cmd, uint_32 cmd_len, uint_8_ptr buff, uint_32 buff_len)
+FTE_RET   FTE_SPI_read
+(   
+    FTE_SPI_PTR     pSPI, 
+    FTE_UINT8_PTR   cmd, 
+    FTE_UINT32      cmd_len, 
+    FTE_UINT8_PTR   buff, 
+    FTE_UINT32      buff_len
+)
 {
     assert(pSPI != NULL);
     if (pSPI == NULL)
@@ -254,7 +284,14 @@ error:
     return MQX_ERROR;
 }
 
-_mqx_uint   FTE_SPI_write(FTE_SPI_PTR pSPI, uint_8_ptr cmd, uint_32 cmd_len, uint_8_ptr buff, uint_32 buff_len)
+FTE_RET   FTE_SPI_write
+(
+    FTE_SPI_PTR     pSPI, 
+    FTE_UINT8_PTR   cmd, 
+    FTE_UINT32      cmd_len, 
+    FTE_UINT8_PTR   buff, 
+    FTE_UINT32      buff_len
+)
 {
     assert(pSPI != NULL);
     if (pSPI == NULL)
@@ -321,12 +358,20 @@ error:
     return MQX_ERROR;
 }
 
-_mqx_uint   FTE_SPI_setBaudrate(FTE_SPI_PTR pSPI, uint_32 baudrate)
+FTE_RET   FTE_SPI_setBaudrate
+(
+    FTE_SPI_PTR     pSPI, 
+    FTE_UINT32      baudrate
+)
 {
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SPI_getBaudrate(FTE_SPI_PTR pSPI, uint_32 *baudrate)
+FTE_RET   FTE_SPI_getBaudrate
+(
+    FTE_SPI_PTR     pSPI, 
+    FTE_UINT32_PTR  baudrate
+)
 {
     assert(pSPI != NULL);
     if (pSPI == NULL)
@@ -339,12 +384,20 @@ _mqx_uint   FTE_SPI_getBaudrate(FTE_SPI_PTR pSPI, uint_32 *baudrate)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SPI_setFlags(FTE_SPI_PTR pSPI, uint_32 flags)
+FTE_RET   FTE_SPI_setFlags
+(
+    FTE_SPI_PTR     pSPI, 
+    FTE_UINT32      flags
+)
 {
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SPI_getFlags(FTE_SPI_PTR pSPI, uint_32 *flags)
+FTE_RET   FTE_SPI_getFlags
+(
+    FTE_SPI_PTR     pSPI, 
+    FTE_UINT32_PTR  flags
+)
 {
     assert(pSPI != NULL);
     if (pSPI == NULL)
@@ -357,16 +410,20 @@ _mqx_uint   FTE_SPI_getFlags(FTE_SPI_PTR pSPI, uint_32 *flags)
     return  MQX_OK;
 }
 
-int_32  FTE_SPI_SHELL_cmd(int_32 argc, char_ptr argv[] )
+FTE_INT32  FTE_SPI_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[]
+)
 { 
-    boolean              print_usage, shorthelp = FALSE;
-    int_32               return_code = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   xRet = SHELL_EXIT_SUCCESS;
     
-    print_usage = Shell_check_help_request (argc, argv, &shorthelp);
+    bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
-    if (!print_usage)
+    if (!bPrintUsage)
     {
-        switch(argc)
+        switch(nArgc)
         {
         case    1:
             {
@@ -377,7 +434,7 @@ int_32  FTE_SPI_SHELL_cmd(int_32 argc, char_ptr argv[] )
                 pSPI = FTE_SPI_getFirst();
                 while(pSPI != NULL)
                 {
-                    uint_32 baudrate, flags;
+                    FTE_UINT32 baudrate, flags;
                     
                     FTE_SPI_getBaudrate(pSPI, &baudrate);                         
                     FTE_SPI_getFlags(pSPI, &flags);
@@ -390,22 +447,22 @@ int_32  FTE_SPI_SHELL_cmd(int_32 argc, char_ptr argv[] )
             break;
         default:
             {
-                if (strcmp(argv[2], "read") == 0)
+                if (strcmp(pArgv[2], "read") == 0)
                 {
                     FTE_SPI_PTR pSPI;
-                    uint_32 id, nCmdLen, nRecvLen = 1, i;
+                    FTE_UINT32 id, nCmdLen, nRecvLen = 1, i;
                     uint_8  pSendBuff[64];
                     uint_8  pRecvBuff[64];
                     
-                    if (argc < 4)
+                    if (nArgc < 4)
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                         goto error;
                     }
                     
-                    if (! Shell_parse_hexnum( argv[1], &id))  
+                    if (! Shell_parse_hexnum( pArgv[1], &id))  
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                        goto error;
                     }
                     
@@ -415,34 +472,34 @@ int_32  FTE_SPI_SHELL_cmd(int_32 argc, char_ptr argv[] )
                         goto error;
                     }
                     
-                    if (! Shell_parse_number( argv[3], &nCmdLen))
+                    if (! Shell_parse_number( pArgv[3], &nCmdLen))
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                        goto error;
                     }
                     
-                    if (argc < 4 + nCmdLen + 1)
+                    if (nArgc < 4 + nCmdLen + 1)
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                         goto error;
                     }
                     
                     for(i = 0 ; i < nCmdLen ; i++)
                     {
-                        uint_32 nValue;
-                        Shell_parse_hexnum( argv[4 + i], &nValue);
+                        FTE_UINT32 nValue;
+                        Shell_parse_hexnum( pArgv[4 + i], &nValue);
                         pSendBuff[i] = nValue;
                     }
                     
-                    if (! Shell_parse_number( argv[4 + nCmdLen], &nRecvLen))
+                    if (! Shell_parse_number( pArgv[4 + nCmdLen], &nRecvLen))
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                        goto error;
                     }
                     
                     if (MQX_OK != FTE_SPI_read(pSPI, (uint_8 *)&pSendBuff, nCmdLen, pRecvBuff, nRecvLen))
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                        goto error;
                     }
 
@@ -452,38 +509,38 @@ int_32  FTE_SPI_SHELL_cmd(int_32 argc, char_ptr argv[] )
                     }
                     printf("\n");
                 }
-                else if (strcmp(argv[2], "write") == 0)
+                else if (strcmp(pArgv[2], "write") == 0)
                 {
                     FTE_SPI_PTR pSPI;
-                    uint_32 nID, nSendLen, i;
+                    FTE_UINT32 nID, nSendLen, i;
                     uint_8 pSendBuff[64];
                      
-                    if (argc < 6)
+                    if (nArgc < 6)
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                         goto error;
                     }
                     
-                    if (! Shell_parse_hexnum( argv[1], &nID))  
+                    if (! Shell_parse_hexnum( pArgv[1], &nID))  
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                        goto error;
                     }
 
                     pSPI = FTE_SPI_get(nID);
                     
-                    if (! Shell_parse_number( argv[3], &nSendLen))
+                    if (! Shell_parse_number( pArgv[3], &nSendLen))
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                        goto error;
                     }
                     
                     for(i = 0 ; i < nSendLen ; i++)
                     {
-                        uint_32 nValue;
-                        if (! Shell_parse_hexnum( argv[4+i], &nValue))
+                        FTE_UINT32 nValue;
+                        if (! Shell_parse_hexnum( pArgv[4+i], &nValue))
                         {
-                           return_code = SHELL_EXIT_ERROR;
+                           xRet = SHELL_EXIT_ERROR;
                            goto error;
                         }
                         pSendBuff[i] = nValue;
@@ -491,24 +548,24 @@ int_32  FTE_SPI_SHELL_cmd(int_32 argc, char_ptr argv[] )
                     
                     if (MQX_OK != FTE_SPI_write(pSPI, pSendBuff, nSendLen, NULL, 0))
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                        goto error;
                     }
                 }
-                else if (strcmp(argv[2], "attach") == 0)
+                else if (strcmp(pArgv[2], "attach") == 0)
                 {
                     FTE_SPI_PTR pSPI;
-                    uint_32 nID;
+                    FTE_UINT32 nID;
                      
-                    if (argc < 3)
+                    if (nArgc < 3)
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                         goto error;
                     }
                     
-                    if (! Shell_parse_hexnum( argv[1], &nID))  
+                    if (! Shell_parse_hexnum( pArgv[1], &nID))  
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                        goto error;
                     }
 
@@ -522,34 +579,37 @@ int_32  FTE_SPI_SHELL_cmd(int_32 argc, char_ptr argv[] )
                 }
                 else
                 {
-                    print_usage = TRUE;
+                    bPrintUsage = TRUE;
                 }
             }
         }
     }
 
 error:    
-    if (print_usage || (return_code !=SHELL_EXIT_SUCCESS))
+    if (bPrintUsage || (xRet !=SHELL_EXIT_SUCCESS))
     {
-        if (shorthelp)
+        if (bShortHelp)
         {
-            printf ("%s [<id>] [ baudrate | flags | read | write ] [<len>] [<data>]\n", argv[0]);
+            printf ("%s [<id>] [ baudrate | flags | read | write ] [<len>] [<data>]\n", pArgv[0]);
         }
         else
         {
-            printf("Usage : %s [<id>] [ baudrate | flags | read | write ] [<len>] [<data>]\n", argv[0]);
+            printf("Usage : %s [<id>] [ baudrate | flags | read | write ] [<len>] [<data>]\n", pArgv[0]);
             printf("        id       - SPI Channel \n");
             printf("        baudrate - SPI speed \n");
         }
     }
 
-    return   return_code;
+    return   xRet;
 }
 
 /******************************************************************************
  * Static Functions
  ******************************************************************************/
-_mqx_uint   _FTE_SPI_lock(FTE_SPI_PTR pSPI)
+FTE_RET   _FTE_SPI_lock
+(
+    FTE_SPI_PTR     pSPI
+)
 {
     assert(pSPI != NULL);
 
@@ -573,7 +633,10 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint   _FTE_SPI_unlock(FTE_SPI_PTR pSPI)
+FTE_RET   _FTE_SPI_unlock
+(
+    FTE_SPI_PTR     pSPI
+)
 {   
     assert(pSPI != NULL);
     
@@ -593,7 +656,12 @@ _mqx_uint   _FTE_SPI_unlock(FTE_SPI_PTR pSPI)
     return  MQX_OK;
 }
 
-static _mqx_int _FTE_SPI_setCS(uint_32 cs_mask, pointer user_data)
+static 
+_mqx_int _FTE_SPI_setCS
+(
+    FTE_UINT32  cs_mask, 
+    pointer     user_data
+)
 {
     FTE_SPI_PTR  pSPI = (FTE_SPI_PTR)user_data;
     if (pSPI != NULL)

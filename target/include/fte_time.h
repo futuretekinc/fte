@@ -17,19 +17,76 @@ typedef struct  FTE_TIME_DELAY_STRUCT
     uint_32         ulDelayMS;          //! milliseconds
 }   FTE_TIME_DELAY, _PTR_ FTE_TIME_DELAY_PTR;
 
-_mqx_uint   FTE_TIME_init(void);
+typedef TIME_STRUCT FTE_TIME, _PTR_ FTE_TIME_PTR;
 
-extern  uint_32     FTE_TIME_diff(TIME_STRUCT *time1, TIME_STRUCT *time);
-extern  uint_32     FTE_TIME_diffMilliseconds(TIME_STRUCT *time1, TIME_STRUCT *time);
-extern  uint_32     FTE_TIME_toString(TIME_STRUCT *time, char_ptr pBuff, uint_32 nBuffLen);
-extern  uint_32     FTE_TIME_toTime(char_ptr pBuff, TIME_STRUCT *pTime);
+extern  
+FTE_RET FTE_TIME_init
+(
+    void
+);
 
-extern  uint_64     FTE_TIME_getMilliSeconds(void);
+extern  
+FTE_RET FTE_TIME_getCurrent
+(   
+    FTE_TIME_PTR    pTime
+);
 
-extern  _mqx_uint   FTE_TIME_DELAY_init(FTE_TIME_DELAY_PTR pObj, uint_32 ulDelayMS);
-extern  void        FTE_TIME_DELAY_waitingAndSetNext(FTE_TIME_DELAY_PTR pObj);
+extern  
+FTE_RET FTE_TIME_diff
+(
+    FTE_TIME_PTR    pTime1, 
+    FTE_TIME_PTR    pTime2,
+    FTE_INT32_PTR   pDiffSec
+);
 
-extern  int_32      FTE_TIME_SHELL_cmd(int_32 argc, char_ptr argv[] );
+extern  
+FTE_RET FTE_TIME_diffMilliseconds
+(
+    FTE_TIME_PTR    pTime1, 
+    FTE_TIME_PTR    pTime2,
+    FTE_INT32_PTR   pDiffMSec
+);
+
+extern  
+FTE_RET FTE_TIME_toStr
+(
+    FTE_TIME_PTR    pTime, 
+    FTE_CHAR_PTR    pBuff, 
+    FTE_UINT32      nBuffLen
+);
+
+extern  
+FTE_RET FTE_TIME_toTime
+(
+    FTE_CHAR_PTR    pBuff, 
+    FTE_TIME_PTR    pTime
+);
+
+extern  
+FTE_RET FTE_TIME_getMilliSeconds
+(
+    FTE_UINT64_PTR  pMSec
+);
+
+extern  
+FTE_RET FTE_TIME_DELAY_init
+(
+    FTE_TIME_DELAY_PTR  pObj, 
+    FTE_UINT32          ulDelayMS
+);
+
+extern  
+FTE_RET FTE_TIME_DELAY_waitingAndSetNext
+(
+    FTE_TIME_DELAY_PTR pObj
+);
+
+extern  
+FTE_INT32   FTE_TIME_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[] 
+);
 
 
 /*!

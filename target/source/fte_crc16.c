@@ -1,6 +1,7 @@
-#include <mqx.h>
+#include "fte_type.h"
 
-static const uint_16 crc16_tab[] =  
+static const 
+FTE_UINT16 pCRC16Table[] =  
 {
     0X0000, 0XC0C1, 0XC181, 0X0140, 0XC301, 0X03C0, 0X0280, 0XC241,
     0XC601, 0X06C0, 0X0780, 0XC741, 0X0500, 0XC5C1, 0XC481, 0X0440,
@@ -36,16 +37,20 @@ static const uint_16 crc16_tab[] =
     0X8201, 0X42C0, 0X4380, 0X8341, 0X4100, 0X81C1, 0X8081, 0X4040 
 };
 
-uint_16 fte_crc16(const uint_8 *pData, uint_16 uiLen)
+FTE_UINT16  FTE_CRC16
+(
+    const FTE_VOID_PTR  pData, 
+    FTE_UINT32  ulLen
+)
 {
-    uint_8  uiTemp;
-    uint_16 uiCRC = 0xFFFF;
+    FTE_UINT8   uiTemp;
+    FTE_UINT16  uiCRC = 0xFFFF;
 
-    while (uiLen--)
+    for(FTE_INT32 i = 0 ; i < ulLen  ; i++)
     {
-        uiTemp = *pData++ ^ uiCRC;
+        uiTemp = ((FTE_UINT8_PTR)pData)[i] ^ uiCRC;
         uiCRC >>= 8;
-        uiCRC ^= crc16_tab[uiTemp];
+        uiCRC ^= pCRC16Table[uiTemp];
     }
     
     return uiCRC;

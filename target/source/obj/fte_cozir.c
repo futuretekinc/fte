@@ -3,12 +3,42 @@
 #include "fte_log.h"
 #include "fte_time.h"
 
+#if FTE_COZIR_AX5000_SUPPORTED
+
+FTE_GUS_CONFIG FTE_COZIR_AX5000_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_CO2, 0x0101),
+        .pName      = "CO2",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nModel     = FTE_GUS_MODEL_COZIR_AX5000,
+    .nUCSID     = FTE_DEV_UCS_1,
+    .nInterval  = FTE_AX5000_INTERVAL,
+};
+
 FTE_VALUE_TYPE  FT_COZIR_valueTypes[] =
 {
     FTE_VALUE_TYPE_PPM
 };
 
-_mqx_uint   FTE_COZIR_request(FTE_OBJECT_PTR pObj)
+
+const FTE_GUS_MODEL_INFO    FTE_COZIR_AX5000_GUSModelInfo =
+{
+    .nModel         = FTE_GUS_MODEL_COZIR_AX5000,
+    .pName          = "COZIR AX5000",
+    .nMaxResponseTime=FTE_AX5000_RESPONSE_TIME,
+    .nFieldCount    = 1,
+    .pValueTypes    = FT_COZIR_valueTypes,
+    .f_request      = FTE_COZIR_request,
+    .f_received     = FTE_COZIR_received
+};
+
+FTE_RET   FTE_COZIR_request
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     
@@ -18,7 +48,10 @@ _mqx_uint   FTE_COZIR_request(FTE_OBJECT_PTR pObj)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_COZIR_received(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_COZIR_received
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     char_ptr    pToken = NULL;
@@ -81,3 +114,5 @@ _mqx_uint   FTE_COZIR_received(FTE_OBJECT_PTR pObj)
     
     return  MQX_OK;
 }
+
+#endif

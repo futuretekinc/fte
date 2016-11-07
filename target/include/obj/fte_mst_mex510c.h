@@ -1,6 +1,10 @@
 #ifndef _FTE_MST_MEX_510C_H__
 #define _FTE_MST_MEX_510C_H__
 
+#ifdef  FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+#define FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL         5000
+#endif
+
 #define FTE_MST_MEX510C_INDEX_DEVICE_ID                 0
 #define FTE_MST_MEX510C_INDEX_TEMPERATURE               1
 #define FTE_MST_MEX510C_INDEX_SET_TEMPERATURE           2
@@ -39,24 +43,27 @@
 #define FTE_MST_MEX510C_INDEX_ALARM_RESET               34
 #define FTE_MST_MEX510C_INDEX_MAX                       34
 
-_mqx_uint   FTE_MST_MEX510C_setConfig(FTE_OBJECT_PTR pDevice, char_ptr pJSON);
-_mqx_uint   FTE_MST_MEX510C_getConfig(FTE_OBJECT_PTR pDevice, char_ptr pBuff, uint_32 ulBuffLen);
+#define FTE_MST_MEX510C_DEFAULT_FULL_DUPLEX             FALSE
+#define FTE_MST_MEX510C_DEFAULT_BAUDRATE                9600
+#define FTE_MST_MEX510C_DEFAULT_DATABITS                8
+#define FTE_MST_MEX510C_DEFAULT_PARITY                  FTE_UART_PARITY_NONE
+#define FTE_MST_MEX510C_DEFAULT_STOPBITS                FTE_UART_STOP_BITS_1
 
-uint_32     fte_mst_mex510c_request_data(FTE_OBJECT_PTR pObj);
-_mqx_uint   fte_mst_mex510c_receive_data(FTE_OBJECT_PTR pObj);
-_mqx_uint   fte_mst_mex510c_set(FTE_OBJECT_PTR pObject, uint_32 nIndex, FTE_VALUE_PTR pValue);
 
-extern  FTE_VALUE_TYPE  FTE_MST_MEX510C_valueTypes[];
+FTE_RET     FTE_MST_MEX510C_setConfig(FTE_OBJECT_PTR pDevice, char_ptr pJSON);
+FTE_RET     FTE_MST_MEX510C_getConfig(FTE_OBJECT_PTR pDevice, char_ptr pBuff, FTE_UINT32 ulBuffLen);
 
-#define FTE_MST_MEX510C_DESCRIPTOR  {\
-        .nModel         = FTE_GUS_MODEL_MST_MEX510C,    \
-        .pName          = "MEX-510C",                   \
-        .nFieldCount    = FTE_MST_MEX510C_INDEX_MAX+1,  \
-        .pValueTypes    = FTE_MST_MEX510C_valueTypes,   \
-        .f_request      = fte_mst_mex510c_request_data, \
-        .f_received     = fte_mst_mex510c_receive_data, \
-        .f_set          = fte_mst_mex510c_set,          \
-        .f_set_config = FTE_MST_MEX510C_setConfig,      \
-        .f_get_config = FTE_MST_MEX510C_getConfig       \
-    }
+FTE_UINT32  FTE_MST_MEX510C_requestData(FTE_OBJECT_PTR pObj);
+FTE_RET     FTE_MST_MEX510C_receiveData(FTE_OBJECT_PTR pObj);
+FTE_RET     FTE_MST_MEX510C_set(FTE_OBJECT_PTR pObject, FTE_UINT32 nIndex, FTE_VALUE_PTR pValue);
+
+extern      
+FTE_GUS_CONFIG FTE_MST_MEX510C_defaultConfig;
+
+extern      
+FTE_VALUE_TYPE  FTE_MST_MEX510C_valueTypes[];
+
+extern  const 
+FTE_GUS_MODEL_INFO    FTE_MST_MEX510C_GUSModelInfo;
+
 #endif

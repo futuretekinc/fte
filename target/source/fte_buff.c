@@ -2,7 +2,11 @@
 #include "fte_buff.h"
 
 
-FTE_FBM_PTR FTE_FBM_create(uint_32 ulUnit, uint_32 ulMaxCount)
+FTE_FBM_PTR FTE_FBM_create
+(
+    FTE_UINT32  ulUnit, 
+    FTE_UINT32  ulMaxCount
+)
 {
     FTE_FBM_PTR pFBM = NULL;
     
@@ -59,7 +63,10 @@ error:
     return  NULL;
 }
 
-_mqx_uint   FTE_FBM_destroy(FTE_FBM_PTR pFBM)
+FTE_RET   FTE_FBM_destroy
+(
+    FTE_FBM_PTR     pFBM
+)
 {
     if (pFBM != NULL)
     {
@@ -89,7 +96,11 @@ _mqx_uint   FTE_FBM_destroy(FTE_FBM_PTR pFBM)
     return  MQX_OK;
 }
 
-FTE_FBM_BUFF_PTR    FTE_FBM_alloc(FTE_FBM_PTR pFBM, uint_32 ulSize)
+FTE_FBM_BUFF_PTR    FTE_FBM_alloc
+(
+    FTE_FBM_PTR     pFBM, 
+    FTE_UINT32      ulSize
+)
 {
     FTE_FBM_BUFF_PTR pAlloc = NULL;
     
@@ -112,7 +123,11 @@ FTE_FBM_BUFF_PTR    FTE_FBM_alloc(FTE_FBM_PTR pFBM, uint_32 ulSize)
     return  pAlloc;
 }
 
-void        FTE_FBM_free(FTE_FBM_PTR pFBM, FTE_FBM_BUFF_PTR pBlock)
+void    FTE_FBM_free
+(
+    FTE_FBM_PTR     pFBM, 
+    FTE_FBM_BUFF_PTR pBlock
+)
 {
     if (pFBM != NULL)
     {

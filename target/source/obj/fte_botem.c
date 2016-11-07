@@ -4,12 +4,111 @@
 #include "fte_time.h"
 #include "nxjson.h"
 
-_mqx_uint   fte_botem_pn1500_switchCtrl(FTE_OBJECT_PTR pObj, boolean bSwitchON);
-_mqx_uint   fte_botem_pn1500_reset(FTE_OBJECT_PTR pObj);
-_mqx_uint   fte_botem_pn1500_countReset(FTE_OBJECT_PTR pObj);
-_mqx_uint   fte_botem_pn1500_accumCountReset(FTE_OBJECT_PTR pObj);
+FTE_RET   FTE_BOTEM_PN1500_switchCtrl(FTE_OBJECT_PTR pObj, FTE_BOOL bSwitchON);
+FTE_RET   FTE_BOTEM_PN1500_reset(FTE_OBJECT_PTR pObj);
+FTE_RET   FTE_BOTEM_PN1500_countReset(FTE_OBJECT_PTR pObj);
+FTE_RET   FTE_BOTEM_PN1500_accumCountReset(FTE_OBJECT_PTR pObj);
 
-static uint_32  _version = 1;
+static FTE_UINT32  _version = 1;
+
+
+static const 
+FTE_IFCE_CONFIG FTE_BOTEM_PN1500_HUMAN_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_COUNT, 0x0001),
+        .pName      = "COUNT",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_PN1500, 0x0001),
+    .nRegID     = 0,
+    .nInterval  = FTE_BOTEM_PN1500_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_BOTEM_PN1500_ACCUM_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_COUNT, 0x0001),
+        .pName      = "ACCUM",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_PN1500, 0x0001),
+    .nRegID     = 1,
+    .nInterval  = FTE_BOTEM_PN1500_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_BOTEM_PN1500_ACCRM_RESET_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DO, 0x0001),
+        .pName      = "ACCUM RESET",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_PN1500, 0x0001),
+    .nRegID     = 1,
+    .nInterval  = FTE_BOTEM_PN1500_DEFAULT_UPDATE_INTERVAL
+};
+
+
+static const 
+FTE_IFCE_CONFIG FTE_BOTEM_PN1500_SWITCH_STAT_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0001),
+        .pName      = "SWITCH",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_PN1500, 0x0001),
+    .nRegID     = 2,
+    .nInterval  = FTE_BOTEM_PN1500_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_BOTEM_PN1500_SWITCH_CTRL_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DO, 0x0001),
+        .pName      = "SWITCH",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_PN1500, 0x0001),
+    .nRegID     = 2,
+    .nInterval  = FTE_BOTEM_PN1500_DEFAULT_UPDATE_INTERVAL
+};
+
+
+static const 
+FTE_OBJECT_CONFIG_PTR FTE_BOTEM_PN1500_defaultChildConfigs[] =
+{
+    (FTE_OBJECT_CONFIG_PTR)&FTE_BOTEM_PN1500_HUMAN_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_BOTEM_PN1500_ACCUM_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_BOTEM_PN1500_ACCRM_RESET_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_BOTEM_PN1500_SWITCH_STAT_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_BOTEM_PN1500_SWITCH_CTRL_defaultConfig,
+};
+
+FTE_GUS_CONFIG FTE_BOTEM_PN1500_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_PN1500, 0x0001),
+        .pName      = "PN1500",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+        .ulChild    = sizeof(FTE_BOTEM_PN1500_defaultChildConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR),
+        .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)FTE_BOTEM_PN1500_defaultChildConfigs
+    },
+    .nModel     = FTE_GUS_MODEL_BOTEM_PN1500,
+    .nSensorID  = 0x01,
+    .nUCSID     = FTE_DEV_UCS_1,
+    .nInterval  = FTE_BOTEM_PN1500_DEFAULT_UPDATE_INTERVAL
+};
 
 FTE_VALUE_TYPE  FTE_BOTEM_PN1500_valueTypes[] =
 {
@@ -18,29 +117,57 @@ FTE_VALUE_TYPE  FTE_BOTEM_PN1500_valueTypes[] =
     FTE_VALUE_TYPE_DIO
 };
 
-_mqx_uint   fte_botem_pn1500_request_data(FTE_OBJECT_PTR pObj)
+const 
+FTE_GUS_MODEL_INFO   FTE_BOTEM_PN1500_GUSModelInfo = 
+{
+    .nModel     = FTE_GUS_MODEL_BOTEM_PN1500,
+    .pName      = "BOTEM PN1500",
+    .xUARTConfig    = 
+    {
+        .nBaudrate  =   FTE_BOTEM_PN1500_DEFAULT_BAUDRATE,
+        .nDataBits  =   FTE_BOTEM_PN1500_DEFAULT_DATABITS,
+        .nParity    =   FTE_BOTEM_PN1500_DEFAULT_PARITY,
+        .nStopBits  =   FTE_BOTEM_PN1500_DEFAULT_STOPBITS,
+        .bFullDuplex=   FTE_BOTEM_PN1500_DEFAULT_FULL_DUPLEX
+    },
+    .nFieldCount= 3,
+    .pValueTypes= FTE_BOTEM_PN1500_valueTypes,
+    .fRequest   = FTE_BOTEM_PN1500_request,
+    .fReceived  = FTE_BOTEM_PN1500_received,
+    .fSet       = FTE_BOTEM_PN1500_set,
+    .fSetConfig = FTE_BOTEM_PN1500_setConfig,
+    .fGetConfig = FTE_BOTEM_PN1500_getConfig
+};
+
+FTE_RET   FTE_BOTEM_PN1500_request
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     FTE_GUS_CONFIG_PTR  pConfig = (FTE_GUS_CONFIG_PTR)pObj->pConfig;
     
-    uint_8  pCMD[] = { '\0', '[', '0', '0', '0', '0', 'B', 'T', 'R', ']', '\0'};
+    FTE_UINT8  pCMD[] = { '\0', '[', '0', '0', '0', '0', 'B', 'T', 'R', ']', '\0'};
     
-    pCMD[0] = (uint_8)pConfig->nSensorID;
+    pCMD[0] = (FTE_UINT8)pConfig->nSensorID;
     FTE_UCS_clear(pStatus->pUCS);    
     FTE_UCS_send(pStatus->pUCS, pCMD, sizeof(pCMD), TRUE);    
 
     return  MQX_OK; 
 }
 
-_mqx_uint   fte_botem_pn1500_receive_data(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_BOTEM_PN1500_received
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
-    uint_32     nPeopleCount = 0;
-    uint_32     nAccum = 0;
-    boolean     bSwitch = 0;
-    uint_8      pBuff[64];
-    uint_32     nLen;
-    uint_32     nPrevPeopleCount = 0;
+    FTE_UINT32  nPeopleCount = 0;
+    FTE_UINT32  nAccum = 0;
+    FTE_BOOL    bSwitch = 0;
+    FTE_UINT8   pBuff[64];
+    FTE_UINT32  nLen;
+    FTE_UINT32  nPrevPeopleCount = 0;
     
     memset(pBuff, 0, sizeof(pBuff));
     
@@ -114,10 +241,15 @@ _mqx_uint   fte_botem_pn1500_receive_data(FTE_OBJECT_PTR pObj)
     return  MQX_OK;
 }
 
-_mqx_uint   fte_botem_pn1500_set(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_PTR pValue)
+FTE_RET   FTE_BOTEM_PN1500_set
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nIndex, 
+    FTE_VALUE_PTR   pValue
+)
 {
-    uint_8  pCMD[16] = { '\0', '[', '0', '0', '0', '0', 'B', 'T'};
-    uint_32 nCmdLen = 8;
+    FTE_UINT8  pCMD[16] = { '\0', '[', '0', '0', '0', '0', 'B', 'T'};
+    FTE_UINT32 nCmdLen = 8;
     FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     
     switch(nIndex)
@@ -173,7 +305,11 @@ _mqx_uint   fte_botem_pn1500_set(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_
     return  MQX_OK;
 }
 
-_mqx_uint   fte_botem_pn1500_setConfig(FTE_OBJECT_PTR  pObj, char_ptr pString)
+FTE_RET   FTE_BOTEM_PN1500_setConfig
+(
+    FTE_OBJECT_PTR      pObj, 
+    FTE_CHAR_PTR        pString
+)
 {
     if (pObj == NULL)
     {
@@ -195,23 +331,23 @@ _mqx_uint   fte_botem_pn1500_setConfig(FTE_OBJECT_PTR  pObj, char_ptr pString)
     
     if (strcmp(pxCmd->text_value, "switch_on") == 0)
     {
-        fte_botem_pn1500_switchCtrl(pObj, TRUE);
+        FTE_BOTEM_PN1500_switchCtrl(pObj, TRUE);
     }
     else if (strcmp(pxCmd->text_value, "switch_off") == 0)
     {
-        fte_botem_pn1500_switchCtrl(pObj, FALSE);
+        FTE_BOTEM_PN1500_switchCtrl(pObj, FALSE);
     }
     else if (strcmp(pxCmd->text_value, "reset") == 0)
     {
-        fte_botem_pn1500_reset(pObj);
+        FTE_BOTEM_PN1500_reset(pObj);
     }
     else if (strcmp(pxCmd->text_value, "count_reset") == 0)
     {
-        fte_botem_pn1500_countReset(pObj);
+        FTE_BOTEM_PN1500_countReset(pObj);
     }
     else if (strcmp(pxCmd->text_value, "accum_reset") == 0)
     {
-        fte_botem_pn1500_accumCountReset(pObj);
+        FTE_BOTEM_PN1500_accumCountReset(pObj);
     }
     else
     {
@@ -229,13 +365,18 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint   fte_botem_pn1500_getConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 ulBuffLen)
+FTE_RET   FTE_BOTEM_PN1500_getConfig
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_CHAR_PTR    pBuff, 
+    FTE_UINT32      ulBuffLen
+)
 {
     FTE_GUS_STATUS_PTR      pStatus;
     FTE_JSON_VALUE_PTR      pJSONObject;
     FTE_JSON_VALUE_PTR      pJSONValue;
-    uint_32                 ulValue;
-    boolean                 bValue;
+    FTE_UINT32                 ulValue;
+    FTE_BOOL                 bValue;
     
     if (pObj == NULL)
     {
@@ -275,10 +416,14 @@ _mqx_uint   fte_botem_pn1500_getConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint
     return  MQX_OK;
 }
 
-_mqx_uint   fte_botem_pn1500_switchCtrl(FTE_OBJECT_PTR pObj, boolean bSwitchON)
+FTE_RET   FTE_BOTEM_PN1500_switchCtrl
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_BOOL        bSwitchON
+)
 {
-    uint_8  pCMD[16] = { '\0', '[', '0', '0', '0', '0', 'B', 'T'};
-    uint_32 nCmdLen = 8;
+    FTE_UINT8  pCMD[16] = { '\0', '[', '0', '0', '0', '0', 'B', 'T'};
+    FTE_UINT32 nCmdLen = 8;
     FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     
     if (bSwitchON)
@@ -303,10 +448,13 @@ _mqx_uint   fte_botem_pn1500_switchCtrl(FTE_OBJECT_PTR pObj, boolean bSwitchON)
     return  MQX_OK;
 }
 
-_mqx_uint   fte_botem_pn1500_countReset(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_BOTEM_PN1500_countReset
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
-    uint_8  pCMD[16] = { '\0', '[', '0', '0', '0', '0', 'B', 'T', 'Z'};
-    uint_32 nCmdLen = 9;
+    FTE_UINT8  pCMD[16] = { '\0', '[', '0', '0', '0', '0', 'B', 'T', 'Z'};
+    FTE_UINT32 nCmdLen = 9;
     FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     
     if (_version == 1)
@@ -322,10 +470,13 @@ _mqx_uint   fte_botem_pn1500_countReset(FTE_OBJECT_PTR pObj)
     return  MQX_OK;
 }
 
-_mqx_uint   fte_botem_pn1500_accumCountReset(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_BOTEM_PN1500_accumCountReset
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
-    uint_8  pCMD[16] = { '\0', '[', '0', '0', '0', '0', 'B', 'T', 'Z', '2', ']', '\0'};
-    uint_32 nCmdLen = 12;
+    FTE_UINT8  pCMD[16] = { '\0', '[', '0', '0', '0', '0', 'B', 'T', 'Z', '2', ']', '\0'};
+    FTE_UINT32 nCmdLen = 12;
     FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     FTE_UCS_clear(pStatus->pUCS);    
     FTE_UCS_send(pStatus->pUCS, pCMD, nCmdLen, FALSE);    
@@ -333,10 +484,13 @@ _mqx_uint   fte_botem_pn1500_accumCountReset(FTE_OBJECT_PTR pObj)
     return  MQX_OK;
 }
 
-_mqx_uint   fte_botem_pn1500_reset(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_BOTEM_PN1500_reset
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
-    uint_8  pCMD[16] = { '\0', '[', '0', '0', '0', '0', 'B', 'T', 'R', ']', '\0'};
-    uint_32 nCmdLen = 11;
+    FTE_UINT8  pCMD[16] = { '\0', '[', '0', '0', '0', '0', 'B', 'T', 'R', ']', '\0'};
+    FTE_UINT32 nCmdLen = 11;
     FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     
     FTE_UCS_clear(pStatus->pUCS);    

@@ -138,14 +138,12 @@
 #define FTE_AD7785_IOUT_CURRENT_210UA       0x02
 #define FTE_AD7785_IOUT_CURRENT_1MA         0x03
 
-
-
 typedef struct _FTE_AD7785_CONFIG_STRUCT
 {
-    uint_32     nID;
-    uint_32     xType;
-    char_ptr    pName;
-    uint_32     xSPI;       // SPI channel id
+    FTE_UINT32     nID;
+    FTE_UINT32     xType;
+    FTE_CHAR_PTR    pName;
+    FTE_UINT32     xSPI;       // SPI channel id
 }   FTE_AD7785_CONFIG, _PTR_ FTE_AD7785_CONFIG_PTR;
 
 typedef FTE_AD7785_CONFIG const _PTR_ FTE_AD7785_CONFIG_CONST_PTR ;
@@ -154,53 +152,53 @@ typedef struct  _FTE_AD7785_STRUCT
 {
     struct _FTE_AD7785_STRUCT * pNext;
     FTE_AD7785_CONFIG_CONST_PTR pConfig;
-    uint_32                     nParent;
+    FTE_UINT32                  nParent;
     FTE_SPI_PTR                 pSPI;
-    uint_32                     nLastValue;
+    FTE_UINT32                  nLastValue;
 }   FTE_AD7785, _PTR_ FTE_AD7785_PTR;
 
 
-FTE_AD7785_PTR  FTE_AD7785_get(uint_32 nOID);
+FTE_AD7785_PTR  FTE_AD7785_get(FTE_UINT32 nOID);
 
-_mqx_uint   FTE_AD7785_create(FTE_AD7785_CONFIG_PTR pConfig);
-_mqx_uint   FTE_AD7785_attach(FTE_AD7785_PTR pAD7785, uint_32 nParent);
-_mqx_uint   FTE_AD7785_detach(FTE_AD7785_PTR pAD7785);
+FTE_RET   FTE_AD7785_create(FTE_AD7785_CONFIG_PTR pConfig);
+FTE_RET   FTE_AD7785_attach(FTE_AD7785_PTR pAD7785, FTE_UINT32 nParent);
+FTE_RET   FTE_AD7785_detach(FTE_AD7785_PTR pAD7785);
 
-_mqx_uint   FTE_AD7785_getReady(FTE_AD7785_PTR pAD7785, boolean *pReady, boolean *pError);
+FTE_RET   FTE_AD7785_getReady(FTE_AD7785_PTR pAD7785, FTE_BOOL_PTR pReady, FTE_BOOL_PTR pError);
 
-_mqx_uint   FTE_AD7785_runSingle(FTE_AD7785_PTR pAD7785);
+FTE_RET   FTE_AD7785_runSingle(FTE_AD7785_PTR pAD7785);
 
-_mqx_uint   FTE_AD7785_getOPMode(FTE_AD7785_PTR pAD7785, uint_32 *pMode);
-_mqx_uint   FTE_AD7785_setOPMode(FTE_AD7785_PTR pAD7785, uint_32 nMode);
+FTE_RET   FTE_AD7785_getOPMode(FTE_AD7785_PTR pAD7785, FTE_UINT32_PTR pMode);
+FTE_RET   FTE_AD7785_setOPMode(FTE_AD7785_PTR pAD7785, FTE_UINT32 nMode);
 
-_mqx_uint   FTE_AD7785_getClock(FTE_AD7785_PTR pAD7785, uint_32 *pClk);
-_mqx_uint   FTE_AD7785_setClock(FTE_AD7785_PTR pAD7785, uint_32 nClk);
+FTE_RET   FTE_AD7785_getClock(FTE_AD7785_PTR pAD7785, FTE_UINT32_PTR pClk);
+FTE_RET   FTE_AD7785_setClock(FTE_AD7785_PTR pAD7785, FTE_UINT32 nClk);
 
-_mqx_uint   FTE_AD7785_getFreq(FTE_AD7785_PTR pAD7785, uint_32 *pFreq);
-_mqx_uint   FTE_AD7785_setFreq(FTE_AD7785_PTR pAD7785, uint_32 nFreq);
-uint_32     FTE_AD7785_measurementTime(FTE_AD7785_PTR pAD7785);
+FTE_RET   FTE_AD7785_getFreq(FTE_AD7785_PTR pAD7785, FTE_UINT32_PTR pFreq);
+FTE_RET   FTE_AD7785_setFreq(FTE_AD7785_PTR pAD7785, FTE_UINT32 nFreq);
+FTE_UINT32     FTE_AD7785_measurementTime(FTE_AD7785_PTR pAD7785);
 
-_mqx_uint   FTE_AD7785_getRawData(FTE_AD7785_PTR pAD7785, uint_32 *pValue);
-_mqx_uint   FTE_AD7785_getScaleData(FTE_AD7785_PTR pAD7785, uint_32 *pValue);
+FTE_RET   FTE_AD7785_getRawData(FTE_AD7785_PTR pAD7785, FTE_UINT32_PTR pValue);
+FTE_RET   FTE_AD7785_getScaleData(FTE_AD7785_PTR pAD7785, FTE_UINT32_PTR pValue);
 
-_mqx_uint   FTE_AD7785_getConfig(FTE_AD7785_PTR pAD7785, uint_32 *pConfig);
-_mqx_uint   FTE_AD7785_setConfig(FTE_AD7785_PTR pAD7785, uint_32 nConfig);
+FTE_RET   FTE_AD7785_getConfig(FTE_AD7785_PTR pAD7785, FTE_UINT32_PTR pConfig);
+FTE_RET   FTE_AD7785_setConfig(FTE_AD7785_PTR pAD7785, FTE_UINT32 nConfig);
 
-_mqx_uint   FTE_AD7785_getVBias(FTE_AD7785_PTR pAD7785, uint_32 *pVBias);
-_mqx_uint   FTE_AD7785_setVBias(FTE_AD7785_PTR pAD7785, uint_32 nVBias);
+FTE_RET   FTE_AD7785_getVBias(FTE_AD7785_PTR pAD7785, FTE_UINT32_PTR pVBias);
+FTE_RET   FTE_AD7785_setVBias(FTE_AD7785_PTR pAD7785, FTE_UINT32 nVBias);
 
-_mqx_uint   FTE_AD7785_getGain(FTE_AD7785_PTR pAD7785, uint_32 *pGain);
-_mqx_uint   FTE_AD7785_setGain(FTE_AD7785_PTR pAD7785, uint_32 nGain);
+FTE_RET   FTE_AD7785_getGain(FTE_AD7785_PTR pAD7785, FTE_UINT32_PTR pGain);
+FTE_RET   FTE_AD7785_setGain(FTE_AD7785_PTR pAD7785, FTE_UINT32 nGain);
 
-_mqx_uint   FTE_AD7785_getChannel(FTE_AD7785_PTR pAD7785, uint_32 *pChannel);
-_mqx_uint   FTE_AD7785_setChannel(FTE_AD7785_PTR pAD7785, uint_32 nChannel);
+FTE_RET   FTE_AD7785_getChannel(FTE_AD7785_PTR pAD7785, FTE_UINT32_PTR pChannel);
+FTE_RET   FTE_AD7785_setChannel(FTE_AD7785_PTR pAD7785, FTE_UINT32 nChannel);
 
-_mqx_uint   FTE_AD7785_getIOut(FTE_AD7785_PTR pAD7785, uint_32 *iout);
-_mqx_uint   FTE_AD7785_setIOut(FTE_AD7785_PTR pAD7785, uint_32 iout);
+FTE_RET   FTE_AD7785_getIOut(FTE_AD7785_PTR pAD7785, FTE_UINT32_PTR iout);
+FTE_RET   FTE_AD7785_setIOut(FTE_AD7785_PTR pAD7785, FTE_UINT32 iout);
 
-_mqx_uint   FTE_AD7785_getCurrent(FTE_AD7785_PTR pAD7785, uint_32 *current);
-_mqx_uint   FTE_AD7785_setCurrent(FTE_AD7785_PTR pAD7785, uint_32 current);
+FTE_RET   FTE_AD7785_getCurrent(FTE_AD7785_PTR pAD7785, FTE_UINT32_PTR current);
+FTE_RET   FTE_AD7785_setCurrent(FTE_AD7785_PTR pAD7785, FTE_UINT32 current);
 
-int_32      FTE_AD7785_SHELL_cmd(int_32 argc, char_ptr argv[] );
+FTE_INT32   FTE_AD7785_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[] );
 
 #endif

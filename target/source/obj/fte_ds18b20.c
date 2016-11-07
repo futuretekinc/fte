@@ -6,22 +6,23 @@
 
 #define FTE_DS18B20_CONVERT_TIME    800
 
-static  _mqx_uint   _FTE_DS18B20_init(FTE_OBJECT_PTR pObj);
-static  _mqx_uint   _FTE_DS18B20_run(FTE_OBJECT_PTR pObj);
-static  _mqx_uint   _FTE_DS18B20_stop(FTE_OBJECT_PTR pObj);
-static  void        _FTE_DS18B20_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
-static _mqx_uint    _FTE_DS18B20_start_convert(FTE_OBJECT_PTR pObj);
-static  void        _FTE_DS18B20_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
-static _mqx_uint    _FTE_DS18B20_get_temperature(FTE_OBJECT_PTR pObj, int_32_ptr pnTemperature);
-static  _mqx_uint   _FTE_DS18B20_get_sn(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 nLen);
-static uint_32      _FTE_DS18B20_get_update_interval(FTE_OBJECT_PTR pObj);
-static _mqx_uint    _FTE_DS18B20_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInterval);
-static  uint_8      _FTE_DS18B20_crc(uint_8_ptr pData, uint_32 nLen, uint_8 nSeed);
-static  _mqx_uint   _FTE_DS18B20_statistic(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTICS_PTR pStatistics);
+static FTE_RET  _FTE_DS18B20_init(FTE_OBJECT_PTR pObj);
+static FTE_RET  _FTE_DS18B20_run(FTE_OBJECT_PTR pObj);
+static FTE_RET  _FTE_DS18B20_stop(FTE_OBJECT_PTR pObj);
+static void     _FTE_DS18B20_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
+static FTE_RET  _FTE_DS18B20_start_convert(FTE_OBJECT_PTR pObj);
+static void     _FTE_DS18B20_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
+static FTE_RET  _FTE_DS18B20_get_temperature(FTE_OBJECT_PTR pObj, FTE_INT32_PTR pnTemperature);
+static FTE_RET  _FTE_DS18B20_get_sn(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pBuff, FTE_UINT32 nLen);
+static FTE_RET  _FTE_DS18B20_get_update_interval(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pulInterval);
+static FTE_RET  _FTE_DS18B20_set_update_interval(FTE_OBJECT_PTR pObj, FTE_UINT32 nInterval);
+static FTE_UINT8   _FTE_DS18B20_crc(FTE_UINT8_PTR pData, FTE_UINT32 nLen, FTE_UINT8 nSeed);
+static FTE_RET  _FTE_DS18B20_statistic(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTICS_PTR pStatistics);
 
 static FTE_LIST _xObjList = {0, NULL, NULL};
 
-static const FTE_DS18B20_CONFIG _default_config =
+static const 
+FTE_DS18B20_CONFIG _default_config =
 {
     .xCommon    = 
     {
@@ -33,26 +34,29 @@ static const FTE_DS18B20_CONFIG _default_config =
     },
     .nBUSID     = 0,
     .pROMCode   = {0x00,},
-    .nInterval  = FTE_DS18B20_INTERVAL
+    .nInterval  = FTE_DS18B20_DEFAULT_UPDATE_INTERVAL
 };
 
 static  FTE_OBJECT_ACTION  _FTE_DS18B20_action = 
 {
-    .f_init         = _FTE_DS18B20_init,
-    .f_run          = _FTE_DS18B20_run,
-    .f_stop         = _FTE_DS18B20_stop, 
-    .f_set          = NULL,
-    .f_get_sn       = _FTE_DS18B20_get_sn,
-    .f_get_update_interval = _FTE_DS18B20_get_update_interval,
-    .f_set_update_interval = _FTE_DS18B20_set_update_interval,
-    .f_get_statistic= _FTE_DS18B20_statistic
+    .fInit  = _FTE_DS18B20_init,
+    .fRun   = _FTE_DS18B20_run,
+    .fStop  = _FTE_DS18B20_stop, 
+    .fSet   = NULL,
+    .fGetSN = _FTE_DS18B20_get_sn,
+    .fGetInterval   = _FTE_DS18B20_get_update_interval,
+    .fSetInterval   = _FTE_DS18B20_set_update_interval,
+    .fGetStatistics = _FTE_DS18B20_statistic
 };
 
-FTE_OBJECT_PTR  FTE_DS18B20_create(FTE_DS18B20_CREATE_PARAMS_PTR pParams)
+FTE_OBJECT_PTR  FTE_DS18B20_create
+(
+    FTE_DS18B20_CREATE_PARAMS_PTR   pParams
+)
 {
     FTE_OBJECT_PTR  pObj;
-    uint_32         nOID;
-    uint_8          nIDs[255];    
+    FTE_UINT32         nOID;
+    FTE_UINT8          nIDs[255];    
     FTE_LIST_ITERATOR   xIter;
     
     ASSERT(pParams != NULL);
@@ -69,7 +73,7 @@ FTE_OBJECT_PTR  FTE_DS18B20_create(FTE_DS18B20_CREATE_PARAMS_PTR pParams)
     {
         if (nIDs[i] == 0)
         {
-            uint_32 ulCount = FTE_CFG_OBJ_count(FTE_OBJ_CLASS_TEMPERATURE, FTE_OBJ_CLASS_MASK);
+            FTE_UINT32 ulCount = FTE_CFG_OBJ_count(FTE_OBJ_CLASS_TEMPERATURE, FTE_OBJ_CLASS_MASK);
 
             nOID = MAKE_ID(FTE_OBJ_TYPE_DS18B20, (ulCount+1));
 
@@ -105,15 +109,22 @@ error:
     return  NULL;    
 }
     
-_mqx_uint   FTE_DS18B20_destroy(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_DS18B20_destroy
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_CFG_OBJ_free(pObj->pConfig->xCommon.nID);
     FTE_OBJ_destroy(pObj);
     
-    return  MQX_OK;    
+    return  FTE_RET_OK;    
 }
     
-_mqx_uint   FTE_DS18B20_attach(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_DS18B20_attach
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_VOID_PTR    pOpts
+)
 {
     ASSERT( pObj != NULL);
     
@@ -133,7 +144,7 @@ _mqx_uint   FTE_DS18B20_attach(FTE_OBJECT_PTR pObj)
         goto error;
     }
 #if 0    
-    if (FTE_1WIRE_attach(pConfig->nBUSID, pObj->pConfig->nID) != MQX_OK)
+    if (FTE_1WIRE_attach(pConfig->nBUSID, pObj->pConfig->nID) != FTE_RET_OK)
     {
         goto error;
     }
@@ -145,7 +156,7 @@ _mqx_uint   FTE_DS18B20_attach(FTE_OBJECT_PTR pObj)
     FTE_LIST_pushBack(&_xObjList, pObj);
 
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
     
@@ -160,7 +171,10 @@ error:
     
 }
 
-_mqx_uint FTE_DS18B20_detach(FTE_OBJECT_PTR pObj)
+FTE_RET FTE_DS18B20_detach
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
 
@@ -172,13 +186,17 @@ _mqx_uint FTE_DS18B20_detach(FTE_OBJECT_PTR pObj)
     _FTE_DS18B20_stop(pObj);
     pObj->pAction = NULL;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:    
     return  MQX_ERROR;
 }
 
-_mqx_uint       FTE_DS18B20_setROMCode(FTE_OBJECT_PTR pObj, uint_8 pROMCode[FTE_1WIRE_ROM_CODE_SIZE])
+FTE_RET FTE_DS18B20_setROMCode
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT8       pROMCode[FTE_1WIRE_ROM_CODE_SIZE]
+)
 {
     ASSERT(pObj != NULL);
     
@@ -186,12 +204,12 @@ _mqx_uint       FTE_DS18B20_setROMCode(FTE_OBJECT_PTR pObj, uint_8 pROMCode[FTE_
     
     FTE_OBJ_save(pObj);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-boolean         FTE_DS18B20_isValid(FTE_OBJECT_PTR pObj)
+FTE_BOOL         FTE_DS18B20_isValid(FTE_OBJECT_PTR pObj)
 {
-    uint_8  nTemp = 0;
+    FTE_UINT8  nTemp = 0;
 
     ASSERT(pObj != NULL);
     
@@ -203,7 +221,7 @@ boolean         FTE_DS18B20_isValid(FTE_OBJECT_PTR pObj)
     return  (nTemp != 0);
 }
 
-boolean         FTE_DS18B20_isExistROMCode(uint_8 pROMCode[8])
+FTE_BOOL         FTE_DS18B20_isExistROMCode(FTE_UINT8 pROMCode[8])
 {
     FTE_OBJECT_PTR pObj;
     FTE_LIST_ITERATOR xIter;
@@ -221,15 +239,21 @@ boolean         FTE_DS18B20_isExistROMCode(uint_8 pROMCode[8])
 }
 
 
-_mqx_uint   _FTE_DS18B20_init(FTE_OBJECT_PTR pObj)
+FTE_RET   _FTE_DS18B20_init
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
 //    FTE_DS18B20_STATUS_PTR pStatus = (FTE_DS18B20_STATUS_PTR)pObj->pStatus;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint   _FTE_DS18B20_run(FTE_OBJECT_PTR pObj)
+FTE_RET   _FTE_DS18B20_run
+(
+    FTE_OBJECT_PTR  pObj
+)
 { 
     ASSERT(pObj != NULL);
 
@@ -246,9 +270,9 @@ _mqx_uint   _FTE_DS18B20_run(FTE_OBJECT_PTR pObj)
     _time_get_elapsed_ticks(&pStatus->xCommon.xStartTicks);
     
     _time_init_ticks(&xDTicks, 0);
-    _time_add_sec_to_ticks(&xDTicks, pConfig->nInterval);
+    _time_add_msec_to_ticks(&xDTicks, pConfig->nInterval);
     _time_get_elapsed_ticks(&xTicks);
-    _time_add_sec_to_ticks(&xTicks, 1);
+    _time_add_msec_to_ticks(&xTicks, 1000);
     
     pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(_FTE_DS18B20_restart_convert, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);
 
@@ -258,10 +282,13 @@ _mqx_uint   _FTE_DS18B20_run(FTE_OBJECT_PTR pObj)
     _time_add_msec_to_ticks(&xDTicks, FTE_DS18B20_CONVERT_TIME);    
     pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_FTE_DS18B20_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint   _FTE_DS18B20_stop(FTE_OBJECT_PTR pObj)
+FTE_RET   _FTE_DS18B20_stop
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
 
@@ -279,10 +306,15 @@ _mqx_uint   _FTE_DS18B20_stop(FTE_OBJECT_PTR pObj)
         pStatus->hConvertTimer = 0;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-static void _FTE_DS18B20_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
+static void _FTE_DS18B20_restart_convert
+(
+    _timer_id   id, 
+    pointer     data_ptr, 
+    MQX_TICK_STRUCT_PTR     tick_ptr
+)
 {
     FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)data_ptr;
     MQX_TICK_STRUCT     xDTicks;            
@@ -305,14 +337,20 @@ static void _FTE_DS18B20_restart_convert(_timer_id id, pointer data_ptr, MQX_TIC
     }
 }
 
-static void _FTE_DS18B20_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
+static 
+void _FTE_DS18B20_done
+(
+    _timer_id   id, 
+    pointer     data_ptr, 
+    MQX_TICK_STRUCT_PTR     tick_ptr
+)
 {
-    int_32                  nTemperature;
+    FTE_INT32                  nTemperature;
     FTE_OBJECT_PTR          pObj = (FTE_OBJECT_PTR)data_ptr;
     FTE_DS18B20_STATUS_PTR  pStatus = (FTE_DS18B20_STATUS_PTR)pObj->pStatus;
 
     pStatus->hConvertTimer = 0;
-    if (_FTE_DS18B20_get_temperature(pObj, &nTemperature) != MQX_OK)
+    if (_FTE_DS18B20_get_temperature(pObj, &nTemperature) != FTE_RET_OK)
     {
         goto error;
     }
@@ -333,7 +371,12 @@ error:
     FT_OBJ_STAT_incFailed(&pStatus->xCommon.xStatistics);
 }
 
-_mqx_uint   _FTE_DS18B20_get_sn(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 nLen)
+FTE_RET   _FTE_DS18B20_get_sn
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_CHAR_PTR    pBuff, 
+    FTE_UINT32      nLen
+)
 {
     ASSERT(pObj != NULL);
     
@@ -345,22 +388,26 @@ _mqx_uint   _FTE_DS18B20_get_sn(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 nLe
              pConfig->pROMCode[4], pConfig->pROMCode[5],
              pConfig->pROMCode[6], pConfig->pROMCode[7]);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-int_32  FTE_DS18B20_SHELL_cmd(int_32 argc, char_ptr argv[] )
+FTE_INT32  FTE_DS18B20_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[] 
+)
 { 
-    boolean              print_usage, shorthelp = FALSE;
-    int_32               return_code = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   xRet = SHELL_EXIT_SUCCESS;
     
-    print_usage = Shell_check_help_request (argc, argv, &shorthelp);
+    bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
-    if (print_usage)
+    if (bPrintUsage)
     { 
         goto    error;
     }
 
-    if (argc == 1)
+    if (nArgc == 1)
     {
         int count = FTE_OBJ_count(FTE_OBJ_TYPE_DS18B20, FTE_OBJ_TYPE_MASK, FALSE);
         for(int i = 0 ; i < count ; i++)
@@ -385,16 +432,16 @@ int_32  FTE_DS18B20_SHELL_cmd(int_32 argc, char_ptr argv[] )
     } 
     else 
     {
-        if (strcmp(argv[1], "attach") == 0)
+        if (strcmp(pArgv[1], "attach") == 0)
         {
             FTE_DS18B20_CREATE_PARAMS   xParams;
-            uint_32 nIndex;
+            FTE_UINT32 nIndex;
             
-            switch(argc)
+            switch(nArgc)
             {
             case    3:
                 {
-                    if (strcmp(argv[2], "all") == 0)
+                    if (strcmp(pArgv[2], "all") == 0)
                     {
                         FTE_1WIRE_PTR   p1Wire = FTE_1WIRE_getFirst();
                         while(p1Wire != NULL)
@@ -402,9 +449,9 @@ int_32  FTE_DS18B20_SHELL_cmd(int_32 argc, char_ptr argv[] )
                             xParams.nBUSID = p1Wire->pConfig->nID;
                             for(nIndex = 0 ; nIndex < FTE_1WIRE_DEV_count(p1Wire) ; nIndex++)
                             {
-                                if (FTE_1WIRE_DEV_getROMCode(p1Wire, nIndex, xParams.pROMCode) != MQX_OK)
+                                if (FTE_1WIRE_DEV_getROMCode(p1Wire, nIndex, xParams.pROMCode) != FTE_RET_OK)
                                 {
-                                   return_code = SHELL_EXIT_ERROR;
+                                   xRet = SHELL_EXIT_ERROR;
                                    goto error;
                                 }
                                     
@@ -413,7 +460,7 @@ int_32  FTE_DS18B20_SHELL_cmd(int_32 argc, char_ptr argv[] )
                                     FTE_OBJECT_PTR          pObj = FTE_DS18B20_create(&xParams);
                                     if (pObj == NULL)
                                     {
-                                       return_code = SHELL_EXIT_ERROR;
+                                       xRet = SHELL_EXIT_ERROR;
                                        goto error;
                                     }
                                     
@@ -428,7 +475,7 @@ int_32  FTE_DS18B20_SHELL_cmd(int_32 argc, char_ptr argv[] )
                                             xParams.pROMCode[6],
                                             xParams.pROMCode[7]);
 
-                                    pObj->pAction->f_run(pObj);
+                                    FTE_OBJ_start(pObj);
                                 }
                             }
                             
@@ -437,31 +484,31 @@ int_32  FTE_DS18B20_SHELL_cmd(int_32 argc, char_ptr argv[] )
                     }
                     else
                     {
-                        if (! Shell_parse_number( argv[2], &xParams.nBUSID))  
+                        if (! Shell_parse_number( pArgv[2], &xParams.nBUSID))  
                         {
-                           return_code = SHELL_EXIT_ERROR;
+                           xRet = SHELL_EXIT_ERROR;
                            goto error;
                         }
 
                         FTE_1WIRE_PTR   p1Wire = FTE_1WIRE_get(xParams.nBUSID);
                         if (p1Wire == NULL)
                         {
-                            return_code = SHELL_EXIT_ERROR;
+                            xRet = SHELL_EXIT_ERROR;
                             goto error; 
                         }
                         
                         for(nIndex = 0 ; nIndex < FTE_1WIRE_DEV_count(p1Wire) ; nIndex++)
                         {
-                            if (FTE_1WIRE_DEV_getROMCode(p1Wire, nIndex, xParams.pROMCode) != MQX_OK)
+                            if (FTE_1WIRE_DEV_getROMCode(p1Wire, nIndex, xParams.pROMCode) != FTE_RET_OK)
                             {
-                               return_code = SHELL_EXIT_ERROR;
+                               xRet = SHELL_EXIT_ERROR;
                                goto error;
                             }
                                 
                             FTE_OBJECT_PTR          pObj = FTE_DS18B20_create(&xParams);
                             if (pObj == NULL)
                             {
-                               return_code = SHELL_EXIT_ERROR;
+                               xRet = SHELL_EXIT_ERROR;
                                goto error;
                             }
                             
@@ -476,7 +523,7 @@ int_32  FTE_DS18B20_SHELL_cmd(int_32 argc, char_ptr argv[] )
                                     xParams.pROMCode[6],
                                     xParams.pROMCode[7]);
 
-                            pObj->pAction->f_run(pObj);
+                            FTE_OBJ_start(pObj);
                         }
                     }
                 }
@@ -484,36 +531,36 @@ int_32  FTE_DS18B20_SHELL_cmd(int_32 argc, char_ptr argv[] )
                 
             case    4:
                 {
-                    if (! Shell_parse_number( argv[2], &xParams.nBUSID))  
+                    if (! Shell_parse_number( pArgv[2], &xParams.nBUSID))  
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                        goto error;
                     }
 
-                    if (! Shell_parse_number( argv[3], &nIndex))  
+                    if (! Shell_parse_number( pArgv[3], &nIndex))  
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                        goto error;
                     }
                     
                     FTE_1WIRE_PTR   p1Wire = FTE_1WIRE_get(xParams.nBUSID);
                     if (p1Wire == NULL)
                     {
-                        return_code = SHELL_EXIT_ERROR;
+                        xRet = SHELL_EXIT_ERROR;
                         goto error; 
                     }
                     
                     
-                    if (FTE_1WIRE_DEV_getROMCode(p1Wire, nIndex, xParams.pROMCode) != MQX_OK)
+                    if (FTE_1WIRE_DEV_getROMCode(p1Wire, nIndex, xParams.pROMCode) != FTE_RET_OK)
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                        goto error;
                     }
                         
                     FTE_OBJECT_PTR          pObj = FTE_DS18B20_create(&xParams);
                     if (pObj == NULL)
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                        goto error;
                     }
                     
@@ -528,24 +575,24 @@ int_32  FTE_DS18B20_SHELL_cmd(int_32 argc, char_ptr argv[] )
                             xParams.pROMCode[6],
                             xParams.pROMCode[7]);
 
-                    pObj->pAction->f_run(pObj);
+                    FTE_OBJ_start(pObj);
                 }
                 break;
                 
             default:
                 {
-                    return_code = SHELL_EXIT_ERROR;
+                    xRet = SHELL_EXIT_ERROR;
                     goto error;
                 }
             }
         }
-        else if (strcmp(argv[1], "detach") == 0)
+        else if (strcmp(pArgv[1], "detach") == 0)
         {
-            switch(argc)
+            switch(nArgc)
             {
             case    3:
                 {
-                    if (strcmp(argv[2], "all") == 0)
+                    if (strcmp(pArgv[2], "all") == 0)
                     {
                         
                     }
@@ -557,23 +604,26 @@ int_32  FTE_DS18B20_SHELL_cmd(int_32 argc, char_ptr argv[] )
     }
     
 error:    
-    if (print_usage || (return_code !=SHELL_EXIT_SUCCESS))
+    if (bPrintUsage || (xRet !=SHELL_EXIT_SUCCESS))
     {
-        if (shorthelp)
+        if (bShortHelp)
         {
-            printf ("%s [<id>]\n", argv[0]);
+            printf ("%s [<id>]\n", pArgv[0]);
         }
         else
         {
-            printf("Usage : %s [<id>]\n", argv[0]);
+            printf("Usage : %s [<id>]\n", pArgv[0]);
             printf("        id - DS18B20 Index \n");
         }
     }
 
-    return   return_code;
+    return   xRet;
 }
             
-_mqx_uint   _FTE_DS18B20_start_convert(FTE_OBJECT_PTR pObj)
+FTE_RET   _FTE_DS18B20_start_convert
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
 
@@ -587,13 +637,17 @@ _mqx_uint   _FTE_DS18B20_start_convert(FTE_OBJECT_PTR pObj)
     FTE_1WIRE_writeByte(pStatus->p1Wire, 0x44);
     FTE_1WIRE_unlock(pStatus->p1Wire);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint   _FTE_DS18B20_get_temperature(FTE_OBJECT_PTR pObj, int_32_ptr pnTemperature)
+FTE_RET   _FTE_DS18B20_get_temperature
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_INT32_PTR   pnTemperature
+)
 {
-    uint_8  pValues[9];
-    int_32  nValue;
+    FTE_UINT8  pValues[9];
+    FTE_INT32  nValue;
     
     ASSERT(pObj != NULL);
 
@@ -625,18 +679,28 @@ _mqx_uint   _FTE_DS18B20_get_temperature(FTE_OBJECT_PTR pObj, int_32_ptr pnTempe
     
     *pnTemperature = nValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 
-uint_32      _FTE_DS18B20_get_update_interval(FTE_OBJECT_PTR pObj)
+FTE_RET _FTE_DS18B20_get_update_interval
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32_PTR  pulInterval
+)
 {
     FTE_DS18B20_CONFIG_PTR  pConfig = (FTE_DS18B20_CONFIG_PTR)pObj->pConfig;
     
-    return  pConfig->nInterval;
+    *pulInterval = pConfig->nInterval;
+    
+    return  FTE_RET_OK;
 }
 
-_mqx_uint    _FTE_DS18B20_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInterval)
+FTE_RET    _FTE_DS18B20_set_update_interval
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nInterval
+)
 {
     FTE_DS18B20_CONFIG_PTR  pConfig = (FTE_DS18B20_CONFIG_PTR)pObj->pConfig;
     
@@ -644,14 +708,14 @@ _mqx_uint    _FTE_DS18B20_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInte
     
     FTE_CFG_OBJ_save(pObj);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-uint_8 _FTE_DS18B20_crc(uint_8_ptr pData, uint_32 nLen, uint_8 nSeed)
+FTE_UINT8 _FTE_DS18B20_crc(FTE_UINT8_PTR pData, FTE_UINT32 nLen, FTE_UINT8 nSeed)
 {
-    uint_8  nData;
-    uint_32 nBitsLeft;
-    uint_32 temp;
+    FTE_UINT8  nData;
+    FTE_UINT32 nBitsLeft;
+    FTE_UINT32 temp;
  
     for(int i = 0 ; i < nLen ; i++)
     {
@@ -677,7 +741,11 @@ uint_8 _FTE_DS18B20_crc(uint_8_ptr pData, uint_32 nLen, uint_8 nSeed)
      return nSeed;    
  }
 
-_mqx_uint   _FTE_DS18B20_statistic(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTICS_PTR pStatistics)
+FTE_RET   _FTE_DS18B20_statistic
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_OBJECT_STATISTICS_PTR pStatistics
+)
 {
     ASSERT((pObj != NULL) && (pStatistics != NULL));
     
@@ -685,7 +753,7 @@ _mqx_uint   _FTE_DS18B20_statistic(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTICS_PT
         
     memcpy(pStatistics, &pStatus->xCommon.xStatistics, sizeof(FTE_OBJECT_STATISTICS));
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 #endif

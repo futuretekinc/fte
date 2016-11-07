@@ -22,12 +22,12 @@ typedef struct  _FTE_LOG_SYSTEM_PARAM_STRUCT
 
 typedef struct  _FTE_LOG_EVENT_PARAM_STRUCT
 {
-    uint_32         ulEPID;
-    uint_32         ulLevel;
+    FTE_UINT32         ulEPID;
+    FTE_UINT32         ulLevel;
     struct
     {
-        uint_32         ulType;
-        uint_32         ulValue;
+        FTE_UINT32         ulType;
+        FTE_UINT32         ulValue;
     }   xValue;
 }   FTE_LOG_EVENT_PARAM, _PTR_ FTE_LOG_EVENT_PARAM_PTR;
 
@@ -42,16 +42,16 @@ typedef struct _FTE_LOG_STRUCT
     }   xParam;
 }   FTE_LOG, _PTR_ FTE_LOG_PTR;
 
-_mqx_uint   FTE_LOG_init(void);
-_mqx_uint   FTE_LOG_save(void);
-_mqx_uint   FTE_LOG_addSystem(FTE_LOG_SYSTEM_MESSAGE xMsg);
-_mqx_uint   FTE_LOG_addEvent(FTE_OBJECT_ID nID, uint_32 ulLevel, FTE_VALUE_PTR pValue);
-uint_32     FTE_LOG_del(uint_32 ulCount);
+FTE_RET     FTE_LOG_init(void);
+FTE_RET     FTE_LOG_save(void);
+FTE_RET     FTE_LOG_addSystem(FTE_LOG_SYSTEM_MESSAGE xMsg);
+FTE_RET     FTE_LOG_addEvent(FTE_OBJECT_ID nID, FTE_UINT32 ulLevel, FTE_VALUE_PTR pValue);
+FTE_UINT32  FTE_LOG_del(FTE_UINT32 ulCount);
 
-FTE_LOG_PTR FTE_LOG_getAt(uint_32 nID);
+FTE_LOG_PTR FTE_LOG_getAt(FTE_UINT32 nID);
 
-int         FTE_LOG_count(void);
+FTE_INT32   FTE_LOG_count(void);
 
-int_32      FTE_LOG_SHELL_cmd(int_32 argc, char_ptr argv[]);
-char_ptr    FTE_LOG_getSystemMessageString(FTE_LOG_SYSTEM_MESSAGE xMsg);
+FTE_INT32   FTE_LOG_SHELL_cmd(FTE_INT32 argc, FTE_CHAR_PTR argv[]);
+FTE_CHAR_PTR    FTE_LOG_getSystemMessageString(FTE_LOG_SYSTEM_MESSAGE xMsg);
 #endif

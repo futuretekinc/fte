@@ -11,46 +11,58 @@
 #define CGI_TRACE(...)    TRACE(DEBUG_NET_CGI, __VA_ARGS__)
 #define CGI_ERROR(...)    ERROR(__VA_ARGS__)
 
-static _mqx_int _cgi_request(HTTPSRV_CGI_REQ_STRUCT* param);
-static _mqx_int _cgi_request_get(HTTPSRV_CGI_REQ_STRUCT* param);
-static _mqx_int _cgi_request_post(HTTPSRV_CGI_REQ_STRUCT* param);
+static 
+FTE_RET _cgi_request(HTTPSRV_CGI_REQ_STRUCT* param);
 
-const HTTPSRV_CGI_LINK_STRUCT cgi_lnk_tbl[] = 
+static 
+FTE_RET _cgi_request_get(HTTPSRV_CGI_REQ_STRUCT* param);
+
+static 
+FTE_RET _cgi_request_post(HTTPSRV_CGI_REQ_STRUCT* param);
+
+const 
+HTTPSRV_CGI_LINK_STRUCT cgi_lnk_tbl[] = 
 {
     { "request",        _cgi_request},
     { 0, 0 }    // DO NOT REMOVE - last item - end of table
 };
 
-uint_32 fte_cgi_query_count(char_ptr query_string)
+FTE_UINT32 fte_cgi_query_count
+(   
+    FTE_CHAR_PTR    pQuery
+)
 {
-    uint_32 count = 0;
-    if (strlen(query_string) != 0)
+    FTE_UINT32 ulCount = 0;
+    if (strlen(pQuery) != 0)
     {
-        char_ptr _query_end, _query_start = query_string;
+        FTE_CHAR_PTR pQueryEnd, pQueryStart = pQuery;
         while(1)
         {
-            char_ptr    _value;
+            FTE_CHAR_PTR    pValue;
             
-            _query_end = strchr(_query_start, '&');
-            _value  = strchr(_query_start, '=');
-            if (_value != 0)
+            pQueryEnd = strchr(pQueryStart, '&');
+            pValu  = strchr(pQueryStart, '=');
+            if (pValue != 0)
             {
-                count++;
+                ulCount++;
             }
             
-            if (_query_end == NULL)
+            if (pQueryEnd == NULL)
             {
                 break;
             }
             
-            _query_start = _query_end + 1;
+            pQueryStart = pQueryEnd + 1;
         }
     }
     
-    return  count;
+    return  ulCount;
 }
 
-FTE_CGI_QUERY_PTR   fte_cgi_query_alloc(uint_32 count)
+FTE_CGI_QUERY_PTR   fte_cgi_query_alloc
+(
+    FTE_UINT32  count
+)
 {
     FTE_CGI_QUERY_PTR   query;
    
@@ -67,7 +79,10 @@ FTE_CGI_QUERY_PTR   fte_cgi_query_alloc(uint_32 count)
    return   query;
 }
 
-void        fte_cgi_query_free(FTE_CGI_QUERY_PTR query)
+void        fte_cgi_query_free
+(
+    FTE_CGI_QUERY_PTR   query
+)
 {
     if (query != NULL)
     {
@@ -75,27 +90,31 @@ void        fte_cgi_query_free(FTE_CGI_QUERY_PTR query)
     }
 }
 
-_mqx_int    fte_cgi_query_parser(char_ptr query_string, FTE_CGI_QUERY_PTR query)
+FTE_RET    fte_cgi_query_parser
+(
+    FTE_CHAR_PTR    pQuery, 
+    FTE_CGI_QUERY_PTR   query
+)
 {
     query->count = 0;
-    if (strlen(query_string) == 0)
+    if (strlen(pQuery) == 0)
     {
         return  MQX_OK;
     }
     
-    char_ptr _query_end, _query_start = query_string;
+    FTE_CHAR_PTR pQueryEnd, pQueryStart = pQuery;
     while(1)
     {
-        char_ptr    _name, _value;
+        FTE_CHAR_PTR    _name, _value;
         
-        _query_end = strchr(_query_start, '&');
-        if (_query_end != NULL)
+        pQueryEnd = strchr(pQueryStart, '&');
+        if (pQueryEnd != NULL)
         {
-            *_query_end = '\0';
+            *pQueryEnd = '\0';
         }
         
-        _name   = _query_start;
-        _value  = strchr(_query_start, '=');
+        _name   = pQueryStart;
+        _value  = strchr(pQueryStart, '=');
         if (_value != 0)
         {
             *_value = '\0';
@@ -106,24 +125,28 @@ _mqx_int    fte_cgi_query_parser(char_ptr query_string, FTE_CGI_QUERY_PTR query)
             query->count++;
         }
         
-        if (_query_end == NULL)
+        if (pQueryEnd == NULL)
         {
             break;
         }
         else
         {
-            _query_start = _query_end + 1;
+            pQueryStart = pQueryEnd + 1;
         }        
     }
     
     return  MQX_OK;
 }
 
-char_ptr fte_cgi_query_search(FTE_CGI_QUERY_PTR query, char_ptr name)
+FTE_CHAR_PTR fte_cgi_query_search
+(
+    FTE_CGI_QUERY_PTR   query, 
+    FTE_CHAR_PTR        name
+)
 {
     assert(query != NULL && name != NULL);
     
-    uint_32 i;
+    FTE_UINT32 i;
     for(i = 0 ; i < query->count ; i++)
     {
         if (strcmp(name, query->tuples[i].name) == 0)
@@ -135,11 +158,16 @@ char_ptr fte_cgi_query_search(FTE_CGI_QUERY_PTR query, char_ptr name)
     return  NULL;
 }
 
-_mqx_uint fte_cgi_query_search_ip(FTE_CGI_QUERY_PTR query, char_ptr name, uint_32 *ip)
+FTE_RET fte_cgi_query_search_ip
+(
+    FTE_CGI_QUERY_PTR   query, 
+    FTE_CHAR_PTR        name, 
+    FTE_UINT32_PTR      ip
+)
 {
     assert(query != NULL && name != NULL);
     
-    uint_32 i;
+    FTE_UINT32 i;
     for(i = 0 ; i < query->count ; i++)
     {
         if (strcmp(name, query->tuples[i].name) == 0)
@@ -151,11 +179,16 @@ _mqx_uint fte_cgi_query_search_ip(FTE_CGI_QUERY_PTR query, char_ptr name, uint_3
     return  MQX_ERROR;
 }
 
-_mqx_uint fte_cgi_query_search_uint32(FTE_CGI_QUERY_PTR query, char_ptr name, uint_32 *value)
+FTE_RET fte_cgi_query_search_uint32
+(
+    FTE_CGI_QUERY_PTR   query, 
+    FTE_CHAR_PTR        name, 
+    FTE_UINT32_PTR      value
+)
 {
     assert(query != NULL && name != NULL);
     
-    uint_32 i;
+    FTE_UINT32 i;
     for(i = 0 ; i < query->count ; i++)
     {
         if (strcmp(name, query->tuples[i].name) == 0)
@@ -168,11 +201,16 @@ _mqx_uint fte_cgi_query_search_uint32(FTE_CGI_QUERY_PTR query, char_ptr name, ui
     return  MQX_ERROR;
 }
 
-_mqx_uint fte_cgi_query_search_hexnum(FTE_CGI_QUERY_PTR query, char_ptr name, uint_32 *value)
+FTE_RET fte_cgi_query_search_hexnum
+(
+    FTE_CGI_QUERY_PTR   query, 
+    FTE_CHAR_PTR        name, 
+    FTE_UINT32_PTR      value
+)
 {
     assert(query != NULL && name != NULL);
     
-    uint_32 i;
+    FTE_UINT32 i;
     for(i = 0 ; i < query->count ; i++)
     {
         if (strcmp(name, query->tuples[i].name) == 0)
@@ -186,12 +224,16 @@ _mqx_uint fte_cgi_query_search_hexnum(FTE_CGI_QUERY_PTR query, char_ptr name, ui
     return  MQX_ERROR;
 }
 
-_mqx_uint fte_cgi_str_to_ip(char_ptr str, uint_32 *ip)
+FTE_RET fte_cgi_str_to_ip
+(
+    FTE_CHAR_PTR    str, 
+    FTE_UINT32_PTR  ip
+)
 {
-    uint_32     i;
-    char_ptr    byte[4] = {0, };
+    FTE_UINT32     i;
+    FTE_CHAR_PTR    byte[4] = {0, };
     char        buf[16];
-    char_ptr    ptr;
+    FTE_CHAR_PTR    ptr;
     
     if (strlen(str) >= sizeof(buf))
     {
@@ -230,7 +272,13 @@ _mqx_uint fte_cgi_str_to_ip(char_ptr str, uint_32 *ip)
     return  MQX_OK;
 }
 
-_mqx_int fte_cgi_send_response(uint_32 handle, uint_32 status_code, char_ptr data, uint_32 length)
+FTE_RET fte_cgi_send_response
+(
+    FTE_UINT32  handle, 
+    FTE_UINT32  status_code, 
+    FTE_CHAR_PTR data, 
+    FTE_UINT32  length
+)
 {
     HTTPSRV_CGI_RES_STRUCT  response = {.content_length = 0};
     
@@ -245,7 +293,10 @@ _mqx_int fte_cgi_send_response(uint_32 handle, uint_32 status_code, char_ptr dat
     return  HTTPSRV_cgi_write(&response);
 }
 
-_mqx_int _cgi_request(HTTPSRV_CGI_REQ_STRUCT* param)
+FTE_RET _cgi_request
+(
+    HTTPSRV_CGI_REQ_STRUCT* param
+)
 {
     if (param->request_method == HTTPSRV_REQ_GET)
     {
@@ -257,25 +308,28 @@ _mqx_int _cgi_request(HTTPSRV_CGI_REQ_STRUCT* param)
     }
 }
 
-_mqx_int _cgi_request_get(HTTPSRV_CGI_REQ_STRUCT* param)
+FTE_RET _cgi_request_get
+(
+    HTTPSRV_CGI_REQ_STRUCT* param
+)
 {
     FTE_CGI_QUERY_PTR       cgi_query = NULL;
-    char_ptr                cmd, subcmd;
-    char_ptr                pBuff = NULL;
-    uint_32                 query_count = 0, nMaxLen = 0;
-    uint_32                 nLen  = 0, ret;
+    FTE_CHAR_PTR                cmd, subcmd;
+    FTE_CHAR_PTR                pBuff = NULL;
+    FTE_UINT32                 query_count = 0, nMaxLen = 0;
+    FTE_UINT32                 nLen  = 0, ret;
     boolean                 reboot = FALSE;
     
     CGI_TRACE("CALLED");
     nMaxLen = FTE_NET_HTTP_CGI_BUFF_SIZE;
-    pBuff = (char_ptr)FTE_MEM_allocZero(nMaxLen);
+    pBuff = (FTE_CHAR_PTR)FTE_MEM_allocZero(nMaxLen);
     if (pBuff == NULL)
     {
         CGI_ERROR("Not enough memory.[ Size = %d ]\n", nMaxLen);
         goto error;
     }    
     
-    query_count = fte_cgi_query_count(param->query_string);
+    query_count = fte_cgi_query_count(param->pQuery);
     cgi_query = fte_cgi_query_alloc(query_count);
     if (cgi_query == NULL)
     {
@@ -283,7 +337,7 @@ _mqx_int _cgi_request_get(HTTPSRV_CGI_REQ_STRUCT* param)
         goto error;
     }
     
-    fte_cgi_query_parser(param->query_string, cgi_query);
+    fte_cgi_query_parser(param->pQuery, cgi_query);
     
     cmd = fte_cgi_query_search(cgi_query, "cmd");
     if (cmd == NULL)
@@ -306,7 +360,7 @@ _mqx_int _cgi_request_get(HTTPSRV_CGI_REQ_STRUCT* param)
         if (strcmp(subcmd, "status") == 0)
         {
             TIME_STRUCT                     xTime;
-            uint_32 nFields = FTE_OBJ_FIELD_ID | FTE_OBJ_FIELD_NAME | FTE_OBJ_FIELD_VALUE | FTE_OBJ_FIELD_STATUS | FTE_OBJ_FIELD_SN | FTE_OBJ_FIELD_CTRL;
+            FTE_UINT32 nFields = FTE_OBJ_FIELD_ID | FTE_OBJ_FIELD_NAME | FTE_OBJ_FIELD_VALUE | FTE_OBJ_FIELD_STATUS | FTE_OBJ_FIELD_SN | FTE_OBJ_FIELD_CTRL;
             
             _time_get(&xTime);
             nLen += fte_print_json_comma(&pBuff[nLen], nMaxLen - nLen);
@@ -323,7 +377,7 @@ _mqx_int _cgi_request_get(HTTPSRV_CGI_REQ_STRUCT* param)
         }
         else if (strcmp(subcmd, "config") == 0)
         {
-            uint_32 nFields = FTE_OBJ_FIELD_ID | FTE_OBJ_FIELD_NAME | FTE_OBJ_FIELD_ENABLE | FTE_OBJ_FIELD_SN;
+            FTE_UINT32 nFields = FTE_OBJ_FIELD_ID | FTE_OBJ_FIELD_NAME | FTE_OBJ_FIELD_ENABLE | FTE_OBJ_FIELD_SN;
             
             nLen += fte_print_json_comma(&pBuff[nLen], nMaxLen - nLen);
             nLen += fte_print_json_object_string(&pBuff[nLen], nMaxLen - nLen, "title", "Point Configurations");
@@ -369,7 +423,7 @@ _mqx_int _cgi_request_get(HTTPSRV_CGI_REQ_STRUCT* param)
         }
         else if (strcmp(subcmd, "value") == 0)
         {
-            uint_32 nOID;
+            FTE_UINT32 nOID;
             
             if (fte_cgi_query_search_hexnum(cgi_query, "oid", &nOID) == MQX_OK)
             {
@@ -381,7 +435,7 @@ _mqx_int _cgi_request_get(HTTPSRV_CGI_REQ_STRUCT* param)
     }
     else if (strcmp(cmd, "ctrl") == 0)
     {
-        uint_32 nOID;
+        FTE_UINT32 nOID;
         if (fte_cgi_query_search_hexnum(cgi_query, "oid", &nOID) != MQX_OK)
         {
             CGI_ERROR("fte_cgi_query_search_hexnum\n");
@@ -395,7 +449,7 @@ _mqx_int _cgi_request_get(HTTPSRV_CGI_REQ_STRUCT* param)
             goto error;
         }
             
-        char_ptr pValue = fte_cgi_query_search(cgi_query, "value");
+        FTE_CHAR_PTR pValue = fte_cgi_query_search(cgi_query, "value");
         switch(FTE_OBJ_TYPE(pObj))
         {
         case    FTE_OBJ_TYPE_DO:
@@ -458,7 +512,7 @@ _mqx_int _cgi_request_get(HTTPSRV_CGI_REQ_STRUCT* param)
         nLen += snprintf(&pBuff[nLen], nMaxLen - nLen, "\"objects\":[");        
         
         boolean bFirst = TRUE;
-        uint_32 nCount = FTE_OBJ_count(FTE_OBJ_TYPE_UNKNOWN, 0, FALSE);
+        FTE_UINT32 nCount = FTE_OBJ_count(FTE_OBJ_TYPE_UNKNOWN, 0, FALSE);
         if (nCount != 0)
         {
             FTE_OBJECT_PTR _PTR_ pObjList = (FTE_OBJECT_PTR _PTR_)FTE_MEM_allocZero(sizeof(FTE_OBJECT_PTR) * nCount);
@@ -522,20 +576,20 @@ error:
 }
 
 
-_mqx_int _cgi_request_post(HTTPSRV_CGI_REQ_STRUCT* param)
+FTE_RET _cgi_request_post(HTTPSRV_CGI_REQ_STRUCT* param)
 {
     FTE_CGI_QUERY_PTR       cgi_query = NULL;
-    char_ptr                cmd;
-    char_ptr                pBuff = NULL;
-    uint_32                 query_count = 0, nMaxLen = 0;
-    uint_32                 nLen  = 0, ret;
+    FTE_CHAR_PTR                cmd;
+    FTE_CHAR_PTR                pBuff = NULL;
+    FTE_UINT32                 query_count = 0, nMaxLen = 0;
+    FTE_UINT32                 nLen  = 0, ret;
     boolean                 reboot = FALSE;
     char                    pField[32];
-    char_ptr                pValue;
+    FTE_CHAR_PTR                pValue;
     
     
     nMaxLen = FTE_NET_HTTP_CGI_BUFF_SIZE;
-    pBuff = (char_ptr)FTE_MEM_allocZero(nMaxLen);
+    pBuff = (FTE_CHAR_PTR)FTE_MEM_allocZero(nMaxLen);
     if (pBuff == NULL)
     {
         goto error;
@@ -590,8 +644,8 @@ _mqx_int _cgi_request_post(HTTPSRV_CGI_REQ_STRUCT* param)
     else if (strcmp(cmd, "system") == 0)
     {
         FTE_NET_CFG net;
-        char_ptr    pNetType;
-        uint_32 ip, nNetMask, gateway, server1 = 0, server2 = 0;
+        FTE_CHAR_PTR    pNetType;
+        FTE_UINT32 ip, nNetMask, gateway, server1 = 0, server2 = 0;
         
         if ((fte_cgi_query_search_ip(cgi_query, "ip", &ip) != MQX_OK) ||
             (fte_cgi_query_search_ip(cgi_query, "netmask", &nNetMask) != MQX_OK) ||
@@ -600,7 +654,7 @@ _mqx_int _cgi_request_post(HTTPSRV_CGI_REQ_STRUCT* param)
             goto error;
         }
         
-        char_ptr item = fte_cgi_query_search(cgi_query, "server1");
+        FTE_CHAR_PTR item = fte_cgi_query_search(cgi_query, "server1");
         if (item != NULL)
         {
             if (fte_cgi_str_to_ip(item, &server1) != MQX_OK)

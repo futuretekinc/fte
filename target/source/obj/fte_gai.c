@@ -5,7 +5,38 @@
 
 #if FTE_GAI_SUPPORTED
 
-static FTE_GAI_VALUE_DESCRIPT _pGAIValueDescript[] =
+FTE_GAI_CONFIG FTE_GAI_VOLTAGE_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_GAI_VOLTAGE, 0),
+        .pName      = "VOLTAGE",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID         = FTE_DEV_AD7785_0,
+    .nInterval      = FTE_GAI_DEFAULT_UPDATE_INTERVAL,
+    .nGain          = 1,
+    .ulDivide       = 1,
+    .xValueType     = FTE_GAI_VALUE_TYPE_0_2_TO_1_518V
+};
+
+FTE_GAI_CONFIG FTE_GAI_CURRENT_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_GAI_CURRENT, 0),
+        .pName      = "CURRENT",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE, 
+    },
+    .nDevID         = FTE_DEV_AD7785_0,
+    .nInterval      = FTE_GAI_DEFAULT_UPDATE_INTERVAL,
+    .nGain          = 1,
+    .ulDivide       = 1,
+    .xValueType     = FTE_GAI_VALUE_TYPE_0_2_TO_1_10A
+};
+
+static 
+FTE_GAI_VALUE_DESCRIPT _pGAIValueDescript[] =
 {
     {
         .xType = FTE_GAI_VALUE_TYPE_0_2_TO_1_518V,
@@ -42,26 +73,45 @@ static FTE_GAI_VALUE_DESCRIPT _pGAIValueDescript[] =
     }
 };
 
-static  _mqx_uint   _gai_init(FTE_OBJECT_PTR pObj);
-static  _mqx_uint   _gai_run(FTE_OBJECT_PTR pObj);
-static  _mqx_uint   _gai_stop(FTE_OBJECT_PTR pObj);
-static  void        _gai_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
-static void         _gai_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
-static uint_32      _gai_get_update_interval(FTE_OBJECT_PTR pObj);
-static _mqx_uint    _gai_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInterval);
-static FTE_GAI_VALUE_DESCRIPT_PTR  _FTE_GAI_getValueDescript(FTE_GAI_VALUE_TYPE xType);
+static  
+FTE_RET FTE_GAI_init(FTE_OBJECT_PTR pObj);
 
-static  FTE_OBJECT_ACTION _gai_action = 
+static  
+FTE_RET FTE_GAI_run(FTE_OBJECT_PTR pObj);
+
+static  
+FTE_RET FTE_GAI_stop(FTE_OBJECT_PTR pObj);
+
+static  
+void    FTE_GAI_done(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
+
+static 
+void    FTE_GAI_restartConvert(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
+
+static 
+FTE_UINT32  FTE_GAI_getUpdateInterval(FTE_OBJECT_PTR pObj);
+
+static 
+FTE_RET FTE_GAI_setUpdateInterval(FTE_OBJECT_PTR pObj, FTE_UINT32 nInterval);
+
+static 
+FTE_GAI_VALUE_DESCRIPT_PTR  FTE_GAI_getValueDescript(FTE_GAI_VALUE_TYPE xType);
+
+static  
+FTE_OBJECT_ACTION FTE_GAI_action = 
 {
-    .f_init         = _gai_init,
-    .f_run          = _gai_run,
-    .f_stop         = _gai_stop,
-    .f_set          = NULL,
-    .f_get_update_interval = _gai_get_update_interval,
-    .f_set_update_interval = _gai_set_update_interval
+    .f_init         = FTE_GAI_init,
+    .f_run          = FTE_GAI_run,
+    .f_stop         = FTE_GAI_stop,
+    .f_get_update_interval = FTE_GAI_getUpdateInterval,
+    .f_set_update_interval = FTE_GAI_setUpdateInterval
 };
 
-_mqx_uint   FTE_GAI_attach(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_GAI_attach
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_VOID_PTR    pOpts
+)
 {
     FTE_AD7785_PTR      pADC = NULL;
     
@@ -76,12 +126,12 @@ _mqx_uint   FTE_GAI_attach(FTE_OBJECT_PTR pObj)
         goto error;
     }
     
-    if (FTE_AD7785_attach(pADC, pConfig->xCommon.nID) != MQX_OK)
+    if (FTE_AD7785_attach(pADC, pConfig->xCommon.nID) != FTE_RET_OK)
     {
         goto error;
     }
     
-    pStatus->pValueDescript = _FTE_GAI_getValueDescript(pConfig->xValueType);
+    pStatus->pValueDescript = FTE_GAI_getValueDescript(pConfig->xValueType);
     if (pStatus->pValueDescript == NULL)
     {
         goto error;
@@ -95,15 +145,15 @@ _mqx_uint   FTE_GAI_attach(FTE_OBJECT_PTR pObj)
         goto error;
     }
     
-    pObj->pAction = (FTE_OBJECT_ACTION_PTR)&_gai_action;
+    pObj->pAction = (FTE_OBJECT_ACTION_PTR)&FTE_GAI_action;
     pObj->pStatus = (FTE_OBJECT_STATUS_PTR)pStatus;
     
-    if (_gai_init(pObj) != MQX_OK)
+    if (FTE_GAI_init(pObj) != FTE_RET_OK)
     {
         goto error;
     }
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
     
@@ -123,7 +173,10 @@ error:
     
 }
 
-_mqx_uint FTE_GAI_detach(FTE_OBJECT_PTR pObj)
+FTE_RET FTE_GAI_detach
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     if (pObj == NULL)
     {
@@ -134,17 +187,23 @@ _mqx_uint FTE_GAI_detach(FTE_OBJECT_PTR pObj)
      pObj->pAction = NULL;
      pObj->pStatus = NULL;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint   _gai_init(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_GAI_init
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     assert(pObj != NULL);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint   _gai_run(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_GAI_run
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     assert(pObj != NULL);
 
@@ -160,22 +219,25 @@ _mqx_uint   _gai_run(FTE_OBJECT_PTR pObj)
     }
     
     _time_init_ticks(&xDTicks, 0);
-    _time_add_sec_to_ticks(&xDTicks, pConfig->nInterval);
+    _time_add_msec_to_ticks(&xDTicks, pConfig->nInterval);
     _time_get_elapsed_ticks(&xTicks);
-    _time_add_sec_to_ticks(&xTicks, 1);
+    _time_add_msec_to_ticks(&xTicks, 1000);
     
-    pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(_gai_restart_convert, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);
+    pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(FTE_GAI_restartConvert, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);
     FTE_AD7785_runSingle(pStatus->pADC);
 
     _time_init_ticks(&xDTicks, 0);
     _time_add_msec_to_ticks(&xDTicks, FTE_AD7785_measurementTime(pStatus->pADC));    
-    pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_gai_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
+    pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(FTE_GAI_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
 
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
  
-_mqx_uint   _gai_stop(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_GAI_stop
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     assert(pObj != NULL);
     
@@ -195,19 +257,24 @@ _mqx_uint   _gai_stop(FTE_OBJECT_PTR pObj)
     
     FTE_AD7785_setOPMode(pStatus->pADC, FTE_AD7785_OP_MODE_PWR_DOWN);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-static void _gai_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
+void FTE_GAI_done
+(
+    _timer_id   id, 
+    pointer     pData, 
+    MQX_TICK_STRUCT_PTR pTick
+)
 {
-    ASSERT(data_ptr != NULL);
+    ASSERT(pData != NULL);
     
-    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)data_ptr;
+    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)pData;
     FTE_GAI_CONFIG_PTR  pConfig = (FTE_GAI_CONFIG_PTR)pObj->pConfig;
     FTE_GAI_STATUS_PTR  pStatus = (FTE_GAI_STATUS_PTR)pObj->pStatus;
-    uint_32             ulValue = 0;
+    FTE_UINT32             ulValue = 0;
 
-    if (FTE_AD7785_getScaleData(pStatus->pADC, &ulValue) == MQX_OK)
+    if (FTE_AD7785_getScaleData(pStatus->pADC, &ulValue) == FTE_RET_OK)
     {        
         if (pConfig->ulDivide != 0)
         {
@@ -226,7 +293,7 @@ static void _gai_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_p
         FTE_GAI_VALUE_DESCRIPT_PTR pDescript = pStatus->pValueDescript;
         
         double  fRatio = (double)(ulValue - pDescript->xInputRange.ulMin) / (pDescript->xInputRange.ulMax - pDescript->xInputRange.ulMin) * pDescript->ulCalibration / 1000.0;
-        ulValue = (uint_32)(fRatio * (pDescript->xValueRange.ulMax - pDescript->xValueRange.ulMin)) + pDescript->xValueRange.ulMin;
+        ulValue = (FTE_UINT32)(fRatio * (pDescript->xValueRange.ulMax - pDescript->xValueRange.ulMin)) + pDescript->xValueRange.ulMin;
         
         switch(pDescript->xValueRange.xType)
         {
@@ -236,13 +303,18 @@ static void _gai_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_p
     }
     else
     {
-        _gai_init(pObj);
+        FTE_GAI_init(pObj);
     }
 }
 
-static void _gai_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
+void FTE_GAI_restartConvert
+(
+    _timer_id   id, 
+    pointer     pData, 
+    MQX_TICK_STRUCT_PTR pTick
+)
 {
-    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)data_ptr;
+    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)pData;
     MQX_TICK_STRUCT     xDTicks;            
     FTE_GAI_STATUS_PTR  pStatus = (FTE_GAI_STATUS_PTR)pObj->pStatus;
 
@@ -252,7 +324,7 @@ static void _gai_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT
         
         _time_init_ticks(&xDTicks, 0);
         _time_add_msec_to_ticks(&xDTicks, FTE_AD7785_measurementTime(pStatus->pADC));    
-        pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_gai_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
+        pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(FTE_GAI_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
     }
     else
     {
@@ -261,14 +333,21 @@ static void _gai_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT
     }
 }
 
-uint_32      _gai_get_update_interval(FTE_OBJECT_PTR pObj)
+FTE_UINT32  FTE_GAI_getUpdateInterval
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_GAI_CONFIG_PTR  pConfig = (FTE_GAI_CONFIG_PTR)pObj->pConfig;
     
     return  pConfig->nInterval;
 }
 
-_mqx_uint    _gai_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInterval)
+FTE_RET    FTE_GAI_setUpdateInterval
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nInterval
+)
 {
     FTE_GAI_CONFIG_PTR  pConfig = (FTE_GAI_CONFIG_PTR)pObj->pConfig;
     
@@ -277,12 +356,15 @@ _mqx_uint    _gai_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInterval)
     FTE_CFG_OBJ_save(pObj);
 
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-FTE_GAI_VALUE_DESCRIPT_PTR  _FTE_GAI_getValueDescript(FTE_GAI_VALUE_TYPE xType)
+FTE_GAI_VALUE_DESCRIPT_PTR  FTE_GAI_getValueDescript
+(
+    FTE_GAI_VALUE_TYPE  xType
+)
 {
-    int i;
+    FTE_INT32   i;
     
     for(i = 0 ; _pGAIValueDescript[i].xType != FTE_GAI_VALUE_TYPE_UNKNOWN ; i++)
     {

@@ -4,11 +4,11 @@
 #if FTE_DEBUG
  
 static char     _pBuff[1024];
-static uint_32  _ulTraceModule = 0;
+static FTE_UINT32  _ulTraceModule = 0;
 
 static MQX_FILE_PTR _debugOut = 0;
 
-_mqx_int    FTE_DEBUG_setHandle(void)
+FTE_RET    FTE_DEBUG_setHandle(void)
 {
     pointer   hStdout;
     
@@ -26,18 +26,23 @@ void    FTE_DEBUG_init(void)
     _debugOut = stdout;
 }
 
-_mqx_int    FTE_DEBUG_trace(uint_32  ulModule, const char _PTR_ fmt_ptr, ... )
+FTE_RET    FTE_DEBUG_trace
+(
+    FTE_UINT32      ulModule, 
+    const char _PTR_ fmt_ptr, 
+    ... 
+)
 {
     if ((_ulTraceModule & ulModule) == ulModule)
     {
        va_list      ap;
-       uint_32      ulLen = 0;
+       FTE_UINT32      ulLen = 0;
 #if 0
         TIME_STRUCT  xTime;
        char         pTimeBuff[64];
        
         _time_get(&xTime);
-        FTE_TIME_toString(&xTime, pTimeBuff, sizeof(pTimeBuff));   
+        FTE_TIME_toStr(&xTime, pTimeBuff, sizeof(pTimeBuff));   
         ulLen = sprintf(&_pBuff[ulLen], "[%s] ", pTimeBuff);
 #endif   
         va_start(ap, fmt_ptr);
@@ -50,34 +55,49 @@ _mqx_int    FTE_DEBUG_trace(uint_32  ulModule, const char _PTR_ fmt_ptr, ... )
     return  0;
 }
 
-_mqx_int    FTE_DEBUG_traceOn(uint_32 ulModule)
+FTE_RET    FTE_DEBUG_traceOn
+(
+    FTE_UINT32  ulModule
+)
 {
     _ulTraceModule |= ulModule;
     
     return  0;
 }
 
-_mqx_int    FTE_DEBUG_traceOff(uint_32 ulModule)
+FTE_RET    FTE_DEBUG_traceOff
+(
+    FTE_UINT32  ulModule
+)
 {
     _ulTraceModule &= ~ulModule;
     
     return  0;
 }
 
-boolean FTE_DEBUG_isTraceOn(uint_32 ulModule)
+FTE_BOOL FTE_DEBUG_isTraceOn
+(
+    FTE_UINT32  ulModule
+)
 {
     return  (_ulTraceModule & ulModule) == ulModule;
 }
 
-_mqx_int    FTE_DEBUG_error(const char _PTR_ pFuncName, int nLine, const char _PTR_ fmt_ptr, ... )
+FTE_RET    FTE_DEBUG_error
+(
+    const char _PTR_ pFuncName, 
+    FTE_INT32   nLine, 
+    const char _PTR_ fmt_ptr, 
+    ... 
+)
 {
    va_list      ap;
-   uint_32      ulLen = 0;
+   FTE_UINT32      ulLen = 0;
    TIME_STRUCT  xTime;
    char         pTimeBuff[64];
    
     _time_get(&xTime);
-    FTE_TIME_toString(&xTime, pTimeBuff, sizeof(pTimeBuff));   
+    FTE_TIME_toStr(&xTime, pTimeBuff, sizeof(pTimeBuff));   
     ulLen = sprintf(&_pBuff[ulLen], "[%s] ", pTimeBuff);
     
     va_start(ap, fmt_ptr);
@@ -87,10 +107,18 @@ _mqx_int    FTE_DEBUG_error(const char _PTR_ pFuncName, int nLine, const char _P
     return   fprintf(_debugOut, "%s[%d] : %s\n", pFuncName, nLine, _pBuff);
 }
 
-_mqx_int    FTE_DEBUG_dump(const char _PTR_ pFuncName, int nLine, char * pTitle, void *pBuff, uint_32 ulSize, uint_32 ulWrapLen)
+FTE_RET    FTE_DEBUG_dump
+(
+    const char _PTR_ pFuncName, 
+    FTE_INT32       nLine, 
+    FTE_CHAR_PTR    pTitle, 
+    FTE_VOID_PTR    pBuff, 
+    FTE_UINT32      ulSize, 
+    FTE_UINT32      ulWrapLen
+)
 {
-    uint_32 i;
-    char    pIndent[32];
+    FTE_UINT32  i;
+    FTE_CHAR    pIndent[32];
     
     if (pTitle != NULL)
     {
@@ -126,8 +154,8 @@ _mqx_int    FTE_DEBUG_dump(const char _PTR_ pFuncName, int nLine, char * pTitle,
 
 typedef struct
 {
-    char_ptr    pName;
-    uint_32     ulType;
+    FTE_CHAR_PTR    pName;
+    FTE_UINT32      ulType;
 }   FTE_DEBUG_MODULE_TYPE_NAME, _PTR_ FTE_DEBUG_MODULE_TYPE_NAME_PTR;
 
 static FTE_DEBUG_MODULE_TYPE_NAME  _pModuleTypeName[] =
@@ -144,10 +172,10 @@ static FTE_DEBUG_MODULE_TYPE_NAME  _pModuleTypeName[] =
     {   .pName = NULL,      .ulType = 0}
 };
 
-int_32 FTE_TRACE_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
+FTE_INT32 FTE_TRACE_SHELL_cmd(FTE_INT32 nArgc, char_ptr pArgv[])
 {
-    boolean              bPrintUsage, bShortHelp = FALSE;
-    int_32               nReturnCode = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   nReturnCode = SHELL_EXIT_SUCCESS;
     
     bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
@@ -183,7 +211,7 @@ int_32 FTE_TRACE_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
                 else
                 {
                    
-                    uint_32 ulType = DEBUG_UNKNOWN;
+                    FTE_UINT32 ulType = DEBUG_UNKNOWN;
                     FTE_DEBUG_MODULE_TYPE_NAME_PTR  pTypeName = _pModuleTypeName;
                     while(pTypeName->pName != NULL)
                     {
@@ -215,7 +243,7 @@ int_32 FTE_TRACE_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
                    
         case    3:
             {
-                uint_32 ulType = DEBUG_UNKNOWN;
+                FTE_UINT32 ulType = DEBUG_UNKNOWN;
                 FTE_DEBUG_MODULE_TYPE_NAME_PTR  pTypeName = _pModuleTypeName;
                 while(pTypeName->pName != NULL)
                 {

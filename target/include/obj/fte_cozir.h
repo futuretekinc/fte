@@ -29,21 +29,18 @@
 #define FTE_AX5000_EVENT_DELAY              0
 #endif
 
-_mqx_uint   FTE_COZIR_init(FTE_OBJECT_PTR pObj);
-_mqx_uint   FTE_COZIR_request(FTE_OBJECT_PTR pObj);
-_mqx_uint   FTE_COZIR_received(FTE_OBJECT_PTR pObj);
+FTE_RET   FTE_COZIR_init(FTE_OBJECT_PTR pObj);
+FTE_RET   FTE_COZIR_request(FTE_OBJECT_PTR pObj);
+FTE_RET   FTE_COZIR_received(FTE_OBJECT_PTR pObj);
 
-extern  FTE_VALUE_TYPE  FT_COZIR_valueTypes[];
+extern  
+FTE_GUS_CONFIG FTE_COZIR_AX5000_defaultConfig;
 
-#define FTE_COZIR_AX5000_DESCRIPTOR  {\
-        .nModel         = FTE_GUS_MODEL_COZIR_AX5000,   \
-        .pName          = "COZIR AX5000",               \
-        .nMaxResponseTime=FTE_AX5000_RESPONSE_TIME,     \
-        .nFieldCount    = 1,                            \
-        .pValueTypes   = FT_COZIR_valueTypes,           \
-        .f_request  = FTE_COZIR_request,            \
-        .f_received = FTE_COZIR_received            \
-    }
+extern  
+FTE_VALUE_TYPE  FT_COZIR_valueTypes[];
+
+extern  const 
+FTE_GUS_MODEL_INFO    FTE_COZIR_AX5000_GUSModelInfo;
 
 
 #endif

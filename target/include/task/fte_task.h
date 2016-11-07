@@ -15,16 +15,16 @@ typedef struct
     {
         struct
         {
-            uint_32 ulID;
+            FTE_UINT32 ulID;
         }   xRTCS;
     }   xParams;
     
 }   FTE_TASK_INFO, _PTR_ FTE_TASK_INFO_PTR;
 
 
-_mqx_uint   FTE_TASK_create(_processor_number xProcessorID, _mqx_uint nTemplateIndex, uint_32 ulParameter);
-_mqx_uint   FTE_TASK_append(FTE_TASK_TYPE   xType, _task_id        xTaskID);
-_mqx_uint   FTE_TASK_remove(_task_id        xTaskID);
-int_32      FTE_TASK_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] );
+FTE_RET     FTE_TASK_create(_processor_number xProcessorID, FTE_RET nTemplateIndex, FTE_UINT32 ulParameter);
+FTE_RET     FTE_TASK_append(FTE_TASK_TYPE   xType, _task_id        xTaskID);
+FTE_RET     FTE_TASK_remove(_task_id        xTaskID);
+FTE_INT32   FTE_TASK_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[] );
 
 #endif

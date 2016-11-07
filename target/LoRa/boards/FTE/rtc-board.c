@@ -205,7 +205,9 @@ void RtcDelayMs( uint32_t delay )
 
 TimerTime_t RtcGetCalendarValue( void )
 {
-    uint_64  ulTimeValue = FTE_TIME_getMilliSeconds();
+    uint_64  ulTimeValue = 0;
+    
+    FTE_TIME_getMilliSeconds(&ulTimeValue);
   
     return  (uint32_t)(ulTimeValue / 1000);
 }

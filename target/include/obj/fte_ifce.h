@@ -5,25 +5,25 @@
 /*****************************************************************************
  * AD7785-based IFCE Object Structure Description
  *****************************************************************************/
-typedef struct _fte_ifce_config_struct
+typedef struct FTE_IFCE_CONFIG_STRUCT
 {
     FTE_COMMON_CONFIG   xCommon;
-    uint_32             nDevID;
-    uint_32             nRegID;
-    uint_32             nInterval;
+    FTE_UINT32             nDevID;
+    FTE_UINT32             nRegID;
+    FTE_UINT32             nInterval;
 }   FTE_IFCE_CONFIG, _PTR_ FTE_IFCE_CONFIG_PTR;
 
-typedef struct  _fte_ifce_status_struct
+typedef struct  FTE_IFCE_STATUS_STRUCT
 {
     FTE_OBJECT_STATUS   xCommon;
-    uint_32             hRepeatTimer;
-    uint_32             hConvertTimer;
+    FTE_UINT32          hRepeatTimer;
+    FTE_UINT32          hConvertTimer;
     FTE_OBJECT_PTR      pParent;
 }   FTE_IFCE_STATUS, _PTR_ FTE_IFCE_STATUS_PTR;
 
-_mqx_uint fte_ifce_preinit(uint_32 nMaxObjects);
+FTE_RET FTE_IFCE_preinit(FTE_UINT32 nMaxObjects);
 
-_mqx_uint   fte_ifce_attach(FTE_OBJECT_PTR pObj);
-_mqx_uint   fte_ifce_detach(FTE_OBJECT_PTR pObj);
+FTE_RET FTE_IFCE_attach(FTE_OBJECT_PTR pObj, FTE_VOID_PTR pOpts);
+FTE_RET FTE_IFCE_detach(FTE_OBJECT_PTR pObj);
 
 #endif

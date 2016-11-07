@@ -5,6 +5,18 @@ FTE_VALUE_TYPE   FTE_PM1001_valueTypes[] =
     FTE_VALUE_TYPE_ULONG
 };
 
+const FTE_GUS_MODEL_INFO    FTE_PM1001_GUSModelInfo =
+{
+    .nModel     = FTE_GUS_MODEL_PM1001,
+    .pName      = "PM1001",
+    .nFieldCount= 1,
+    .pValueTypes= FTE_PM1001_valueTypes,
+    .fRequest   = FTE_PM1001_request,
+    .fReceived  = FTE_PM1001_received
+};
+
+
+
 _mqx_uint   FTE_PM1001_request(FTE_OBJECT_PTR pObj)
 {
     static uint_8       pCmd[] = {0x11, 0x01, 0x01, 0xED};

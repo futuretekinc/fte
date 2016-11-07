@@ -135,8 +135,8 @@ typedef struct _PRODUCT_DESC_STRUCT
 extern  const SHELL_COMMAND_STRUCT shell_commands[];
 
 FTE_PRODUCT_DESC const *fte_get_product_desc(void);
-_mqx_uint               FTE_PLATFORM_init(void);
-_mqx_uint               FTE_PLATFORM_run(void);
+FTE_RET     FTE_PLATFORM_init(void);
+FTE_RET     FTE_PLATFORM_run(void);
 
 #ifndef FTE_SHELL_TIMEOUT
     #define FTE_SHELL_TIMEOUT               60  /* 60 secs */
@@ -194,6 +194,8 @@ _mqx_uint               FTE_PLATFORM_run(void);
 #include "fte_es20.h"
 #elif defined(FTE_ES21)
 #include "fte_es21.h"
+#elif defined(FTE_ES22)
+#include "fte_es22.h"
 #elif defined(FTE_EH1)
 #include "fte_eh1.h"
 #elif defined(FTE_MN1)
@@ -221,6 +223,8 @@ _mqx_uint               FTE_PLATFORM_run(void);
 #define FTE_TASK_S2LORA                 15
 #endif
 #define FTE_TASK_DOTECH                 17
+#define FTE_TASK_SOHA                   18
+#define FTE_TASK_ELT                    19
      
 #define FTE_TASK_DEFAULT_STACK          512
 
@@ -299,6 +303,16 @@ _mqx_uint               FTE_PLATFORM_run(void);
     #define FTE_TASK_S2LORA_PRIO        9
 #endif
 
+#if FTE_TASK_SOHA
+    #define FTE_TASK_SOHA_STACK         (FTE_TASK_DEFAULT_STACK * 2)
+    #define FTE_TASK_SOHA_PRIO          9
+#endif
+
+#if FTE_TASK_ELT
+    #define FTE_TASK_ELT_STACK         (FTE_TASK_DEFAULT_STACK * 2)
+    #define FTE_TASK_ELT_PRIO          9
+#endif
+
 #if FTE_DI_SUPPORTED                    
     #if !FTE_DI_MAX_COUNT            
         #error  This application requires DI count.
@@ -351,10 +365,10 @@ _mqx_uint               FTE_PLATFORM_run(void);
         #error  This application requires SHT count.
     #endif
 
-    #if !FTE_SHT_INTERVAL
+    #if !FTE_SHT_DEFAULT_UPDATE_INTERVAL
         #warning    SHT(Humidity) measure interval is not set. 
         #warning    The measurement interval is set to 10 seconds.
-        #define FTE_SHT_INTERVAL    10
+        #define FTE_SHT_DEFAULT_UPDATE_INTERVAL 10000
     #endif
 
 #endif

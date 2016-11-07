@@ -58,7 +58,7 @@
 #define FTE_MULTI_POWER_SUPPORTED           0
 
 // CO2 Sensors
-#define FTE_SH_MV250_SUPPORTED              0
+#define FTE_SOHA_SUPPORTED                  0
 #define FTE_GS_DPC_HL_SUPPORTED             0
 #define FTE_TRUEYES_AIRQ_SUPPORTED          0
 #define FTE_ELT_AQM100_SUPPORTED            0

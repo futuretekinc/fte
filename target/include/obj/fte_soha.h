@@ -1,71 +1,92 @@
 #ifndef _FTE_SOHA_H__
 #define _FTE_SOHA_H__
 
+#define FTE_SOHA_DEVICE_MAX                2
 
-#ifndef FTE_SH_MV250_INTERVAL               
-#define FTE_SH_MV250_INTERVAL               5
+#ifndef FTE_SOHA_DEFAULT_LOOP_PERIOD
+#define FTE_SOHA_DEFAULT_LOOP_PERIOD        2000 // ms
 #endif
 
-#ifndef FTE_SH_MV250_RESPONSE_TIME            
-#define FTE_SH_MV250_RESPONSE_TIME          1000
+#ifndef FTE_SOHA_DEFAULT_UPDATE_INTERVAL
+#define FTE_SOHA_DEFAULT_UPDATE_INTERVAL    10000 // ms
 #endif
 
-#ifndef FTE_SH_MV250_EVENT_TYPE_ABOVE       
-#define FTE_SH_MV250_EVENT_TYPE_ABOVE       FTE_EVENT_CONDITION_ABOVE
+#ifndef FTE_SOHA_DEFAULT_REQUEST_TIMEOUT
+#define FTE_SOHA_DEFAULT_REQUEST_TIMEOUT    500
 #endif
 
-#ifndef FTE_SH_MV250_EVENT_UPPER_LIMIT      
-#define FTE_SH_MV250_EVENT_UPPER_LIMIT      1000
+#ifndef FTE_SOHA_DEFAULT_RETRY_COUNT
+#define FTE_SOHA_DEFAULT_RETRY_COUNT        3
 #endif
 
-#ifndef FTE_SH_MV250_EVENT_LOWER_LIMIT      
-#define FTE_SH_MV250_EVENT_LOWER_LIMIT      0
-#endif
+#define FTE_SOHA_MV250_REG_VALUE_START          0
+#define FTE_SOHA_MV250_REG_VALUE_CO2            0
+#define FTE_SOHA_MV250_REG_VALUE_TEMPERATURE    1
+#define FTE_SOHA_MV250_REG_VALUE_HUMIDITY       2
+#define FTE_SOHA_MV250_REG_VALUE_MAX            3
 
-#ifndef FTE_SH_MV250_EVENT_THRESHOLD        
-#define FTE_SH_MV250_EVENT_THRESHOLD        50
-#endif
+#define FTE_SOHA_MV250_REG_ADDR_START           100
+#define FTE_SOHA_MV250_REG_ADDR_CO2             100
+#define FTE_SOHA_MV250_REG_ADDR_TEMPERATURE     102
+#define FTE_SOHA_MV250_REG_ADDR_HUMIDITY        104
 
-#ifndef FTE_SH_MV250_EVENT_DELAY            
-#define FTE_SH_MV250_EVENT_DELAY            0
-#endif
+#define FTE_SOHA_MV250_DEFAULT_FULL_DUPLEX  FALSE
+#define FTE_SOHA_MV250_DEFAULT_BAUDRATE     9600
+#define FTE_SOHA_MV250_DEFAULT_DATABITS     8
+#define FTE_SOHA_MV250_DEFAULT_PARITY       FTE_UART_PARITY_NONE
+#define FTE_SOHA_MV250_DEFAULT_STOPBITS     FTE_UART_STOP_BITS_1
 
-#define FTE_SH_MV250_FRAME_LENGTH           24
-
-typedef struct
+typedef struct  FTE_SOHA_CONFIG_STRUCT
 {
-    uint_8  uiSTX;
-    uint_8  uiID;
-    uint_8  uiReserved1;
-    uint_8  puiCO2[4];
-    uint_8  uiReserved2;
-    uint_8  puiTemp[5];
-    uint_8  uiReserved3;
-    uint_8  puiHumi[4];
-    uint_8  uiReserved4;
-    uint_8  uiSHT;
-    uint_8  uiMode;
-    uint_8  uiCS;
-    uint_8  uiCR;
-    uint_8  uiLF;    
-}   FTE_SH_MV250_FRAME, _PTR_ FTE_SH_MV250_FRAME_PTR;
+    FTE_GUS_CONFIG  xGUS;
+}   FTE_SOHA_CONFIG, _PTR_ FTE_SOHA_CONFIG_PTR;
 
-_mqx_uint   FTE_SOHA_init(FTE_OBJECT_PTR pObj);
-uint_32     FTE_SOHA_request(FTE_OBJECT_PTR pObj);
-_mqx_uint   FTE_SOHA_received(FTE_OBJECT_PTR pObj);
+typedef struct  FTE_SOHA_EXT_CONFIG_STRUCT
+{
+    FTE_UINT32      ulLoopPeriod;
+    FTE_UINT32      ulUpdatePeriod;
+    FTE_UINT32      ulRequestTimeout;
+    FTE_UINT32      ulRetryCount;
+}   FTE_SOHA_EXT_CONFIG, _PTR_ FTE_SOHA_EXT_CONFIG_PTR;
 
-extern  FTE_VALUE_TYPE  FTE_SOHA_MV250_valueTypes[];
+typedef struct  FTE_SOHA_STATUS_STRUCT
+{
+    FTE_GUS_STATUS  xGUS;
+    FTE_UINT32      ulRetryCount;
+    FTE_TIME        xLastRequestTime;
+    FTE_TIME        xLastUpdateTime;
+} FTE_SOHA_STATUS, _PTR_ FTE_SOHA_STATUS_PTR;
 
-#define FTE_SH_MV250_DESCRIPTOR  {                  \
-        .nModel         = FTE_GUS_MODEL_SH_MV250,   \
-        .pName          = "SOHA MV250",             \
-        .nMaxResponseTime=FTE_SH_MV250_RESPONSE_TIME,\
-        .nFieldCount    = 3,                        \
-        .pValueTypes    = FTE_SOHA_MV250_valueTypes,\
-        .f_init         = FTE_SOHA_init,            \
-        .f_request      = FTE_SOHA_request,         \
-        .f_received     = FTE_SOHA_received         \
-    }
+FTE_RET     FTE_SOHA_init
+(
+    FTE_OBJECT_PTR pObj
+);
+
+void    FTE_SOHA_task
+(
+    FTE_UINT32 datas
+);
+
+FTE_INT32 FTE_SOHA_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[] 
+);
+
+FTE_RET FTE_SOHA_MV250HT_create
+(
+    FTE_CHAR_PTR    pSlaveID, 
+    FTE_OBJECT_PTR _PTR_ ppObj
+);
+
+extern  
+FTE_VALUE_TYPE      FTE_SOHA_MV250_valueTypes[];
+
+extern  
+FTE_SOHA_CONFIG     FTE_SOHA_MV250HT_defaultConfig;
+
+extern  const 
+FTE_GUS_MODEL_INFO  FTE_SOHA_MV250_GUSModelInfo;
 
 
 #endif

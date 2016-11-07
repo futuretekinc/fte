@@ -53,13 +53,14 @@ void FTE_TASK_net(uint_32 params)
     _time_delay(FTE_NET_INIT_WAITING_TIME);
 
     FTE_TIME_DELAY_init(&xTimeDelay, FTE_NET_STATE_CHECK_INTERVAL);
-    bLinkActive =ipcfg_get_link_active (BSP_DEFAULT_ENET_DEVICE);
+    FTE_NET_isActive(&bLinkActive);
     
     while(TRUE)
     {
         IPCFG_STATE xState;
+        boolean bNewLinkActive;
         
-        boolean bNewLinkActive =ipcfg_get_link_active (BSP_DEFAULT_ENET_DEVICE);
+        FTE_NET_isActive(&bNewLinkActive);
         if (bLinkActive != bNewLinkActive)
         {
             printf("Link is %s!\n",(bNewLinkActive)?"up":"down");

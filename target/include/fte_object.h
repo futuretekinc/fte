@@ -4,6 +4,7 @@
 #include "fte_event.h"
 #include "fte_value.h"
 #include "fte_json.h"
+#include "fte_time.h"
 
 #define MAX_OBJECT_NAME_LEN         16
 #define MAX_CONFIG_SIZE             52
@@ -29,7 +30,8 @@
 #define FTE_OBJ_CLASS_PRESSURE      ((0x0C) << FTE_OBJ_CLASS_SHIFT)
 #define FTE_OBJ_CLASS_DISCRETE      ((0x0D) << FTE_OBJ_CLASS_SHIFT)
 #define FTE_OBJ_CLASS_TEMP_CTRL     ((0x40) << FTE_OBJ_CLASS_SHIFT)
-#define FTE_OBJ_CLASS_MULTI         ((0x7F) << FTE_OBJ_CLASS_SHIFT)
+#define FTE_OBJ_CLASS_CTRL          ((0x7F) << FTE_OBJ_CLASS_SHIFT)
+#define FTE_OBJ_CLASS_MULTI         ((0x7E) << FTE_OBJ_CLASS_SHIFT)
 
 #define FTE_OBJ_TYPE_UNKNOWN        0x7FFFFFFF
 #define FTE_OBJ_TYPE_MASK           0x7FFF0000
@@ -94,8 +96,9 @@
 #define FTE_OBJ_TYPE_TEMP_CTRL          ((FTE_OBJ_CLASS_TEMP_CTRL   ) | (0x00 << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_MULTI_TEMP_CTRL    ((FTE_OBJ_CLASS_TEMP_CTRL   ) | (0x80 << FTE_OBJ_TYPE_SHIFT))
 
+#define FTE_OBJ_TYPE_CTRL               ((FTE_OBJ_CLASS_CTRL)         | (0x00 << FTE_OBJ_TYPE_SHIFT))
+
 #define FTE_OBJ_TYPE_MULTI              ((FTE_OBJ_CLASS_MULTI       ) | (0x00 << FTE_OBJ_TYPE_SHIFT))
-#define FTE_OBJ_TYPE_MULTI_VALUE        ((FTE_OBJ_CLASS_MULTI       ) | (0x00 << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_MULTI_SHT          ((FTE_OBJ_CLASS_MULTI       ) | (0x01 << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_MULTI_SH_MV250     ((FTE_OBJ_CLASS_MULTI       ) | (0x02 << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_MULTI_AQM100       ((FTE_OBJ_CLASS_MULTI       ) | (0x03 << FTE_OBJ_TYPE_SHIFT))
@@ -109,17 +112,12 @@
 #define FTE_OBJ_TYPE_MULTI_IOEX         ((FTE_OBJ_CLASS_MULTI      )  | (0x0B << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_MULTI_HEM12        ((FTE_OBJ_CLASS_MULTI       ) | (0x0C << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_MULTI_DOTECH_FX3D  ((FTE_OBJ_CLASS_MULTI      )  | (0x0D << FTE_OBJ_TYPE_SHIFT))
+#define FTE_OBJ_TYPE_MULTI_AQM100M      ((FTE_OBJ_CLASS_MULTI       ) | (0x0E << FTE_OBJ_TYPE_SHIFT))
 
 #define FTE_OBJ_ID_MASK                     0xFFFFFFFF
-typedef uint_32 FTE_OBJECT_ID;
+typedef FTE_UINT32 FTE_OBJECT_ID, _PTR_ FTE_OBJECT_ID_PTR;
 
-#define MAKE_ID(xType, nIndex)              ((uint_32)(((xType) & FTE_OBJ_TYPE_MASK) | ((nIndex) & 0x0000FFFF)))
-
-#define MAKE_SYSTEM_ID(xType, nIndex)       (MAKE_ID(xType, nIndex) | FTE_OBJ_SYSTEM)
-#define FTE_OBJ_CLASS(x)                    (((x)->pConfig->xCommon.nID) &  FTE_OBJ_CLASS_MASK)
-#define FTE_OBJ_TYPE(x)                     (((x)->pConfig->xCommon.nID) &  FTE_OBJ_TYPE_MASK)
-#define FTE_OBJ_INDEX(x)                    (((x)->pConfig->xCommon.nID) & ~FTE_OBJ_TYPE_MASK)
-#define FTE_OBJ_ID(x)                       ((x)->pConfig->xCommon.nID)
+#define MAKE_ID(xType, nIndex)              ((FTE_UINT32)(((xType) & FTE_OBJ_TYPE_MASK) | ((nIndex) & 0x0000FFFF)))
 
 #define FTE_ID_TYPE(x)                      ((x) &  FTE_OBJ_TYPE_MASK)
 #define FTE_ID_INDEX(x)                     ((x) & ~FTE_OBJ_TYPE_MASK)
@@ -130,6 +128,16 @@ typedef uint_32 FTE_OBJECT_ID;
 #define FTE_FLAG_SET(flags, field)          ((flags) | (field))
 #define FTE_FLAG_CLR(flags, field)          ((flags) & ~(field))
 
+#define MAKE_SYSTEM_ID(xType, nIndex)       (MAKE_ID(xType, nIndex) | FTE_OBJ_SYSTEM)
+#define FTE_OBJ_CLASS(x)                    (((x)->pConfig->xCommon.nID) &  FTE_OBJ_CLASS_MASK)
+#define FTE_OBJ_TYPE(x)                     (((x)->pConfig->xCommon.nID) &  FTE_OBJ_TYPE_MASK)
+#define FTE_OBJ_INDEX(x)                    (((x)->pConfig->xCommon.nID) & ~FTE_OBJ_TYPE_MASK)
+#define FTE_OBJ_ID(x)                       ((x)->pConfig->xCommon.nID)
+
+#define FTE_OBJ_IS_CHILD(x)                 (((((x)->pConfig->xCommon.nID) >> 16) & 0x80) == 0x80)
+#define FTE_OBJ_IS_RUN(x)                   (FTE_FLAG_IS_SET((x)->pConfig->xCommon.xFlags, FTE_OBJ_CONFIG_FLAG_ENABLE))
+
+#define FTE_OBJ_CONFIG_FLAG_DISABLE         0x00000000
 #define FTE_OBJ_CONFIG_FLAG_ENABLE          0x00000001
 #define FTE_OBJ_CONFIG_FLAG_DYNAMIC         0x00000002
 #define FTE_OBJ_CONFIG_FLAG_TRAP            0x00000010
@@ -137,6 +145,7 @@ typedef uint_32 FTE_OBJECT_ID;
 #define FTE_OBJ_CONFIG_FLAG_TRAP_EQUAL      0x00000050
 #define FTE_OBJ_CONFIG_FLAG_TRAP_CHANGED    0x00000070
 #define FTE_OBJ_CONFIG_FLAG_REVERSE         0x00000100
+#define FTE_OBJ_CONFIG_FLAG_SYNC            0x00000200
 
 #define FTE_OBJ_STATUS_FLAG_VALID           0x00000001
 #define FTE_OBJ_STATUS_FLAG_WARN            0x00000002
@@ -185,103 +194,90 @@ typedef uint_32 FTE_OBJECT_ID;
 #define FTE_OBJ_FIELD_ALL               (0xFFFFFFFF)
 
 
-#define FTE_OBJ_HAVE_SN                 0x01
-#define FTE_OBJ_HAVE_CTRL               0x02
+#define FTE_OBJ_FLAG_SN                 (1 << 0)
+#define FTE_OBJ_FLAG_CTRL               (1 << 1)
+#define FTE_OBJ_FLAG_GUS                (1 << 2)
+#define FTE_OBJ_FLAG_DYNAMIC            (1 << 3)
 
-extern  const char_ptr FTE_JSON_MSG_TYPE_STRING;
+extern  const FTE_CHAR_PTR FTE_JSON_MSG_TYPE_STRING;
 
-extern  const char_ptr FTE_JSON_DEV_ID_STRING;
-extern  const char_ptr FTE_JSON_DEV_TIME_STRING;
-extern  const char_ptr FTE_JSON_DEV_EP_STRING;
-extern  const char_ptr FTE_JSON_DEV_EPS_STRING;
+extern  const FTE_CHAR_PTR FTE_JSON_DEV_ID_STRING;
+extern  const FTE_CHAR_PTR FTE_JSON_DEV_TIME_STRING;
+extern  const FTE_CHAR_PTR FTE_JSON_DEV_EP_STRING;
+extern  const FTE_CHAR_PTR FTE_JSON_DEV_EPS_STRING;
 
-extern  const char_ptr FTE_JSON_OBJ_ID_STRING;
-extern  const char_ptr FTE_JSON_OBJ_NAME_STRING;
-extern  const char_ptr FTE_JSON_OBJ_VALUE_STRING;
-extern  const char_ptr FTE_JSON_OBJ_TIME_STRING;
-extern  const char_ptr FTE_JSON_OBJ_STATE_STRING;
-extern  const char_ptr FTE_JSON_OBJ_METHOD_STRING;
-extern  const char_ptr FTE_JSON_OBJ_PARAM_STRING;
-extern  const char_ptr FTE_JSON_OBJ_PARAMS_STRING;
+extern  const FTE_CHAR_PTR FTE_JSON_OBJ_ID_STRING;
+extern  const FTE_CHAR_PTR FTE_JSON_OBJ_NAME_STRING;
+extern  const FTE_CHAR_PTR FTE_JSON_OBJ_VALUE_STRING;
+extern  const FTE_CHAR_PTR FTE_JSON_OBJ_TIME_STRING;
+extern  const FTE_CHAR_PTR FTE_JSON_OBJ_STATE_STRING;
+extern  const FTE_CHAR_PTR FTE_JSON_OBJ_METHOD_STRING;
+extern  const FTE_CHAR_PTR FTE_JSON_OBJ_PARAM_STRING;
+extern  const FTE_CHAR_PTR FTE_JSON_OBJ_PARAMS_STRING;
 
-typedef struct _FTE_OBJECT_STATISTICS
+typedef struct FTE_OBJECT_STATISTICS
 {
-    uint_32 nTotalTrial;
-    uint_32 nTotalFail;
-    uint_32 nPartialFail;
-    uint_32 pStatBits[FTE_OBJ_CHECK_FAILURE_COUNT_MAX / sizeof(uint_32)];
+    FTE_UINT32 nTotalTrial;
+    FTE_UINT32 nTotalFail;
+    FTE_UINT32 nPartialFail;
+    FTE_UINT32 pStatBits[FTE_OBJ_CHECK_FAILURE_COUNT_MAX / sizeof(FTE_UINT32)];
 }   FTE_OBJECT_STATISTICS, _PTR_ FTE_OBJECT_STATISTICS_PTR;
 
-typedef struct  _FTE_OBJECT_STRUCT  _PTR_   FTE_OBJECT_PTR;
+typedef struct  FTE_OBJECT_STRUCT  _PTR_   FTE_OBJECT_PTR;
 
 /*****************************************************************************
  * Sensor Object Structure Description 
  *****************************************************************************/
-typedef struct   _FTE_OBJECT_COMMON_CONFIG_STRUCT
+typedef struct   FTE_OBJECT_COMMON_CONFIG_STRUCT
 {
-    uint_32     nID;
-    char        pName[MAX_OBJECT_NAME_LEN+1];
-    uint_32     xFlags;
-    uint_32     ulChild;
-    struct  _FTE_OBJECT_CONFIG_STRUCT  **pChild;
+    FTE_UINT32  nID;
+    FTE_CHAR    pName[MAX_OBJECT_NAME_LEN+1];
+    FTE_UINT32  xFlags;
+    FTE_UINT32  ulChild;
+    struct  FTE_OBJECT_CONFIG_STRUCT  **pChild;
 }   FTE_COMMON_CONFIG, _PTR_ FTE_COMMON_CONFIG_PTR;
 
-typedef struct   _FTE_OBJECT_CONFIG_STRUCT
+typedef struct   FTE_OBJECT_CONFIG_STRUCT
 {
     FTE_COMMON_CONFIG   xCommon;
-    uint_32             xReserved[6];
+    FTE_UINT32          xReserved[6];
 }   FTE_OBJECT_CONFIG, _PTR_ FTE_OBJECT_CONFIG_PTR;
 
-typedef struct _fte_object_action_struct
+typedef struct FTE_OBJECT_ACTION_STRUCT
 {
-    _mqx_uint       (*f_init)(FTE_OBJECT_PTR pSelf);
-    _mqx_uint       (*f_run)(FTE_OBJECT_PTR pSelf);
-    _mqx_uint       (*f_stop)(FTE_OBJECT_PTR pSelf);
-    _mqx_uint       (*f_set)(FTE_OBJECT_PTR pSelf, FTE_VALUE_PTR pValue);
-    _mqx_uint       (*f_get)(FTE_OBJECT_PTR pSelf, FTE_VALUE_PTR pValue);
-    _mqx_uint       (*f_set_multi)(FTE_OBJECT_PTR pSelf, uint_32 nIndex, FTE_VALUE_PTR pValue);
-    _mqx_uint       (*f_get_multi)(FTE_OBJECT_PTR pSelf, uint_32 nIndex, FTE_VALUE_PTR pValue);
-    _mqx_uint       (*f_get_sn)(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 nLen);
-    uint_32         (*f_get_update_interval)(FTE_OBJECT_PTR pObj);
-    _mqx_uint       (*f_set_update_interval)(FTE_OBJECT_PTR pObj, uint_32 nInterval);
-    _mqx_uint       (*f_get_statistic)(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTICS_PTR pStat);
-    _mqx_uint       (*f_attach_child)(FTE_OBJECT_PTR pSelf, uint_32 nChild);
-    _mqx_uint       (*f_detach_child)(FTE_OBJECT_PTR pSelf, uint_32 nChild);
-    _mqx_uint       (*f_get_child_count)(FTE_OBJECT_PTR pSelf, uint_32_ptr pulCount);
-    _mqx_uint       (*f_get_child)(FTE_OBJECT_PTR pSelf, uint_32 ulIndex, FTE_OBJECT_ID _PTR_ pxID);
-    _mqx_uint       (*f_set_config)(FTE_OBJECT_PTR pSelf, char_ptr pJSON);
-    _mqx_uint       (*f_get_config)(FTE_OBJECT_PTR pSelf, char_ptr pBuff, uint_32 ulBuffLen);
-    _mqx_uint       (*f_set_child_config)(FTE_OBJECT_PTR pSelf, FTE_OBJECT_PTR pChild, char_ptr pJSON);
-    _mqx_uint       (*f_get_child_config)(FTE_OBJECT_PTR pSelf, FTE_OBJECT_PTR pChild, char_ptr pBuff, uint_32 ulBuffLen);
+    FTE_RET     (*fInit)(FTE_OBJECT_PTR pSelf);
+    FTE_RET     (*fRun)(FTE_OBJECT_PTR pSelf);
+    FTE_RET     (*fStop)(FTE_OBJECT_PTR pSelf);
+    FTE_RET     (*fSet)(FTE_OBJECT_PTR pSelf, FTE_VALUE_PTR pValue);
+    FTE_RET     (*fGet)(FTE_OBJECT_PTR pSelf, FTE_VALUE_PTR pValue);
+    FTE_RET     (*fSetMulti)(FTE_OBJECT_PTR pSelf, FTE_UINT32 nIndex, FTE_VALUE_PTR pValue);
+    FTE_RET     (*fGetMulti)(FTE_OBJECT_PTR pSelf, FTE_UINT32 nIndex, FTE_VALUE_PTR pValue);
+    FTE_RET     (*fGetSN)(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pBuff, FTE_UINT32 nLen);
+    FTE_RET     (*fGetInterval)(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pInterval);
+    FTE_RET     (*fSetInterval)(FTE_OBJECT_PTR pObj, FTE_UINT32 nInterval);
+    FTE_RET     (*fGetStatistics)(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTICS_PTR pStat);
+    FTE_RET     (*fAttachChild)(FTE_OBJECT_PTR pSelf, FTE_UINT32 nChild);
+    FTE_RET     (*fDetachChild)(FTE_OBJECT_PTR pSelf, FTE_UINT32 nChild);
+    FTE_RET     (*fGetChildCount)(FTE_OBJECT_PTR pSelf, FTE_UINT32_PTR pulCount);
+    FTE_RET     (*fGetChild)(FTE_OBJECT_PTR pSelf, FTE_UINT32 ulIndex, FTE_OBJECT_ID _PTR_ pxID);
+    FTE_RET     (*fSetConfig)(FTE_OBJECT_PTR pSelf, FTE_CHAR_PTR pJSON);
+    FTE_RET     (*fGetConfig)(FTE_OBJECT_PTR pSelf, FTE_CHAR_PTR pBuff, FTE_UINT32 ulBuffLen);
+    FTE_RET     (*fSetChildConfig)(FTE_OBJECT_PTR pSelf, FTE_OBJECT_PTR pChild, FTE_CHAR_PTR pJSON);
+    FTE_RET     (*fGetChildConfig)(FTE_OBJECT_PTR pSelf, FTE_OBJECT_PTR pChild, FTE_CHAR_PTR pBuff, FTE_UINT32 ulBuffLen);
     
 }   FTE_OBJECT_ACTION, _PTR_ FTE_OBJECT_ACTION_PTR;
 
-typedef struct _fte_object_status_struct
+typedef struct FTE_OBJECT_STATUS_STRUCT
 {
-    uint_32                 xFlags;
-    int_32                  nValueCount;
+    FTE_UINT32              xFlags;
+    FTE_INT32               nValueCount;
     FTE_VALUE_PTR           pValue;
     TIME_STRUCT             xEventTimeStamp;
     MQX_TICK_STRUCT         xStartTicks;            
     FTE_OBJECT_STATISTICS   xStatistics;
 }   FTE_OBJECT_STATUS, _PTR_ FTE_OBJECT_STATUS_PTR;
 
-typedef struct _fte_object_desc_struct
-{
-    uint_32         nType;
-    char_ptr        pName;
-    uint_32         nMaxCount;
-    uint_32         xFlags;    
-    uint_32         xSupportedFields;
-    uint_32         nConfigSize;
-    uint_32         nStatusSize;
-    _mqx_uint       (*f_attach)(FTE_OBJECT_PTR pObj);
-    _mqx_uint       (*f_detach)(FTE_OBJECT_PTR pObj);
-    uint_32         (*f_printValue)(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 nLen);
-}   FTE_OBJECT_DESC, _PTR_ FTE_OBJECT_DESC_PTR;
-
-
-typedef struct  _FTE_OBJECT_STRUCT
+typedef struct FTE_OBJECT_STRUCT
 {
     FTE_OBJECT_CONFIG_PTR       pConfig;
     FTE_OBJECT_ACTION_PTR       pAction;
@@ -289,74 +285,113 @@ typedef struct  _FTE_OBJECT_STRUCT
     FTE_LIST                    xEventList;
 }   FTE_OBJECT;
 
-uint_32                 FTE_OBJ_DESC_count(void);
-FTE_OBJECT_DESC_PTR     FTE_OBJ_DESC_get(uint_32 nType);
-FTE_OBJECT_DESC_PTR     FTE_OBJ_DESC_getAt(uint_32 ulIndex);
+typedef struct FTE_OBJECT_DESC_STRUCT
+{
+    FTE_UINT32      nType;
+    FTE_CHAR_PTR    pName;
+    FTE_CHAR_PTR    pVendor;
+    FTE_UINT32      xFlags;    
+    FTE_UINT32      xSupportedFields;
+    FTE_UINT32      nConfigSize;
+    FTE_UINT32      nStatusSize;
+    FTE_RET         (*f_create)(FTE_OBJECT_CONFIG_PTR pConfig, FTE_OBJECT_PTR _PTR_ ppObj);
+    FTE_RET         (*f_attach)(FTE_OBJECT_PTR pObj, FTE_VOID_PTR pOpts);
+    FTE_RET         (*f_detach)(FTE_OBJECT_PTR pObj);
+    FTE_UINT32      (*f_printValue)(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pBuff, FTE_UINT32 nLen);
+    FTE_VOID_PTR    pOpts;
+}   FTE_OBJECT_DESC, _PTR_ FTE_OBJECT_DESC_PTR;
 
-uint_32         FTE_OBJ_DESC_CLASS_count(void);
-uint_32         FTE_OBJ_DESC_CLASS_getAt(uint_32 ulIndex);
 
-_mqx_uint       FTE_OBJ_CLASS_getName(FTE_OBJECT_ID nID, char_ptr pName, uint_32 nBuffLen);
+FTE_UINT32          FTE_OBJ_DESC_count(void);
+FTE_OBJECT_DESC_PTR FTE_OBJ_DESC_get(FTE_UINT32 nType);
+FTE_OBJECT_DESC_PTR FTE_OBJ_DESC_getAt(FTE_UINT32 ulIndex);
 
-FTE_OBJECT_PTR  FTE_OBJ_create(FTE_OBJECT_CONFIG_PTR pConfig);
-_mqx_uint       FTE_OBJ_destroy(FTE_OBJECT_PTR pObj);
+FTE_UINT32          FTE_OBJ_DESC_CLASS_count(void);
+FTE_UINT32          FTE_OBJ_DESC_CLASS_getAt(FTE_UINT32 ulIndex);
 
-FTE_OBJECT_PTR  FTE_OBJ_get(FTE_OBJECT_ID nID);
-FTE_OBJECT_PTR  FTE_OBJ_getFirst(FTE_OBJECT_ID nID, uint_32 nMask, boolean bSystem);
-FTE_OBJECT_PTR  FTE_OBJ_getNext(FTE_OBJECT_PTR  pObj, FTE_OBJECT_ID nID, uint_32 nMask, boolean bSystem);
-FTE_OBJECT_PTR  FTE_OBJ_getAt(FTE_OBJECT_ID nID, uint_32 nMask, uint_32 nIndex, boolean bSystem);
-uint_32         FTE_OBJ_count(FTE_OBJECT_ID nID, uint_32 nMask, boolean bSystem);
-uint_32         FTE_OBJ_getList(FTE_OBJECT_ID nID, uint_32 nMask, FTE_OBJECT_PTR _PTR_ pObjList, uint_32 nMaxCount);
+FTE_RET             FTE_OBJ_CLASS_getName(FTE_OBJECT_ID nID, FTE_CHAR_PTR pName, FTE_UINT32 nBuffLen);
 
-_mqx_uint       FTE_OBJ_getValue(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue);
-_mqx_uint       FTE_OBJ_setValue(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue);
-_mqx_uint       FTE_OBJ_setValueString(FTE_OBJECT_PTR pObj, char_ptr pValue);
-_mqx_uint       FTE_OBJ_getValueAt(FTE_OBJECT_PTR pObj, uint_32 ulIdx, FTE_VALUE_PTR pValue);
+FTE_OBJECT_PTR      FTE_OBJ_create(FTE_OBJECT_CONFIG_PTR pConfig);
+FTE_RET             FTE_OBJ_destroy(FTE_OBJECT_PTR pObj);
+
+FTE_RET             FTE_OBJ_init(FTE_OBJECT_PTR pObj);
+
+FTE_OBJECT_PTR      FTE_OBJ_get(FTE_OBJECT_ID nID);
+FTE_OBJECT_PTR      FTE_OBJ_getFirst(FTE_OBJECT_ID nID, FTE_UINT32 nMask, boolean bSystem);
+FTE_OBJECT_PTR      FTE_OBJ_getNext(FTE_OBJECT_PTR  pObj, FTE_OBJECT_ID nID, FTE_UINT32 nMask, boolean bSystem);
+FTE_OBJECT_PTR      FTE_OBJ_getAt(FTE_OBJECT_ID nID, FTE_UINT32 nMask, FTE_UINT32 nIndex, boolean bSystem);
+FTE_UINT32          FTE_OBJ_count(FTE_OBJECT_ID nID, FTE_UINT32 nMask, boolean bSystem);
+FTE_UINT32          FTE_OBJ_getList(FTE_OBJECT_ID nID, FTE_UINT32 nMask, FTE_OBJECT_PTR _PTR_ pObjList, FTE_UINT32 nMaxCount);
+FTE_RET         FTE_OBJ_getIDList(FTE_OBJECT_ID nID, FTE_UINT32 nMask, FTE_OBJECT_ID_PTR pObjIDs, FTE_UINT32 nMaxCount, FTE_UINT32_PTR pCount);
+
+FTE_RET         FTE_OBJ_getValue(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue);
+FTE_RET         FTE_OBJ_setValue(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue);
+FTE_RET         FTE_OBJ_setValueAt(FTE_OBJECT_PTR pObj, FTE_UINT32 ulIndex, FTE_VALUE_PTR pValue);
+FTE_RET         FTE_OBJ_setValueString(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pValue);
+FTE_RET         FTE_OBJ_getValueAt(FTE_OBJECT_PTR pObj, FTE_UINT32 ulIdx, FTE_VALUE_PTR pValue);
 FTE_VALUE_TYPE  FTE_OBJ_getValueType(FTE_OBJECT_PTR pObj);
 
-_mqx_uint       FTE_OBJ_getConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 ulBuffLen);
-_mqx_uint       FTE_OBJ_setConfig(FTE_OBJECT_PTR pObj, char_ptr pJSON);
+FTE_RET         FTE_OBJ_getConfig(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pBuff, FTE_UINT32 ulBuffLen);
+FTE_RET         FTE_OBJ_setConfig(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pJSON);
 
-char_ptr        FTE_OBJ_typeString(FTE_OBJECT_PTR pObj);
+FTE_CHAR_PTR        FTE_OBJ_typeString(FTE_OBJECT_PTR pObj);
 
-_mqx_uint       FTE_OBJ_getName(FTE_OBJECT_PTR pObj, char_ptr pName, uint_32 nBuffLen);
-_mqx_uint       FTE_OBJ_setName(FTE_OBJECT_PTR pObj, char_ptr pName, uint_32 nLen);
+FTE_RET         FTE_OBJ_getName(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pName, FTE_UINT32 nBuffLen);
+FTE_RET         FTE_OBJ_setName(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pName, FTE_UINT32 nLen);
 
-_mqx_uint       FTE_OBJ_getSN(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 nLen);
+FTE_RET         FTE_OBJ_getSN(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pBuff, FTE_UINT32 nLen);
 
-_mqx_uint       FTE_OBJ_activate(FTE_OBJECT_PTR pObj, boolean bEnable);
-_mqx_uint       FTE_OBJ_wasUpdated(FTE_OBJECT_PTR pObj);
-_mqx_uint       FTE_OBJ_wasChanged(FTE_OBJECT_PTR pObj);
+FTE_RET         FTE_OBJ_getInterval(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pulInterval);
+FTE_RET         FTE_OBJ_setInterval(FTE_OBJECT_PTR pObj, FTE_UINT32 ulInterval);
 
-_mqx_uint       FTE_OBJ_start(FTE_OBJECT_PTR pObj);
-_mqx_uint       FTE_OBJ_stop(FTE_OBJECT_PTR pObj);
+FTE_RET    FTE_OBJ_getStatistics
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_OBJECT_STATISTICS_PTR pStatistics
+);
 
-_mqx_uint       FTE_OBJ_save(FTE_OBJECT_PTR pObj);
+FTE_RET         FTE_OBJ_activate(FTE_OBJECT_PTR pObj, boolean bEnable);
+FTE_RET         FTE_OBJ_wasUpdated(FTE_OBJECT_PTR pObj);
+FTE_RET         FTE_OBJ_wasChanged(FTE_OBJECT_PTR pObj);
 
-uint_32         FTE_OBJ_runLoop(FTE_OBJECT_PTR pObj, TIMER_NOTIFICATION_TICK_FPTR f_callback, uint_32 nInterval);
-uint_32         FTE_OBJ_runMeasurement(FTE_OBJECT_PTR pObj, TIMER_NOTIFICATION_TICK_FPTR f_callback, uint_32 nTimeout);
+FTE_RET         FTE_OBJ_start(FTE_OBJECT_PTR pObj);
+FTE_RET         FTE_OBJ_stop(FTE_OBJECT_PTR pObj);
 
-uint_32         FTE_OBJ_getFailureCount(FTE_OBJECT_PTR pObj);
+FTE_RET         FTE_OBJ_save(FTE_OBJECT_PTR pObj);
 
-boolean         FTE_OBJ_FLAG_isSet(FTE_OBJECT_PTR pObj, uint_32 xFlag);
-_mqx_uint       FTE_OBJ_FLAG_set(FTE_OBJECT_PTR pObj, uint_32 xFlag);
-_mqx_uint       FTE_OBJ_FLAG_clear(FTE_OBJECT_PTR pObj, uint_32 xFlag);
+FTE_UINT32      FTE_OBJ_runLoop(FTE_OBJECT_PTR pObj, TIMER_NOTIFICATION_TICK_FPTR f_callback, FTE_UINT32 nInterval);
+FTE_UINT32      FTE_OBJ_runMeasurement(FTE_OBJECT_PTR pObj, TIMER_NOTIFICATION_TICK_FPTR f_callback, FTE_UINT32 nTimeout);
 
-_mqx_uint       FTE_OBJ_EVENT_attach(FTE_OBJECT_PTR pObj, FTE_EVENT_PTR pEvent);
-_mqx_uint       FTE_OBJ_EVENT_detach(FTE_OBJECT_PTR pObj, FTE_EVENT_PTR pEvent);
+FTE_UINT32      FTE_OBJ_getFailureCount(FTE_OBJECT_PTR pObj);
 
-void            FTE_OBJ_STATE_set(FTE_OBJECT_PTR pObj, uint_32 xFlags);
-void            FTE_OBJ_STATE_clear(FTE_OBJECT_PTR pObj, uint_32 xFlags);
-boolean         FTE_OBJ_STATE_isSet(FTE_OBJECT_PTR pObj, uint_32 xFlags);
+boolean         FTE_OBJ_FLAG_isSet(FTE_OBJECT_PTR pObj, FTE_UINT32 xFlag);
+FTE_RET         FTE_OBJ_FLAG_set(FTE_OBJECT_PTR pObj, FTE_UINT32 xFlag);
+FTE_RET         FTE_OBJ_FLAG_clear(FTE_OBJECT_PTR pObj, FTE_UINT32 xFlag);
 
-uint_32         FTE_OBJ_1WIRE_discovery(boolean bSave);
+FTE_RET         FTE_OBJ_EVENT_attach(FTE_OBJECT_PTR pObj, FTE_EVENT_PTR pEvent);
+FTE_RET         FTE_OBJ_EVENT_detach(FTE_OBJECT_PTR pObj, FTE_EVENT_PTR pEvent);
 
-_mqx_uint       FT_OBJ_STAT_incSucceed(FTE_OBJECT_STATISTICS_PTR pStat);
-_mqx_uint       FT_OBJ_STAT_incFailed(FTE_OBJECT_STATISTICS_PTR pStat);
+void            FTE_OBJ_STATE_set(FTE_OBJECT_PTR pObj, FTE_UINT32 xFlags);
+void            FTE_OBJ_STATE_clear(FTE_OBJECT_PTR pObj, FTE_UINT32 xFlags);
+boolean         FTE_OBJ_STATE_isSet(FTE_OBJECT_PTR pObj, FTE_UINT32 xFlags);
 
-FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON(FTE_OBJECT_PTR pObj, uint_32 xOptions);
+FTE_RET         FTE_OBJ_getChildCount(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pCount);
+FTE_RET         FTE_OBJ_getChild(FTE_OBJECT_PTR pObj, FTE_UINT32 ulIndex, FTE_OBJECT_PTR _PTR_ ppChild);
 
-int_32          FTE_OBJ_SHELL_cmd(int_32 argc, char_ptr argv[]);
+FTE_RET         FTE_OBJ_attachChild(FTE_OBJECT_PTR pObj, FTE_OBJECT_ID xChildID);
+FTE_RET         FTE_OBJ_detachChild(FTE_OBJECT_PTR pObj, FTE_OBJECT_ID xChildID);
+
+FTE_UINT32      FTE_OBJ_1WIRE_discovery(boolean bSave);
+
+FTE_RET         FT_OBJ_STAT_incSucceed(FTE_OBJECT_STATISTICS_PTR pStat);
+FTE_RET         FT_OBJ_STAT_incFailed(FTE_OBJECT_STATISTICS_PTR pStat);
+
+FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON(FTE_OBJECT_PTR pObj, FTE_UINT32 xOptions);
+
+FTE_INT32          FTE_OBJ_SHELL_cmd(FTE_INT32 argc, FTE_CHAR_PTR argv[]);
+
+#define FTE_OBJ_IS_SET(pObj, xFlag)     FTE_FLAG_IS_SET((pObj)->pConfig->xCommon.xFlags, xFlag)
+#define FTE_OBJ_IS_RESET(pObj, xFlag)     FTE_FLAG_IS_CLR((pObj)->pConfig->xCommon.xFlags, xFlag)
 
 #define FTE_OBJ_IS_ENABLED(pObj)     FTE_FLAG_IS_SET((pObj)->pConfig->xCommon.xFlags, FTE_OBJ_CONFIG_FLAG_ENABLE)
 

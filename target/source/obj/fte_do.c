@@ -3,19 +3,28 @@
 #include "fte_log.h"
 #include "fte_time.h" 
  
-static  FTE_OBJECT_PTR  _do_get_object(FTE_OBJECT_ID nID);
-static _mqx_uint        _do_init(FTE_OBJECT_PTR pObj);
-static _mqx_uint        _do_set_value(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue);
+static  
+FTE_OBJECT_PTR  FTE_DO_getObject(FTE_OBJECT_ID nID);
+static 
+FTE_RET  FTE_DO_init(FTE_OBJECT_PTR pObj);
+static 
+FTE_RET  _do_set_value(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue);
  
-static  FTE_LIST            _xObjList = { 0, NULL, NULL};
+static  
+FTE_LIST    _xObjList = { 0, NULL, NULL};
 
-static  FTE_OBJECT_ACTION   _xAction = 
+static  
+FTE_OBJECT_ACTION   _xAction = 
 {
-    .f_init         = _do_init,
-    .f_set          = _do_set_value
+    .fInit  = FTE_DO_init,
+    .fSet   = _do_set_value
 };
 
-_mqx_uint FTE_DO_attach(FTE_OBJECT_PTR pObj)
+FTE_RET FTE_DO_attach
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_VOID_PTR    pOpts
+)
 {
     ASSERT(pObj != NULL);
     
@@ -42,7 +51,7 @@ _mqx_uint FTE_DO_attach(FTE_OBJECT_PTR pObj)
 
     pObj->pAction = (FTE_OBJECT_ACTION_PTR)&_xAction;
 
-    if (_do_init(pObj) != MQX_OK)
+    if (FTE_DO_init(pObj) != MQX_OK)
     {
         FTE_GPIO_detach(pStatus->pGPIO);
         goto error;
@@ -62,7 +71,10 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint FTE_DO_detach(FTE_OBJECT_PTR pObj)
+FTE_RET FTE_DO_detach
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     if (!FTE_LIST_isExist(&_xObjList, pObj))
     {
@@ -79,16 +91,20 @@ error:
 }
 
 /******************************************************************************/
-uint_32     FTE_DO_count(void)
+FTE_UINT32  FTE_DO_count(void)
 {
     return  FTE_LIST_count(&_xObjList);
 }
 
-_mqx_uint   FTD_DO_getValue(FTE_OBJECT_ID  nID, boolean *pbValue)
+FTE_RET   FTD_DO_getValue
+(
+    FTE_OBJECT_ID   nID, 
+    FTE_BOOL_PTR    pbValue
+)
 {
     ASSERT(pbValue != NULL);
     
-    FTE_OBJECT_PTR pObj = _do_get_object(nID);
+    FTE_OBJECT_PTR pObj = FTE_DO_getObject(nID);
     if (pObj == NULL)
     {
         return  FALSE;
@@ -99,10 +115,14 @@ _mqx_uint   FTD_DO_getValue(FTE_OBJECT_ID  nID, boolean *pbValue)
     return  MQX_OK;    
 }
 
-_mqx_uint   FTE_DO_setValue(FTE_OBJECT_ID  nID, boolean bValue)
+FTE_RET   FTE_DO_setValue
+(
+    FTE_OBJECT_ID   nID, 
+    FTE_BOOL        bValue
+)
 {
     FTE_VALUE   xValue;
-    FTE_OBJECT_PTR pObj = _do_get_object(nID);
+    FTE_OBJECT_PTR pObj = FTE_DO_getObject(nID);
     if (pObj == NULL)
     {
         return  MQX_ERROR;
@@ -116,9 +136,12 @@ _mqx_uint   FTE_DO_setValue(FTE_OBJECT_ID  nID, boolean bValue)
     return  MQX_OK;    
 }
 
-_mqx_uint   FTE_DO_setPermanent(FTE_OBJECT_ID  nID)
+FTE_RET   FTE_DO_setPermanent
+(
+    FTE_OBJECT_ID  nID
+)
 {
-    FTE_OBJECT_PTR pObj = _do_get_object(nID);
+    FTE_OBJECT_PTR pObj = FTE_DO_getObject(nID);
     if (pObj == NULL)
     {
         return  MQX_ERROR;
@@ -139,7 +162,11 @@ _mqx_uint   FTE_DO_setPermanent(FTE_OBJECT_ID  nID)
    
 }
 
-_mqx_uint   FEE_DO_getInitState(FTE_OBJECT_PTR pObj, uint_32_ptr pState)
+FTE_RET   FEE_DO_getInitState
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32_PTR  pState
+)
 {
     ASSERT(pObj != NULL);
     *pState = FTE_FLAG_IS_SET(pObj->pConfig->xCommon.xFlags, FTE_DO_CONFIG_INIT_ON);
@@ -147,7 +174,11 @@ _mqx_uint   FEE_DO_getInitState(FTE_OBJECT_PTR pObj, uint_32_ptr pState)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_DO_setInitState(FTE_OBJECT_PTR pObj, uint_32 nState)
+FTE_RET   FTE_DO_setInitState
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nState
+)
 {
     ASSERT(pObj != NULL);
     if (nState)
@@ -165,7 +196,10 @@ _mqx_uint   FTE_DO_setInitState(FTE_OBJECT_PTR pObj, uint_32 nState)
 }
 
 /******************************************************************************/
-FTE_OBJECT_PTR  _do_get_object(FTE_OBJECT_ID nID)
+FTE_OBJECT_PTR  FTE_DO_getObject
+(
+    FTE_OBJECT_ID   nID
+)
 {
     FTE_OBJECT_PTR      pObj;
     FTE_LIST_ITERATOR   xIter;
@@ -184,7 +218,10 @@ FTE_OBJECT_PTR  _do_get_object(FTE_OBJECT_ID nID)
     return  NULL;
 }
 
-_mqx_uint   _do_init(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_DO_init
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
     FTE_VALUE           xValue;
@@ -197,7 +234,11 @@ _mqx_uint   _do_init(FTE_OBJECT_PTR pObj)
     return  MQX_OK;
 }
 
-static _mqx_uint _do_set_value(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue)
+FTE_RET _do_set_value
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_VALUE_PTR   pValue
+)
 {
     ASSERT(pObj != NULL);
     
@@ -229,57 +270,61 @@ error:
     return  MQX_ERROR;
 }
 
-int_32      FTE_DO_SHELL_cmd(int_32 argc, char_ptr argv[])
+FTE_INT32   FTE_DO_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[]
+)
 { /* Body */
-    boolean              print_usage, shorthelp = FALSE;
-    int_32               return_code = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   xRet = SHELL_EXIT_SUCCESS;
     
-    print_usage = Shell_check_help_request (argc, argv, &shorthelp);
+    bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
-    if (!print_usage)
+    if (!bPrintUsage)
     {
-        uint_32     nID;
-        boolean     permanent = FALSE;
-        boolean     switch_on = FALSE;
+        FTE_UINT32     nID;
+        FTE_BOOL     permanent = FALSE;
+        FTE_BOOL     switch_on = FALSE;
         
-        if (argc > 3)
+        if (nArgc > 3)
         {
-            print_usage = TRUE;
+            bPrintUsage = TRUE;
             goto error;
         }
         
-        if (argc > 2)
+        if (nArgc > 2)
         {
-            if (strcasecmp(argv[2], "on") == 0)
+            if (strcasecmp(pArgv[2], "on") == 0)
             {
                 switch_on = TRUE;
             }
-            else if (strcasecmp(argv[2], "on+") == 0)
+            else if (strcasecmp(pArgv[2], "on+") == 0)
             {
                 permanent = TRUE;
                 switch_on = TRUE;
             }
-            else if (strcasecmp(argv[2], "off") == 0)
+            else if (strcasecmp(pArgv[2], "off") == 0)
             {
                 switch_on = FALSE;
             }
-            else if (strcasecmp(argv[2], "off+") == 0)
+            else if (strcasecmp(pArgv[2], "off+") == 0)
             {
                 permanent = TRUE;
                 switch_on = FALSE;
             }
             else
             {
-                print_usage = TRUE;
+                bPrintUsage = TRUE;
                 goto error;
             }
         }
         
-        if (argc > 1)
+        if (nArgc > 1)
         {
-            if (!Shell_parse_hexnum(argv[1], &nID))
+            if (!Shell_parse_hexnum(pArgv[1], &nID))
             {
-                print_usage = TRUE;
+                bPrintUsage = TRUE;
                 goto error;
             }
             
@@ -290,14 +335,14 @@ int_32      FTE_DO_SHELL_cmd(int_32 argc, char_ptr argv[])
             
         }
         
-        switch(argc)
+        switch(nArgc)
         {
         case    1:
             {
                 FTE_OBJECT_PTR      pObj;
                 FTE_LIST_ITERATOR   xIter;
                 
-                uint_32 i;
+                FTE_UINT32 i;
                 
                 if (FTE_LIST_count(&_xObjList) == 0)
                 {
@@ -314,7 +359,7 @@ int_32      FTE_DO_SHELL_cmd(int_32 argc, char_ptr argv[])
                     char    pValueString[32];
                     
                     FTE_VALUE_toString(((FTE_DO_STATUS_PTR)pObj->pStatus)->xCommon.pValue, pValueString, sizeof(pValueString));
-                    FTE_TIME_toString(&((FTE_DO_STATUS_PTR)pObj->pStatus)->xCommon.pValue->xTimeStamp, pBuff, sizeof(pBuff));
+                    FTE_TIME_toStr(&((FTE_DO_STATUS_PTR)pObj->pStatus)->xCommon.pValue->xTimeStamp, pBuff, sizeof(pBuff));
                     printf("%2d: %08x %16s %6s %20s\n", i, 
                            pObj->pConfig->xCommon.nID,
                            pObj->pConfig->xCommon.pName,
@@ -333,12 +378,12 @@ int_32      FTE_DO_SHELL_cmd(int_32 argc, char_ptr argv[])
                 pObj = FTE_OBJ_get(nID);
                 if (pObj == NULL)
                 {
-                    printf("Error : DO[%s] is not exists.\n", argv[1]);
+                    printf("Error : DO[%s] is not exists.\n", pArgv[1]);
                     goto error;
                 }
 
                 FTE_VALUE_toString(((FTE_DO_STATUS_PTR)pObj->pStatus)->xCommon.pValue, pValueString, sizeof(pValueString));
-                FTE_TIME_toString(&((FTE_DO_STATUS_PTR)pObj->pStatus)->xCommon.pValue->xTimeStamp, pBuff, sizeof(pBuff));
+                FTE_TIME_toStr(&((FTE_DO_STATUS_PTR)pObj->pStatus)->xCommon.pValue->xTimeStamp, pBuff, sizeof(pBuff));
 
                 printf("                ID : %08x\n", pObj->pConfig->xCommon.nID);
                 printf("              Name : %16s\n", pObj->pConfig->xCommon.pName);
@@ -360,24 +405,24 @@ int_32      FTE_DO_SHELL_cmd(int_32 argc, char_ptr argv[])
             
                 
         default:
-            print_usage = TRUE;
+            bPrintUsage = TRUE;
         }
     }
                 
 error:    
-    if (print_usage || (return_code !=SHELL_EXIT_SUCCESS))
+    if (bPrintUsage || (xRet !=SHELL_EXIT_SUCCESS))
     {
-        if (shorthelp)
+        if (bShortHelp)
         {
-            printf ("%s [<index>] [ open | close ]\n", argv[0]);
+            printf ("%s [<index>] [ open | close ]\n", pArgv[0]);
         }
         else
         {
-            printf("Usage : %s [<index>]  [ open | close ]\n", argv[0]);
+            printf("Usage : %s [<index>]  [ open | close ]\n", pArgv[0]);
             printf("        index - index of digital output\n");
             printf("        open  - open the switch\n");
             printf("        close - close the switch\n");
         }
     }
-    return   return_code;
+    return   xRet;
 }

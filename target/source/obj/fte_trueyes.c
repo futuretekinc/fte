@@ -4,6 +4,70 @@
 #include "fte_time.h"
  
 
+#if FTE_TRUEYES_AIRQ_SUPPORTED
+
+static const FTE_IFCE_CONFIG FTE_TRUEYES_AIRQ_TEMPERATURE_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_TEMP, 0x0001),
+        .pName      = "AIRQ-TEMP",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(RQ, 0x0001),
+    .nRegID     = 1,
+    .nInterval  = FTE_TRUEYES_AIRQ_DEFAULT_UPDATE_INTERVAL
+};
+
+static const FTE_IFCE_CONFIG FTE_TRUEYES_AIRQ_HUMIDITY_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_HUMI, 0x0001),
+        .pName      = "AIRQ-HUMI",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(RQ, 0x0001),
+    .nRegID     = 2,
+    .nInterval  = FTE_TRUEYES_AIRQ_DEFAULT_UPDATE_INTERVAL
+};
+
+static const FTE_IFCE_CONFIG FTE_TRUEYES_AIRQ_CO2_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_CO2, 0x0001),
+        .pName      = "AIRQ-CO2",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(RQ, 0x0001),
+    .nRegID     = 0,
+    .nInterval  = FTE_TRUEYES_AIRQ_DEFAULT_UPDATE_INTERVAL
+};
+
+static const FTE_OBJECT_CONFIG_PTR FTE_TRUEYES_AIRQ_defaultChildConfigs[] =
+{
+    (FTE_OBJECT_CONFIG_PTR)&FTE_TRUEYES_AIRQ_TEMPERATURE_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_TRUEYES_AIRQ_HUMIDITY_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_TRUEYES_AIRQ_CO2_defaultConfig
+};
+
+FTE_GUS_CONFIG FTE_TRUEYES_AIRQ_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(RQ, 0x0001),
+        .pName      = "AIRQ",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+        .ulChild    = sizeof(FTE_TRUEYES_AIRQ_defaultChildConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR),
+        .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)FTE_TRUEYES_AIRQ_defaultChildConfigs
+    },
+    .nModel     = FTE_GUS_MODEL_TRUEYES_AIRQ, 
+    .nSensorID  = 0x01,
+    .nUCSID     = FTE_DEV_UCS_1,
+    .nInterval  = FTE_TRUEYES_AIRQ_INTERVAL
+};
+
 FTE_VALUE_TYPE  FTE_TRUEYES_AIRQ_valueTypes[] =
 {
     FTE_VALUE_TYPE_PPM,
@@ -11,7 +75,27 @@ FTE_VALUE_TYPE  FTE_TRUEYES_AIRQ_valueTypes[] =
     FTE_VALUE_TYPE_HUMIDITY,
     FTE_VALUE_TYPE_DIO
 };
-_mqx_uint   FTE_AIRQ_request(FTE_OBJECT_PTR pObj)
+
+
+const FTE_GUS_MODEL_INFO    FTE_TRUEYES_AIRQ_GUSModelInfo = 
+{
+    .nModel         = FTE_GUS_MODEL_TRUEYES_AIRQ,
+    .pName          = "TRUEYES AIRQ",
+    .xUARTConfig    = 
+    {
+        .nBaudrate  =   FTE_TRUEYES_AIRQ_DEFAULT_BAUDRATE,
+        .nDataBits  =   FTE_TRUEYES_AIRQ_DEFAULT_DATABITS,
+        .nParity    =   FTE_TRUEYES_AIRQ_DEFAULT_PARITY,
+        .nStopBits  =   FTE_TRUEYES_AIRQ_DEFAULT_STOPBITS,
+        .bFullDuplex=   FTE_TRUEYES_AIRQ_DEFAULT_FULL_DUPLEX
+    },
+    .nFieldCount    = 4,
+    .pValueTypes   = FTE_TRUEYES_AIRQ_valueTypes,
+    .f_request      = FTE_AIRQ_request,
+    .f_received     = FTE_AIRQ_received
+};
+
+FTE_RET   FTE_AIRQ_request(FTE_OBJECT_PTR pObj)
 {
     FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     FTE_GUS_CONFIG_PTR  pConfig = (FTE_GUS_CONFIG_PTR)pObj->pConfig;
@@ -25,7 +109,7 @@ _mqx_uint   FTE_AIRQ_request(FTE_OBJECT_PTR pObj)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_AIRQ_received(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_AIRQ_received(FTE_OBJECT_PTR pObj)
 {
     FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     uint_32     nCO2    = 0;
@@ -62,3 +146,5 @@ _mqx_uint   FTE_AIRQ_received(FTE_OBJECT_PTR pObj)
     
     return  MQX_OK;
 }
+
+#endif

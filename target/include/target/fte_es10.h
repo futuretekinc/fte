@@ -10,8 +10,13 @@
 
 #define FTE_CONSOLE_SUPPORTED               1
 #define FTE_LOG_SUPPORTED                   1
+#if FTE_V2
 #define FTE_PWR_SW_SUPPORTED                1
+#define FTE_FACTORY_RESET_SUPPORTED         1
+#else
+#define FTE_PWR_SW_SUPPORTED                0
 #define FTE_FACTORY_RESET_SUPPORTED         0
+#endif
 
 #define FTE_I2C_SUPPORTED                   0
 #define FTE_SSD1305_SUPPORTED               0
@@ -25,6 +30,8 @@
 #define FTE_UCM_SUPPORTED                   0
 #define FTE_DEV_LWGPIO_UCS1_RCTRL_SUPPORTED 0
 #define FTE_DEV_LWGPIO_UCS1_WCTRL_SUPPORTED 1
+#define FTE_DEV_LWGPIO_UCS2_RCTRL_SUPPORTED 0
+#define FTE_DEV_LWGPIO_UCS2_WCTRL_SUPPORTED 0
 
 #define FTE_RTD_SUPPORTED                   0
 #define FTE_RTD0_SUPPORTED                  0
@@ -47,6 +54,7 @@
 #define FTE_GPIO_DI_SUPPORTED               1
 #define FTE_MULTI_DI_SUPPORTED              0
 #define FTE_MULTI_DO_SUPPORTED              0
+#define FTE_MULTI_AI_SUPPORTED              0
 #define FTE_MULTI_TEMP_SUPPORTED            1
 #define FTE_MULTI_HUMI_SUPPORTED            1
 #define FTE_MULTI_CO2_SUPPORTED             1
@@ -56,9 +64,11 @@
 #define FTE_MULTI_VOLTAGE_SUPPORTED         0
 #define FTE_MULTI_CURRENT_SUPPORTED         0
 #define FTE_MULTI_POWER_SUPPORTED           0
+#define FTE_MULTI_VALUE_SUPPORTED           0
+#define FTE_MULTI_DISCRETE_SUPPORTED        0
 
 // CO2 Sensors
-#define FTE_SH_MV250_SUPPORTED              0
+#define FTE_SOHA_SUPPORTED                  0
 #define FTE_GS_DPC_HL_SUPPORTED             0
 #define FTE_TRUEYES_AIRQ_SUPPORTED          0
 #define FTE_ELT_AQM100_SUPPORTED            1
@@ -73,6 +83,9 @@
 #define FTE_GUS_SUPPORTED                   1
 #define FTE_HM1001_SUPPORTED                0
 #define FTE_MST_MEX510C_SUPPORTED           0
+#define FTE_CIAS_SIOUX_CU_SUPPORTED         0
+#define FTE_IOEX_SUPPORTED                  0
+#define FTE_DOTECH_SUPPORTED                0
 
 #define FTE_NET_SUPPORTED                   1
 #define FTE_HTTPD_SUPPORTED                 0
@@ -90,6 +103,8 @@
 #define FTE_DS18B20_MAX_COUNT               10
 #define FTE_SHT_MAX_COUNT                   1
 #define FTE_1WIRE_MAX_DEVICES               10
+
+#define FTE_DEBUG                           0
 
 #include "fte_common.h"
 

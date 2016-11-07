@@ -8,7 +8,179 @@
 
 #if FTE_CIAS_SIOUX_CU_SUPPORTED
 
+static const 
+FTE_IFCE_CONFIG FTE_CIAS_SIOUX_CU_ZONE1_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_ZONE, 0x0001),
+        .pName      = "ZONE 1-2",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 8,
+    .nInterval  = FTE_CIAS_SIOUX_CU_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_CIAS_SIOUX_CU_ZONE3_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_ZONE, 0x0001),
+        .pName      = "ZONE 3-4",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 9,
+    .nInterval  = FTE_CIAS_SIOUX_CU_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_CIAS_SIOUX_CU_ZONE5_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_ZONE, 0x0001),
+        .pName      = "ZONE 5-6",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 10,
+    .nInterval  = FTE_CIAS_SIOUX_CU_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_CIAS_SIOUX_CU_ZONE7_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_ZONE, 0x0001),
+        .pName      = "ZONE 7-8",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 11,
+    .nInterval  = FTE_CIAS_SIOUX_CU_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_CIAS_SIOUX_CU_ZONE9_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_ZONE, 0x0001),
+        .pName      = "ZONE 9-10",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 12,
+    .nInterval  = FTE_CIAS_SIOUX_CU_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_CIAS_SIOUX_CU_ZONE11_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_ZONE, 0x0001),
+        .pName      = "ZONE 11-12",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 13,
+    .nInterval  = FTE_CIAS_SIOUX_CU_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_CIAS_SIOUX_CU_ZONE13_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_ZONE, 0x0001),
+        .pName      = "ZONE 13-14",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 14,
+    .nInterval  = FTE_CIAS_SIOUX_CU_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_CIAS_SIOUX_CU_ZONE15_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_ZONE, 0x0001),
+        .pName      = "ZONE 15-16",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 15,
+    .nInterval  = FTE_CIAS_SIOUX_CU_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_CIAS_SIOUX_CU_ZONE17_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_ZONE, 0x0001),
+        .pName      = "ZONE 17-18",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 16,
+    .nInterval  = FTE_CIAS_SIOUX_CU_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_CIAS_SIOUX_CU_ZONE19_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_ZONE, 0x0001),
+        .pName      = "ZONE 19-20",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+    .nRegID     = 17,
+    .nInterval  = FTE_CIAS_SIOUX_CU_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_OBJECT_CONFIG_PTR FTE_CIAS_SIOUX_CU_defaultChildConfigs[] =
+{
+    (FTE_OBJECT_CONFIG_PTR)&FTE_CIAS_SIOUX_CU_ZONE1_defaultConfig ,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_CIAS_SIOUX_CU_ZONE3_defaultConfig ,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_CIAS_SIOUX_CU_ZONE5_defaultConfig ,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_CIAS_SIOUX_CU_ZONE7_defaultConfig ,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_CIAS_SIOUX_CU_ZONE9_defaultConfig ,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_CIAS_SIOUX_CU_ZONE11_defaultConfig ,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_CIAS_SIOUX_CU_ZONE13_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_CIAS_SIOUX_CU_ZONE15_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_CIAS_SIOUX_CU_ZONE17_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_CIAS_SIOUX_CU_ZONE19_defaultConfig
+};
+
+FTE_GUS_CONFIG FTE_CIAS_SIOUX_CU_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
+        .pName      = "SIOUX_CU",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+        .ulChild    = sizeof(xCIASSIOUXCUChildConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR),
+        .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)xCIASSIOUXCUChildConfigs
+    },
+    .nModel     = FTE_GUS_MODEL_CIAS_SIOUX_CU,
+    .nSensorID  = 0x01,
+    .nUCSID     = FTE_DEV_UCS_2,
+    .nInterval  = FTE_CIAS_SIOUX_CU_DEFAULT_UPDATE_INTERVAL
+};
+
 static  FTE_CIAS_SIOUX_CU   SIOUX_CU[FTE_CIAS_SIOUX_CU_MAX];
+
 FTE_VALUE_TYPE  FTE_CIAS_SIOUX_CU_valueTypes[] =
 {    
     FTE_VALUE_TYPE_HEX32,
@@ -41,7 +213,23 @@ FTE_VALUE_TYPE  FTE_CIAS_SIOUX_CU_valueTypes[] =
     FTE_VALUE_TYPE_ULONG
 };
  
-_mqx_uint   FTE_CIAS_SIOUX_CU_attach(FTE_OBJECT_PTR pObj)
+const 
+FTE_GUS_MODEL_INFO    FTE_CIAS_SIOUX_CU_GUSModelInfo = 
+{
+    .nModel         = FTE_GUS_MODEL_CIAS_SIOUX_CU,
+    .pName          = "CIAS_SIOUX_CU",
+    .xFlags         = FTE_GUS_FLAG_SHARED,
+    .nFieldCount    = FTE_CIAS_SIOUX_CU_ALARM_MAX + FTE_CIAS_SIOUX_CU_ZONE_MAX,
+    .pValueTypes    = FTE_CIAS_SIOUX_CU_valueTypes,
+    .f_attach       = FTE_CIAS_SIOUX_CU_attach,
+    .f_detach       = FTE_CIAS_SIOUX_CU_detach,
+    .f_get          = FTE_CIAS_SIOUX_CU_get,
+};
+
+FTE_RET   FTE_CIAS_SIOUX_CU_attach
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_CIAS_SIOUX_CU_STATUS_PTR    pStatus;
     FTE_UCS_PTR                     pUCS = NULL;
@@ -70,7 +258,10 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint   FTE_CIAS_SIOUX_CU_detach(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_CIAS_SIOUX_CU_detach
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_CIAS_SIOUX_CU_STATUS_PTR  pStatus;
 
@@ -99,28 +290,10 @@ _mqx_uint   FTE_CIAS_SIOUX_CU_detach(FTE_OBJECT_PTR pObj)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_CIAS_SIOUX_CU_setConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff)
-{
-    return  MQX_OK;
-}
-
-_mqx_uint   FTE_CIAS_SIOUX_CU_getConfig(FTE_OBJECT_PTR pObject, char_ptr pBuff, uint_32 ulBuffLen)
-{
-    return  MQX_OK;
-}
-
-_mqx_uint   FTE_CIAS_SIOUX_CU_request(FTE_OBJECT_PTR pObj)
-{
-    return  MQX_OK;
-}
-
-
-_mqx_uint   FTE_CIAS_SIOUX_CU_received(FTE_OBJECT_PTR pObj)
-{
-    return  MQX_OK;
-}
-
-_mqx_uint FTE_CIAS_SIOUX_CU_loadConfig(uint_32 ulIndex)
+FTE_RET FTE_CIAS_SIOUX_CU_loadConfig
+(
+    FTE_UINT32  ulIndex
+)
 {
     FTE_CIAS_SIOUX_CU_EXT_CONFIG    xConfig;
     
@@ -145,7 +318,10 @@ _mqx_uint FTE_CIAS_SIOUX_CU_loadConfig(uint_32 ulIndex)
     return  MQX_OK;
 }
 
-_mqx_uint FTE_CIAS_SIOUX_CU_saveConfig(uint_32 ulIndex)
+FTE_RET FTE_CIAS_SIOUX_CU_saveConfig
+(
+    FTE_UINT32  ulIndex
+)
 {
     FTE_CIAS_SIOUX_CU_EXT_CONFIG    xConfig;
     
@@ -165,7 +341,12 @@ _mqx_uint FTE_CIAS_SIOUX_CU_saveConfig(uint_32 ulIndex)
     return  FTE_CFG_CIAS_setExtConfig(&xConfig, sizeof(xConfig));
 }
 
-uint_32     FTE_CIAS_SIOUX_CU_get(FTE_OBJECT_PTR pObject, uint_32 ulIndex, FTE_VALUE_PTR pValue)
+FTE_UINT32     FTE_CIAS_SIOUX_CU_get
+(
+    FTE_OBJECT_PTR  pObject, 
+    FTE_UINT32      ulIndex, 
+    FTE_VALUE_PTR   pValue
+)
 {
     ASSERT ((pObject != NULL) && (pValue != NULL));
     
@@ -175,11 +356,11 @@ uint_32     FTE_CIAS_SIOUX_CU_get(FTE_OBJECT_PTR pObject, uint_32 ulIndex, FTE_V
     }
     else if (ulIndex < FTE_CIAS_SIOUX_CU_ALARM_MAX + FTE_CIAS_SIOUX_CU_ZONE_MAX / 2)
     {
-        uint_32 ulSensor1 = 0;
-        uint_32 ulSensor2 = 0;
-        uint_32 ulValue = 0;
-        uint_32 ulZone = (ulIndex - FTE_CIAS_SIOUX_CU_ALARM_MAX)*2;
-        uint_32 ulDistance = SIOUX_CU[0].ulDistance;
+        FTE_UINT32 ulSensor1 = 0;
+        FTE_UINT32 ulSensor2 = 0;
+        FTE_UINT32 ulValue = 0;
+        FTE_UINT32 ulZone = (ulIndex - FTE_CIAS_SIOUX_CU_ALARM_MAX)*2;
+        FTE_UINT32 ulDistance = SIOUX_CU[0].ulDistance;
         
         if (ulDistance < FTE_CIAS_SIOUX_CU_DEFAULT_DISTANCE)
         {
@@ -226,7 +407,10 @@ uint_32     FTE_CIAS_SIOUX_CU_get(FTE_OBJECT_PTR pObject, uint_32 ulIndex, FTE_V
     return  MQX_OK;
 }
 
-void FTE_CIAS_SIOUX_CU_init(uint_32 ulObjectID)
+void FTE_CIAS_SIOUX_CU_init
+(
+    FTE_UINT32  ulObjectID
+)
 {
     FTE_CIAS_SIOUX_CU_loadConfig(0);
     
@@ -234,7 +418,10 @@ void FTE_CIAS_SIOUX_CU_init(uint_32 ulObjectID)
     SIOUX_CU[0].xTaskID = _task_create(0, FTE_TASK_CIAS_SIOUX_CU, 0);
 }
 
-_mqx_uint FTE_CIAS_SIOUX_CU_initDefaultExtConfig(FTE_CIAS_SIOUX_CU_EXT_CONFIG_PTR pConfig)
+FTE_RET FTE_CIAS_SIOUX_CU_initDefaultExtConfig
+(
+    FTE_CIAS_SIOUX_CU_EXT_CONFIG_PTR    pConfig
+)
 {
     pConfig->ulDistance     = FTE_CIAS_SIOUX_CU_DEFAULT_DISTANCE;
     pConfig->ulSensorCount  = FTE_CIAS_SIOUX_CU_DEFAULT_SNESOR_COUNT;
@@ -247,7 +434,10 @@ _mqx_uint FTE_CIAS_SIOUX_CU_initDefaultExtConfig(FTE_CIAS_SIOUX_CU_EXT_CONFIG_PT
     return  MQX_OK;
 }
                                             
-void FTE_CIAS_SIOUX_CU_task(uint_32 ulID)
+void FTE_CIAS_SIOUX_CU_task
+(
+    FTE_UINT32  ulID
+)
 {
     FTE_OBJECT_PTR  pObj = NULL;    
 
@@ -264,8 +454,8 @@ void FTE_CIAS_SIOUX_CU_task(uint_32 ulID)
    
     while(1)
     {
-        uint_32 i, nZone;
-        uint_32 ulAlarms[FTE_CIAS_SIOUX_CU_ALARM_MAX] = {0,};
+        FTE_UINT32 i, nZone;
+        FTE_UINT32 ulAlarms[FTE_CIAS_SIOUX_CU_ALARM_MAX] = {0,};
         
         for(i = 0 ; i < FTE_CIAS_SIOUX_CU_ALARM_MAX ; i++)
         {
@@ -277,9 +467,9 @@ void FTE_CIAS_SIOUX_CU_task(uint_32 ulID)
             if (SIOUX_CU[ulID].pZones[nZone-1].bInOperation)
             {
                 uint_8  pReqFrame[16];
-                uint_32 ulReqLen;
+                FTE_UINT32 ulReqLen;
                 uint_8  pRecvBuff[20];
-                uint_32 ulRecvLen;
+                FTE_UINT32 ulRecvLen;
                 uint_16 ulCRC = 0xFFFF;
 
                 ulReqLen = 0;
@@ -315,7 +505,7 @@ void FTE_CIAS_SIOUX_CU_task(uint_32 ulID)
                 if (ulRecvLen >= 12)
                 {
                     uint_8  pRespFrame[13];
-                    uint_32 ulRespLen = 0;
+                    FTE_UINT32 ulRespLen = 0;
                     
                     for(int i = 0 ; i < ulRecvLen ; i++)
                     {
@@ -366,7 +556,7 @@ void FTE_CIAS_SIOUX_CU_task(uint_32 ulID)
                         ulCRC = fte_crc_ccitt(0xFFFF, pRespFrame, 9);
                         if ((((ulCRC >> 8) & 0xFF) == pRespFrame[9]) && ((ulCRC & 0xFF) == pRespFrame[10]))
                         {
-                            uint_32     ulValue;
+                            FTE_UINT32     ulValue;
                             TIME_STRUCT xTime;
                             
                             ulValue = ((uint_16)pRespFrame[5] << 8) | ((uint_16)pRespFrame[6]);
@@ -420,10 +610,14 @@ void FTE_CIAS_SIOUX_CU_task(uint_32 ulID)
 }
 
 
-int_32 FTE_CIAS_SIOUX_CU_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
+FTE_INT32   FTE_CIAS_SIOUX_CU_SHELL_cmd
+(   
+    FTE_INT32   nArgc, 
+    FTE_CHAR_PTR pArgv[] 
+)
 { 
-    boolean                 bPrintUsage, bShortHelp = FALSE;
-    int_32                  nRet = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   nRet = SHELL_EXIT_SUCCESS;
     
     bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
     
@@ -431,7 +625,7 @@ int_32 FTE_CIAS_SIOUX_CU_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
     {
     case    1:
         {
-            int_32  i;
+            FTE_INT32  i;
             printf("       Number of Sensors : %d\n", SIOUX_CU[0].ulSensorCount);
             printf("Distance between sensors : %d\n", SIOUX_CU[0].ulDistance);
                    
@@ -459,7 +653,7 @@ int_32 FTE_CIAS_SIOUX_CU_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
         
     case    3:
         {
-            uint_32  ulZone;
+            FTE_UINT32  ulZone;
 
             if (strcmp(pArgv[2], "run") == 0)
             {
@@ -491,7 +685,7 @@ int_32 FTE_CIAS_SIOUX_CU_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
             }
             else if (strcmp(pArgv[1], "sn") == 0)
             {
-                uint_32  ulSN;
+                FTE_UINT32  ulSN;
                
                 if (!Shell_parse_number(pArgv[2], &ulSN) || (127 < ulSN))
                 {
@@ -504,7 +698,7 @@ int_32 FTE_CIAS_SIOUX_CU_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
             }
             else if (strcmp(pArgv[1], "distance") == 0)
             {
-                uint_32  ulDistance;
+                FTE_UINT32  ulDistance;
                
                 if (!Shell_parse_number(pArgv[2], &ulDistance) || (ulDistance == 0) || (1000 < ulDistance))
                 {
@@ -522,7 +716,7 @@ int_32 FTE_CIAS_SIOUX_CU_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
         {
             if (strcmp(pArgv[2], "dn") == 0)
             {
-                uint_32  ulZone, ulDN;
+                FTE_UINT32  ulZone, ulDN;
                
                 if ((!Shell_parse_number(pArgv[1], &ulZone)) || (ulZone < 1 || FTE_CIAS_SIOUX_CU_ZONE_MAX < ulZone))
                 {

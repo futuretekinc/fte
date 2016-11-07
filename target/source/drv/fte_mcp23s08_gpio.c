@@ -4,11 +4,14 @@
 #if FTE_MCP23S08_SUPPORTED
 
 static FTE_MCP23S08_GPIO_PTR    _pHead = NULL;
-static uint_32                  _nObjects = 0;
+static FTE_UINT32               _nObjects = 0;
  
-void        _FTE_MCP23S08_GPIO_isr(void *pParams);
+void    _FTE_MCP23S08_GPIO_isr(FTE_VOID_PTR pParams);
 
-_mqx_uint   FTE_MCP23S08_GPIO_create(FTE_MCP23S08_GPIO_CONFIG_PTR pConfig)
+FTE_RET   FTE_MCP23S08_GPIO_create
+(
+    FTE_MCP23S08_GPIO_CONFIG_PTR    pConfig
+)
 {
     FTE_MCP23S08_GPIO_PTR    pGPIO;
     
@@ -28,7 +31,11 @@ _mqx_uint   FTE_MCP23S08_GPIO_create(FTE_MCP23S08_GPIO_CONFIG_PTR pConfig)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_MCP23S08_GPIO_attach(FTE_MCP23S08_GPIO_PTR pGPIO, uint_32 nParent)
+FTE_RET   FTE_MCP23S08_GPIO_attach
+(
+    FTE_MCP23S08_GPIO_PTR   pGPIO, 
+    FTE_UINT32              nParent
+)
 {
     if (pGPIO == NULL)
     {
@@ -48,7 +55,7 @@ _mqx_uint   FTE_MCP23S08_GPIO_attach(FTE_MCP23S08_GPIO_PTR pGPIO, uint_32 nParen
     
     if (pGPIO->pConfig->nDir == FTE_GPIO_DIR_INPUT)
     {
-        uint_32 nValue;
+        FTE_UINT32 nValue;
         FTE_MCP23S08_getRegBit(pGPIO->pMCP23S08, FTE_MCP23S08_REG_GPIO, pGPIO->pConfig->nBit, &nValue);
         
         pGPIO->nValue = nValue;
@@ -65,7 +72,10 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint   FTE_MCP23S08_GPIO_detach(FTE_MCP23S08_GPIO_PTR pGPIO)
+FTE_RET   FTE_MCP23S08_GPIO_detach
+(
+    FTE_MCP23S08_GPIO_PTR   pGPIO
+)
 {
     if (pGPIO == NULL)
     {
@@ -87,12 +97,18 @@ error:
     return  MQX_ERROR;
 }
 
-boolean     FTE_MCP23S08_GPIO_exist(uint_32 nID)
+FTE_BOOL    FTE_MCP23S08_GPIO_exist
+(
+    FTE_UINT32  nID
+)
 {
     return  FTE_MCP23S08_GPIO_get(nID) != NULL;
 }
 
-FTE_MCP23S08_GPIO_PTR   FTE_MCP23S08_GPIO_get(uint_32 nID)
+FTE_MCP23S08_GPIO_PTR   FTE_MCP23S08_GPIO_get
+(
+    FTE_UINT32  nID
+)
 {
     FTE_MCP23S08_GPIO_PTR   pGPIO;
     
@@ -110,7 +126,11 @@ FTE_MCP23S08_GPIO_PTR   FTE_MCP23S08_GPIO_get(uint_32 nID)
 }
 
 
-_mqx_uint   FTE_MCP23S08_GPIO_setValue(FTE_MCP23S08_GPIO_PTR pGPIO, uint_32 nValue)
+FTE_RET   FTE_MCP23S08_GPIO_setValue
+(
+    FTE_MCP23S08_GPIO_PTR   pGPIO, 
+    FTE_UINT32              nValue
+)
 {
     ASSERT(pGPIO != NULL);
     
@@ -124,7 +144,11 @@ _mqx_uint   FTE_MCP23S08_GPIO_setValue(FTE_MCP23S08_GPIO_PTR pGPIO, uint_32 nVal
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_MCP23S08_GPIO_getValue(FTE_MCP23S08_GPIO_PTR pGPIO, uint_32 *pValue)
+FTE_RET   FTE_MCP23S08_GPIO_getValue
+(
+    FTE_MCP23S08_GPIO_PTR   pGPIO, 
+    FTE_UINT32_PTR          pValue
+)
 {
     ASSERT(pGPIO != NULL);
 
@@ -133,7 +157,11 @@ _mqx_uint   FTE_MCP23S08_GPIO_getValue(FTE_MCP23S08_GPIO_PTR pGPIO, uint_32 *pVa
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_MCP23S08_GPIO_setDIR(FTE_MCP23S08_GPIO_PTR pGPIO, FTE_GPIO_DIR nValue)
+FTE_RET   FTE_MCP23S08_GPIO_setDIR
+(
+    FTE_MCP23S08_GPIO_PTR   pGPIO, 
+    FTE_GPIO_DIR            nValue
+)
 {
     if (pGPIO == NULL)
     {
@@ -162,9 +190,13 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint   FTE_MCP23S08_GPIO_getDIR(FTE_MCP23S08_GPIO_PTR pGPIO, FTE_GPIO_DIR_PTR pValue)
+FTE_RET   FTE_MCP23S08_GPIO_getDIR
+(
+    FTE_MCP23S08_GPIO_PTR   pGPIO, 
+    FTE_GPIO_DIR_PTR        pValue
+)
 {
-    uint_32 nValue;
+    FTE_UINT32 nValue;
     
     if (pGPIO == NULL)
     {
@@ -191,7 +223,11 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint   FTE_MCP23S08_GPIO_INT_setPolarity(FTE_MCP23S08_GPIO_PTR pGPIO, uint_32 nPolarity)
+FTE_RET   FTE_MCP23S08_GPIO_INT_setPolarity
+(
+    FTE_MCP23S08_GPIO_PTR   pGPIO, 
+    FTE_UINT32              nPolarity
+)
 {
     if (pGPIO == NULL)
     {
@@ -205,7 +241,12 @@ _mqx_uint   FTE_MCP23S08_GPIO_INT_setPolarity(FTE_MCP23S08_GPIO_PTR pGPIO, uint_
 }
 
 
-_mqx_uint   FTE_MCP23S08_GPIO_ISR_set(FTE_MCP23S08_GPIO_PTR pGPIO, void (*fISR)(void *), void *pParams)
+FTE_RET   FTE_MCP23S08_GPIO_ISR_set
+(
+    FTE_MCP23S08_GPIO_PTR   pGPIO, 
+    void (*fISR)(FTE_VOID_PTR ), 
+    FTE_VOID_PTR            pParams
+)
 {
     ASSERT(pGPIO != NULL);
 
@@ -220,7 +261,11 @@ _mqx_uint   FTE_MCP23S08_GPIO_ISR_set(FTE_MCP23S08_GPIO_PTR pGPIO, void (*fISR)(
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_MCP23S08_GPIO_INT_enable(FTE_MCP23S08_GPIO_PTR pGPIO, boolean bEnable)
+FTE_RET   FTE_MCP23S08_GPIO_INT_enable
+(
+    FTE_MCP23S08_GPIO_PTR   pGPIO, 
+    FTE_BOOL                bEnable
+)
 {
     ASSERT(pGPIO != NULL);
 
@@ -232,7 +277,11 @@ _mqx_uint   FTE_MCP23S08_GPIO_INT_enable(FTE_MCP23S08_GPIO_PTR pGPIO, boolean bE
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_MCP23S08_GPIO_INT_getFlag(FTE_MCP23S08_GPIO_PTR pGPIO, boolean *pFlag)
+FTE_RET   FTE_MCP23S08_GPIO_INT_getFlag
+(
+    FTE_MCP23S08_GPIO_PTR   pGPIO, 
+    FTE_BOOL_PTR            pFlag
+)
 {
     ASSERT((pGPIO != 0) && (pFlag != NULL));
     
@@ -241,7 +290,10 @@ _mqx_uint   FTE_MCP23S08_GPIO_INT_getFlag(FTE_MCP23S08_GPIO_PTR pGPIO, boolean *
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_MCP23S08_GPIO_INT_clrFlag(FTE_MCP23S08_GPIO_PTR pGPIO)
+FTE_RET   FTE_MCP23S08_GPIO_INT_clrFlag
+(
+    FTE_MCP23S08_GPIO_PTR   pGPIO
+)
 {
     ASSERT(pGPIO != 0);
     
@@ -250,9 +302,12 @@ _mqx_uint   FTE_MCP23S08_GPIO_INT_clrFlag(FTE_MCP23S08_GPIO_PTR pGPIO)
     return  MQX_OK;
 }
 
-void        _FTE_MCP23S08_GPIO_isr(void *pParams)
+void    _FTE_MCP23S08_GPIO_isr
+(
+    FTE_VOID_PTR    pParams
+)
 {
-    uint_32 nValue = 0;
+    FTE_UINT32 nValue = 0;
     
     FTE_MCP23S08_GPIO_PTR pGPIO = (FTE_MCP23S08_GPIO_PTR)pParams;
     

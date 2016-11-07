@@ -17,7 +17,7 @@ typedef struct
 }   FTE_FBM_BUFF, _PTR_ FTE_FBM_BUFF_PTR;
 
 FTE_FBM_PTR FTE_FBM_create(uint_32 ulUnit, uint_32 ulMaxCount);
-_mqx_uint   FTE_FBM_destroy(FTE_FBM_PTR pFBM);
+FTE_RET FTE_FBM_destroy(FTE_FBM_PTR pFBM);
 
 FTE_FBM_BUFF_PTR    FTE_FBM_alloc(FTE_FBM_PTR pFBM, uint_32 ulSize);
 void                FTE_FBM_free(FTE_FBM_PTR pFBM, FTE_FBM_BUFF_PTR pBlock);

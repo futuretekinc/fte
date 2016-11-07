@@ -55,7 +55,7 @@ uint32_t xQueueSendFromISR(xQueueHandle xHandle, pointer pData, uint32_t ulFlag)
     return  xQueueSend(xHandle, pData, ulFlag);
 }
 
-_mqx_uint xQueueReceive(xQueueHandle xHandle, pointer pBuff, uint32_t ulFlag)
+FTE_RET xQueueReceive(xQueueHandle xHandle, pointer pBuff, uint32_t ulFlag)
 {
     pointer pItem;
 

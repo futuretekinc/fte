@@ -5,33 +5,33 @@
 
 #if 1 //FTE_IFCE_SUPPORTED
 
-static  _mqx_uint   _ifce_init(FTE_OBJECT_PTR pObj);
-static  _mqx_uint   _ifce_run(FTE_OBJECT_PTR pObj);
-static  _mqx_uint   _ifce_stop(FTE_OBJECT_PTR pObj);
-static void         _ifce_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
-static _mqx_uint    _ifce_set(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue);
-static uint_32      _ifce_get_update_interval(FTE_OBJECT_PTR pObj);
-static _mqx_uint    _ifce_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInterval);
-static uint_32      _ifce_get_update_interval(FTE_OBJECT_PTR pObj);
-static _mqx_uint    _ifce_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInterval);
-static _mqx_uint   _iface_set_config(FTE_OBJECT_PTR pObj, char_ptr pBuff);
-static _mqx_uint   _iface_get_config(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 ulBuffLen);
+static FTE_RET  FTE_IFCE_init(FTE_OBJECT_PTR pObj);
+static FTE_RET  FTE_IFCE_run(FTE_OBJECT_PTR pObj);
+static FTE_RET  FTE_IFCE_stop(FTE_OBJECT_PTR pObj);
+static void     FTE_IFCE_restartConvert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
+static FTE_RET  FTE_IFCE_set(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue);
+static FTE_RET  FTE_IFCE_getInterval(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pulInterval);
+static FTE_RET  FTE_IFCE_setInterval(FTE_OBJECT_PTR pObj, uint_32 nInterval);
+static FTE_RET  FTE_IFCE_setConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff);
+static FTE_RET  FTE_IFCE_getConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 ulBuffLen);
 
-static  FTE_OBJECT_ACTION _ifce_action = 
+static  
+FTE_OBJECT_ACTION FTE_IFCE_action = 
 {
-    .f_init         = _ifce_init,
-    .f_run          = _ifce_run,
-    .f_stop         = _ifce_stop,
-    .f_set          = _ifce_set,
-    .f_get_update_interval  = _ifce_get_update_interval,
-    .f_set_update_interval  = _ifce_set_update_interval,
-    .f_get_config   = _iface_get_config,   \
-    .f_set_config   = _iface_set_config,   \
+    .fInit  = FTE_IFCE_init,
+    .fRun   = FTE_IFCE_run,
+    .fStop  = FTE_IFCE_stop,
+    .fSet   = FTE_IFCE_set,
+    .fGetInterval   = FTE_IFCE_getInterval,
+    .fSetInterval   = FTE_IFCE_setInterval,
+    .fGetConfig     = FTE_IFCE_getConfig,   \
+    .fSetConfig     = FTE_IFCE_setConfig,   \
 
 };
 
-_mqx_uint   fte_ifce_attach(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_IFCE_attach(FTE_OBJECT_PTR pObj, FTE_VOID_PTR pOpts)
 {
+    FTE_RET xRet;
     FTE_OBJECT_PTR      pParent = NULL;
     
     ASSERT(pObj != NULL);
@@ -86,29 +86,21 @@ _mqx_uint   fte_ifce_attach(FTE_OBJECT_PTR pObj)
         pStatus->xCommon.pValue = FTE_VALUE_createULONG();
     }
 
-    pObj->pAction = (FTE_OBJECT_ACTION_PTR)&_ifce_action;
+    pObj->pAction = (FTE_OBJECT_ACTION_PTR)&FTE_IFCE_action;
     
-    pStatus->pParent = pParent;    
-    if ((pParent != NULL) && (pParent->pAction->f_attach_child != NULL))
-    {
-        if (pParent->pAction->f_attach_child(pParent, pConfig->xCommon.nID) != FTE_RET_OK)
-        {
-            goto error;
-        }
-    }
-    
-    _ifce_init(pObj);
+    pStatus->pParent = pParent;
 
-    return  FTE_RET_OK;
+    xRet = FTE_OBJ_attachChild(pParent, pConfig->xCommon.nID);
+    if (xRet == FTE_RET_OK)
+    {
+        FTE_IFCE_init(pObj);
+        return  FTE_RET_OK;
+    }
     
 error:
     
     if (pStatus != NULL)
     {
-        if ((pStatus->pParent != NULL) && (pStatus->pParent->pAction->f_detach_child != NULL))
-        {
-            pStatus->pParent->pAction->f_detach_child(pParent, pConfig->xCommon.nID);
-        }
         FTE_MEM_free(pStatus);
         pObj->pStatus = NULL;
     }
@@ -117,7 +109,10 @@ error:
     
 }
 
-_mqx_uint fte_ifce_detach(FTE_OBJECT_PTR pObj)
+FTE_RET FTE_IFCE_detach
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     if (pObj == NULL)
     {
@@ -129,9 +124,9 @@ _mqx_uint fte_ifce_detach(FTE_OBJECT_PTR pObj)
         FTE_IFCE_STATUS_PTR pStatus = (FTE_IFCE_STATUS_PTR)pObj->pStatus;
         FTE_IFCE_CONFIG_PTR  pConfig = (FTE_IFCE_CONFIG_PTR)pObj->pConfig;
 
-        if ((pStatus->pParent != NULL) && (pStatus->pParent->pAction->f_detach_child != NULL))
+        if (pStatus->pParent != NULL) 
         {
-            pStatus->pParent->pAction->f_detach_child(pStatus->pParent, pConfig->xCommon.nID);
+            FTE_OBJ_detachChild(pStatus->pParent, pConfig->xCommon.nID);
         }
         FTE_MEM_free(pObj->pStatus);        
     }
@@ -142,19 +137,19 @@ _mqx_uint fte_ifce_detach(FTE_OBJECT_PTR pObj)
     return  FTE_RET_OK;
 }
 
-_mqx_uint   _ifce_init(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_IFCE_init(FTE_OBJECT_PTR pObj)
 {
     ASSERT(pObj != NULL);
 
-    if (FTE_OBJ_IS_ENABLED(pObj))
+    if (FTE_OBJ_IS_SET(pObj, FTE_OBJ_CONFIG_FLAG_ENABLE) && FTE_OBJ_IS_RESET(pObj, FTE_OBJ_CONFIG_FLAG_SYNC))
     {
-        return  _ifce_run(pObj);
+        return  FTE_IFCE_run(pObj);
     }
         
     return  FTE_RET_OK;
 }
 
-_mqx_uint   _ifce_run(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_IFCE_run(FTE_OBJECT_PTR pObj)
 {
     ASSERT(pObj != NULL);
 
@@ -170,16 +165,16 @@ _mqx_uint   _ifce_run(FTE_OBJECT_PTR pObj)
     }
     
     _time_init_ticks(&xDTicks, 0);
-    _time_add_sec_to_ticks(&xDTicks, pConfig->nInterval);
+    _time_add_msec_to_ticks(&xDTicks, pConfig->nInterval);
     _time_get_elapsed_ticks(&xTicks);
-    _time_add_sec_to_ticks(&xTicks, 1);
+    _time_add_msec_to_ticks(&xTicks, 1000);
     
-    pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(_ifce_restart_convert, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);
+    pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(FTE_IFCE_restartConvert, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);
     
     return  FTE_RET_OK;
 }
  
-_mqx_uint   _ifce_stop(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_IFCE_stop(FTE_OBJECT_PTR pObj)
 { 
     ASSERT(pObj != NULL);
     
@@ -191,7 +186,7 @@ _mqx_uint   _ifce_stop(FTE_OBJECT_PTR pObj)
     return  FTE_RET_OK;
 }
 
-static void _ifce_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
+static void FTE_IFCE_restartConvert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
 {
     FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)data_ptr;
     FTE_IFCE_CONFIG_PTR  pConfig = (FTE_IFCE_CONFIG_PTR)pObj->pConfig;
@@ -221,7 +216,7 @@ static void _ifce_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUC
     }
 }
 
-_mqx_uint    _ifce_set(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue)
+FTE_RET    FTE_IFCE_set(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue)
 {
     ASSERT(pObj != NULL);
     
@@ -230,45 +225,44 @@ _mqx_uint    _ifce_set(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue)
    
     if (FTE_OBJ_IS_ENABLED(pObj))
     {
-        if (pStatus->pParent->pAction->f_set_multi != NULL)
+        if (FTE_OBJ_setValueAt(pStatus->pParent, pConfig->nRegID, pValue) == FTE_RET_OK)
         {
-            if (pStatus->pParent->pAction->f_set_multi(pStatus->pParent, pConfig->nRegID, pValue) == FTE_RET_OK)
+            FTE_VALUE   xValue;
+            
+            FTE_VALUE_copy(&xValue, pStatus->xCommon.pValue);
+            
+            FTE_OBJ_getValueAt(pStatus->pParent, pConfig->nRegID, pStatus->xCommon.pValue);        
+            
+            if ( pStatus->xCommon.pValue->bChanged || !FTE_VALUE_equal(&xValue, pStatus->xCommon.pValue))
             {
-                FTE_VALUE   xValue;
-                
-                FTE_VALUE_copy(&xValue, pStatus->xCommon.pValue);
-                
-                FTE_OBJ_getValueAt(pStatus->pParent, pConfig->nRegID, pStatus->xCommon.pValue);        
-                
-                if ( pStatus->xCommon.pValue->bChanged || !FTE_VALUE_equal(&xValue, pStatus->xCommon.pValue))
-                {
-                    FTE_OBJ_wasChanged(pObj);
-                }
-                else
-                {
-                    FTE_OBJ_wasUpdated(pObj);
-                }
-                
-                return  FTE_RET_OK;
+                FTE_OBJ_wasChanged(pObj);
             }
             else
             {
-                DEBUG("f_set_multi failed\n");
+                FTE_OBJ_wasUpdated(pObj);
             }
+            
+            return  FTE_RET_OK;
         }
     }
 
     return  MQX_ERROR;
 }
 
-uint_32      _ifce_get_update_interval(FTE_OBJECT_PTR pObj)
+FTE_RET FTE_IFCE_getInterval
+(
+    FTE_OBJECT_PTR  pObj,
+    FTE_UINT32_PTR  pulInterval
+)
 {
-    ASSERT(pObj != NULL);
+    ASSERT((pObj != NULL) && (pulInterval != NULL));
     
-    return  ((FTE_IFCE_CONFIG_PTR)pObj->pConfig)->nInterval;
+    *pulInterval = ((FTE_IFCE_CONFIG_PTR)pObj->pConfig)->nInterval;
+    
+    return  FTE_RET_OK;
 }
 
-_mqx_uint    _ifce_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInterval)
+FTE_RET    FTE_IFCE_setInterval(FTE_OBJECT_PTR pObj, uint_32 nInterval)
 {
     ASSERT(pObj != NULL);
 
@@ -279,7 +273,7 @@ _mqx_uint    _ifce_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInterval)
     return  FTE_RET_OK;
 }
 
-_mqx_uint   _iface_set_config
+FTE_RET   FTE_IFCE_setConfig
 (
     FTE_OBJECT_PTR  pObj, 
     char_ptr        pBuff
@@ -288,15 +282,15 @@ _mqx_uint   _iface_set_config
     ASSERT(pObj != NULL && pBuff != NULL);
     FTE_OBJECT_PTR  pParent = ((FTE_IFCE_STATUS_PTR)pObj->pStatus)->pParent;
     
-    if ((pParent == NULL) || (pParent->pAction->f_set_child_config == NULL))
+    if ((pParent == NULL) || (pParent->pAction->fSetChildConfig == NULL))
     {
         return  MQX_ERROR;
     }
 
-    return  pParent->pAction->f_set_child_config(pParent, pObj, pBuff);
+    return  pParent->pAction->fSetChildConfig(pParent, pObj, pBuff);
 }
 
-_mqx_uint   _iface_get_config
+FTE_RET   FTE_IFCE_getConfig
 (
     FTE_OBJECT_PTR  pObj, 
     char_ptr        pBuff, 
@@ -306,12 +300,12 @@ _mqx_uint   _iface_get_config
     ASSERT(pObj != NULL && pBuff != NULL);
     FTE_OBJECT_PTR  pParent = ((FTE_IFCE_STATUS_PTR)pObj->pStatus)->pParent;
     
-    if ((pParent == NULL) || (pParent->pAction->f_get_child_config == NULL))
+    if ((pParent == NULL) || (pParent->pAction->fGetChildConfig == NULL))
     {
         return  MQX_ERROR;
     }
 
-    return  pParent->pAction->f_get_child_config(pParent, pObj, pBuff, ulBuffLen);
+    return  pParent->pAction->fGetChildConfig(pParent, pObj, pBuff, ulBuffLen);
 }
 
 #endif

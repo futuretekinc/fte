@@ -20,15 +20,17 @@
 
 #define FTE_DOTECH_FX3D_CTRL_COUNT          2
 
-typedef enum    FTE_DOTECH_MODEL_ENUM
-{
-    FTE_DOTECH_MODEL_FX3D   = 1
-} FTE_DOTECH_MODEL, _PTR_ FTE_DOTECH_MODEL_PTR;
+#define FTE_DOTECH_FX3D_DEFAULT_UPDATE_INTERVAL 2000
+
+#define FTE_DOTECH_FX3D_DEFAULT_FULL_DUPLEX     FALSE
+#define FTE_DOTECH_FX3D_DEFAULT_BAUDRATE        38400
+#define FTE_DOTECH_FX3D_DEFAULT_DATABITS        8
+#define FTE_DOTECH_FX3D_DEFAULT_PARITY          FTE_UART_PARITY_NONE
+#define FTE_DOTECH_FX3D_DEFAULT_STOPBITS        FTE_UART_STOP_BITS_1
 
 typedef struct  FTE_DOTECH_CONFIG_STRUCT
 {
     FTE_GUS_CONFIG      xGUS;
-    FTE_DOTECH_MODEL    xModel;
 }   FTE_DOTECH_CONFIG, _PTR_ FTE_DOTECH_CONFIG_PTR;
 
 typedef struct  FTE_DOTECH_EXT_CONFIG_STRUCT
@@ -59,32 +61,73 @@ typedef struct  FTE_DOTECH_FX3D_STATUS_STRUCT
     }   pOutputConfigs[FTE_DOTECH_FX3D_CTRL_COUNT];
 } FTE_DOTECH_FX3D_STATUS, _PTR_ FTE_DOTECH_FX3D_STATUS_PTR;
 
-void    FTE_DOTECH_task(FTE_UINT32 datas);
-FTE_RET FTE_DOTECH_initDefaultExtConfig(FTE_DOTECH_EXT_CONFIG_PTR pConfig);
+FTE_RET FTE_DOTECH_create
+(
+    FTE_UINT32      xModel,
+    FTE_CHAR_PTR    pSlaveID,
+    FTE_OBJECT_PTR _PTR_ ppObj
+);
 
-FTE_INT32  FTE_DOTECH_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[] );
+void    FTE_DOTECH_task
+(
+    FTE_UINT32  datas
+);
 
-FTE_RET FTE_DOTECH_FX3D_init(FTE_OBJECT_PTR pObj);
-FTE_RET FTE_DOTECH_FX3D_reset(void);
-FTE_RET FTE_DOTECH_FX3D_attach(FTE_OBJECT_PTR pObj);
-FTE_RET FTE_DOTECH_FX3D_detach(FTE_OBJECT_PTR pObj);
-FTE_RET FTE_DOTECH_FX3D_setChildConfig(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pBuff);
-FTE_RET FTE_DOTECH_FX3D_getChildConfig(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pBuff, FTE_UINT32 ulBuffLen);
+FTE_RET FTE_DOTECH_initDefaultExtConfig
+(
+    FTE_DOTECH_EXT_CONFIG_PTR pConfig
+);
 
-FTE_RET FTE_DOTECH_FX3D_get(FTE_OBJECT_PTR pObj, FTE_UINT32 ulIndex, FTE_VALUE_PTR pValue);
+FTE_INT32  FTE_DOTECH_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[] 
+);
+
+FTE_RET FTE_DOTECH_FX3D_reset
+(
+    FTE_VOID
+);
+
+FTE_RET FTE_DOTECH_FX3D_attach
+(
+    FTE_OBJECT_PTR  pObj
+);
+
+FTE_RET FTE_DOTECH_FX3D_detach
+(
+    FTE_OBJECT_PTR  pObj
+);
+
+FTE_RET FTE_DOTECH_FX3D_setChildConfig
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_CHAR_PTR    pBuff
+);
+
+FTE_RET FTE_DOTECH_FX3D_getChildConfig
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_CHAR_PTR    pBuff, 
+    FTE_UINT32      ulBuffLen
+);
+
+FTE_RET FTE_DOTECH_FX3D_get
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      ulIndex, 
+    FTE_VALUE_PTR   pValue
+);
+
+FTE_RET FTE_DOTECH_FX3D_create
+(
+    FTE_CHAR_PTR    pSlaveID,
+    FTE_OBJECT_PTR _PTR_ ppObj
+);
 
 extern FTE_VALUE_TYPE       FTE_DOTECH_FX3D_valueTypes[];
 extern FTE_DOTECH_CONFIG    FTE_DOTECH_FX3D_defaultConfig;
 
-#define FTE_DOTECH_FX3D_DESCRIPTOR  {\
-        .nModel         = FTE_GUS_MODEL_DOTECH_FX3D,   \
-        .pName          = "FX3D",               \
-        .nFieldCount    = FTE_DOTECH_FX3D_FIELD_MAX,      \
-        .pValueTypes    = FTE_DOTECH_FX3D_valueTypes,  \
-        .f_attach       = FTE_DOTECH_FX3D_attach,      \
-        .f_detach       = FTE_DOTECH_FX3D_detach,      \
-        .f_get          = FTE_DOTECH_FX3D_get,         \
-        .f_get_child_config   = FTE_DOTECH_FX3D_getChildConfig,   \
-        .f_set_child_config   = FTE_DOTECH_FX3D_setChildConfig,   \
-    }
+extern  const FTE_GUS_MODEL_INFO    FTE_DOTECH_FX3D_GUSModelInfo;
+
 #endif

@@ -1977,7 +1977,7 @@ FTE_PRODUCT_DESC const *fte_get_product_desc(void)
     return  &_product_desc;
 }
 
-_mqx_uint   FTE_PLATFORM_init(void)
+FTE_RET FTE_PLATFORM_init(void)
 {
     
     /* Init device drivers */
@@ -2084,15 +2084,8 @@ _mqx_uint   FTE_PLATFORM_init(void)
         FTE_OBJECT_PTR pObj = FTE_OBJ_create(pSystemObjectConfigs[i]);
         if (pObj != NULL)
         {
-            if (pObj->pAction->f_init != NULL)
-            {
-                pObj->pAction->f_init(pObj);
-            }
-            
-            if (pObj->pAction->f_run != NULL)
-            {
-                pObj->pAction->f_run(pObj);
-            }
+            FTE_OBJ_init(pObj);
+            FTE_OBJ_start(pObj);
         }
     }
 
@@ -2162,10 +2155,7 @@ _mqx_uint   FTE_PLATFORM_init(void)
         FTE_OBJECT_PTR  pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_UNKNOWN, 0, i, FALSE);
         if (pObj != NULL)
         {
-            if (pObj->pAction->f_init != NULL)
-            {
-                pObj->pAction->f_init(pObj);
-            }
+            FTE_OBJ_init(pObj);
         }                
     }
     
@@ -2174,7 +2164,7 @@ _mqx_uint   FTE_PLATFORM_init(void)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_PLATFORM_run(void)
+FTE_RET FTE_PLATFORM_run(void)
 {
     uint_32 ulCount = FTE_OBJ_count(FTE_OBJ_TYPE_UNKNOWN, 0, FALSE);
     for(uint_32 i = 0 ; i < ulCount ; i++)
@@ -2182,12 +2172,9 @@ _mqx_uint   FTE_PLATFORM_run(void)
         FTE_OBJECT_PTR  pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_UNKNOWN, 0, i, FALSE);
         if (pObj != NULL)
         {
-            if (FTE_OBJ_IS_ENABLED(pObj))
+            if (FTE_OBJ_IS_SET(pObj, FTE_OBJ_CONFIG_FLAG_ENABLE) && FTE_OBJ_IS_RESET(pObj, FTE_OBJ_CONFIG_FLAG_SYNC))
             {
-                if (pObj->pAction->f_run)
-                {
-                    pObj->pAction->f_run(pObj);
-                }
+                FTE_OBJ_start(pObj);
             }
         }                
     }

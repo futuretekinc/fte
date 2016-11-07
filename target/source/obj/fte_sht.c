@@ -4,39 +4,202 @@
 #include "fte_time.h"
 #if FTE_SHT_SUPPORTED
 
-static  _mqx_uint   _FTE_SHT_init(FTE_OBJECT_PTR pObj);
-static  _mqx_uint   _FTE_SHT_run(FTE_OBJECT_PTR pObj);
-static  _mqx_uint   _FTE_SHT_stop(FTE_OBJECT_PTR pObj);
-static  void        _FTE_SHT_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
-static  _mqx_uint   _FTE_SHT_connectionReset(FTE_OBJECT_PTR pObj);
-static  _mqx_uint   _FTE_SHT_startTransmission(FTE_OBJECT_PTR pObj);
-static _mqx_uint    _FTE_SHT_startConvert(FTE_OBJECT_PTR pObj);
-static  void        _FTE_SHT_restartConvert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
-static _mqx_uint    _FTE_SHT_getHumidity(FTE_OBJECT_PTR pObj, uint_32 *nHumidity);
-static _mqx_uint    _FTE_SHT_getTemperature(FTE_OBJECT_PTR pObj, int_32 *pTemperature);
-static uint_32      _FTE_SHT_getUpdateInterval(FTE_OBJECT_PTR pObj);
-static _mqx_uint    _FTE_SHT_setUpdateInterval(FTE_OBJECT_PTR pObj, uint_32 nInterval);
-static _mqx_uint    _FTE_SHT_statistic(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTICS_PTR pStatistics);
+static  
+FTE_RET FTE_SHT_init
+(
+    FTE_OBJECT_PTR  pObj
+);
+
+static  
+FTE_RET FTE_SHT_run
+(
+    FTE_OBJECT_PTR  pObj
+);
+
+static  
+FTE_RET FTE_SHT_stop
+(
+    FTE_OBJECT_PTR  pObj
+);
+
+static  
+void    FTE_SHT_done
+(
+    _timer_id   id, 
+    pointer     pData, 
+    MQX_TICK_STRUCT_PTR pTick
+);
+
+static  
+FTE_RET FTE_SHT_connectionReset
+(
+    FTE_OBJECT_PTR  pObj
+);
+
+static  
+FTE_RET FTE_SHT_startTransmission
+(
+    FTE_OBJECT_PTR  pObj
+);
+
+static 
+FTE_RET  FTE_SHT_startConvert
+(
+    FTE_OBJECT_PTR  pObj
+);
+
+static  
+void    FTE_SHT_restartConvert
+(
+    _timer_id       id, 
+    pointer         pData, 
+    MQX_TICK_STRUCT_PTR pTick
+);
+
+static FTE_RET  FTE_SHT_getHumidity
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32_PTR  pHumidity
+);
+
+static FTE_RET  FTE_SHT_getTemperature
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_INT32_PTR   pTemperature
+);
+
+static 
+FTE_RET FTE_SHT_getUpdateInterval
+(
+    FTE_OBJECT_PTR  pObj,
+    FTE_UINT32_PTR  pulInterval
+);
+
+static 
+FTE_RET  FTE_SHT_setUpdateInterval
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nInterval
+);
+
+static 
+FTE_RET  FTE_SHT_statistic
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_OBJECT_STATISTICS_PTR pStatistics
+);
+
+static 
+FTE_RET  FTE_SHT_getChildCount
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32_PTR  pCount
+);
+
+static 
+FTE_RET FTE_SHT_getChild
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      ulIndex, 
+    FTE_OBJECT_ID _PTR_ pxChildID
+);
+
+static
+FTE_RET FTE_SHT_attachChild
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_OBJECT_ID   xChildID
+);
+
+static
+FTE_RET FTE_SHT_detachChild
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_OBJECT_ID   xChildID
+);
+
+static const 
+FTE_IFCE_CONFIG FTE_SHT_HUMIDITY_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_HUMI, 0x0000),
+        .pName      = "SHT-HUMI",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE | FTE_OBJ_CONFIG_FLAG_SYNC,
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_SHT, 0x0001),
+    .nRegID     = FTE_SHT_FIELD_HUMI,
+    .nInterval  = FTE_SHT_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_SHT_TEMPERATURE_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_TEMP, 0x0000),
+        .pName      = "SHT-TEMP",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE | FTE_OBJ_CONFIG_FLAG_SYNC,
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_SHT, 0x0000),
+    .nRegID     = FTE_SHT_FIELD_TEMP,
+    .nInterval  = FTE_SHT_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_OBJECT_CONFIG_PTR FTE_SHT_defaultChildConfigs [] =
+{
+    (FTE_OBJECT_CONFIG_PTR)&FTE_SHT_HUMIDITY_defaultConfig ,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_SHT_TEMPERATURE_defaultConfig 
+};
+
+FTE_SHT_CONFIG FTE_SHT_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_SHT, 0x0001),
+        .pName      = "SHT",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE,
+        .ulChild    = sizeof(FTE_SHT_defaultChildConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR),
+        .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)FTE_SHT_defaultChildConfigs
+    },
+    .nSDA       = FTE_DEV_LWGPIO_SHT_SDA,
+    .nSCL       = FTE_DEV_LWGPIO_SHT_SCL,
+    .nInterval  = FTE_SHT_DEFAULT_UPDATE_INTERVAL,
+    .ulDelay    = FTE_SHT_DEFAULT_SCL_INTERVAL
+};
+
 
 FTE_VALUE_TYPE  FTE_SHT_valueTypes[] =
 {
     FTE_VALUE_TYPE_HUMIDITY,
     FTE_VALUE_TYPE_TEMPERATURE
 };
-static  FTE_OBJECT_ACTION _Action = 
+
+static  
+FTE_OBJECT_ACTION _Action = 
 {
-    .f_init         = _FTE_SHT_init,
-    .f_run          = _FTE_SHT_run,
-    .f_stop         = _FTE_SHT_stop, 
-    .f_set          = NULL,
-    .f_get_update_interval = _FTE_SHT_getUpdateInterval,
-    .f_set_update_interval = _FTE_SHT_setUpdateInterval,
-    .f_get_statistic = _FTE_SHT_statistic,
+    .fInit  = FTE_SHT_init,
+    .fRun   = FTE_SHT_run,
+    .fStop  = FTE_SHT_stop, 
+    .fSet   = NULL,
+    .fGetInterval   = FTE_SHT_getUpdateInterval,
+    .fSetInterval   = FTE_SHT_setUpdateInterval,
+    .fGetStatistics = FTE_SHT_statistic,
+    .fGetChildCount = FTE_SHT_getChildCount,
+    .fGetChild      = FTE_SHT_getChild,
+    .fAttachChild   = FTE_SHT_attachChild,
+    .fDetachChild   = FTE_SHT_detachChild,
 };
 
-static FTE_LIST _xObjList = {0, NULL, NULL};
+static 
+FTE_LIST _xObjList = {0, NULL, NULL};
 
-_mqx_uint   FTE_SHT_attach(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_SHT_attach
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_VOID_PTR    pOpts
+)
 {
     ASSERT(pObj != NULL);
     
@@ -57,12 +220,12 @@ _mqx_uint   FTE_SHT_attach(FTE_OBJECT_PTR pObj)
         goto error;
     }
     
-    if (FTE_LWGPIO_attach(pLWGPIO_SDA, pConfig->xCommon.nID) != MQX_OK)
+    if (FTE_LWGPIO_attach(pLWGPIO_SDA, pConfig->xCommon.nID) != FTE_RET_OK)
     {
         goto error;
     }
     
-    if (FTE_LWGPIO_attach(pLWGPIO_SCL, pConfig->xCommon.nID) != MQX_OK)
+    if (FTE_LWGPIO_attach(pLWGPIO_SCL, pConfig->xCommon.nID) != FTE_RET_OK)
     {
         goto error;
     }
@@ -85,14 +248,14 @@ _mqx_uint   FTE_SHT_attach(FTE_OBJECT_PTR pObj)
     
     pObj->pAction = (FTE_OBJECT_ACTION_PTR)&_Action;
   
-    if (_FTE_SHT_init(pObj) != MQX_OK)
+    if (FTE_SHT_init(pObj) != FTE_RET_OK)
     {
         goto error;
     }
 
     FTE_LIST_pushBack(&_xObjList, pObj);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
 
@@ -110,7 +273,10 @@ error:
     
 }
 
-_mqx_uint FTE_SHT_detach(FTE_OBJECT_PTR pObj)
+FTE_RET FTE_SHT_detach
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     if (!FTE_LIST_isExist(&_xObjList, pObj))
     {
@@ -120,22 +286,28 @@ _mqx_uint FTE_SHT_detach(FTE_OBJECT_PTR pObj)
     FTE_LIST_remove(&_xObjList, pObj);
     pObj->pAction = NULL;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:    
     return  MQX_ERROR;
 }
 
-_mqx_uint   _FTE_SHT_init(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_SHT_init
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
   
-    _FTE_SHT_connectionReset(pObj);
+    FTE_SHT_connectionReset(pObj);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint   _FTE_SHT_run(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_SHT_run
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
 
@@ -151,55 +323,67 @@ _mqx_uint   _FTE_SHT_run(FTE_OBJECT_PTR pObj)
     }
     
     _time_init_ticks(&xDTicks, 0);
-    if (pConfig->nInterval < 2)
+    if (pConfig->nInterval < FTE_SHT_DEFAULT_UPDATE_INTERVAL)
     {
-        _time_add_msec_to_ticks(&xDTicks, 1000);
+        _time_add_msec_to_ticks(&xDTicks, FTE_SHT_DEFAULT_UPDATE_INTERVAL);
     }
     else
     {
-        _time_add_msec_to_ticks(&xDTicks, pConfig->nInterval * 500);
+        _time_add_msec_to_ticks(&xDTicks, pConfig->nInterval);
     }
     
     _time_get_elapsed_ticks(&pStatus->xCommon.xStartTicks);
     _time_get_elapsed_ticks(&xTicks);
-    _time_add_sec_to_ticks(&xTicks, 1);
+    _time_add_msec_to_ticks(&xTicks, 1000);
     
-    pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(_FTE_SHT_restartConvert, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);
+    pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(FTE_SHT_restartConvert, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);
     
     pStatus->bHumidity = TRUE;
-    _FTE_SHT_startConvert(pObj);
+    FTE_SHT_startConvert(pObj);
     
     _time_init_ticks(&xDTicks, _time_get_ticks_per_sec());
-    pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_FTE_SHT_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
+    pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(FTE_SHT_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 } 
 
-_mqx_uint   _FTE_SHT_stop(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_SHT_stop
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 }
 
-static void _FTE_SHT_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
+static 
+void FTE_SHT_done
+(
+    _timer_id   id, 
+    pointer     pData, 
+    MQX_TICK_STRUCT_PTR pTick
+)
 {
-    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)data_ptr;
+    FTE_RET             xRet;
+    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)pData;
     FTE_SHT_STATUS_PTR  pStatus = (FTE_SHT_STATUS_PTR)pObj->pStatus;
-
+    FTE_INT32           nChildIndex = -1; 
+    
     if (FTE_FLAG_IS_SET(pStatus->xCommon.xFlags, FTE_SHT_FLAG_CONVERT_HUMIDITY))
     {
-        uint_32             nHumidity;
+        FTE_UINT32             nHumidity;
         
-        if (_FTE_SHT_getHumidity(pObj, &nHumidity) == MQX_OK)
+        nChildIndex = FTE_SHT_FIELD_HUMI;
+        if (FTE_SHT_getHumidity(pObj, &nHumidity) == FTE_RET_OK)
         {
-            FTE_VALUE_setHumidity(&pStatus->xCommon.pValue[0], nHumidity);
+            FTE_VALUE_setHumidity(&pStatus->xCommon.pValue[FTE_SHT_FIELD_HUMI], nHumidity);
             FT_OBJ_STAT_incSucceed(&pStatus->xCommon.xStatistics);
         }
         else
         {
-            FTE_VALUE_setValid(&pStatus->xCommon.pValue[0], FALSE);
+            FTE_VALUE_setValid(&pStatus->xCommon.pValue[FTE_SHT_FIELD_HUMI], FALSE);
             FT_OBJ_STAT_incFailed(&pStatus->xCommon.xStatistics);
         }
         
@@ -208,28 +392,60 @@ static void _FTE_SHT_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR ti
     }
     else
     {
-        int_32             nTemperature;
+        FTE_INT32             nTemperature;
         
-        if (_FTE_SHT_getTemperature(pObj, &nTemperature) == MQX_OK)
+        nChildIndex = FTE_SHT_FIELD_TEMP;
+        
+        if (FTE_SHT_getTemperature(pObj, &nTemperature) == FTE_RET_OK)
         {
-            FTE_VALUE_setTemperature(&pStatus->xCommon.pValue[1], nTemperature);
+            FTE_VALUE_setTemperature(&pStatus->xCommon.pValue[FTE_SHT_FIELD_TEMP], nTemperature);
             FT_OBJ_STAT_incSucceed(&pStatus->xCommon.xStatistics);
         }
         else
         {
-            FTE_VALUE_setValid(&pStatus->xCommon.pValue[1], FALSE);
+            FTE_VALUE_setValid(&pStatus->xCommon.pValue[FTE_SHT_FIELD_TEMP], FALSE);
             FT_OBJ_STAT_incFailed(&pStatus->xCommon.xStatistics);
         }
 
         pStatus->bHumidity = TRUE;
         pStatus->xCommon.xFlags = FTE_FLAG_CLR(pStatus->xCommon.xFlags, FTE_SHT_FLAG_CONVERT_TEMPERATURE);
     }
+
+    if (nChildIndex >= 0)
+    {
+        FTE_OBJECT_PTR      pChild = NULL;
+        
+        xRet = FTE_OBJ_getChild(pObj, nChildIndex, &pChild);
+        if (xRet == FTE_RET_OK)
+        {
+            FTE_VALUE   xValue;
+            
+            FTE_VALUE_copy(&xValue, pChild->pStatus->pValue);
+
+            FTE_VALUE_copy(pChild->pStatus->pValue, &pStatus->xCommon.pValue[nChildIndex]);
+            
+            if (!FTE_VALUE_equal(&xValue, pChild->pStatus->pValue))
+            {
+                FTE_OBJ_wasChanged(pChild);
+            }
+            else
+            {
+                FTE_OBJ_wasUpdated(pChild);
+            }
+        }
+    }
 }
 
 
-static void _FTE_SHT_restartConvert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
+static 
+void FTE_SHT_restartConvert
+(
+    _timer_id   id, 
+    pointer     pData, 
+    MQX_TICK_STRUCT_PTR pTick
+)
 {
-    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)data_ptr;
+    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)pData;
     MQX_TICK_STRUCT     xDTicks;            
     FTE_SHT_STATUS_PTR  pStatus = (FTE_SHT_STATUS_PTR)pObj->pStatus;
 
@@ -237,10 +453,10 @@ static void _FTE_SHT_restartConvert(_timer_id id, pointer data_ptr, MQX_TICK_STR
     
     if (FTE_OBJ_IS_ENABLED(pObj))
     {
-        _FTE_SHT_startConvert(pObj);
+        FTE_SHT_startConvert(pObj);
         
         _time_init_ticks(&xDTicks, _time_get_ticks_per_sec());
-        pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_FTE_SHT_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
+        pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(FTE_SHT_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
     }
     else
     {
@@ -250,88 +466,167 @@ static void _FTE_SHT_restartConvert(_timer_id id, pointer data_ptr, MQX_TICK_STR
     }
 }  
 
-void    _sht_delay(uint_32  nDelay)
+
+FTE_RET FTE_SHT_create
+(
+    FTE_OBJECT_CONFIG_PTR   pBaseConfig,
+    FTE_OBJECT_PTR _PTR_ ppObj
+)
+{
+    int i;
+    FTE_RET                 xRet;
+    FTE_OBJECT_CONFIG_PTR   pConfig;
+    FTE_OBJECT_CONFIG_PTR   pChildConfig[2];
+    FTE_UINT32              ulChildCount = 0 ;
+    FTE_OBJECT_PTR  pObj;
+    
+    if (FTE_LIST_count(&_xObjList) != 0)
+    {
+        return  FTE_RET_OBJECT_FULL;
+    }
+    
+    if (pBaseConfig == NULL)
+    {
+        pBaseConfig = (FTE_OBJECT_CONFIG_PTR)&FTE_SHT_defaultConfig;
+    }
+    
+    xRet = FTE_CFG_OBJ_create(pBaseConfig, &pConfig, pChildConfig, 2, &ulChildCount);
+    if (xRet != FTE_RET_OK)
+    {
+        return  xRet;
+    }    
+    
+    pObj = FTE_OBJ_create(pConfig);
+    if (pObj == NULL)
+    {
+        return  FTE_RET_INSUFFICIENT_MEMORY;
+    }
+    
+    if (ulChildCount != 0)
+    {
+        for(i = 0 ; i < ulChildCount ; i++)
+        {
+            FTE_OBJECT_PTR  pChild;
+            
+            pChild = FTE_OBJ_create(pChildConfig[i]);
+            if (pChild == NULL)
+            {
+                ERROR("The child object creation failed.\n");
+            }
+        }
+    }
+    
+    *ppObj = pObj;
+        
+    return  FTE_RET_OK;    
+}
+
+void    FTE_SHT_delay
+(
+    FTE_UINT32  nDelay
+)
 {
     _time_delay(0);
 }
 
-void    _sht_sck_hi(FTE_OBJECT_PTR pObj)
+void    FTE_SHT_SCK_setHi
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_LWGPIO_setValue(((FTE_SHT_STATUS_PTR)pObj->pStatus)->pLWGPIO_SCL, TRUE);
-    _sht_delay(1);
+    FTE_SHT_delay(1);
 }
 
-void    _sht_sck_lo(FTE_OBJECT_PTR pObj)
+void    FTE_SHT_SCK_setLo
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_LWGPIO_setValue(((FTE_SHT_STATUS_PTR)pObj->pStatus)->pLWGPIO_SCL, FALSE);
-    _sht_delay(1);
+    FTE_SHT_delay(1);
 }
 
-void    _sht_data_in_mode(FTE_OBJECT_PTR pObj)
+void    FTE_SHT_DATA_inMode
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_LWGPIO_setDirection(((FTE_SHT_STATUS_PTR)pObj->pStatus)->pLWGPIO_SDA, LWGPIO_DIR_INPUT);
-    _sht_delay(1);
+    FTE_SHT_delay(1);
 }
 
-void    _sht_data_out_mode(FTE_OBJECT_PTR pObj)
+void    FTE_SHT_DATA_outMode
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     //FTE_LWGPIO_setDirection(((FTE_SHT_STATUS_PTR)pObj->pStatus)->pLWGPIO_SDA, LWGPIO_DIR_OUTPUT);
-    _sht_delay(1);
+    FTE_SHT_delay(1);
 }
 
-void    _sht_data_hi(FTE_OBJECT_PTR pObj)
+void    FTE_SHT_DATA_setHi
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_LWGPIO_setDirection(((FTE_SHT_STATUS_PTR)pObj->pStatus)->pLWGPIO_SDA, LWGPIO_DIR_INPUT);
-    _sht_delay(1);
+    FTE_SHT_delay(1);
 }
 
-void    _sht_data_lo(FTE_OBJECT_PTR pObj)
+void    FTE_SHT_DATA_setLo
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_LWGPIO_setDirection(((FTE_SHT_STATUS_PTR)pObj->pStatus)->pLWGPIO_SDA, LWGPIO_DIR_OUTPUT);
-    _sht_delay(1);
+    FTE_SHT_delay(1);
 }
 
-boolean _sht_data_get(FTE_OBJECT_PTR pObj)
+FTE_BOOL FTE_SHT_DATA_get
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
-    boolean bValue;
+    FTE_BOOL bValue;
     
     FTE_LWGPIO_getValue(((FTE_SHT_STATUS_PTR)pObj->pStatus)->pLWGPIO_SDA, &bValue);
 
     return  bValue;
 }
 
-_mqx_uint   _FTE_SHT_connectionReset(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_SHT_connectionReset(FTE_OBJECT_PTR pObj)
 {
     for(int i = 0 ; i < 9 ; i++)
     {
-        _sht_sck_hi(pObj);
-        _sht_sck_lo(pObj);
+        FTE_SHT_SCK_setHi(pObj);
+        FTE_SHT_SCK_setLo(pObj);
     }
-    _sht_sck_hi(pObj);
-    _sht_data_lo(pObj);
-    _sht_sck_lo(pObj);
-    _sht_sck_hi(pObj);
-    _sht_data_hi(pObj);
-    _sht_sck_lo(pObj);
+    FTE_SHT_SCK_setHi(pObj);
+    FTE_SHT_DATA_setLo(pObj);
+    FTE_SHT_SCK_setLo(pObj);
+    FTE_SHT_SCK_setHi(pObj);
+    FTE_SHT_DATA_setHi(pObj);
+    FTE_SHT_SCK_setLo(pObj);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 
-_mqx_uint   _FTE_SHT_startTransmission(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_SHT_startTransmission(FTE_OBJECT_PTR pObj)
 {    
-    _sht_sck_hi(pObj);
-    _sht_data_lo(pObj);
-    _sht_sck_lo(pObj);
-    _sht_sck_hi(pObj);
-    _sht_data_hi(pObj);
-    _sht_sck_lo(pObj);
-    _sht_data_lo(pObj);
+    FTE_SHT_SCK_setHi(pObj);
+    FTE_SHT_DATA_setLo(pObj);
+    FTE_SHT_SCK_setLo(pObj);
+    FTE_SHT_SCK_setHi(pObj);
+    FTE_SHT_DATA_setHi(pObj);
+    FTE_SHT_SCK_setLo(pObj);
+    FTE_SHT_DATA_setLo(pObj);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
  
-_mqx_uint   _sht_write(FTE_OBJECT_PTR pObj, uint_8_ptr pData, uint_32 nData)
+FTE_RET   _sht_write(FTE_OBJECT_PTR pObj, uint_8_ptr pData, FTE_UINT32 nData)
 {
     ASSERT(pObj != NULL);
 
@@ -341,22 +636,22 @@ _mqx_uint   _sht_write(FTE_OBJECT_PTR pObj, uint_8_ptr pData, uint_32 nData)
         {
             if ((pData[i] >> (7-j)) & 0x01)
             {
-                _sht_data_hi(pObj);
+                FTE_SHT_DATA_setHi(pObj);
             }
-            _sht_sck_hi(pObj);
-            _sht_sck_lo(pObj);
-            _sht_data_lo(pObj);
+            FTE_SHT_SCK_setHi(pObj);
+            FTE_SHT_SCK_setLo(pObj);
+            FTE_SHT_DATA_setLo(pObj);
         }
     }
     
-    _sht_data_in_mode(pObj);
-    _sht_sck_hi(pObj);
-    boolean bACK = _sht_data_get(pObj);
-    _sht_sck_lo(pObj);
+    FTE_SHT_DATA_inMode(pObj);
+    FTE_SHT_SCK_setHi(pObj);
+    FTE_BOOL bACK = FTE_SHT_DATA_get(pObj);
+    FTE_SHT_SCK_setLo(pObj);
        
     if (!bACK)
     {
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
     else
     {
@@ -364,7 +659,7 @@ _mqx_uint   _sht_write(FTE_OBJECT_PTR pObj, uint_8_ptr pData, uint_32 nData)
     }
 }
 
-_mqx_uint   _sht_read(FTE_OBJECT_PTR pObj, uint_8_ptr pBuff, uint_32 nData)
+FTE_RET   _sht_read(FTE_OBJECT_PTR pObj, uint_8_ptr pBuff, FTE_UINT32 nData)
 {
     ASSERT(pObj != NULL);
 
@@ -372,56 +667,56 @@ _mqx_uint   _sht_read(FTE_OBJECT_PTR pObj, uint_8_ptr pBuff, uint_32 nData)
     {
         uint_8  nByte = 0;
         
-        _sht_data_in_mode(pObj);
+        FTE_SHT_DATA_inMode(pObj);
         for(int j = 0 ; j < 8 ; j++)
         {
-            _sht_sck_hi(pObj);
+            FTE_SHT_SCK_setHi(pObj);
             if (i < 2)
             {
-                if (_sht_data_get(pObj) == TRUE)
+                if (FTE_SHT_DATA_get(pObj) == TRUE)
                 {
                     nByte |= 1 << (7 - j);
                 }
             }
             else
             {
-                if (_sht_data_get(pObj) == TRUE)
+                if (FTE_SHT_DATA_get(pObj) == TRUE)
                 {
                     nByte |= 1 << j;
                 }
             }
-            _sht_sck_lo(pObj);
+            FTE_SHT_SCK_setLo(pObj);
         }
         
         pBuff[i] = nByte;
         
-        _sht_data_out_mode(pObj);
-        _sht_data_lo(pObj);
-        _sht_sck_hi(pObj);
-        _sht_sck_lo(pObj);
+        FTE_SHT_DATA_outMode(pObj);
+        FTE_SHT_DATA_setLo(pObj);
+        FTE_SHT_SCK_setHi(pObj);
+        FTE_SHT_SCK_setLo(pObj);
     }
             
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint   _sht_send_cmd(FTE_OBJECT_PTR pObj, uint_32 nAddr, uint_32 nCmd)
+FTE_RET   _sht_send_cmd(FTE_OBJECT_PTR pObj, FTE_UINT32 nAddr, FTE_UINT32 nCmd)
 {
     uint_8  pData[1];
     ASSERT(pObj != NULL);
 
     
      pData[0] = ((nAddr & 0x07) << 5) | (nCmd & 0x1F);
-    _FTE_SHT_startTransmission(pObj);
+    FTE_SHT_startTransmission(pObj);
     
     return  _sht_write(pObj, pData, 1);
 }
 
-_mqx_uint   _FTE_SHT_startConvert(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_SHT_startConvert(FTE_OBJECT_PTR pObj)
 {
     ASSERT(pObj != NULL);
     FTE_SHT_STATUS_PTR  pStatus = (FTE_SHT_STATUS_PTR)pObj->pStatus;
     
-    _FTE_SHT_connectionReset(pObj);
+    FTE_SHT_connectionReset(pObj);
     
     if (pStatus->bHumidity)
     {
@@ -435,7 +730,7 @@ _mqx_uint   _FTE_SHT_startConvert(FTE_OBJECT_PTR pObj)
     }
 }
 
-uint_8 _FTE_SHT_crc8(uint_8 ubCRC, uint_8_ptr pBuff, uint_32 nLen)
+uint_8 FTE_SHT_crc8(uint_8 ubCRC, uint_8_ptr pBuff, FTE_UINT32 nLen)
 {
     for(uint_8 i = 0 ; i < nLen ; i++)
     {
@@ -459,42 +754,42 @@ uint_8 _FTE_SHT_crc8(uint_8 ubCRC, uint_8_ptr pBuff, uint_32 nLen)
     return  ubCRC;
 }
 
-_mqx_uint   _FTE_SHT_getTemperature(FTE_OBJECT_PTR pObj, int_32 *pTemperature)
+FTE_RET   FTE_SHT_getTemperature(FTE_OBJECT_PTR pObj, FTE_INT32 *pTemperature)
 {
     uint_8  pBuff[4];
-    int_32 nTemperature;
+    FTE_INT32 nTemperature;
     ASSERT(pObj != NULL);
     
     pBuff[0] = 0x03;
     
-    if ((_sht_read(pObj, &pBuff[1], 3) == MQX_OK) && (_FTE_SHT_crc8(0x00, pBuff, 4) == 0))
+    if ((_sht_read(pObj, &pBuff[1], 3) == FTE_RET_OK) && (FTE_SHT_crc8(0x00, pBuff, 4) == 0))
     {
-        nTemperature = (int_32)((-39.6 + 0.01*((((int_32)pBuff[1] << 8) | pBuff[2]) & 0x3FFFF)) * 100);
+        nTemperature = (FTE_INT32)((-39.6 + 0.01*((((FTE_INT32)pBuff[1] << 8) | pBuff[2]) & 0x3FFFF)) * 100);
         
         if (-4000 <= nTemperature && nTemperature <= 12000)
         {
             *pTemperature = nTemperature;
-            return  MQX_OK;
+            return  FTE_RET_OK;
         }
     }
     
     return  MQX_ERROR;
 }
 
-_mqx_uint   _FTE_SHT_getHumidity(FTE_OBJECT_PTR pObj, uint_32 *pHumidity)
+FTE_RET   FTE_SHT_getHumidity(FTE_OBJECT_PTR pObj, FTE_UINT32 *pHumidity)
 {
     uint_8  pBuff[4];
-    int_32  nHumidity;
+    FTE_INT32  nHumidity;
     uint_8  ubCRC = 0;
     
     ASSERT(pObj != NULL);
     
     pBuff[0] = 0x05;
     
-    if ((_sht_read(pObj, &pBuff[1], 3) == MQX_OK) && (_FTE_SHT_crc8(ubCRC, pBuff, 4) == 0))
+    if ((_sht_read(pObj, &pBuff[1], 3) == FTE_RET_OK) && (FTE_SHT_crc8(ubCRC, pBuff, 4) == 0))
     {
-        int_32  nValue = ((int_32)pBuff[1] << 8) | pBuff[2];        
-        nHumidity = (int_32)((-2.0468 + 0.0367*nValue + -0.0000015955*nValue*nValue) * 100);
+        FTE_INT32  nValue = ((FTE_INT32)pBuff[1] << 8) | pBuff[2];        
+        nHumidity = (FTE_INT32)((-2.0468 + 0.0367*nValue + -0.0000015955*nValue*nValue) * 100);
         
         if (nHumidity <= 0)
         {
@@ -506,23 +801,29 @@ _mqx_uint   _FTE_SHT_getHumidity(FTE_OBJECT_PTR pObj, uint_32 *pHumidity)
         }
         else
         {
-            *pHumidity = (uint_32)nHumidity;
+            *pHumidity = (FTE_UINT32)nHumidity;
         }
         
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
     
     return  MQX_ERROR;
 }
 
-uint_32      _FTE_SHT_getUpdateInterval(FTE_OBJECT_PTR pObj)
+FTE_UINT32      FTE_SHT_getUpdateInterval
+(   
+    FTE_OBJECT_PTR  pObj,
+    FTE_UINT32_PTR  pulInterval
+)
 {
     FTE_SHT_CONFIG_PTR  pConfig = (FTE_SHT_CONFIG_PTR)pObj->pConfig;
     
-    return  pConfig->nInterval;
+    *pulInterval = pConfig->nInterval;
+    
+    return  FTE_RET_OK;
 }
 
-_mqx_uint    _FTE_SHT_setUpdateInterval(FTE_OBJECT_PTR pObj, uint_32 nInterval)
+FTE_RET    FTE_SHT_setUpdateInterval(FTE_OBJECT_PTR pObj, FTE_UINT32 nInterval)
 {
     FTE_SHT_CONFIG_PTR  pConfig = (FTE_SHT_CONFIG_PTR)pObj->pConfig;
     
@@ -530,10 +831,10 @@ _mqx_uint    _FTE_SHT_setUpdateInterval(FTE_OBJECT_PTR pObj, uint_32 nInterval)
     
     FTE_CFG_OBJ_save(pObj);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint   _FTE_SHT_statistic(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTICS_PTR pStatistics)
+FTE_RET   FTE_SHT_statistic(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTICS_PTR pStatistics)
 {
     ASSERT((pObj != NULL) && (pStatistics != NULL));
     
@@ -541,102 +842,214 @@ _mqx_uint   _FTE_SHT_statistic(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTICS_PTR pS
         
     memcpy(pStatistics, &pStatus->xCommon.xStatistics, sizeof(FTE_OBJECT_STATISTICS));
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-int_32      FTE_SHT_SHELL_cmd(int_32 argc, char_ptr argv[])
-{ /* Body */
-    boolean              print_usage, shorthelp = FALSE;
-    int_32               return_code = SHELL_EXIT_SUCCESS;
+FTE_RET  FTE_SHT_getChildCount
+(   
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32_PTR  pCount
+)
+{
+    ASSERT((pObj != NULL) && (pCount != NULL));
     
-    print_usage = Shell_check_help_request (argc, argv, &shorthelp);
+    *pCount = pObj->pStatus->nValueCount;
+    
+    return  FTE_RET_OK;
+}
 
-    if (!print_usage)
+FTE_RET FTE_SHT_getChild
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      ulIndex, 
+    FTE_OBJECT_ID _PTR_ pxChildID
+)
+{
+    ASSERT((pObj != NULL) && (pxChildID != NULL));
+    FTE_UINT32  ulGroupID;
+    
+    if (ulIndex >= 2)
     {
-        uint_32     nID;
-        switch(argc)
+        return  FTE_RET_OBJECT_NOT_FOUND;
+    }
+
+    ulGroupID = (pObj->pConfig->xCommon.nID & 0x00FF0000) >> 8;
+    
+    for(FTE_INT32 i = 0 ; i < FTE_OBJ_count(ulGroupID, 0x0000FF00, FALSE); i++)
+    {
+        FTE_OBJECT_PTR  pChild;
+        
+        pChild = FTE_OBJ_getAt(ulGroupID, 0x0000FF00, i, FALSE);
+        if ((pChild != NULL) && (((FTE_IFCE_CONFIG_PTR)pChild->pConfig)->nRegID == ulIndex))
+        {
+            *pxChildID = pChild->pConfig->xCommon.nID;
+            
+            return  FTE_RET_OK;
+        }
+    }
+
+    return  FTE_RET_OBJECT_NOT_FOUND;
+}
+
+FTE_RET FTE_SHT_attachChild
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_OBJECT_ID   xChildID
+)
+{
+    ASSERT(pObj != NULL);
+    
+    FTE_SHT_STATUS_PTR  pStatus = (FTE_SHT_STATUS_PTR)pObj->pStatus;
+
+    FTE_UINT32  ulGroupID = ((pObj->pConfig->xCommon.nID & 0x00FF0000) >> 8);
+    
+    if (ulGroupID != (xChildID & 0x0000FF00))
+    {
+        return  FTE_RET_INVALID_OBJECT;
+    }
+    
+    switch(xChildID & FTE_OBJ_CLASS_MASK)
+    {
+    case FTE_OBJ_CLASS_TEMPERATURE:
+        {
+            if (pStatus->xTObjID != 0)
+            {
+                return  RTE_RET_ALREADY_EXISTS;
+            }
+            
+            pStatus->xTObjID = xChildID;
+        }
+        break;
+        
+    case FTE_OBJ_CLASS_HUMIDITY:
+        {
+            if (pStatus->xHObjID != 0)
+            {
+                return  RTE_RET_ALREADY_EXISTS;
+            }
+            
+            pStatus->xHObjID = xChildID;
+        }
+        break;
+     
+    default:
+        return  FTE_RET_INVALID_OBJECT;
+    }
+    
+    
+    return  FTE_RET_OK;
+}
+
+FTE_RET FTE_SHT_detachChild
+(
+    FTE_OBJECT_PTR pObj, 
+    FTE_OBJECT_ID   xChildID
+)
+{
+    ASSERT(pObj != NULL);
+    
+    FTE_SHT_STATUS_PTR  pStatus = (FTE_SHT_STATUS_PTR)pObj->pStatus;
+
+    FTE_UINT32  ulGroupID = ((pObj->pConfig->xCommon.nID & 0x00FF0000) >> 8);
+    
+    if (ulGroupID != (xChildID & 0x0000FF00))
+    {
+        return  FTE_RET_INVALID_OBJECT;
+    }
+    
+    switch(xChildID & FTE_OBJ_CLASS_MASK)
+    {
+    case FTE_OBJ_CLASS_TEMPERATURE:
+        {
+            if (pStatus->xTObjID == 0)
+            {
+                return  FTE_RET_OBJECT_NOT_FOUND;
+            }
+            else if (pStatus->xTObjID != xChildID)
+            {
+                return  FTE_RET_INVALID_OBJECT;
+            }
+            
+            pStatus->xTObjID = 0;
+        }
+        break;
+        
+    case FTE_OBJ_CLASS_HUMIDITY:
+        {
+            if (pStatus->xHObjID == 0)
+            {
+                return  FTE_RET_OBJECT_NOT_FOUND;
+            }
+            else if (pStatus->xHObjID != xChildID)
+            {
+                return  FTE_RET_INVALID_OBJECT;
+            }
+            
+            pStatus->xHObjID = 0;
+        }
+        break;
+     
+    default:
+        return  FTE_RET_INVALID_OBJECT;
+    }
+    
+    
+    return  FTE_RET_OK;
+}
+
+FTE_INT32   FTE_SHT_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[]
+)
+{ /* Body */
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   return_code = SHELL_EXIT_SUCCESS;
+    
+    bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
+
+    if (!bPrintUsage)
+    {
+        FTE_UINT32     nID;
+        switch(nArgc)
         {
         case    1:
             {
-                uint_32 count = FTE_OBJ_count(FTE_OBJ_TYPE_MULTI_SHT, 0, FALSE);
-                uint_32 i;
+                FTE_CHAR    pBuff[32];
+                FTE_UINT32  ulCount = FTE_LIST_count(&_xObjList);
+                FTE_UINT32  i;
 
-                printf("%-8s %-16s %-16s %-8s %-16s %-s\n", 
-                        "ID", "TYPE", "NAME", "STATUS", "VALUE", "TIME");
-                for(i = 0 ; i < count ; i++)
+                printf("%8s %8s %8s %8s %8s %8s\n", "ID", "STATE", "TEMP.", "HUMI.", "INTERVAL", "DELAY");
+                for(i = 0 ; i < ulCount ; i++)
                 {
-                    FTE_OBJECT_PTR  pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_UNKNOWN, 0, i, FALSE);
-                    
+                    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)FTE_LIST_getAt(&_xObjList, i);
                     if (pObj != NULL)
                     {
-                        printf("%08x %-16s %-16s %8s", 
+                        FTE_SHT_STATUS_PTR  pStatus = (FTE_SHT_STATUS_PTR)pObj->pStatus;
+                        FTE_SHT_CONFIG_PTR  pConfig = (FTE_SHT_CONFIG_PTR)pObj->pConfig;
+                        
+                        printf("%08x %8s", 
                               pObj->pConfig->xCommon.nID, 
-                              FTE_OBJ_typeString(pObj), 
-                              pObj->pConfig->xCommon.pName,
-                              FTE_OBJ_IS_ENABLED(pObj)?"RUN":"STOP");                       
+                              FTE_OBJ_IS_ENABLED(pObj)?"RUN":"STOP");
+
+                        FTE_VALUE_toString(&pStatus->xCommon.pValue[FTE_SHT_FIELD_TEMP], pBuff, sizeof(pBuff) - 1);
+                        printf(" %8s", pBuff);
                         
-                        if (pObj->pStatus->pValue != NULL)
-                        {
-                            TIME_STRUCT xTime;
-                            char        pTimeString[64];
-                            char        pValueString[32];
-                            char        pUnitString[8];
-                            
-                            FTE_VALUE_toString(pObj->pStatus->pValue, pValueString, sizeof(pValueString));
-                            FTE_VALUE_unit(pObj->pStatus->pValue, pUnitString, sizeof(pUnitString));
-                            FTE_VALUE_getTimeStamp(pObj->pStatus->pValue, &xTime);
-                            FTE_TIME_toString(&xTime, pTimeString, sizeof(pTimeString));
-                            printf(" %8s %-7s %s", pValueString, pUnitString, pTimeString);
-                        }
+                        FTE_VALUE_toString(&pStatus->xCommon.pValue[FTE_SHT_FIELD_HUMI], pBuff, sizeof(pBuff) - 1);
+                        printf(" %8s", pBuff);
                         
-                        if (pObj->pAction->f_get_statistic != NULL)
-                        {
-                            FTE_OBJECT_STATISTICS    xStatistics;
-                            uint_32                 nRatio;
-                            
-                            pObj->pAction->f_get_statistic(pObj, &xStatistics);
-                            nRatio = (xStatistics.nTotalTrial - xStatistics.nTotalFail) * 10000 / xStatistics.nTotalTrial;
-                            
-                            printf(" %3d.%02d%%(%d, %d, %d)", nRatio/100, nRatio%100, xStatistics.nTotalTrial, xStatistics.nTotalFail, xStatistics.nPartialFail);
-                        }
-                        printf("\n");
+                        printf(" %5d ms %5d ms\n",   pConfig->nInterval, pConfig->ulDelay);
+
                     }
                 }
             }
             break;
 
-        case    2:
-            {
-                if (!Shell_parse_hexnum(argv[1], &nID))
-                {
-                    print_usage = TRUE;
-                    goto error;
-                }
-
-                FTE_OBJECT_PTR  pObj = FTE_OBJ_get(nID);
-                if (pObj == NULL)
-                {
-                    printf("Object[%08x] not found!\n", nID);
-                    goto error;
-                }
-            
-                if (FTE_OBJ_TYPE(pObj) != FTE_OBJ_TYPE_MULTI_SHT)
-                {
-                    printf("Object type[%08x] mismatch!\n", FTE_OBJ_TYPE(pObj));
-                    goto error;
-                }
-
-                printf("%8s : %08x\n",      "ID",       pObj->pConfig->xCommon.nID);
-                printf("%8s : %d secs\n",   "Interval", ((FTE_SHT_CONFIG_PTR)pObj->pConfig)->nInterval);
-                printf("%8s : %d ms\n",     "Delay",    ((FTE_SHT_CONFIG_PTR)pObj->pConfig)->ulDelay);
-            }                        
-            break;
-            
         case    4:
             {
-                if (!Shell_parse_hexnum(argv[1], &nID))
+                if (!Shell_parse_hexnum(pArgv[1], &nID))
                 {
-                    print_usage = TRUE;
+                    bPrintUsage = TRUE;
                     goto error;
                 }
 
@@ -653,19 +1066,19 @@ int_32      FTE_SHT_SHELL_cmd(int_32 argc, char_ptr argv[])
                     goto error;
                 }
 
-                if (strcmp(argv[2], "scl") == 0)
+                if (strcmp(pArgv[2], "scl") == 0)
                 {
-                    uint_32     ulDelay;
+                    FTE_UINT32     ulDelay;
                     
-                    if (!Shell_parse_uint_32(argv[3], &ulDelay))
+                    if (!Shell_parse_uint_32(pArgv[3], &ulDelay))
                     {
-                        print_usage = TRUE;
+                        bPrintUsage = TRUE;
                         goto error;
                     }
 
                     if (ulDelay > FTE_SHT_DELAY_MAX)
                     {
-                        print_usage = TRUE;
+                        bPrintUsage = TRUE;
                         goto error;
                     }
                     
@@ -676,20 +1089,20 @@ int_32      FTE_SHT_SHELL_cmd(int_32 argc, char_ptr argv[])
             }                        
             break;
         default:
-            print_usage = TRUE;
+            bPrintUsage = TRUE;
         }
     }
                 
 error:    
-    if (print_usage || (return_code !=SHELL_EXIT_SUCCESS))
+    if (bPrintUsage || (return_code !=SHELL_EXIT_SUCCESS))
     {
-        if (shorthelp)
+        if (bShortHelp)
         {
-            printf ("%s [<id>] [<commands>]\n", argv[0]);
+            printf ("%s [<id>] [<commands>]\n", pArgv[0]);
         }
         else
         {
-            printf("Usage : %s [<id>]  [<commands>]\n", argv[0]);
+            printf("Usage : %s [<id>]  [<commands>]\n", pArgv[0]);
             printf("  Commands :\n");
             printf("    scl <ms>\n");
             printf("        SCL signal interval (0 ms ~ %d ms)\n", FTE_SHT_DELAY_MAX);

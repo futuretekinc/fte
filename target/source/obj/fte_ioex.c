@@ -32,14 +32,277 @@
 #if  FTE_IOEX_DEBUG
 #define FTE_IOEX_DUMP_SEND_PKT(x,y) { if (bTraceOn && bTraceTxPkt) DUMP("TX", (x), (y), 0); }
 #define FTE_IOEX_DUMP_RECV_PKT(x,y) { if (bTraceOn && bTraceRxPkt) DUMP("RX", (x), (y), 0); }
-static  boolean     bTraceOn = FALSE;
-static  boolean     bTraceRxPkt = TRUE;
-static  boolean     bTraceTxPkt = TRUE;
+static  FTE_BOOL     bTraceOn = FALSE;
+static  FTE_BOOL     bTraceRxPkt = TRUE;
+static  FTE_BOOL     bTraceTxPkt = TRUE;
 #else
 #define FTE_IOEX_DUMP(x,y)   
 #endif
 
-static  FTE_IOEX_EXT_CONFIG xGlobalConfig = 
+static const 
+FTE_IFCE_CONFIG FTE_IOEX_DI0_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI1",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 0,
+    .nInterval  = FTE_IOEX_DI_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_IOEX_DI1_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI2",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 1,
+    .nInterval  = FTE_IOEX_DI_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_IOEX_DI2_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI3",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 2,
+    .nInterval  = FTE_IOEX_DI_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_IOEX_DI3_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI4",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 3,
+    .nInterval  = FTE_IOEX_DI_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_IOEX_DI4_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI5",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 4,
+    .nInterval  = FTE_IOEX_DI_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_IOEX_DI5_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI6",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 5,
+    .nInterval  = FTE_IOEX_DI_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_IOEX_DI6_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI7",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 6,
+    .nInterval  = FTE_IOEX_DI_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_IOEX_DI7_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI8",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 7,
+    .nInterval  = FTE_IOEX_DI_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_IOEX_DI8_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI9",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 8,
+    .nInterval  = FTE_IOEX_DI_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_IOEX_DI9_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI10",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 9,
+    .nInterval  = FTE_IOEX_DI_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_IOEX_DI10_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI11",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 10,
+    .nInterval  = FTE_IOEX_DI_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_IOEX_DI11_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI12",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 11,
+    .nInterval  = FTE_IOEX_DI_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_IOEX_DI12_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI13",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 12,
+    .nInterval  = FTE_IOEX_DI_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_IOEX_DI13_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI14",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 13,
+    .nInterval  = FTE_IOEX_DI_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_IOEX_DI14_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI15",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 14,
+    .nInterval  = FTE_IOEX_DI_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_IOEX_DI15_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "DI16",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+    .nRegID     = 15,
+    .nInterval  = FTE_IOEX_DI_DEFAULT_UPDATE_INTERVAL
+};
+
+
+static const 
+FTE_OBJECT_CONFIG_PTR FTE_IOEX_defaultChildConfigs[] =
+{
+    (FTE_OBJECT_CONFIG_PTR)&FTE_IOEX_DI0_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_IOEX_DI1_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_IOEX_DI2_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_IOEX_DI3_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_IOEX_DI4_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_IOEX_DI5_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_IOEX_DI6_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_IOEX_DI7_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_IOEX_DI8_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_IOEX_DI9_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_IOEX_DI10_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_IOEX_DI11_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_IOEX_DI12_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_IOEX_DI13_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_IOEX_DI14_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_IOEX_DI15_defaultConfig,
+};
+
+FTE_GUS_CONFIG FTE_IOEX_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_IOEX, 0x0001),
+        .pName      = "IOEX",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+        .ulChild    = sizeof(FTE_IOEX_defaultChildConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR),
+        .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)FTE_IOEX_defaultChildConfigs
+    },
+    .nModel     = FTE_GUS_MODEL_IOEX,
+    .nSensorID  = 0x01,
+    .nUCSID     = FTE_DEV_UCS_1,
+    .nInterval  = FTE_IOEX_DEFAULT_UPDATE_INTERVAL
+};
+
+static  
+FTE_IOEX_EXT_CONFIG xGlobalConfig = 
 {
     .ulLoopPeriod = FTE_IOEX_DEFAULT_LOOP_PERIOD,
     .ulUpdatePeriod = FTE_IOEX_DEFAULT_UPDATE_PERIOD
@@ -65,7 +328,22 @@ FTE_VALUE_TYPE  FTE_IOEX_valueTypes[] =
     FTE_VALUE_TYPE_DIO,
 };
 
-_mqx_uint   FTE_IOEX_attach(FTE_OBJECT_PTR pObj)
+const 
+FTE_GUS_MODEL_INFO    FTE_IOEX_GUSModelInfo =
+{
+    .nModel         = FTE_GUS_MODEL_IOEX,
+    .pName          = "IOEX",
+    .nFieldCount    = FTE_IOEX_DI_MAX,
+    .pValueTypes    = FTE_IOEX_valueTypes,
+    .fAttach        = FTE_IOEX_attach,
+    .fDetach        = FTE_IOEX_detach,
+    .fGet           = FTE_IOEX_get,
+};
+
+FTE_RET   FTE_IOEX_attach
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_IOEX_STATUS_PTR pStatus;
     FTE_UCS_PTR         pUCS = NULL;
@@ -94,7 +372,10 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint   FTE_IOEX_detach(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_IOEX_detach
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_IOEX_STATUS_PTR  pStatus;
 
@@ -111,7 +392,12 @@ _mqx_uint   FTE_IOEX_detach(FTE_OBJECT_PTR pObj)
     return  MQX_OK;
 }
 
-uint_32     FTE_IOEX_get(FTE_OBJECT_PTR pObject, uint_32 ulIndex, FTE_VALUE_PTR pValue)
+FTE_UINT32     FTE_IOEX_get
+(
+    FTE_OBJECT_PTR  pObject, 
+    FTE_UINT32      ulIndex, 
+    FTE_VALUE_PTR   pValue
+)
 {
     ASSERT ((pObject != NULL) && (pValue != NULL));
     
@@ -123,16 +409,19 @@ uint_32     FTE_IOEX_get(FTE_OBJECT_PTR pObject, uint_32 ulIndex, FTE_VALUE_PTR 
     return  MQX_ERROR;
 }
 
-_mqx_uint FTE_IOEX_init(FTE_OBJECT_PTR pObj)
+FTE_RET FTE_IOEX_init
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_IOEX_loadExtConfig(pObj);
     
-    _task_create(0, FTE_TASK_IOEX, (uint_32)pObj);
+    _task_create(0, FTE_TASK_IOEX, (FTE_UINT32)pObj);
     
     return  MQX_OK;
 }
 
-_mqx_uint FTE_IOEX_reset(void)
+FTE_RET FTE_IOEX_reset(void)
 {
     if (FTE_OBJ_get(FTE_OBJ_TYPE_IOEX_RESET) != 0)
     {
@@ -144,7 +433,10 @@ _mqx_uint FTE_IOEX_reset(void)
     return  MQX_OK;
 }
 
-_mqx_uint FTE_IOEX_initDefaultExtConfig(FTE_IOEX_EXT_CONFIG_PTR pConfig)
+FTE_RET FTE_IOEX_initDefaultExtConfig
+(
+    FTE_IOEX_EXT_CONFIG_PTR pConfig
+)
 {
     ASSERT(pConfig != NULL);
     
@@ -155,7 +447,10 @@ _mqx_uint FTE_IOEX_initDefaultExtConfig(FTE_IOEX_EXT_CONFIG_PTR pConfig)
     return  MQX_OK;    
 }
  
-_mqx_uint FTE_IOEX_loadExtConfig(FTE_OBJECT_PTR pObj)
+FTE_RET FTE_IOEX_loadExtConfig
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_IOEX_EXT_CONFIG    xConfig;
         
@@ -172,16 +467,22 @@ _mqx_uint FTE_IOEX_loadExtConfig(FTE_OBJECT_PTR pObj)
 }
 
 
-_mqx_uint FTE_IOEX_saveExtConfig(FTE_OBJECT_PTR pObj)
+FTE_RET FTE_IOEX_saveExtConfig
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     return  FTE_CFG_IOEX_setExtConfig(&xGlobalConfig, sizeof(xGlobalConfig));
 }
 
-_mqx_uint   FTE_IOEX_sendRequest(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_IOEX_sendRequest
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
-    uint_8  pSendBuff[FTE_IOEX_PACKET_LEN_MAX];
-    uint_32 ulSendLen;
-    uint_16 uiCRC;
+    FTE_UINT8  pSendBuff[FTE_IOEX_PACKET_LEN_MAX];
+    FTE_UINT32 ulSendLen;
+    FTE_UINT16 uiCRC;
     
     ulSendLen = 0;
     pSendBuff[ulSendLen++] = 0x00;
@@ -190,7 +491,7 @@ _mqx_uint   FTE_IOEX_sendRequest(FTE_OBJECT_PTR pObj)
     pSendBuff[ulSendLen++] = 0x00;
     pSendBuff[ulSendLen++] = 0x00;
     pSendBuff[ulSendLen++] = FTE_IOEX_DI_MAX;
-    uiCRC = fte_crc16(pSendBuff, ulSendLen);
+    uiCRC = FTE_CRC16(pSendBuff, ulSendLen);
     pSendBuff[ulSendLen++] = (uiCRC >> 8) & 0xFF;
     pSendBuff[ulSendLen++] = (uiCRC     ) & 0xFF;
                 
@@ -201,10 +502,13 @@ _mqx_uint   FTE_IOEX_sendRequest(FTE_OBJECT_PTR pObj)
     return  MQX_OK;
 }
 
-void FTE_IOEX_task(uint_32 ulParam)
+void FTE_IOEX_task
+(
+    FTE_UINT32  ulParam
+)
 {
     FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)ulParam;
-    uint_32             ulValidPktLen = FTE_IOEX_DI_MAX + 5;
+    FTE_UINT32             ulValidPktLen = FTE_IOEX_DI_MAX + 5;
     
     ASSERT(pObj != NULL);
     
@@ -223,16 +527,16 @@ void FTE_IOEX_task(uint_32 ulParam)
     while(1)
     {
         TIME_STRUCT xCurrentTime;
-        uint_8  pRecvBuff[FTE_IOEX_PACKET_LEN_MAX];
-        uint_32 ulRecvLen;
-        uint_32 ulElapsedUpdateTime = 0;
+        FTE_UINT8  pRecvBuff[FTE_IOEX_PACKET_LEN_MAX];
+        FTE_UINT32 ulRecvLen;
+        FTE_INT32   nElapsedUpdateTime = 0;
         int     i;
 
         _time_get(&xCurrentTime);
         
-        ulElapsedUpdateTime = FTE_TIME_diffMilliseconds(&xCurrentTime, &pStatus->xLastUpdateTime);
+        FTE_TIME_diffMilliseconds(&xCurrentTime, &pStatus->xLastUpdateTime, &nElapsedUpdateTime);
         
-        if (ulElapsedUpdateTime >= xGlobalConfig.ulUpdatePeriod)
+        if (nElapsedUpdateTime >= xGlobalConfig.ulUpdatePeriod)
         {   
             if (pStatus->ulRetryCount == 0)
             {
@@ -246,10 +550,10 @@ void FTE_IOEX_task(uint_32 ulParam)
             }
             else  
             {
-                uint_32 ulElapsedRequestTime;
+                FTE_INT32   nElapsedRequestTime = 0;
                 
-                ulElapsedRequestTime = FTE_TIME_diffMilliseconds(&xCurrentTime, &pStatus->xLastRequestTime);
-                if( ulElapsedRequestTime >= xGlobalConfig.ulRequestTimeout)
+                FTE_TIME_diffMilliseconds(&xCurrentTime, &pStatus->xLastRequestTime, &nElapsedRequestTime);
+                if( nElapsedRequestTime >= xGlobalConfig.ulRequestTimeout)
                 {
                     FTE_IOEX_sendRequest(pObj);
                     pStatus->ulRetryCount++;
@@ -263,7 +567,7 @@ void FTE_IOEX_task(uint_32 ulParam)
             ulRecvLen = FTE_UCS_recv(pStatus->xGUS.pUCS, pRecvBuff, sizeof(pRecvBuff));
             if (ulRecvLen >= ulValidPktLen)
             {
-                int_32  nIndex = -1;
+                FTE_INT32  nIndex = -1;
                 FTE_IOEX_DUMP_RECV_PKT(pRecvBuff, ulRecvLen);
                 
                 for(i = 0 ; i < ulRecvLen - (ulValidPktLen - 1);i++)
@@ -277,7 +581,7 @@ void FTE_IOEX_task(uint_32 ulParam)
                 
                 if (nIndex >= 0)
                 {
-                    uint_16 uiCRC = fte_crc16(&pRecvBuff[nIndex], ulValidPktLen - 2);
+                    FTE_UINT16 uiCRC = FTE_CRC16(&pRecvBuff[nIndex], ulValidPktLen - 2);
                     if ((pRecvBuff[nIndex + ulValidPktLen - 2] == ((uiCRC >> 8) & 0xFF)) && (pRecvBuff[nIndex + ulValidPktLen - 1] == ((uiCRC) & 0xFF)))
                     {
                         for(i = 0 ; i < FTE_IOEX_DI_MAX ; i++)
@@ -299,10 +603,14 @@ void FTE_IOEX_task(uint_32 ulParam)
 }
 
 
-int_32 FTE_IOEX_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
+FTE_INT32 FTE_IOEX_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[] 
+)
 { 
-    boolean                 bPrintUsage, bShortHelp = FALSE;
-    int_32                  nRet = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   nRet = SHELL_EXIT_SUCCESS;
     
     bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
     
@@ -318,7 +626,7 @@ int_32 FTE_IOEX_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
             pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_MULTI_IOEX, FTE_OBJ_TYPE_MASK, 0, FALSE);
             if (pObj != NULL)
             {            
-                int_32  i;
+                FTE_INT32  i;
                 for(i = 0 ; i < FTE_IOEX_DI_MAX ; i++)
                 {
                     printf("    %5d %8s\n", i+1,((FTE_IOEX_STATUS_PTR)pObj->pStatus)->pDI[i].bValue?"ON":"OFF");

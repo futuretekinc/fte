@@ -5,21 +5,21 @@
  
 typedef struct _FTE_LOG_POOL_STRUCT
 {
-    uint_32             ulCRC;
-    uint_32             ulTag;
-    uint_32             ulID;
-    uint_32             ulCount;
-    uint_32             ulHead;
-    uint_32             ulTail;
-    FTE_LOG             pLogs[(0x1000 - sizeof(uint_32) * 6) / sizeof(FTE_LOG)];
+    FTE_UINT32             ulCRC;
+    FTE_UINT32             ulTag;
+    FTE_UINT32             ulID;
+    FTE_UINT32             ulCount;
+    FTE_UINT32             ulHead;
+    FTE_UINT32             ulTail;
+    FTE_LOG             pLogs[(0x1000 - sizeof(FTE_UINT32) * 6) / sizeof(FTE_LOG)];
 }   FTE_LOG_POOL, _PTR_ FTE_LOG_POOL_PTR;
 
-#define MAX_LOG_COUNT   ((0x1000 - sizeof(uint_32) * 6) / sizeof(FTE_LOG))
+#define MAX_LOG_COUNT   ((0x1000 - sizeof(FTE_UINT32) * 6) / sizeof(FTE_LOG))
 #define FTE_LOG_TAG     0x12345678
 
 static  FTE_LOG_POOL        xPool;
-static  boolean             bPoolModified = FALSE;
-static  char *              pMTDs[] = 
+static  FTE_BOOL        bPoolModified = FALSE;
+static  FTE_CHAR_PTR    pMTDs[] = 
 {
     "flashx:log0",
     "flashx:log1"
@@ -27,7 +27,7 @@ static  char *              pMTDs[] =
 
 static  LWSEM_STRUCT        xLWSEM;
 
-_mqx_uint   FTE_LOG_init(void)
+FTE_RET   FTE_LOG_init(void)
 {
     FTE_LOG_POOL_PTR pPool;
     
@@ -60,9 +60,9 @@ _mqx_uint   FTE_LOG_init(void)
         read(fp, (char_ptr)pPool, sizeof(FTE_LOG_POOL));
         fclose(fp);
         
-        if ((pPool->ulCRC != fte_crc32(0, (char_ptr)&pPool->ulTag, sizeof(FTE_LOG_POOL) - sizeof(uint_32))) ||
+        if ((pPool->ulCRC != FTE_CRC32(0, &pPool->ulTag, sizeof(FTE_LOG_POOL) - sizeof(FTE_UINT32))) ||
             (pPool->ulTag != FTE_LOG_TAG) || 
-            (pPool->ulID > (uint_32)MAX_INT_32))
+            (pPool->ulID > (FTE_UINT32)MAX_INT_32))
         {
             continue;
         }
@@ -85,7 +85,7 @@ _mqx_uint   FTE_LOG_init(void)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_LOG_save(void)
+FTE_RET   FTE_LOG_save(void)
 {
     MQX_FILE_PTR    fp;    
         
@@ -101,7 +101,7 @@ _mqx_uint   FTE_LOG_save(void)
 
     xPool.ulID++;
     xPool.ulTag = FTE_LOG_TAG;        
-    xPool.ulCRC = fte_crc32(0, (pointer)&xPool.ulTag, sizeof(FTE_LOG_POOL) - sizeof(uint_32));   
+    xPool.ulCRC = FTE_CRC32(0, &xPool.ulTag, sizeof(FTE_LOG_POOL) - sizeof(FTE_UINT32));   
     
     int nMTD = xPool.ulID & 0x01;
 
@@ -129,7 +129,7 @@ _mqx_uint   FTE_LOG_save(void)
     
     return  MQX_OK;
 }
-_mqx_uint   FTE_LOG_addSystem(FTE_LOG_SYSTEM_MESSAGE xMsg)
+FTE_RET   FTE_LOG_addSystem(FTE_LOG_SYSTEM_MESSAGE xMsg)
 {
     if (_lwsem_wait(&xLWSEM) != MQX_OK)
     {  
@@ -158,7 +158,7 @@ _mqx_uint   FTE_LOG_addSystem(FTE_LOG_SYSTEM_MESSAGE xMsg)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_LOG_addEvent(FTE_OBJECT_ID   nOID, uint_32 ulLevel, FTE_VALUE_PTR pValue)
+FTE_RET   FTE_LOG_addEvent(FTE_OBJECT_ID   nOID, FTE_UINT32 ulLevel, FTE_VALUE_PTR pValue)
 {
     ASSERT(pValue != NULL);
   
@@ -192,9 +192,9 @@ _mqx_uint   FTE_LOG_addEvent(FTE_OBJECT_ID   nOID, uint_32 ulLevel, FTE_VALUE_PT
     return  MQX_OK;
 }
 
-uint_32 FTE_LOG_del(uint_32 ulCount)
+FTE_UINT32 FTE_LOG_del(FTE_UINT32 ulCount)
 {
-    uint_32 ulDeletedCount = 0;
+    FTE_UINT32 ulDeletedCount = 0;
     
     if (_lwsem_wait(&xLWSEM) != MQX_OK)
     {  
@@ -222,12 +222,12 @@ uint_32 FTE_LOG_del(uint_32 ulCount)
     return  ulDeletedCount;
 }
 
-int         FTE_LOG_count(void)
+FTE_INT32   FTE_LOG_count(void)
 {
     return  xPool.ulCount;
 }
 
-FTE_LOG_PTR FTE_LOG_getAt(uint_32 nIndex)
+FTE_LOG_PTR FTE_LOG_getAt(FTE_UINT32 nIndex)
 {
     if ((xPool.ulCount <= 0) || (nIndex >= xPool.ulCount))
     {
@@ -274,13 +274,13 @@ int_32          FTE_LOG_SHELL_cmd(int_32 argc, char_ptr argv[])
                     char    pLevelString[32];
                     char    pValueString[16];
                     
-                    uint_32 index = (xPool.ulHead + i) % MAX_LOG_COUNT;
+                    FTE_UINT32 index = (xPool.ulHead + i) % MAX_LOG_COUNT;
                 
                     switch(xPool.pLogs[index].xType)
                     {
                     case    FTE_LOG_TYPE_SYSTEM:
                         {
-                            FTE_TIME_toString(&xPool.pLogs[index].xTimeStamp, pTimeString, sizeof(pTimeString));
+                            FTE_TIME_toStr(&xPool.pLogs[index].xTimeStamp, pTimeString, sizeof(pTimeString));
                             printf("%4d : %s %s\n", 
                                    xPool.ulCount - i, 
                                    pTimeString, 
@@ -296,7 +296,7 @@ int_32          FTE_LOG_SHELL_cmd(int_32 argc, char_ptr argv[])
                             xValue.xType = (FTE_VALUE_TYPE)xPool.pLogs[index].xParam.xEvent.xValue.ulType;
 
                             FTE_EVENT_level_string((FTE_EVENT_LEVEL)xPool.pLogs[index].xParam.xEvent.ulLevel, pLevelString, sizeof(pLevelString));                            
-                            FTE_TIME_toString(&xPool.pLogs[index].xTimeStamp, pTimeString, sizeof(pTimeString));
+                            FTE_TIME_toStr(&xPool.pLogs[index].xTimeStamp, pTimeString, sizeof(pTimeString));
                             FTE_VALUE_toString(&xValue, pValueString, sizeof(pValueString));
                             
                             printf("%4d : %s %08x %s(%s)\n", 
@@ -316,7 +316,7 @@ int_32          FTE_LOG_SHELL_cmd(int_32 argc, char_ptr argv[])
             {
                 if (strcmp(argv[1], "del") == 0)
                 {
-                    uint_32 ulCount;
+                    FTE_UINT32 ulCount;
                     
                     if (! Shell_parse_number( argv[2], &ulCount))  
                     {

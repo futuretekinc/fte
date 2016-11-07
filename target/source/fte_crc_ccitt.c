@@ -1,6 +1,8 @@
-#include <mqx.h>
+#include "fte_type.h"
 
-static const unsigned short crc_ccitt_tab[256]= {
+static const 
+FTE_UINT16  pCCITTTable[256]= 
+{
 	0x0000,0x1021,0x2042,0x3063,0x4084,0x50a5,0x60c6,0x70e7,
 	0x8108,0x9129,0xa14a,0xb16b,0xc18c,0xd1ad,0xe1ce,0xf1ef,
 	0x1231,0x0210,0x3273,0x2252,0x52b5,0x4294,0x72f7,0x62d6,
@@ -35,14 +37,16 @@ static const unsigned short crc_ccitt_tab[256]= {
 	0x6e17,0x7e36,0x4e55,0x5e74,0x2e93,0x3eb2,0x0ed1,0x1ef0
 };
 
-uint_16 fte_crc_ccitt(uint_16 ulInit, const uint_8 *pData, uint_16 uiLen)
+FTE_UINT16  FTE_CRC_CCITT
+(
+    FTE_UINT16  uiCRC, 
+    const FTE_UINT8_PTR pData, 
+    FTE_UINT32  ulLen
+)
 {
-	int nCount;
-	uint_16 ulCRC = ulInit;
-    
-	for( nCount = 0; nCount < uiLen; nCount++)
+	for( FTE_INT32 i = 0; i < ulLen; i++)
     {
-		ulCRC = (ulCRC<<8) ^ crc_ccitt_tab[((ulCRC>>8) ^ *(char *)pData++)&0x00FF];
+		uiCRC = (uiCRC<<8) ^ pCCITTTable[((uiCRC>>8) ^ pData[i])&0x00FF];
     }
-	return ulCRC;
+	return uiCRC;
 }

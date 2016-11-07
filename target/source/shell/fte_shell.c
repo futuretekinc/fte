@@ -19,13 +19,13 @@
 #include "fte_dotech.h"
 #include "fte_lorawan.h"
 
-uint_32     FTE_SHELL_getPasswd(MQX_FILE_PTR pFile, char_ptr pPasswd, uint_32 ulMaxLen, uint_32 ulTimeout);
-int_32      FTE_SHELL_cmdPasswd(int_32 nArgc, char_ptr pArgv[]);
-int_32      FTE_SHELL_cmdGet(int_32 nArgc, char_ptr pArgv[]);
-int_32      FTE_SHELL_cmdSet(int_32 nArgc, char_ptr pArgv[]);
+FTE_UINT32  FTE_SHELL_getPasswd(MQX_FILE_PTR pFile, FTE_CHAR_PTR pPasswd, FTE_UINT32 ulMaxLen, FTE_UINT32 ulTimeout);
+int_32      FTE_SHELL_cmdPasswd(int_32 nArgc, FTE_CHAR_PTR pArgv[]);
+int_32      FTE_SHELL_cmdGet(int_32 nArgc, FTE_CHAR_PTR pArgv[]);
+int_32      FTE_SHELL_cmdSet(int_32 nArgc, FTE_CHAR_PTR pArgv[]);
 int_32      FTE_SHELL_main(const SHELL_COMMAND_STRUCT   pShellCmds[], FTE_SHELL_CONFIG_PTR pConfig);
-_mqx_int    FTE_SHELL_fgetc(MQX_FILE_PTR pFile, _mqx_int_ptr pChar, uint_32 ulTimeout);
-_mqx_int    FTE_SHELL_fgets(MQX_FILE_PTR pFile, char_ptr pTTYLine, _mqx_int nSize, uint_32 ulTimeout);
+_mqx_int    FTE_SHELL_fgetc(MQX_FILE_PTR pFile, _mqx_int_ptr pChar, FTE_UINT32 ulTimeout);
+_mqx_int    FTE_SHELL_fgets(MQX_FILE_PTR pFile, FTE_CHAR_PTR pTTYLine, _mqx_int nSize, FTE_UINT32 ulTimeout);
 
 const SHELL_COMMAND_STRUCT pSHELLCommands[] = 
 {
@@ -57,6 +57,8 @@ const SHELL_COMMAND_STRUCT pSHELLCommands[] =
     { "event",      FTE_EVENT_shell_cmd},
     { "exit",       Shell_exit},
     { "get",        FTE_SHELL_cmdGet},
+    { "gpio",       FTE_GPIO_SHELL_cmd},
+
 #if FTE_IOEX_SUPPORTED
     {"ioex",    FTE_IOEX_SHELL_cmd},
 #endif
@@ -95,6 +97,9 @@ const SHELL_COMMAND_STRUCT pSHELLCommands[] =
 #if FTE_SNMPD_SUPPORTED
     { "snmp",       FTE_SNMPD_SHELL_cmd},
 #endif
+#if FTE_SOHA_SUPPORTED
+    { "soha",       FTE_SOHA_SHELL_cmd},
+#endif
 #if FTE_SSD1305_SUPPORTED
     { "lcd",        FTE_SSD1305_SHELL_cmd},
 #endif
@@ -122,7 +127,7 @@ const SHELL_COMMAND_STRUCT pSHELLCommands[] =
     { NULL,         NULL } 
 };
 
-_mqx_uint   FTE_SHELL_proc(void)
+FTE_RET     FTE_SHELL_proc(void)
 {
     _mqx_int    nResult;
     _mqx_int    nCh;
@@ -177,12 +182,18 @@ _mqx_uint   FTE_SHELL_proc(void)
     return  MQX_OK;
 }
 
-uint_32  FTE_SHELL_getPasswd(MQX_FILE_PTR pFile, char_ptr pPasswd, uint_32 ulMaxLen, uint_32 ulTimeout)
+FTE_UINT32  FTE_SHELL_getPasswd
+(
+    MQX_FILE_PTR pFile, 
+    FTE_CHAR_PTR pPasswd, 
+    FTE_UINT32  ulMaxLen, 
+    FTE_UINT32  ulTimeout
+)
 {
     boolean     bExit = FALSE;
-    _mqx_int    ch;
-    uint_32     ulLen = 0;
-    _mqx_uint   ulFlags;
+    FTE_INT32   ch;
+    FTE_UINT32  ulLen = 0;
+    FTE_UINT32  ulFlags;
     
    ioctl(pFile, IO_IOCTL_SERIAL_GET_FLAGS, &ulFlags);
     ulFlags  &= ~IO_SERIAL_ECHO;
@@ -226,7 +237,7 @@ uint_32  FTE_SHELL_getPasswd(MQX_FILE_PTR pFile, char_ptr pPasswd, uint_32 ulMax
     return  MQX_OK;
 }
 
-int_32  FTE_SHELL_cmdPasswd(int_32 nArgc, char_ptr pArgv[])
+int_32  FTE_SHELL_cmdPasswd(int_32 nArgc, FTE_CHAR_PTR pArgv[])
 {
     boolean              bPrintUsage, bShortHelp = FALSE;
     int_32               nReturnCode = SHELL_EXIT_SUCCESS;
@@ -296,7 +307,7 @@ error:
     return  0;
 }
 
-int_32  FTE_SHELL_cmdGet(int_32 nArgc, char_ptr pArgv[])
+int_32  FTE_SHELL_cmdGet(int_32 nArgc, FTE_CHAR_PTR pArgv[])
 {
     boolean              bPrintUsage, bShortHelp = FALSE;
     int_32               nReturnCode = SHELL_EXIT_SUCCESS;
@@ -337,7 +348,7 @@ print_usage:
     return   nReturnCode;
 }
 
-int_32  FTE_SHELL_cmdSet(int_32 nArgc, char_ptr pArgv[])
+int_32  FTE_SHELL_cmdSet(int_32 nArgc, FTE_CHAR_PTR pArgv[])
 {
     boolean              bPrintUsage, bShortHelp = FALSE;
     int_32               nReturnCode = SHELL_EXIT_SUCCESS;
@@ -355,7 +366,7 @@ int_32  FTE_SHELL_cmdSet(int_32 nArgc, char_ptr pArgv[])
         {    
             if (strcmp(pArgv[1], "timeout") == 0)
             {
-                uint_32                 ulTimeout;
+                FTE_UINT32                 ulTimeout;
                 FTE_SHELL_CONFIG_PTR    pConfig = FTE_CFG_SHELL_get();
                     
                 if (! Shell_parse_number( pArgv[2], &ulTimeout))  
@@ -400,7 +411,7 @@ int_32 FTE_SHELL_main
 { /* Body */
     SHELL_CONTEXT_PTR    pShell;
     int_32               return_code = SHELL_EXIT_SUCCESS;
-    uint_32              i;
+    FTE_UINT32              i;
 
     fprintf(stdout, "\nShell (build: %s)\n", __DATE__);
     fprintf(stdout, "Copyright (c) 2013 FuruteTek,Inc.;\n");
@@ -520,7 +531,7 @@ int_32 FTE_SHELL_main
 } /* Endbody */
 
 
-_mqx_int    FTE_SHELL_fgetc(MQX_FILE_PTR pFile, _mqx_int_ptr pChar, uint_32 ulTimeout)
+_mqx_int    FTE_SHELL_fgetc(MQX_FILE_PTR pFile, _mqx_int_ptr pChar, FTE_UINT32 ulTimeout)
 {
     if (_io_fstatus(pFile) != TRUE)
     {        
@@ -570,7 +581,7 @@ _mqx_int FTE_SHELL_fgets
     MQX_FILE_PTR pFile,
     char _PTR_   pBuff,
     _mqx_int     nMaxLen,
-    uint_32     ulTimeout
+    FTE_UINT32     ulTimeout
 ) 
 { /* Body */
     _mqx_int    nResult;
@@ -639,9 +650,14 @@ _mqx_int FTE_SHELL_fgets
 } /* Endbody */
 
 
-_mqx_int  FTE_SHELL_printHexString(uint_8 *pData, uint_32 ulSize, uint_32 ulColumn)
+FTE_UINT32  FTE_SHELL_printHexString
+(   
+    FTE_UINT8_PTR   pData, 
+    FTE_UINT32      ulSize, 
+    FTE_UINT32      ulColumn
+)
 {
-    _mqx_int    ulLen = 0;
+    FTE_UINT32    ulLen = 0;
     for(int i = 0 ; i < ulSize ; i++)
     {
         ulLen += fprintf(stdout, "%02x ", pData[i]);
@@ -654,9 +670,14 @@ _mqx_int  FTE_SHELL_printHexString(uint_8 *pData, uint_32 ulSize, uint_32 ulColu
     return  ulLen;
 }
 
-_mqx_int  FTE_SHELL_printNumString(uint_8 *pData, uint_32 ulSize, uint_32 ulColumn)
+FTE_UINT32  FTE_SHELL_printNumString
+(
+    FTE_UINT8_PTR   pData, 
+    FTE_UINT32      ulSize, 
+    FTE_UINT32      ulColumn
+)
 {
-    _mqx_int    ulLen = 0;
+    FTE_UINT32    ulLen = 0;
     for(int i = 0 ; i < ulSize ; i++)
     {
         ulLen += fprintf(stdout, "%3d ", pData[i]);

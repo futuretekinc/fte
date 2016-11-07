@@ -15,8 +15,8 @@
 typedef struct _fte_do_config_struct
 {
     FTE_COMMON_CONFIG   xCommon;
-    uint_32             nGPIO;
-    uint_32             nLED;
+    FTE_UINT32             nGPIO;
+    FTE_UINT32             nLED;
 }   FTE_DO_CONFIG, _PTR_ FTE_DO_CONFIG_PTR;
 
 typedef struct  _fte_do_status_struct
@@ -25,30 +25,18 @@ typedef struct  _fte_do_status_struct
     FTE_GPIO_PTR        pGPIO;
 }   FTE_DO_STATUS, _PTR_ FTE_DO_STATUS_PTR;
 
-typedef struct _fte_do_action_struct
-{
-    _mqx_uint       (*f_init)(FTE_OBJECT_PTR pSelf);
-    _mqx_uint       (*f_run)(FTE_OBJECT_PTR pSelf);
-    _mqx_uint       (*f_stop)(FTE_OBJECT_PTR pSelf);
-    _mqx_uint       (*f_get)(FTE_OBJECT_PTR pSelf, uint_32_ptr pValue, TIME_STRUCT_PTR pTimeStamp);
-    _mqx_uint       (*f_set)(FTE_OBJECT_PTR pSelf, uint_32 nValue);
-    uint_32         (*f_print_value)(FTE_OBJECT_PTR pSelf, char_ptr pBuff, uint_32 nBuffLen);
-    _mqx_uint       (*f_opened)(FTE_OBJECT_PTR pSelf);
-    _mqx_uint       (*f_closed)(FTE_OBJECT_PTR pSelf);
-}   FTE_DO_ACTION, _PTR_ FTE_DO_ACTION_PTR;
+FTE_RET     FTE_DO_attach(FTE_OBJECT_PTR pObj, FTE_VOID_PTR pOpts);
+FTE_RET     FTE_DO_detach(FTE_OBJECT_PTR pObj);
+FTE_UINT32  FTE_DO_printValue(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pBuff, FTE_UINT32 nLen);
 
-_mqx_uint       FTE_DO_attach(FTE_OBJECT_PTR pObj);
-_mqx_uint       FTE_DO_detach(FTE_OBJECT_PTR pObj);
-uint_32         FTE_DO_printValue(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 nLen);
+FTE_UINT32  FTE_DO_count(void);
 
-uint_32         FTE_DO_count(void);
+FTE_RET     FTD_DO_getValue(FTE_OBJECT_ID  nID, FTE_BOOL_PTR pbValue);
+FTE_RET     FTE_DO_setValue(FTE_OBJECT_ID  nID, FTE_BOOL bValue);
+FTE_RET     FTE_DO_getInitState(FTE_OBJECT_PTR pObj,FTE_UINT32_PTR pState);
+FTE_RET     FTE_DO_setInitState(FTE_OBJECT_PTR pObj, FTE_UINT32 nState);
 
-_mqx_uint       FTD_DO_getValue(FTE_OBJECT_ID  nID, boolean *pbValue);
-_mqx_uint       FTE_DO_setValue(FTE_OBJECT_ID  nID, boolean bValue);
-_mqx_uint       FTE_DO_getInitState(FTE_OBJECT_PTR pObj,uint_32_ptr pState);
-_mqx_uint       FTE_DO_setInitState(FTE_OBJECT_PTR pObj, uint_32 nState);
+FTE_RET     FTE_DO_setPermanent(FTE_OBJECT_ID  nID);
 
-_mqx_uint       FTE_DO_setPermanent(FTE_OBJECT_ID  nID);
-
-int_32          FTE_DO_SHELL_cmd(int_32 argc, char_ptr argv[]);
+FTE_INT32   FTE_DO_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
 #endif

@@ -3,23 +3,32 @@
 #include "fte_log.h"
 #include "sys/fte_sys_timer.h"
 
-static _mqx_uint    _FTE_LED_init(FTE_OBJECT_PTR pObj);
-static _mqx_uint    _FTE_LED_run(FTE_OBJECT_PTR pObj);
-static _mqx_uint    _FTE_LED_stop(FTE_OBJECT_PTR pObj);
-static _mqx_uint    _FTE_LED_setValue(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue);
-static void         _FTE_LED_timerDone(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptrdata_ptr);
+static FTE_RET  _FTE_LED_init(FTE_OBJECT_PTR pObj);
+static FTE_RET  _FTE_LED_run(FTE_OBJECT_PTR pObj);
+static FTE_RET  _FTE_LED_stop(FTE_OBJECT_PTR pObj);
+static FTE_RET  _FTE_LED_setValue(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue);
+static void     _FTE_LED_timerDone(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
 
-static  FTE_LIST            _xObjList = {0, NULL, NULL};
-static  FTE_OBJECT_ACTION   _xAction = 
+static  
+FTE_LIST            _xObjList = {0, NULL, NULL};
+
+static  
+FTE_OBJECT_ACTION   _xAction = 
 { 
-    .f_init         = _FTE_LED_init,
-    .f_run          = _FTE_LED_run,
-    .f_stop         = _FTE_LED_stop,
-    .f_set          = _FTE_LED_setValue
+    .fInit  = _FTE_LED_init,
+    .fRun   = _FTE_LED_run,
+    .fStop  = _FTE_LED_stop,
+    .fSet   = _FTE_LED_setValue
 };
-static  uint_32                 _hTimer = 0;
 
-_mqx_uint FTE_LED_attach(FTE_OBJECT_PTR pObj)
+static  
+FTE_UINT32  _hTimer = 0;
+
+FTE_RET FTE_LED_attach
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_VOID_PTR    pOpts
+)
 {
     FTE_LED_CONFIG_PTR   pConfig = (FTE_LED_CONFIG_PTR)pObj->pConfig;
     FTE_LED_STATUS_PTR   pStatus = (FTE_LED_STATUS_PTR)pObj->pStatus;
@@ -66,7 +75,10 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint FTE_LED_detach(FTE_OBJECT_PTR pObj)
+FTE_RET FTE_LED_detach
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     if (!FTE_LIST_isExist(&_xObjList, pObj))
     {
@@ -85,7 +97,10 @@ error:
     return  MQX_ERROR;
 }
 
-pointer     FTE_LED_get(FTE_OBJECT_ID nID)
+pointer     FTE_LED_get
+(
+    FTE_OBJECT_ID   nID
+)
 {
     FTE_OBJECT_PTR      pObj;
     FTE_LIST_ITERATOR   xIter;
@@ -105,12 +120,16 @@ pointer     FTE_LED_get(FTE_OBJECT_ID nID)
 }
 
 /******************************************************************************/
-uint_32     FTE_LED_count(void)
+FTE_UINT32     FTE_LED_count(void)
 {
     return  FTE_LIST_count(&_xObjList);
 }
 
-_mqx_uint   FTE_LED_setValue(FTE_OBJECT_ID  nID, boolean bState)
+FTE_RET   FTE_LED_setValue
+(
+    FTE_OBJECT_ID   nID, 
+    FTE_BOOL        bState
+)
 {
     FTE_VALUE       xValue;
     FTE_OBJECT_PTR pObj = FTE_LED_get(nID);
@@ -124,9 +143,12 @@ _mqx_uint   FTE_LED_setValue(FTE_OBJECT_ID  nID, boolean bState)
     return  _FTE_LED_setValue(pObj, &xValue);
 }
 
-boolean     FTE_LED_isActive(FTE_OBJECT_ID  nID)
+FTE_BOOL     FTE_LED_isActive
+(
+    FTE_OBJECT_ID   nID
+)
 {
-    boolean bValue;
+    FTE_BOOL bValue;
     FTE_OBJECT_PTR pObj = FTE_LED_get(nID);
     if (pObj == NULL)
     {
@@ -139,7 +161,10 @@ boolean     FTE_LED_isActive(FTE_OBJECT_ID  nID)
 }
 
 /******************************************************************************/
-_mqx_uint   _FTE_LED_init(FTE_OBJECT_PTR pObj)
+FTE_RET   _FTE_LED_init
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     assert(pObj != NULL);
 
@@ -152,17 +177,27 @@ _mqx_uint   _FTE_LED_init(FTE_OBJECT_PTR pObj)
     return  MQX_OK;
 }
 
-_mqx_uint   _FTE_LED_run(FTE_OBJECT_PTR pObj)
+FTE_RET   _FTE_LED_run
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     return  MQX_OK;
 }
 
-_mqx_uint   _FTE_LED_stop(FTE_OBJECT_PTR pObj)
+FTE_RET   _FTE_LED_stop
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     return  MQX_OK;
 }
 
-static _mqx_uint _FTE_LED_setValue(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue)
+FTE_RET _FTE_LED_setValue
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_VALUE_PTR   pValue
+)
 {
     assert(pObj != NULL);
     
@@ -228,7 +263,12 @@ error:
     return   MQX_ERROR;
 }
 
-static void _FTE_LED_timerDone(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptrdata_ptr)
+void _FTE_LED_timerDone
+(
+    _timer_id   id, 
+    pointer     pData, 
+    MQX_TICK_STRUCT_PTR pTick
+)
 {
     FTE_OBJECT_PTR      pObj;
     FTE_LIST_ITERATOR   xIter;
@@ -237,12 +277,12 @@ static void _FTE_LED_timerDone(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_P
     {
         while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
         {
-            uint_32 ulValue;
+            FTE_UINT32 ulValue;
             
             FTE_VALUE_getULONG(((FTE_LED_STATUS_PTR)pObj->pStatus)->xCommon.pValue, &ulValue);
             if (ulValue == FTE_LED_STATE_BLINK)
             {
-                boolean bValue;
+                FTE_BOOL bValue;
                 
                 FTE_GPIO_getValue(((FTE_LED_STATUS_PTR)pObj->pStatus)->pGPIO, &bValue);
                 FTE_GPIO_setValue(((FTE_LED_STATUS_PTR)pObj->pStatus)->pGPIO,  !bValue);

@@ -16,7 +16,7 @@ FTE_LIST            xRcvdList;
 FTE_LIST            xSendList;
 FTE_FBM_PTR         pFBM = NULL;
 
-_mqx_uint   FTE_LORA_init(void)
+FTE_RET   FTE_LORA_init(void)
 {
     FTE_LIST_init(&xRcvdList);
     FTE_LIST_init(&xSendList);
@@ -33,17 +33,17 @@ _mqx_uint   FTE_LORA_init(void)
     return  MQX_OK;
 }
 
-void FTE_LORA_ctrl(uint_32 params)
+void FTE_LORA_ctrl(FTE_UINT32 params)
 {
-    uint_8      pInternalBuffer[RF_BUFFER_SIZE_MAX];
-    uint_16     usBufferSize = RF_BUFFER_SIZE_MAX;
+    FTE_UINT8      pInternalBuffer[RF_BUFFER_SIZE_MAX];
+    FTE_UINT16     usBufferSize = RF_BUFFER_SIZE_MAX;
     
     FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
     
     SX1276LoRaStartRx();   
     while(1)
     {
-        uint_32     ulState;
+        FTE_UINT32     ulState;
         boolean     bTxON = FALSE;
          
         ulState = SX1276LoRaProcess();
@@ -151,7 +151,7 @@ void FTE_LORA_ctrl(uint_32 params)
     }      
 }
 
-void FTE_LORA_process(uint_32 params)
+void FTE_LORA_process(FTE_UINT32 params)
 {
     FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
     
@@ -173,7 +173,7 @@ void FTE_LORA_process(uint_32 params)
     }      
 }
 
-_mqx_uint FTE_LORA_send(uint_8_ptr pData, uint_32 ulDataSize)
+FTE_RET FTE_LORA_send(FTE_UINT8_ptr pData, FTE_UINT32 ulDataSize)
 {
     FTE_FBM_BUFF_PTR pBlock = FTE_FBM_alloc(pFBM, ulDataSize);
     if (pBlock == NULL)
@@ -214,7 +214,7 @@ int_32  FTE_LORA_SHELL_cmd(int_32 argc, char_ptr argv[])
 #else
                 for(int i = 0 ; i < 256 ; i++)
                 {
-                    uint_8 bReg;
+                    FTE_UINT8 bReg;
                    
                    SX1276Read( i & 0xFF, &bReg);
                     printf("%02x ", bReg);
@@ -231,7 +231,7 @@ int_32  FTE_LORA_SHELL_cmd(int_32 argc, char_ptr argv[])
             {
                 if (strcmp(argv[1], "send") == 0)
                 {
-                    FTE_LORA_send((uint_8_ptr)argv[2], strlen(argv[2]));
+                    FTE_LORA_send((FTE_UINT8_ptr)argv[2], strlen(argv[2]));
                 }
             }
             break;

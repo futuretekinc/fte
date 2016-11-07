@@ -32,26 +32,26 @@ typedef enum
 
 typedef struct
 {
-    uint_32                 ulEPID;
-    uint_32                 xType;
+    FTE_UINT32                 ulEPID;
+    FTE_UINT32                 xType;
     FTE_EVENT_LEVEL         xLevel;
     FTE_EVENT_CONDITION     xCondition;
     struct
     {
         struct
         {
-            int_32          nValue;
-            uint_32         ulThreshold;
+            FTE_INT32          nValue;
+            FTE_UINT32         ulThreshold;
         }   xLimit;
         
         struct
         {
-            int_32          nUpper;
-            int_32          nLower;
-            uint_32         ulThreshold;
+            FTE_INT32          nUpper;
+            FTE_INT32          nLower;
+            FTE_UINT32         ulThreshold;
         }   xRange;
         
-        uint_32             ulInterval;
+        FTE_UINT32             ulInterval;
         
         TIME_STRUCT         xTime;
     }   xParams;
@@ -62,7 +62,7 @@ typedef struct
 
 typedef struct
 {
-    struct _FTE_OBJECT_STRUCT _PTR_ pObj;
+    struct FTE_OBJECT_STRUCT _PTR_ pObj;
     uint_8                          bState;
     uint_8                          bStateChanged;
     uint_8                          bOccurred;    
@@ -78,26 +78,27 @@ typedef struct
     FTE_CFG_EVENT_PTR       pConfig;
 }   FTE_EVENT, _PTR_ FTE_EVENT_PTR;
 
-_mqx_uint       FTE_EVENT_init(void);
-_mqx_uint       FTE_EVENT_create(FTE_CFG_EVENT_PTR pConfig, FTE_EVENT_PTR _PTR_ ppEvent);
-_mqx_uint       FTE_EVENT_destroy(FTE_EVENT_PTR pEvent);
+FTE_RET     FTE_EVENT_init(void);
+FTE_RET     FTE_EVENT_create(FTE_CFG_EVENT_PTR pConfig, FTE_EVENT_PTR _PTR_ ppEvent);
+FTE_RET     FTE_EVENT_destroy(FTE_EVENT_PTR pEvent);
 
-_mqx_uint       FTE_EVENT_count(uint_32_ptr pulCount);
-FTE_EVENT_PTR   FTE_EVENT_getAt(uint_32 ulIndex);
+FTE_RET     FTE_EVENT_count(FTE_UINT32_PTR pulCount);
+FTE_RET     FTE_EVENT_getList(FTE_UINT32 xEPID, FTE_EVENT_PTR pEvents[], FTE_UINT32 ulMax, FTE_UINT32_PTR pulCount);
+FTE_RET     FTE_EVENT_getAt(FTE_UINT32 ulIndex, FTE_EVENT_PTR _PTR_ ppEvent);
 
-_mqx_uint       FTE_EVENT_attachObject(FTE_EVENT_PTR pEvent, struct _FTE_OBJECT_STRUCT _PTR_ pObj);
-_mqx_uint       FTE_EVENT_detachObject(FTE_EVENT_PTR pEvent, struct _FTE_OBJECT_STRUCT _PTR_ pObj);
-_mqx_uint       FTE_EVENT_check(FTE_EVENT_PTR pEvent, struct _FTE_OBJECT_STRUCT _PTR_ pObj);
+FTE_RET     FTE_EVENT_attachObject(FTE_EVENT_PTR pEvent, struct FTE_OBJECT_STRUCT _PTR_ pObj);
+FTE_RET     FTE_EVENT_detachObject(FTE_EVENT_PTR pEvent, struct FTE_OBJECT_STRUCT _PTR_ pObj);
+FTE_RET     FTE_EVENT_check(FTE_EVENT_PTR pEvent, struct FTE_OBJECT_STRUCT _PTR_ pObj);
 
-_mqx_uint       FTE_EVENT_isSatisfied(FTE_EVENT_PTR pEvent, int_32 nValue, boolean *bResult);
-int_32          FTE_EVENT_shell_cmd(int_32 nArgc, char_ptr pArgv[]);
+FTE_RET     FTE_EVENT_isSatisfied(FTE_EVENT_PTR pEvent, FTE_INT32 nValue, FTE_BOOL_PTR bResult);
+FTE_INT32   FTE_EVENT_shell_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
 
-_mqx_uint       FTE_EVENT_type_string(uint_32 xType, char_ptr pBuff, int_32 nBuffLen);
-_mqx_uint       FTE_EVENT_condition_string(FTE_EVENT_CONDITION xCondition, char_ptr pBuff, int_32 nBuffLen);
-_mqx_uint       FTE_EVENT_level_string(FTE_EVENT_LEVEL  xLevel, char_ptr pBuff, int_32 nBuffLen);
+FTE_RET     FTE_EVENT_type_string(FTE_UINT32 xType, FTE_CHAR_PTR pBuff, FTE_INT32 nBuffLen);
+FTE_RET     FTE_EVENT_condition_string(FTE_EVENT_CONDITION xCondition, FTE_CHAR_PTR pBuff, FTE_INT32 nBuffLen);
+FTE_RET     FTE_EVENT_level_string(FTE_EVENT_LEVEL  xLevel, FTE_CHAR_PTR pBuff, FTE_INT32 nBuffLen);
 
-char_ptr        FTE_EVENT_CONDITION_string(uint_32 ulType);
+FTE_CHAR_PTR    FTE_EVENT_CONDITION_string(FTE_UINT32 ulType);
 
-void            FTE_EVENT_task(uint_32 params);
+void        FTE_EVENT_task(FTE_UINT32 params);
 
 #endif

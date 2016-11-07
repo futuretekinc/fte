@@ -43,7 +43,7 @@
 
 typedef struct
 {
-    boolean     bStatic;
+    FTE_BOOL     bStatic;
     _ip_address xIP;
 }   FTE_TRAP_SERVER, _PTR_ FTE_TRAP_SERVER_PTR;
 
@@ -56,8 +56,8 @@ typedef struct
     {
         struct
         {
-            uint_32     nOID;
-            boolean     bOccurred;
+            FTE_UINT32     nOID;
+            FTE_BOOL     bOccurred;
         }   xAlert;
         
         struct
@@ -70,27 +70,30 @@ typedef struct
             _ip_address xServerIP;
         }   xManagement;
     }   xParams;
-    char_ptr    pBuff;
+    FTE_CHAR_PTR    pBuff;
 }   FTE_TRAP_MSG, _PTR_ FTE_TRAP_MSG_PTR;
 
-static const char_ptr _unknown = "";
+static const FTE_CHAR_PTR _unknown = "";
 
-static char             _buff[2048];
-static FTE_LIST         _trapList;
-static FTE_LIST         _trapServerList;
-static uint_32          ulReqAlertCount = 0;
-static uint_32          ulRespAlertCount = 0;
-static uint_32          ulReqDiscoveryCount = 0;
-static uint_32          ulRespDiscoveryCount = 0;
+static char         _buff[2048];
+static FTE_LIST     _trapList;
+static FTE_LIST     _trapServerList;
+static FTE_UINT32   ulReqAlertCount = 0;
+static FTE_UINT32   ulRespAlertCount = 0;
+static FTE_UINT32   ulReqDiscoveryCount = 0;
+static FTE_UINT32   ulRespDiscoveryCount = 0;
 
 extern RTCSMIB_NODE MIBNODE_enterprises;
 extern RTCSMIB_NODE MIBNODE_futuretek;
 extern const RTCSMIB_NODE MIBNODE_msgDiscovery;
 extern const RTCSMIB_NODE MIBNODE_msgAlert;
 
-_mqx_uint   FTE_SNMPD_init(FTE_SNMP_CFG_PTR pConfig)
+FTE_RET   FTE_SNMPD_init
+(   
+    FTE_SNMP_CFG_PTR pConfig
+)
 {
-    int_32  i, ret;
+    FTE_INT32  i, ret;
 
 #if FTE_NET_SNMP_MIB1213
     /* init RFC 1213 MIB */
@@ -131,7 +134,11 @@ _mqx_uint   FTE_SNMPD_init(FTE_SNMP_CFG_PTR pConfig)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_SNMPD_TRAP_add(_ip_address target, boolean bStatic)
+FTE_RET   FTE_SNMPD_TRAP_add
+(
+    _ip_address     target, 
+    FTE_BOOL        bStatic
+)
 {
     FTE_LIST_ITERATOR   xIter;
     FTE_TRAP_SERVER_PTR pServer;
@@ -170,7 +177,10 @@ _mqx_uint   FTE_SNMPD_TRAP_add(_ip_address target, boolean bStatic)
    return   MQX_OK;
 }
 
-_mqx_uint   FTE_SNMPD_TRAP_del(_ip_address target)
+FTE_RET   FTE_SNMPD_TRAP_del
+(
+    _ip_address     target
+)
 {
     FTE_LIST_ITERATOR   xIter;
     FTE_TRAP_SERVER_PTR pServer;
@@ -207,7 +217,7 @@ void FTE_SNMPD_TRAP_processing(void)
     
     if (FTE_LIST_count(&_trapList) != 0)
     {
-        if (FTE_LIST_popFront(&_trapList, (pointer _PTR_)&pCurrentTrapMsg) != MQX_OK)
+        if (FTE_LIST_popFront(&_trapList, (FTE_VOID_PTR _PTR_)&pCurrentTrapMsg) != MQX_OK)
         {
             ERROR("Trap list broken!\n");
             FTE_LIST_init(&_trapList);
@@ -230,11 +240,11 @@ void FTE_SNMPD_TRAP_processing(void)
             
         case    FTE_NET_SNMP_TRAP_TYPE_DISCOVERY:
             {
-                boolean bNewServer = FALSE;
+                FTE_BOOL bNewServer = FALSE;
                 if (!FTE_NET_SERVER_isExist(pCurrentTrapMsg->xParams.xDiscovery.xHostIP))
                 {
                     SNMP_TRACE("Add temporary trap server(%d.%d.%d.%d) for discovery\n", IPBYTES(pCurrentTrapMsg->xParams.xDiscovery.xHostIP));
-                    uint_32 error = RTCS_trap_target_add(pCurrentTrapMsg->xParams.xDiscovery.xHostIP);
+                    FTE_UINT32 error = RTCS_trap_target_add(pCurrentTrapMsg->xParams.xDiscovery.xHostIP);
                     if (error) 
                     {
                         printf("\nFailed to add target trap, error = %X", error);
@@ -263,7 +273,7 @@ void FTE_SNMPD_TRAP_processing(void)
                 if (!FTE_NET_SERVER_isExist(pCurrentTrapMsg->xParams.xManagement.xServerIP))
                 {
                     
-                    uint_32 error = FTE_SNMPD_TRAP_add(pCurrentTrapMsg->xParams.xManagement.xServerIP, TRUE);
+                    FTE_UINT32 error = FTE_SNMPD_TRAP_add(pCurrentTrapMsg->xParams.xManagement.xServerIP, TRUE);
                     if (error) 
                     {
                         SNMP_TRACE("\nFailed to add target trap, error = %X", error);
@@ -276,7 +286,7 @@ void FTE_SNMPD_TRAP_processing(void)
             {
                 if (FTE_NET_SERVER_isExist(pCurrentTrapMsg->xParams.xManagement.xServerIP))
                 {
-                    uint_32 error = FTE_SNMPD_TRAP_del(pCurrentTrapMsg->xParams.xManagement.xServerIP);
+                    FTE_UINT32 error = FTE_SNMPD_TRAP_del(pCurrentTrapMsg->xParams.xManagement.xServerIP);
                     if (error) 
                     {
                         SNMP_TRACE("\nFailed to remove target trap, error = %X", error);
@@ -298,7 +308,11 @@ void FTE_SNMPD_TRAP_processing(void)
     }
 }
 
-_mqx_uint   FTE_SNMPD_TRAP_sendAlert(uint_32 nOID, boolean bOccurred)
+FTE_RET   FTE_SNMPD_TRAP_sendAlert
+(
+    FTE_UINT32  nOID, 
+    FTE_BOOL    bOccurred
+)
 {
     FTE_TRAP_MSG_PTR    pMsg;
     
@@ -306,7 +320,7 @@ _mqx_uint   FTE_SNMPD_TRAP_sendAlert(uint_32 nOID, boolean bOccurred)
     {
         FTE_TRAP_MSG_PTR pTempTrapMsg = NULL;
 
-        if (FTE_LIST_popFront(&_trapList, (pointer _PTR_)&pTempTrapMsg) != MQX_OK)
+        if (FTE_LIST_popFront(&_trapList, (FTE_VOID_PTR _PTR_)&pTempTrapMsg) != MQX_OK)
         {
             return  MQX_ERROR;
         }
@@ -341,7 +355,10 @@ _mqx_uint   FTE_SNMPD_TRAP_sendAlert(uint_32 nOID, boolean bOccurred)
    return   MQX_OK;
 }
 
-_mqx_uint   FTE_SNMPD_TRAP_discovery(_ip_address xHostIP)
+FTE_RET   FTE_SNMPD_TRAP_discovery
+(
+    _ip_address     xHostIP
+)
 {
     FTE_TRAP_MSG_PTR    pMsg;
     
@@ -379,7 +396,10 @@ _mqx_uint   FTE_SNMPD_TRAP_discovery(_ip_address xHostIP)
     return  MQX_OK;
 }        
 
-_mqx_uint   FTE_SNMPD_TRAP_addServer(_ip_address xServerIP)
+FTE_RET   FTE_SNMPD_TRAP_addServer
+(
+    _ip_address     xServerIP
+)
 {
     FTE_TRAP_MSG_PTR    pMsg = (FTE_TRAP_MSG_PTR)FTE_MEM_allocZero(sizeof(FTE_TRAP_MSG));
     if (pMsg == NULL)
@@ -401,7 +421,10 @@ _mqx_uint   FTE_SNMPD_TRAP_addServer(_ip_address xServerIP)
    return   MQX_OK;
 }
 
-_mqx_uint   FTE_SNMPD_TRAP_delServer(_ip_address xServerIP)
+FTE_RET   FTE_SNMPD_TRAP_delServer
+(
+    _ip_address     xServerIP
+)
 {
     FTE_TRAP_MSG_PTR    pMsg = (FTE_TRAP_MSG_PTR)FTE_MEM_allocZero(sizeof(FTE_TRAP_MSG));
     if (pMsg == NULL)
@@ -427,7 +450,10 @@ _mqx_uint   FTE_SNMPD_TRAP_delServer(_ip_address xServerIP)
 /*******************************************************************************
  * Support for MIB
  ******************************************************************************/
-char const *MIB_get_productID(pointer dummy)
+FTE_CHAR const _PTR_ MIB_get_productID
+(
+    FTE_VOID_PTR     dummy
+)
 {
     FTE_PRODUCT_DESC const *dev_desc = fte_get_product_desc();
     if (dev_desc == NULL)
@@ -438,7 +464,10 @@ char const *MIB_get_productID(pointer dummy)
     return  FTE_SYS_getOIDString();
 }
 
-char const *MIB_get_productModel(pointer dummy)
+FTE_CHAR const _PTR_ MIB_get_productModel
+(
+    FTE_VOID_PTR dummy
+)
 {
     FTE_PRODUCT_DESC const *dev_desc = fte_get_product_desc();
     if (dev_desc == NULL)
@@ -449,7 +478,10 @@ char const *MIB_get_productModel(pointer dummy)
     return  dev_desc->pModel;
 }
 
-char const *MIB_get_vendorID(pointer dummy)
+FTE_CHAR const _PTR_ MIB_get_vendorID
+(
+    FTE_VOID_PTR     dummy
+)
 {
     FTE_PRODUCT_DESC const *dev_desc = fte_get_product_desc();
     if (dev_desc == NULL)
@@ -460,7 +492,10 @@ char const *MIB_get_vendorID(pointer dummy)
     return  dev_desc->pManufacturer;
 }
 
-char const *MIB_get_HWVersion(pointer dummy)
+FTE_CHAR const _PTR_ MIB_get_HWVersion
+(
+    FTE_VOID_PTR     dummy
+)
 {
     FTE_PRODUCT_DESC const *desc = fte_get_product_desc();
     if (desc == NULL)
@@ -477,7 +512,10 @@ char const *MIB_get_HWVersion(pointer dummy)
     return  _buff;
 }
 
-char const *MIB_get_SWVersion(pointer dummy)
+FTE_CHAR const _PTR_ MIB_get_SWVersion
+(
+    FTE_VOID_PTR     dummy
+)
 {
     FTE_PRODUCT_DESC const *desc = fte_get_product_desc();
     if (desc == NULL)
@@ -495,7 +533,10 @@ char const *MIB_get_SWVersion(pointer dummy)
     return  _buff;
 }
 
-char const *MIB_get_prodDesc(pointer dummy)
+FTE_CHAR const _PTR_ MIB_get_prodDesc
+(
+    FTE_VOID_PTR     dummy
+)
 {
     memset(_buff, 0, sizeof(_buff));
     FTE_CFG_getLocation(_buff, FTE_LOCATION_MAX_LEN);
@@ -503,14 +544,19 @@ char const *MIB_get_prodDesc(pointer dummy)
     return  _buff;
 }
 
-uint_32 MIB_set_prodDesc(pointer dummy, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_prodDesc
+(
+    FTE_VOID_PTR         dummy, 
+    FTE_UINT8_PTR   pVar, 
+    FTE_UINT32      ulVarLen
+)
 {
-    if (varlen > FTE_LOCATION_MAX_LEN) 
+    if (ulVarLen > FTE_LOCATION_MAX_LEN) 
     {
         return  SNMP_ERROR_wrongLength;
     }
  
-    FTE_CFG_setLocation((char_ptr)varptr, varlen);
+    FTE_CFG_setLocation((FTE_CHAR_PTR)pVar, ulVarLen);
     
     return   SNMP_ERROR_noError;
 }
@@ -518,14 +564,20 @@ uint_32 MIB_set_prodDesc(pointer dummy, uchar_ptr varptr, uint_32 varlen)
 /******************************************************************************
  * Network Configuration 
  ******************************************************************************/
-uint_32 MIB_get_netType(pointer dummy)
+FTE_UINT32 MIB_get_netType
+(
+    FTE_VOID_PTR     dummy
+)
 {
     FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
     
     return  pCfgNet->nType;
 }
 
-char const *MIB_get_netMacAddr(pointer dummy)
+FTE_CHAR const _PTR_ MIB_get_netMacAddr
+(
+    FTE_VOID_PTR     dummy
+)
 {
     _enet_address   xMACAddress;
     
@@ -540,7 +592,10 @@ char const *MIB_get_netMacAddr(pointer dummy)
     return  _buff;
 }
 
-char const *MIB_get_netIpAddr(pointer dummy)
+FTE_CHAR const _PTR_ MIB_get_netIpAddr
+(
+    FTE_VOID_PTR     dummy
+)
 {
     FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
     
@@ -549,7 +604,10 @@ char const *MIB_get_netIpAddr(pointer dummy)
     return  _buff;
 }
 
-char const *MIB_get_netNetMask(pointer dummy)
+FTE_CHAR const _PTR_ MIB_get_netNetMask
+(
+    FTE_VOID_PTR     dummy
+)
 {
     FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
     
@@ -557,7 +615,11 @@ char const *MIB_get_netNetMask(pointer dummy)
     
     return  _buff;
 }
-char const *MIB_get_netGateway(pointer dummy)
+
+FTE_CHAR const _PTR_ MIB_get_netGateway
+(
+    FTE_VOID_PTR     dummy
+)
 {
     FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
     
@@ -569,28 +631,37 @@ char const *MIB_get_netGateway(pointer dummy)
 /******************************************************************************
  * Object Management
  ******************************************************************************/
-char const *MIB_get_objID(pointer param) 
+FTE_CHAR const _PTR_ MIB_get_objID
+(
+    FTE_VOID_PTR     pParam
+) 
 {
-    assert(param != NULL);
+    assert(pParam != NULL);
     
-    sprintf(_buff, "%08x", ((FTE_OBJECT_PTR)param)->pConfig->xCommon.nID);
+    sprintf(_buff, "%08x", ((FTE_OBJECT_PTR)pParam)->pConfig->xCommon.nID);
     return  _buff;
 }
 
-char const *MIB_get_objType(pointer param) 
+FTE_CHAR const _PTR_ MIB_get_objType
+(
+    FTE_VOID_PTR     pParam
+) 
 {
-    assert(param != NULL);
+    assert(pParam != NULL);
     
-    FTE_OBJECT_PTR  obj = (FTE_OBJECT_PTR)param;
+    FTE_OBJECT_PTR  obj = (FTE_OBJECT_PTR)pParam;
     
     return FTE_OBJ_typeString(obj);
 }
 
-char const *MIB_get_objSN(pointer param) 
+FTE_CHAR const _PTR_ MIB_get_objSN
+(
+    FTE_VOID_PTR     pParam
+) 
 {
-    assert(param != NULL);
+    assert(pParam != NULL);
     
-    FTE_OBJECT_PTR  obj = (FTE_OBJECT_PTR)param;
+    FTE_OBJECT_PTR  obj = (FTE_OBJECT_PTR)pParam;
     
     FTE_OBJ_getSN(obj, _buff, sizeof(_buff));
     
@@ -598,35 +669,46 @@ char const *MIB_get_objSN(pointer param)
 }
 
 
-char const *MIB_get_objName(pointer param)
+FTE_CHAR const _PTR_ MIB_get_objName
+(
+    FTE_VOID_PTR     pParam
+)
 {
-    assert(param != NULL);
+    assert(pParam != NULL);
     
-    FTE_OBJ_getName((FTE_OBJECT_PTR)param, _buff, sizeof(_buff));
+    FTE_OBJ_getName((FTE_OBJECT_PTR)pParam, _buff, sizeof(_buff));
     
     return  _buff;
 }
 
-uint_32 MIB_set_objName(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_objName
+(
+    FTE_VOID_PTR    pParam, 
+    FTE_UINT8_PTR   pVar, 
+    FTE_UINT32      ulVarLen
+)
 {
-    assert(param != NULL);
+    assert(pParam != NULL);
     
-    FTE_OBJECT_PTR  obj = (FTE_OBJECT_PTR)param;
+    FTE_OBJECT_PTR  obj = (FTE_OBJECT_PTR)pParam;
     
-    if (varlen > MAX_OBJECT_NAME_LEN) 
+    if (ulVarLen > MAX_OBJECT_NAME_LEN) 
     {
         return  SNMP_ERROR_wrongLength;
     }
-    FTE_OBJ_setName(obj, (char_ptr)varptr, varlen);
+    FTE_OBJ_setName(obj, (FTE_CHAR_PTR)pVar, ulVarLen);
     
     return   SNMP_ERROR_noError;
 }
 
-char const *MIB_get_objState(pointer param)
+FTE_CHAR const _PTR_ MIB_get_objState
+(
+    FTE_VOID_PTR     pParam
+)
 {
-    assert(param != NULL);
+    assert(pParam != NULL);
 
-    if (FTE_OBJ_IS_ENABLED((FTE_OBJECT_PTR)param))
+    if (FTE_OBJ_IS_ENABLED((FTE_OBJECT_PTR)pParam))
     {
         sprintf(_buff, "RUN");
     }
@@ -638,25 +720,30 @@ char const *MIB_get_objState(pointer param)
     return  _buff;
 }
 
-uint_32 MIB_set_objState(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_objState
+(
+    FTE_VOID_PTR     pParam, 
+    FTE_UINT8_PTR   pVar, 
+    FTE_UINT32  ulVarLen
+)
 {
-    assert(param != NULL);
+    assert(pParam != NULL);
 
-    if (varlen >= sizeof(_buff))
+    if (ulVarLen >= sizeof(_buff))
     {
         return  SNMP_ERROR_wrongValue;
     }
         
-    strncpy(_buff, (char_ptr)varptr, varlen);
-    _buff[varlen] = '\0';
+    strncpy(_buff, (FTE_CHAR_PTR)pVar, ulVarLen);
+    _buff[ulVarLen] = '\0';
     
-    if (strcasecmp((char_ptr)_buff, "run") == 0)
+    if (strcasecmp((FTE_CHAR_PTR)_buff, "run") == 0)
     {
-        FTE_OBJ_activate((FTE_OBJECT_PTR)param, TRUE);
+        FTE_OBJ_activate((FTE_OBJECT_PTR)pParam, TRUE);
     }
-    else if (strcasecmp((char_ptr)_buff, "stop") == 0)
+    else if (strcasecmp((FTE_CHAR_PTR)_buff, "stop") == 0)
     {
-        FTE_OBJ_activate((FTE_OBJECT_PTR)param, FALSE);
+        FTE_OBJ_activate((FTE_OBJECT_PTR)pParam, FALSE);
     }
     else
     {
@@ -666,27 +753,29 @@ uint_32 MIB_set_objState(pointer param, uchar_ptr varptr, uint_32 varlen)
     return SNMP_ERROR_noError;
 }
 
-uint_32 MIB_set_objValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_objValue
+(
+    FTE_VOID_PTR     pParam, 
+    FTE_UINT8_PTR   pVar, 
+    FTE_UINT32  ulVarLen
+)
 {
     FTE_VALUE       xValue;
-    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)pParam;
 
     assert(pObj != NULL);
         
-    if (varlen >= sizeof(_buff))
+    if (ulVarLen >= sizeof(_buff))
     {
         return  SNMP_ERROR_wrongValue;
     }
 
-    strncpy(_buff, (char_ptr)varptr, varlen);
-    _buff[varlen] = '\0';        
+    strncpy(_buff, (FTE_CHAR_PTR)pVar, ulVarLen);
+    _buff[ulVarLen] = '\0';        
 
     if (FTE_OBJ_CLASS(pObj) == FTE_OBJ_CLASS_MULTI)
     {
-        if (pObj->pAction->f_set_config != NULL)
-        {
-            pObj->pAction->f_set_config(pObj, _buff);
-        }
+        FTE_OBJ_setConfig(pObj, _buff);
     }
     else
     {       
@@ -705,9 +794,12 @@ uint_32 MIB_set_objValue(pointer param, uchar_ptr varptr, uint_32 varlen)
     return SNMP_ERROR_noError;
 }
 
-char const *MIB_get_objValue(pointer param)
+FTE_CHAR const _PTR_ MIB_get_objValue
+(   
+    FTE_VOID_PTR     pParam
+)
 {
-    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;    
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)pParam;    
     ASSERT(pObj != NULL);
     
     FTE_NET_liveTouch();
@@ -716,10 +808,7 @@ char const *MIB_get_objValue(pointer param)
     {
         if (FTE_OBJ_CLASS(pObj) == FTE_OBJ_CLASS_MULTI)
         {
-            if (pObj->pAction->f_get_config != NULL)
-            {
-                pObj->pAction->f_get_config(pObj, _buff, sizeof(_buff));
-            }
+            FTE_OBJ_getConfig(pObj, _buff, sizeof(_buff));
         }
         else
         {
@@ -734,9 +823,12 @@ char const *MIB_get_objValue(pointer param)
     return  _buff;
 }
 
-char const *MIB_get_objLastValue(pointer param)
+FTE_CHAR const _PTR_ MIB_get_objLastValue
+(
+    FTE_VOID_PTR     pParam
+)
 {
-    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;    
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)pParam;    
     ASSERT(pObj != NULL);
     
     if ( FTE_OBJ_IS_ENABLED(pObj))
@@ -751,9 +843,12 @@ char const *MIB_get_objLastValue(pointer param)
     return  _buff;
 }
 
-char const *MIB_get_objLastTime(pointer param)
+FTE_CHAR const _PTR_ MIB_get_objLastTime
+(
+    FTE_VOID_PTR    pParam
+)
 {
-    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)pParam;
     
     if (FTE_VALUE_isValid(pObj->pStatus->pValue))
     {
@@ -770,93 +865,120 @@ char const *MIB_get_objLastTime(pointer param)
     return  _buff;
 }
 
-char const *MIB_get_objInitValue(pointer param)
+FTE_CHAR const _PTR_ MIB_get_objInitValue
+(
+    FTE_VOID_PTR    pParam
+)
 {
     return  _buff;
 }
 
-uint_32 MIB_set_objInitValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_objInitValue
+(
+    FTE_VOID_PTR    pParam, 
+    FTE_UINT8_PTR   pVar, 
+    FTE_UINT32      ulVarLen
+)
 {
     return  0;
 }
 
 
-uint_32 MIB_get_objTriggerMode(pointer param)
+FTE_UINT32 MIB_get_objTriggerMode
+(
+    FTE_VOID_PTR    pParam
+)
 {
     return  0;
 }
 
-uint_32 MIB_set_objTriggerMode(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_objTriggerMode
+(
+    FTE_VOID_PTR    pParam, 
+    FTE_UINT8_PTR   pVar, 
+    FTE_UINT32      ulVarLen
+)
 {
     return  0;
 }
 
 
-uint_32 MIB_get_objUpdateInterval(pointer param)
+FTE_UINT32 MIB_get_objUpdateInterval
+(
+    FTE_VOID_PTR    pParam
+)
 {
-    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;
+    FTE_RET xRet;
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)pParam;
+    FTE_UINT32      ulInterval = 0;
     
-    if (pObj->pAction->f_get_update_interval == NULL)
+    xRet = FTE_OBJ_getInterval(pObj, &ulInterval);
+    if (xRet != FTE_RET_OK)
     {
         return  0;
     }
 
-    return  pObj->pAction->f_get_update_interval(pObj);
+    return  ulInterval;
 }
 
-uint_32 MIB_set_objUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_objUpdateInterval
+(
+    FTE_VOID_PTR    pParam, 
+    FTE_UINT8_PTR   pVar, 
+    FTE_UINT32      ulVarLen
+)
 {
-    int_32 nUpdateInterval;
+    FTE_INT32 nUpdateInterval;
     
-    FTE_OBJECT_PTR pObj = (FTE_OBJECT_PTR)param;
+    FTE_OBJECT_PTR pObj = (FTE_OBJECT_PTR)pParam;
     
     assert(pObj != NULL);
 
-    if (pObj->pAction->f_set_update_interval == NULL)
-    {
-        return  SNMP_ERROR_wrongType;
-    }
-    
-    nUpdateInterval = RTCSMIB_int_read(varptr, varlen);
+    nUpdateInterval = RTCSMIB_int_read(pVar, ulVarLen);
     if ((1 <= nUpdateInterval) || (nUpdateInterval <= 60 * 60 * 24))
     {
-        pObj->pAction->f_set_update_interval(pObj, nUpdateInterval);
-        return SNMP_ERROR_noError;
+        FTE_RET xRet;
+        
+        xRet = FTE_OBJ_setInterval(pObj, nUpdateInterval);
+        if (xRet == FTE_RET_OK)
+        {
+            return SNMP_ERROR_noError;
+        }
     }
 
     return  SNMP_ERROR_wrongValue;
 }
 
 
-uint_32 MIB_get_objTotalTrial(pointer param)
+FTE_UINT32 MIB_get_objTotalTrial
+(
+    FTE_VOID_PTR    pParam
+)
 {
+    FTE_RET xRet;
     FTE_OBJECT_STATISTICS    xStatistics;
-    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param; 
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)pParam; 
     
-    if (pObj->pAction->f_get_statistic == NULL)
+    xRet = FTE_OBJ_getStatistics(pObj, &xStatistics);
+    if (xRet != FTE_RET_OK)
     {
         return  0;
     }
 
-    if (pObj->pAction->f_get_statistic(pObj, &xStatistics) != MQX_OK)
-    {
-        return  0;
-    }
-    
     return  xStatistics.nTotalTrial;
 }
 
-uint_32 MIB_get_objTotalFailed(pointer param)
+FTE_UINT32 MIB_get_objTotalFailed
+(
+    FTE_VOID_PTR    pParam
+)
 {
+    FTE_RET xRet;
     FTE_OBJECT_STATISTICS    xStatistics;
-    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param; 
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)pParam; 
     
-    if (pObj->pAction->f_get_statistic == NULL)
-    {
-        return  0;
-    }
-
-    if (pObj->pAction->f_get_statistic(pObj, &xStatistics) != MQX_OK)
+    xRet = FTE_OBJ_getStatistics(pObj, &xStatistics);
+    if (xRet != FTE_RET_OK)
     {
         return  0;
     }
@@ -865,25 +987,33 @@ uint_32 MIB_get_objTotalFailed(pointer param)
 }
 
 
-static  int_32    _nDiscoveryKey = 0;
+static  FTE_INT32    _nDiscoveryKey = 0;
 
-int_32  MIB_get_smDiscovery(pointer param)
+FTE_INT32  MIB_get_smDiscovery
+(
+    FTE_VOID_PTR    pParam
+)
 {
     _nDiscoveryKey = (RTCS_rand() & 0x7FFFFFFF);
     
     return  _nDiscoveryKey;
 }
 
-uint_32 MIB_set_smDiscovery(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_smDiscovery
+(
+    FTE_VOID_PTR    pParam, 
+    FTE_UINT8_PTR   pVar, 
+    FTE_UINT32      ulVarLen
+)
 {
-    int_32 nKey= (uint_32)RTCSMIB_int_read(varptr, varlen);
+    FTE_INT32 nKey= (FTE_UINT32)RTCSMIB_int_read(pVar, ulVarLen);
 
 #if FTE_1WIRE_SUPPORTED
     if ((_nDiscoveryKey != 0) && (_nDiscoveryKey == nKey))
     {
         FTE_1WIRE_PTR   p1Wire;
         FTE_DS18B20_CREATE_PARAMS xParams;
-        uint_32 nIndex;
+        FTE_UINT32 nIndex;
         
         p1Wire = FTE_1WIRE_getFirst();
         while(p1Wire != 0)
@@ -907,8 +1037,7 @@ uint_32 MIB_set_smDiscovery(pointer param, uchar_ptr varptr, uint_32 varlen)
                             return  SNMP_ERROR_resourceUnavailable;
                         }
 
-                        pObj->pAction->f_run(pObj);
-                        
+                        FTE_OBJ_start(pObj);                        
                         FTE_CFG_OBJ_save(pObj);
                     }
 #endif
@@ -926,37 +1055,45 @@ uint_32 MIB_set_smDiscovery(pointer param, uchar_ptr varptr, uint_32 varlen)
     return  SNMP_ERROR_noError;
 }
 
-char const * MIB_get_smDestroyDynamicObject(pointer param)
+FTE_CHAR const _PTR_  MIB_get_smDestroyDynamicObject
+(
+    FTE_VOID_PTR    pParam
+)
 {
     return  "";
 }
 
-uint_32 MIB_set_smDestroyDynamicObject(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_smDestroyDynamicObject
+(
+    FTE_VOID_PTR    pParam, 
+    FTE_UINT8_PTR   pVar, 
+    FTE_UINT32      ulVarLen
+)
 {
-    uint_32 nOID = 0;
+    FTE_UINT32 nOID = 0;
     
-    if (varlen > 8)
+    if (ulVarLen > 8)
     {
         return  SNMP_ERROR_badValue;
     }
     
-    for(int i = 0 ; i < varlen ; i++)
+    for(int i = 0 ; i < ulVarLen ; i++)
     {
-        uint_32 nValue;
+        FTE_UINT32 nValue;
         
-        if ( isdigit(varptr[i]))
+        if ( isdigit(pVar[i]))
         {
-            nValue = varptr[i] - '0';
+            nValue = pVar[i] - '0';
         }
-        else if ( isxdigit(varptr[i]))
+        else if ( isxdigit(pVar[i]))
         {
-            if (islower(varptr[i]))
+            if (islower(pVar[i]))
             {
-                nValue = varptr[i] - 'a' + 10;            
+                nValue = pVar[i] - 'a' + 10;            
             }
             else
             {
-                nValue = varptr[i] - 'A' + 10;            
+                nValue = pVar[i] - 'A' + 10;            
             }
         }
         else
@@ -989,26 +1126,26 @@ uint_32 MIB_set_smDestroyDynamicObject(pointer param, uchar_ptr varptr, uint_32 
  ******************************************************************************/
 struct MIB_get_sensor_struct 
 {
-   uint_32                 current_index;
-   uint_32                 index;
+   FTE_UINT32                 current_index;
+   FTE_UINT32                 index;
 };
 
-uint_32  MIB_get_diCount(pointer dummy)
+FTE_UINT32  MIB_get_diCount(FTE_VOID_PTR dummy)
 { 
     return  FTE_OBJ_count(FTE_OBJ_TYPE_DI, FTE_OBJ_CLASS_MASK, FALSE);
 } 
 
-uint_32 MIB_set_diIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+FTE_UINT32 MIB_set_diIndex (FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen) {return SNMP_ERROR_inconsistentValue;}
 
-boolean MIB_find_diEntry
+FTE_BOOL MIB_find_diEntry
 (
-    uint_32        op,
-    pointer        index,
-    pointer _PTR_  instance
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
 )
 { 
-   uint_32           nIndex = *(uint_32_ptr)index;
-   pointer           pObj;
+   FTE_UINT32           nIndex = *(FTE_UINT32_PTR)index;
+   FTE_VOID_PTR           pObj;
 
    if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
    {
@@ -1020,47 +1157,62 @@ boolean MIB_find_diEntry
    {
       return FALSE;
    } /* Endif */
-   *(uint_32_ptr)index = nIndex;
+   *(FTE_UINT32_PTR)index = nIndex;
    *instance = pObj;
    return TRUE;
 
 } /* Endbody */
 
 
-uint_32 MIB_set_diState(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_diState
+(
+    FTE_VOID_PTR    pParam, 
+    FTE_UINT8_PTR   pVar, 
+    FTE_UINT32      ulVarLen
+)
 {
-    return  MIB_set_objState(param, varptr, varlen);
+    return  MIB_set_objState(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_diName(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_diName
+(
+    FTE_VOID_PTR    pParam, 
+    FTE_UINT8_PTR   pVar, 
+    FTE_UINT32      ulVarLen
+)
 {
-    return  MIB_set_objName(param, varptr, varlen);
+    return  MIB_set_objName(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_diInitValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_diInitValue
+(
+    FTE_VOID_PTR    pParam, 
+    FTE_UINT8_PTR   pVar, 
+    FTE_UINT32      ulVarLen
+)
 {
-    return  MIB_set_objInitValue(param, varptr, varlen);
+    return  MIB_set_objInitValue(pParam, pVar, ulVarLen);
 }
 
 /******************************************************************************
  * Temperature Sensor
  ******************************************************************************/
-uint_32 MIB_get_tempCount(pointer dummy)
+FTE_UINT32 MIB_get_tempCount(FTE_VOID_PTR dummy)
 { 
     return  FTE_OBJ_count(FTE_OBJ_TYPE_TEMPERATURE, FTE_OBJ_CLASS_MASK, FALSE);
 } 
 
-uint_32 MIB_set_tempIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+FTE_UINT32 MIB_set_tempIndex (FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen) {return SNMP_ERROR_inconsistentValue;}
 
-boolean MIB_find_tempEntry
+FTE_BOOL MIB_find_tempEntry
 (
-    uint_32        op,
-    pointer        index,
-    pointer _PTR_  instance
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
 )
 { /* Body */
-   uint_32           nIndex = *(uint_32_ptr)index;
-   pointer           pObj;
+   FTE_UINT32           nIndex = *(FTE_UINT32_PTR)index;
+   FTE_VOID_PTR           pObj;
 
    if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
    {
@@ -1072,47 +1224,47 @@ boolean MIB_find_tempEntry
    {
       return FALSE;
    } /* Endif */ 
-   *(uint_32_ptr)index = nIndex;
+   *(FTE_UINT32_PTR)index = nIndex;
    *instance = pObj;
    return TRUE;
  
 } /* Endbody */
 
 
-uint_32 MIB_set_tempName(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_tempName(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objName(param, varptr, varlen);
+    return  MIB_set_objName(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_tempState(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_tempState(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objState(param, varptr, varlen);
+    return  MIB_set_objState(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_tempUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_tempUpdateInterval(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+    return  MIB_set_objUpdateInterval(pParam, pVar, ulVarLen);
 }
 
 /******************************************************************************
  * Humidity Sensor
  ******************************************************************************/
-uint_32 MIB_get_humiCount(pointer dummy)
+FTE_UINT32 MIB_get_humiCount(FTE_VOID_PTR dummy)
 { 
     return  FTE_OBJ_count(FTE_OBJ_TYPE_HUMIDITY, FTE_OBJ_CLASS_MASK, FALSE);
 } 
 
-uint_32 MIB_set_humiIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+FTE_UINT32 MIB_set_humiIndex (FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen) {return SNMP_ERROR_inconsistentValue;}
 
-boolean MIB_find_humiEntry
+FTE_BOOL MIB_find_humiEntry
 (
-    uint_32        op,
-    pointer        index,
-    pointer _PTR_  instance
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
 )
 { /* Body */
-   uint_32           nIndex = *(uint_32_ptr)index;
-   pointer           pObj;
+   FTE_UINT32           nIndex = *(FTE_UINT32_PTR)index;
+   FTE_VOID_PTR           pObj;
 
    if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
    {
@@ -1124,46 +1276,46 @@ boolean MIB_find_humiEntry
    {
       return FALSE;
    } /* Endif */ 
-   *(uint_32_ptr)index = nIndex;
+   *(FTE_UINT32_PTR)index = nIndex;
    *instance = pObj;
    return TRUE;
  
 } /* Endbody */
 
-uint_32 MIB_set_humiName(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_humiName(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objName(param, varptr, varlen);
+    return  MIB_set_objName(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_humiState(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_humiState(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objState(param, varptr, varlen);
+    return  MIB_set_objState(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_humiUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_humiUpdateInterval(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+    return  MIB_set_objUpdateInterval(pParam, pVar, ulVarLen);
 }
 
 /******************************************************************************
  * Voltage Sensor
  ******************************************************************************/
-uint_32 MIB_get_vltCount(pointer dummy)
+FTE_UINT32 MIB_get_vltCount(FTE_VOID_PTR dummy)
 { 
     return  FTE_OBJ_count(FTE_OBJ_TYPE_VOLTAGE, FTE_OBJ_CLASS_MASK, FALSE);
 } 
 
-uint_32 MIB_set_vltIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+FTE_UINT32 MIB_set_vltIndex (FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen) {return SNMP_ERROR_inconsistentValue;}
 
-boolean MIB_find_vltEntry
+FTE_BOOL MIB_find_vltEntry
 (
-    uint_32        op,
-    pointer        index,
-    pointer _PTR_  instance
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
 )
 { /* Body */
-   uint_32           nIndex = *(uint_32_ptr)index;
-   pointer           pObj;
+   FTE_UINT32           nIndex = *(FTE_UINT32_PTR)index;
+   FTE_VOID_PTR           pObj;
 
    if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
    {
@@ -1175,46 +1327,46 @@ boolean MIB_find_vltEntry
    {
       return FALSE;
    } /* Endif */ 
-   *(uint_32_ptr)index = nIndex;
+   *(FTE_UINT32_PTR)index = nIndex;
    *instance = pObj;
    return TRUE;
  
 } /* Endbody */
 
-uint_32 MIB_set_vltName(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_vltName(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objName(param, varptr, varlen);
+    return  MIB_set_objName(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_vltState(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_vltState(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objState(param, varptr, varlen);
+    return  MIB_set_objState(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_vltUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_vltUpdateInterval(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+    return  MIB_set_objUpdateInterval(pParam, pVar, ulVarLen);
 }
 
 /******************************************************************************
  * Current Sensor
  ******************************************************************************/
-uint_32 MIB_get_currCount(pointer dummy)
+FTE_UINT32 MIB_get_currCount(FTE_VOID_PTR dummy)
 { 
     return  FTE_OBJ_count(FTE_OBJ_TYPE_CURRENT, FTE_OBJ_CLASS_MASK, FALSE);
 } 
 
-uint_32 MIB_set_currIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+FTE_UINT32 MIB_set_currIndex (FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen) {return SNMP_ERROR_inconsistentValue;}
 
-boolean MIB_find_currEntry
+FTE_BOOL MIB_find_currEntry
 (
-    uint_32        op,
-    pointer        index,
-    pointer _PTR_  instance
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
 )
 { /* Body */
-   uint_32           nIndex = *(uint_32_ptr)index;
-   pointer           pObj;
+   FTE_UINT32           nIndex = *(FTE_UINT32_PTR)index;
+   FTE_VOID_PTR           pObj;
 
    if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
    {
@@ -1226,45 +1378,45 @@ boolean MIB_find_currEntry
    {
       return FALSE;
    } /* Endif */ 
-   *(uint_32_ptr)index = nIndex;
+   *(FTE_UINT32_PTR)index = nIndex;
    *instance = pObj;
    return TRUE;
  
 } /* Endbody */
 
-uint_32 MIB_set_currName(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_currName(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objName(param, varptr, varlen);
+    return  MIB_set_objName(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_currState(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_currState(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objState(param, varptr, varlen);
+    return  MIB_set_objState(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_currUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_currUpdateInterval(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+    return  MIB_set_objUpdateInterval(pParam, pVar, ulVarLen);
 }
 /******************************************************************************
  * Digital Output 
  ******************************************************************************/
-uint_32 MIB_get_doCount(pointer dummy)
+FTE_UINT32 MIB_get_doCount(FTE_VOID_PTR dummy)
 { 
     return  FTE_OBJ_count(FTE_OBJ_TYPE_DO, FTE_OBJ_CLASS_MASK, FALSE);
 } 
 
-uint_32 MIB_set_doIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+FTE_UINT32 MIB_set_doIndex (FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen) {return SNMP_ERROR_inconsistentValue;}
 
-boolean MIB_find_doEntry
+FTE_BOOL MIB_find_doEntry
 (
-    uint_32        op,
-    pointer        index,
-    pointer _PTR_  instance
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
 )
 { /* Body */
-   uint_32           nIndex = *(uint_32_ptr)index;
-   pointer           pObj;
+   FTE_UINT32           nIndex = *(FTE_UINT32_PTR)index;
+   FTE_VOID_PTR           pObj;
 
    if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
    {
@@ -1276,15 +1428,15 @@ boolean MIB_find_doEntry
    {
       return FALSE;
    } /* Endif */ 
-   *(uint_32_ptr)index = nIndex;
+   *(FTE_UINT32_PTR)index = nIndex;
    *instance = pObj;
    return TRUE;
  
 } /* Endbody */
 
-const char *MIB_get_doInitState(pointer param)
+const char *MIB_get_doInitState(FTE_VOID_PTR pParam)
 {
-    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)pParam;
     FTE_VALUE       xValue;
     assert(pObj != NULL);
 
@@ -1295,24 +1447,24 @@ const char *MIB_get_doInitState(pointer param)
     return _buff;
 }
 
-uint_32 MIB_set_doInitState(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_doInitState(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)pParam;
     assert(pObj != NULL);
 
-    if (varlen >= sizeof(_buff))
+    if (ulVarLen >= sizeof(_buff))
     {
         return  SNMP_ERROR_wrongValue;
     }
         
-    strncpy(_buff, (char_ptr)varptr, varlen);
-    _buff[varlen] = '\0';
+    strncpy(_buff, (FTE_CHAR_PTR)pVar, ulVarLen);
+    _buff[ulVarLen] = '\0';
     
-    if ((strcasecmp((char_ptr)_buff, "on") == 0) || (strcmp((char_ptr)_buff, "1") == 0))
+    if ((strcasecmp((FTE_CHAR_PTR)_buff, "on") == 0) || (strcmp((FTE_CHAR_PTR)_buff, "1") == 0))
     {
         FTE_DO_setInitState(pObj, TRUE);        
     }
-    else if ((strcasecmp((char_ptr)_buff, "off") == 0) || (strcmp((char_ptr)_buff, "0") == 0))
+    else if ((strcasecmp((FTE_CHAR_PTR)_buff, "off") == 0) || (strcmp((FTE_CHAR_PTR)_buff, "0") == 0))
     {
         FTE_DO_setInitState(pObj, FALSE);        
     }
@@ -1324,45 +1476,45 @@ uint_32 MIB_set_doInitState(pointer param, uchar_ptr varptr, uint_32 varlen)
     return SNMP_ERROR_noError;    
 }
 
-uint_32 MIB_set_doName(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_doName(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objName(param, varptr, varlen);
+    return  MIB_set_objName(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_doState(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_doState(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objState(param, varptr, varlen);
+    return  MIB_set_objState(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_doValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_doValue(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objValue(param, varptr, varlen);
+    return  MIB_set_objValue(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_doInitValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_doInitValue(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objInitValue(param, varptr, varlen);
+    return  MIB_set_objInitValue(pParam, pVar, ulVarLen);
 }
 
 /******************************************************************************
  * Relay
  ******************************************************************************/
-uint_32 MIB_get_rlCount(pointer dummy)
+FTE_UINT32 MIB_get_rlCount(FTE_VOID_PTR dummy)
 { 
     return  FTE_OBJ_count(FTE_OBJ_TYPE_RL, FTE_OBJ_CLASS_MASK, FALSE);
 } 
 
-uint_32 MIB_set_rlIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+FTE_UINT32 MIB_set_rlIndex (FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen) {return SNMP_ERROR_inconsistentValue;}
 
-boolean MIB_find_rlEntry
+FTE_BOOL MIB_find_rlEntry
 (
-    uint_32        op,
-    pointer        index,
-    pointer _PTR_  instance
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
 )
 { /* Body */
-   uint_32           nIndex = *(uint_32_ptr)index;
-   pointer           pObj;
+   FTE_UINT32           nIndex = *(FTE_UINT32_PTR)index;
+   FTE_VOID_PTR           pObj;
 
    if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
    {
@@ -1374,15 +1526,15 @@ boolean MIB_find_rlEntry
    {
       return FALSE;
    } /* Endif */
-   *(uint_32_ptr)index = nIndex;
+   *(FTE_UINT32_PTR)index = nIndex;
    *instance = pObj;
    return TRUE;
 
 } /* Endbody */
 
-const char *MIB_get_rlInitState(pointer param)
+const char *MIB_get_rlInitState(FTE_VOID_PTR pParam)
 {
-    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)pParam;
     FTE_VALUE       xValue;
     
     assert(pObj != NULL);
@@ -1394,24 +1546,24 @@ const char *MIB_get_rlInitState(pointer param)
     return _buff;
 }
 
-uint_32 MIB_set_rlInitState(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_rlInitState(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)pParam;
     assert(pObj != NULL);
         
-    if (varlen >= sizeof(_buff))
+    if (ulVarLen >= sizeof(_buff))
     {
         return  SNMP_ERROR_wrongValue;
     }
         
-    strncpy(_buff, (char_ptr)varptr, varlen);
-    _buff[varlen] = '\0';
+    strncpy(_buff, (FTE_CHAR_PTR)pVar, ulVarLen);
+    _buff[ulVarLen] = '\0';
     
-    if ((strcasecmp((char_ptr)_buff, "on") == 0) || (strcmp((char_ptr)_buff, "1") == 0))
+    if ((strcasecmp((FTE_CHAR_PTR)_buff, "on") == 0) || (strcmp((FTE_CHAR_PTR)_buff, "1") == 0))
     {
         FTE_RL_setInitState(pObj, TRUE);        
     }
-    else if ((strcasecmp((char_ptr)_buff, "off") == 0) || (strcmp((char_ptr)_buff, "0") == 0))
+    else if ((strcasecmp((FTE_CHAR_PTR)_buff, "off") == 0) || (strcmp((FTE_CHAR_PTR)_buff, "0") == 0))
     {
         FTE_RL_setInitState(pObj, FALSE);        
     }
@@ -1423,45 +1575,45 @@ uint_32 MIB_set_rlInitState(pointer param, uchar_ptr varptr, uint_32 varlen)
     return SNMP_ERROR_noError;    
 }
 
-uint_32 MIB_set_rlName(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_rlName(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objName(param, varptr, varlen);
+    return  MIB_set_objName(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_rlState(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_rlState(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objState(param, varptr, varlen);
+    return  MIB_set_objState(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_rlValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_rlValue(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objValue(param, varptr, varlen);
+    return  MIB_set_objValue(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_rlInitValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_rlInitValue(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objInitValue(param, varptr, varlen);
+    return  MIB_set_objInitValue(pParam, pVar, ulVarLen);
 }
 
 /******************************************************************************
  * Power Sensor
  ******************************************************************************/
-uint_32 MIB_get_pwrCount(pointer dummy)
+FTE_UINT32 MIB_get_pwrCount(FTE_VOID_PTR dummy)
 { 
     return  FTE_OBJ_count(FTE_OBJ_TYPE_POWER, FTE_OBJ_CLASS_MASK, FALSE);
 } 
 
-uint_32 MIB_set_pwrIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+FTE_UINT32 MIB_set_pwrIndex (FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen) {return SNMP_ERROR_inconsistentValue;}
 
-boolean MIB_find_pwrEntry
+FTE_BOOL MIB_find_pwrEntry
 (
-    uint_32        op,
-    pointer        index,
-    pointer _PTR_  instance
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
 )
 { /* Body */
-   uint_32           nIndex = *(uint_32_ptr)index;
-   pointer           pObj;
+   FTE_UINT32           nIndex = *(FTE_UINT32_PTR)index;
+   FTE_VOID_PTR           pObj;
 
    if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
    {
@@ -1473,47 +1625,47 @@ boolean MIB_find_pwrEntry
    {
       return FALSE;
    } /* Endif */ 
-   *(uint_32_ptr)index = nIndex;
+   *(FTE_UINT32_PTR)index = nIndex;
    *instance = pObj;
    return TRUE;
  
 } /* Endbody */
 
 
-uint_32 MIB_set_pwrName(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_pwrName(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objName(param, varptr, varlen);
+    return  MIB_set_objName(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_pwrState(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_pwrState(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objState(param, varptr, varlen);
+    return  MIB_set_objState(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_pwrUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_pwrUpdateInterval(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+    return  MIB_set_objUpdateInterval(pParam, pVar, ulVarLen);
 }
 
 /******************************************************************************
  * GAS Sensor
  ******************************************************************************/
-uint_32 MIB_get_gasCount(pointer dummy)
+FTE_UINT32 MIB_get_gasCount(FTE_VOID_PTR dummy)
 { 
     return  FTE_OBJ_count(FTE_OBJ_TYPE_GAS, FTE_OBJ_CLASS_MASK, FALSE);
 } 
 
-uint_32 MIB_set_gasIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+FTE_UINT32 MIB_set_gasIndex (FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen) {return SNMP_ERROR_inconsistentValue;}
 
-boolean MIB_find_gasEntry
+FTE_BOOL MIB_find_gasEntry
 (
-    uint_32        op,
-    pointer        index,
-    pointer _PTR_  instance
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
 )
 { /* Body */
-   uint_32           nIndex = *(uint_32_ptr)index;
-   pointer           pObj;
+   FTE_UINT32           nIndex = *(FTE_UINT32_PTR)index;
+   FTE_VOID_PTR           pObj;
 
    if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
    {
@@ -1525,47 +1677,47 @@ boolean MIB_find_gasEntry
    {
       return FALSE;
    } /* Endif */ 
-   *(uint_32_ptr)index = nIndex;
+   *(FTE_UINT32_PTR)index = nIndex;
    *instance = pObj;
    return TRUE;
  
 } /* Endbody */
 
 
-uint_32 MIB_set_gasName(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_gasName(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objName(param, varptr, varlen);
+    return  MIB_set_objName(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_gasState(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_gasState(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objState(param, varptr, varlen);
+    return  MIB_set_objState(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_gasUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_gasUpdateInterval(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+    return  MIB_set_objUpdateInterval(pParam, pVar, ulVarLen);
 }
 
 /******************************************************************************
  * Dust Sensor
  ******************************************************************************/
-uint_32 MIB_get_dustCount(pointer dummy)
+FTE_UINT32 MIB_get_dustCount(FTE_VOID_PTR dummy)
 { 
     return  FTE_OBJ_count(FTE_OBJ_TYPE_DUST, FTE_OBJ_TYPE_MASK, FALSE);
 } 
 
-uint_32 MIB_set_dustIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+FTE_UINT32 MIB_set_dustIndex (FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen) {return SNMP_ERROR_inconsistentValue;}
 
-boolean MIB_find_dustEntry
+FTE_BOOL MIB_find_dustEntry
 (
-    uint_32        op,
-    pointer        index,
-    pointer _PTR_  instance
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
 )
 { /* Body */
-   uint_32           nIndex = *(uint_32_ptr)index;
-   pointer           pObj;
+   FTE_UINT32           nIndex = *(FTE_UINT32_PTR)index;
+   FTE_VOID_PTR           pObj;
 
    if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
    {
@@ -1577,47 +1729,47 @@ boolean MIB_find_dustEntry
    {
       return FALSE;
    } /* Endif */ 
-   *(uint_32_ptr)index = nIndex;
+   *(FTE_UINT32_PTR)index = nIndex;
    *instance = pObj;
    return TRUE;
  
 } /* Endbody */
 
 
-uint_32 MIB_set_dustName(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_dustName(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objName(param, varptr, varlen);
+    return  MIB_set_objName(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_dustState(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_dustState(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objState(param, varptr, varlen);
+    return  MIB_set_objState(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_dustUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_dustUpdateInterval(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+    return  MIB_set_objUpdateInterval(pParam, pVar, ulVarLen);
 }
 
 /******************************************************************************
  * Count
  ******************************************************************************/
-uint_32 MIB_get_cntCount(pointer dummy)
+FTE_UINT32 MIB_get_cntCount(FTE_VOID_PTR dummy)
 { 
     return  FTE_OBJ_count(FTE_OBJ_TYPE_COUNT, FTE_OBJ_CLASS_MASK, FALSE);
 } 
 
-uint_32 MIB_set_cntIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+FTE_UINT32 MIB_set_cntIndex (FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen) {return SNMP_ERROR_inconsistentValue;}
 
-boolean MIB_find_cntEntry
+FTE_BOOL MIB_find_cntEntry
 (
-    uint_32        op,
-    pointer        index,
-    pointer _PTR_  instance
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
 )
 { /* Body */
-   uint_32           nIndex = *(uint_32_ptr)index;
-   pointer           pObj;
+   FTE_UINT32           nIndex = *(FTE_UINT32_PTR)index;
+   FTE_VOID_PTR           pObj;
 
    if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
    {
@@ -1629,15 +1781,15 @@ boolean MIB_find_cntEntry
    {
       return FALSE;
    } /* Endif */
-   *(uint_32_ptr)index = nIndex;
+   *(FTE_UINT32_PTR)index = nIndex;
    *instance = pObj;
    return TRUE;
 
 } /* Endbody */
 
-const char *MIB_get_cntInitState(pointer param)
+const char *MIB_get_cntInitState(FTE_VOID_PTR pParam)
 {
-    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)pParam;
     FTE_VALUE       xValue;
     assert(pObj != NULL);
 
@@ -1648,24 +1800,24 @@ const char *MIB_get_cntInitState(pointer param)
     return _buff;
 }
 
-uint_32 MIB_set_cntInitState(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_cntInitState(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)param;
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)pParam;
     assert(pObj != NULL);
         
-    if (varlen >= sizeof(_buff))
+    if (ulVarLen >= sizeof(_buff))
     {
         return  SNMP_ERROR_wrongValue;
     }
         
-    strncpy(_buff, (char_ptr)varptr, varlen);
-    _buff[varlen] = '\0';
+    strncpy(_buff, (FTE_CHAR_PTR)pVar, ulVarLen);
+    _buff[ulVarLen] = '\0';
     
-    if ((strcasecmp((char_ptr)_buff, "on") == 0) || (strcmp((char_ptr)_buff, "1") == 0))
+    if ((strcasecmp((FTE_CHAR_PTR)_buff, "on") == 0) || (strcmp((FTE_CHAR_PTR)_buff, "1") == 0))
     {
         //fte_cnt_set_init_state(pObj, TRUE);        
     }
-    else if ((strcasecmp((char_ptr)_buff, "off") == 0) || (strcmp((char_ptr)_buff, "0") == 0))
+    else if ((strcasecmp((FTE_CHAR_PTR)_buff, "off") == 0) || (strcmp((FTE_CHAR_PTR)_buff, "0") == 0))
     {
         //fte_cnt_set_init_state(pObj, FALSE);        
     }
@@ -1677,45 +1829,45 @@ uint_32 MIB_set_cntInitState(pointer param, uchar_ptr varptr, uint_32 varlen)
     return SNMP_ERROR_noError;    
 }
 
-uint_32 MIB_set_cntName(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_cntName(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objName(param, varptr, varlen);
+    return  MIB_set_objName(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_cntState(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_cntState(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objState(param, varptr, varlen);
+    return  MIB_set_objState(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_cntValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_cntValue(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objValue(param, varptr, varlen);
+    return  MIB_set_objValue(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_cntInitValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_cntInitValue(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objInitValue(param, varptr, varlen);
+    return  MIB_set_objInitValue(pParam, pVar, ulVarLen);
 }
 
 /******************************************************************************
  * Pressure Sensor
  ******************************************************************************/
-uint_32 MIB_get_prsCount(pointer dummy)
+FTE_UINT32 MIB_get_prsCount(FTE_VOID_PTR dummy)
 { 
     return  FTE_OBJ_count(FTE_OBJ_TYPE_PRESSURE, FTE_OBJ_CLASS_MASK, FALSE);
 } 
 
-uint_32 MIB_set_prsIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+FTE_UINT32 MIB_set_prsIndex (FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen) {return SNMP_ERROR_inconsistentValue;}
 
-boolean MIB_find_prsEntry
+FTE_BOOL MIB_find_prsEntry
 (
-    uint_32        op,
-    pointer        index,
-    pointer _PTR_  instance
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
 )
 { /* Body */
-   uint_32           nIndex = *(uint_32_ptr)index;
-   pointer           pObj;
+   FTE_UINT32           nIndex = *(FTE_UINT32_PTR)index;
+   FTE_VOID_PTR           pObj;
 
    if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
    {
@@ -1727,56 +1879,56 @@ boolean MIB_find_prsEntry
    {
       return FALSE;
    } /* Endif */ 
-   *(uint_32_ptr)index = nIndex;
+   *(FTE_UINT32_PTR)index = nIndex;
    *instance = pObj;
    return TRUE;
  
 } /* Endbody */
 
-uint_32 MIB_set_prsName(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_prsName(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objName(param, varptr, varlen);
+    return  MIB_set_objName(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_prsState(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_prsState(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objState(param, varptr, varlen);
+    return  MIB_set_objState(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_prsUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_prsUpdateInterval(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+    return  MIB_set_objUpdateInterval(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_prsValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_prsValue(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objValue(param, varptr, varlen);
+    return  MIB_set_objValue(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_prsInitValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_prsInitValue(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objInitValue(param, varptr, varlen);
+    return  MIB_set_objInitValue(pParam, pVar, ulVarLen);
 }
 
 /******************************************************************************
  * Discrete Sensor
  ******************************************************************************/
-uint_32 MIB_get_dscCount(pointer dummy)
+FTE_UINT32 MIB_get_dscCount(FTE_VOID_PTR dummy)
 { 
     return  FTE_OBJ_count(FTE_OBJ_TYPE_DISCRETE, FTE_OBJ_CLASS_MASK, FALSE);
 } 
 
-uint_32 MIB_set_dscIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+FTE_UINT32 MIB_set_dscIndex (FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen) {return SNMP_ERROR_inconsistentValue;}
 
-boolean MIB_find_dscEntry
+FTE_BOOL MIB_find_dscEntry
 (
-    uint_32        op,
-    pointer        index,
-    pointer _PTR_  instance
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
 )
 { /* Body */
-   uint_32           nIndex = *(uint_32_ptr)index;
-   pointer           pObj;
+   FTE_UINT32           nIndex = *(FTE_UINT32_PTR)index;
+   FTE_VOID_PTR           pObj;
 
    if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
    {
@@ -1788,56 +1940,56 @@ boolean MIB_find_dscEntry
    {
       return FALSE;
    } /* Endif */ 
-   *(uint_32_ptr)index = nIndex;
+   *(FTE_UINT32_PTR)index = nIndex;
    *instance = pObj;
    return TRUE;
  
 } /* Endbody */
 
-uint_32 MIB_set_dscName(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_dscName(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objName(param, varptr, varlen);
+    return  MIB_set_objName(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_dscState(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_dscState(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objState(param, varptr, varlen);
+    return  MIB_set_objState(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_dscUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_dscUpdateInterval(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+    return  MIB_set_objUpdateInterval(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_dscValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_dscValue(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objValue(param, varptr, varlen);
+    return  MIB_set_objValue(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_dscInitValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_dscInitValue(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objInitValue(param, varptr, varlen);
+    return  MIB_set_objInitValue(pParam, pVar, ulVarLen);
 }
 
 /******************************************************************************
  * Device
  ******************************************************************************/
-uint_32 MIB_get_devCount(pointer dummy)
+FTE_UINT32 MIB_get_devCount(FTE_VOID_PTR dummy)
 { 
     return  FTE_OBJ_count(FTE_OBJ_TYPE_MULTI, FTE_OBJ_CLASS_MASK, FALSE);
 } 
 
-uint_32 MIB_set_devIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+FTE_UINT32 MIB_set_devIndex (FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen) {return SNMP_ERROR_inconsistentValue;}
 
-boolean MIB_find_devEntry
+FTE_BOOL MIB_find_devEntry
 (
-    uint_32        op,
-    pointer        index,
-    pointer _PTR_  instance
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
 )
 { /* Body */
-   uint_32           nIndex = *(uint_32_ptr)index;
-   pointer           pObj;
+   FTE_UINT32           nIndex = *(FTE_UINT32_PTR)index;
+   FTE_VOID_PTR           pObj;
 
    if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
    {
@@ -1849,76 +2001,76 @@ boolean MIB_find_devEntry
    {
       return FALSE;
    } /* Endif */ 
-   *(uint_32_ptr)index = nIndex;
+   *(FTE_UINT32_PTR)index = nIndex;
    *instance = pObj;
    return TRUE;
  
 } /* Endbody */
 
-uint_32 MIB_set_devName(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_devName(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objName(param, varptr, varlen);
+    return  MIB_set_objName(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_devState(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_devState(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objState(param, varptr, varlen);
+    return  MIB_set_objState(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_devUpdateInterval(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_devUpdateInterval(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objUpdateInterval(param, varptr, varlen);
+    return  MIB_set_objUpdateInterval(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_devValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_devValue(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objValue(param, varptr, varlen);
+    return  MIB_set_objValue(pParam, pVar, ulVarLen);
 }
 
-uint_32 MIB_set_devInitValue(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_devInitValue(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    return  MIB_set_objInitValue(param, varptr, varlen);
+    return  MIB_set_objInitValue(pParam, pVar, ulVarLen);
 }
 
 /******************************************************************************
  * Event
  ******************************************************************************/
-uint_32 MIB_get_eventCount(pointer dummy)
+FTE_UINT32 MIB_get_eventCount(FTE_VOID_PTR dummy)
 { 
     return  1;
 } 
-uint_32 MIB_set_eventIndex (pointer dummy, uchar_ptr varptr, uint_32 varlen) {return SNMP_ERROR_inconsistentValue;}
+FTE_UINT32 MIB_set_eventIndex (FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen) {return SNMP_ERROR_inconsistentValue;}
 
-boolean MIB_find_eventEntry
+FTE_BOOL MIB_find_eventEntry
 (
-    uint_32        op,
-    pointer        index,
-    pointer _PTR_  instance
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
 )
 { /* Body */
-   uint_32           nIndex = *(uint_32_ptr)index;
-   pointer           pObj;
+   FTE_UINT32           nIndex = *(FTE_UINT32_PTR)index;
+   FTE_VOID_PTR           pObj;
 
    if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
    {
       nIndex = 1;
    } /* Endif */
 
-   if ((pObj = FTE_EVENT_getAt(nIndex - 1)) == NULL)
+   if (FTE_EVENT_getAt(nIndex - 1, (FTE_EVENT_PTR _PTR_)&pObj) != FTE_RET_OK)
    {
       return FALSE;
    } /* Endif */
-   *(uint_32_ptr)index = nIndex;
+   *(FTE_UINT32_PTR)index = nIndex;
    *instance = pObj;
    return TRUE;
 
 } /* Endbody */
 
-const char *MIB_get_eventCondition(pointer param)
+const char *MIB_get_eventCondition(FTE_VOID_PTR pParam)
 {
-    assert(param != NULL);
+    assert(pParam != NULL);
     
-    FTE_EVENT_PTR   pEvent = (FTE_EVENT_PTR)param;
+    FTE_EVENT_PTR   pEvent = (FTE_EVENT_PTR)pParam;
     switch(pEvent->pConfig->xCondition)
     {
     case    FTE_EVENT_CONDITION_ABOVE:   
@@ -1984,11 +2136,11 @@ const char *MIB_get_eventCondition(pointer param)
     return _buff;
 }
 
-uint_32 MIB_set_eventCondition(pointer param, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_eventCondition(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {     
-    assert(param != NULL);
+    assert(pParam != NULL);
 
-    strncpy(_buff, (char_ptr)varptr, varlen);
+    strncpy(_buff, (FTE_CHAR_PTR)pVar, ulVarLen);
     
     const nx_json* json = nx_json_parse_utf8(_buff);
     if (json == NULL)
@@ -2005,11 +2157,11 @@ uint_32 MIB_set_eventCondition(pointer param, uchar_ptr varptr, uint_32 varlen)
     return SNMP_ERROR_noError;    
 }
  
-const char *MIB_get_eventEPID(pointer param)
+const char *MIB_get_eventEPID(FTE_VOID_PTR pParam)
 {
-    assert(param != NULL);
+    assert(pParam != NULL);
     
-    FTE_EVENT_PTR   pEvent = (FTE_EVENT_PTR)param;
+    FTE_EVENT_PTR   pEvent = (FTE_EVENT_PTR)pParam;
     
     sprintf(_buff, "%08lx", pEvent->pConfig->ulEPID);
     
@@ -2017,21 +2169,21 @@ const char *MIB_get_eventEPID(pointer param)
 } 
      
 
-const char *MIB_get_eventLevel(pointer param)
+const char *MIB_get_eventLevel(FTE_VOID_PTR pParam)
 {
-    assert(param != NULL);
+    assert(pParam != NULL);
 
-    FTE_EVENT_PTR   pEvent = (FTE_EVENT_PTR)param;
+    FTE_EVENT_PTR   pEvent = (FTE_EVENT_PTR)pParam;
     FTE_EVENT_level_string(pEvent->pConfig->xLevel, _buff, sizeof(_buff));
     
     return  _buff;
 }
 
-const char *MIB_get_eventType(pointer param)
+const char *MIB_get_eventType(FTE_VOID_PTR pParam)
 {
-    assert(param != NULL);
+    assert(pParam != NULL);
 
-    FTE_EVENT_PTR   pEvent = (FTE_EVENT_PTR)param;
+    FTE_EVENT_PTR   pEvent = (FTE_EVENT_PTR)pParam;
     FTE_EVENT_type_string(pEvent->pConfig->xType, _buff, sizeof(_buff));
     
     return  _buff;
@@ -2042,14 +2194,14 @@ const char *MIB_get_eventType(pointer param)
  * for Server Configuratoin
  ******************************************************************************/
 
-boolean MIB_find_svrEntry 
+FTE_BOOL MIB_find_svrEntry 
 (
-    uint_32        op,
-    pointer        index,
-    pointer _PTR_  instance
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
 )
 { 
-   uint_32           serverIndex = *(uint_32_ptr)index;
+   FTE_UINT32           serverIndex = *(FTE_UINT32_PTR)index;
 
    if ((op == RTCSMIB_OP_GETNEXT) && (serverIndex == 0)) 
    {
@@ -2058,14 +2210,14 @@ boolean MIB_find_svrEntry
 
    if (serverIndex - 1 < FTE_NET_SERVER_count())
    {
-        *instance = (pointer)(serverIndex - 1);
-        *(uint_32_ptr)index = serverIndex;
+        *instance = (FTE_VOID_PTR)(serverIndex - 1);
+        *(FTE_UINT32_PTR)index = serverIndex;
         
         return TRUE;
    }
    else
    {
-        *(uint_32_ptr)index = 0;
+        *(FTE_UINT32_PTR)index = 0;
         
         return FALSE;   
    }
@@ -2073,10 +2225,10 @@ boolean MIB_find_svrEntry
 
 } /* Endbody */
 
-char const *MIB_get_srvIpAddr(pointer params)
+FTE_CHAR const _PTR_ MIB_get_srvIpAddr(FTE_VOID_PTR pParams)
 {
-    uint_32 idx = (uint_32)params;
-    uint_32 ip;
+    FTE_UINT32 idx = (FTE_UINT32)pParams;
+    FTE_UINT32 ip;
 
     ip = FTE_NET_SERVER_getAt(idx);
     
@@ -2089,19 +2241,19 @@ char const *MIB_get_srvIpAddr(pointer params)
  * Log Management
  ******************************************************************************/
 
-uint_32 MIB_get_logCount(pointer dummy)
+FTE_UINT32 MIB_get_logCount(FTE_VOID_PTR dummy)
 {
     return  FTE_LOG_count();
 }
 
-boolean MIB_find_logEntry
+FTE_BOOL MIB_find_logEntry
 (
-    uint_32        op,
-    pointer        index,
-    pointer _PTR_  instance
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
 )
 { 
-    uint_32             logIndex = *(uint_32_ptr)index;
+    FTE_UINT32             logIndex = *(FTE_UINT32_PTR)index;
 
     if ((op == RTCSMIB_OP_GETNEXT) && (logIndex == 0)) 
     {
@@ -2113,36 +2265,36 @@ boolean MIB_find_logEntry
         return  FALSE;
     }
 
-    *instance = (pointer)(FTE_LOG_count() - logIndex + 1);
-    *(uint_32_ptr)index = logIndex;
+    *instance = (FTE_VOID_PTR)(FTE_LOG_count() - logIndex + 1);
+    *(FTE_UINT32_PTR)index = logIndex;
                     
     return TRUE;
 } /* Endbody */
 
 
-uint_32 MIB_get_logIndex(pointer dummy)
+FTE_UINT32 MIB_get_logIndex(FTE_VOID_PTR dummy)
 {
-    return  (uint_32)dummy;
+    return  (FTE_UINT32)dummy;
 }
 
-char const *MIB_get_logTime(pointer pIndex)
+FTE_CHAR const _PTR_ MIB_get_logTime(FTE_VOID_PTR pIndex)
 {
     FTE_LOG_PTR pLog;
     
-    pLog = FTE_LOG_getAt((uint_32)pIndex - 1);
+    pLog = FTE_LOG_getAt((FTE_UINT32)pIndex - 1);
     if (pLog == NULL)
     {
         return  _unknown;
     } 
     
-    FTE_TIME_toString(&pLog->xTimeStamp, _buff, sizeof(_buff));
+    FTE_TIME_toStr(&pLog->xTimeStamp, _buff, sizeof(_buff));
     
     return  _buff;
 }
 
-uint_32 MIB_get_logLevel(pointer pIndex)
+FTE_UINT32 MIB_get_logLevel(FTE_VOID_PTR pIndex)
 {
-    uint_32     nIndex = (uint_32)pIndex;
+    FTE_UINT32     nIndex = (FTE_UINT32)pIndex;
     FTE_LOG_PTR pLog = FTE_LOG_getAt(nIndex - 1);
     
     if (pLog == NULL)
@@ -2153,9 +2305,9 @@ uint_32 MIB_get_logLevel(pointer pIndex)
     return  0;
 }
 
-char const *MIB_get_logID(pointer pIndex)
+FTE_CHAR const _PTR_ MIB_get_logID(FTE_VOID_PTR pIndex)
 {
-    uint_32     nIndex = (uint_32)pIndex;
+    FTE_UINT32     nIndex = (FTE_UINT32)pIndex;
     FTE_LOG_PTR pLog = FTE_LOG_getAt(nIndex - 1);
     
     if (pLog == NULL)
@@ -2168,9 +2320,9 @@ char const *MIB_get_logID(pointer pIndex)
     return  _buff;
 }
  
-char const *MIB_get_logValue(pointer pIndex)
+FTE_CHAR const _PTR_ MIB_get_logValue(FTE_VOID_PTR pIndex)
 {
-    uint_32         nIndex = (uint_32)pIndex;
+    FTE_UINT32         nIndex = (FTE_UINT32)pIndex;
     FTE_LOG_PTR     pLog = FTE_LOG_getAt(nIndex - 1);
     
     if (pLog == NULL)
@@ -2183,9 +2335,9 @@ char const *MIB_get_logValue(pointer pIndex)
     return  _buff;
 }
 
-char const *MIB_get_logString(pointer pIndex)
+FTE_CHAR const _PTR_ MIB_get_logString(FTE_VOID_PTR pIndex)
 {
-    uint_32         nIndex = (uint_32)pIndex;
+    FTE_UINT32         nIndex = (FTE_UINT32)pIndex;
     FTE_LOG_PTR     pLog = FTE_LOG_getAt(nIndex - 1);
     
     return  _unknown;
@@ -2195,14 +2347,14 @@ char const *MIB_get_logString(pointer pIndex)
  * for TRAP 
  ******************************************************************************/
 
-boolean MIB_find_tsEntry
+FTE_BOOL MIB_find_tsEntry
 (
-    uint_32        op,
-    pointer        index,
-    pointer _PTR_  instance
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
 )
 { 
-    uint_32         serverIndex = *(uint_32_ptr)index;
+    FTE_UINT32         serverIndex = *(FTE_UINT32_PTR)index;
     FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
 
     if (pCfgNet->xSNMP.xTrap.ulCount == 0)
@@ -2220,14 +2372,14 @@ boolean MIB_find_tsEntry
         return  FALSE;
     }
 
-    *instance = (pointer)&pCfgNet->xSNMP.xTrap.pList[serverIndex - 1];
-    *(uint_32_ptr)index = serverIndex;
+    *instance = (FTE_VOID_PTR)&pCfgNet->xSNMP.xTrap.pList[serverIndex - 1];
+    *(FTE_UINT32_PTR)index = serverIndex;
                     
     return TRUE;
 } /* Endbody */
 
 
-char const *MIB_get_tsIpAddr(pointer dummy)
+FTE_CHAR const _PTR_ MIB_get_tsIpAddr(FTE_VOID_PTR dummy)
 {
     _ip_address *ip = dummy;
     
@@ -2236,7 +2388,7 @@ char const *MIB_get_tsIpAddr(pointer dummy)
     return  _buff;
 }
 
-uint_32 MIB_get_tsCount(pointer dummy)
+FTE_UINT32 MIB_get_tsCount(FTE_VOID_PTR dummy)
 {
     FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
 
@@ -2248,26 +2400,26 @@ uint_32 MIB_get_tsCount(pointer dummy)
     return  pCfgNet->xSNMP.xTrap.ulCount; 
 }
 
-char const *MIB_get_tsAdd(pointer dummy)
+FTE_CHAR const _PTR_ MIB_get_tsAdd(FTE_VOID_PTR dummy)
 {
     sprintf(_buff,"xxx.xxx.xxx.xxx");
     return  _buff;
 }
 
 
-uint_32 MIB_set_tsAdd(pointer dummy, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_tsAdd(FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    uint_32 nIP;
+    FTE_UINT32 nIP;
     
-    if (varlen >= sizeof(_buff))
+    if (ulVarLen >= sizeof(_buff))
     {
         return  SNMP_ERROR_wrongValue;
     }
         
-    strncpy(_buff, (char_ptr)varptr, varlen);
-    _buff[varlen] = '\0';
+    strncpy(_buff, (FTE_CHAR_PTR)pVar, ulVarLen);
+    _buff[ulVarLen] = '\0';
     
-    if (fte_parse_ip_address((char_ptr)_buff, &nIP) != TRUE)
+    if (fte_parse_ip_address((FTE_CHAR_PTR)_buff, &nIP) != TRUE)
     {
         return  SNMP_ERROR_badValue;
     }
@@ -2277,24 +2429,24 @@ uint_32 MIB_set_tsAdd(pointer dummy, uchar_ptr varptr, uint_32 varlen)
     return   SNMP_ERROR_noError;
 }
 
-char const *MIB_get_tsDel(pointer dummy)
+FTE_CHAR const _PTR_ MIB_get_tsDel(FTE_VOID_PTR dummy)
 {
     return   SNMP_ERROR_noError;    
 }
 
-uint_32 MIB_set_tsDel(pointer dummy, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_tsDel(FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
-    uint_32 nIP;
+    FTE_UINT32 nIP;
     
-    if (varlen >= sizeof(_buff))
+    if (ulVarLen >= sizeof(_buff))
     {
         return  SNMP_ERROR_wrongValue;
     }
         
-    strncpy(_buff, (char_ptr)varptr, varlen);
-    _buff[varlen] = '\0';
+    strncpy(_buff, (FTE_CHAR_PTR)pVar, ulVarLen);
+    _buff[ulVarLen] = '\0';
     
-    if (fte_parse_ip_address((char_ptr)_buff, &nIP) != TRUE)
+    if (fte_parse_ip_address((FTE_CHAR_PTR)_buff, &nIP) != TRUE)
     {
          return  SNMP_ERROR_badValue;
     }
@@ -2308,18 +2460,18 @@ uint_32 MIB_set_tsDel(pointer dummy, uchar_ptr varptr, uint_32 varlen)
 }
 
 
-char const *MIB_get_msgDiscovery(pointer param)
+FTE_CHAR const _PTR_ MIB_get_msgDiscovery(FTE_VOID_PTR pParam)
 { 
     return  FTE_SMNG_getDiscoveryMessage();
 }
 
-char const *MIB_get_msgAlert(pointer param)
+FTE_CHAR const _PTR_ MIB_get_msgAlert(FTE_VOID_PTR pParam)
 {
     if ((pCurrentTrapMsg != NULL) && (pCurrentTrapMsg->xType == FTE_NET_SNMP_TRAP_TYPE_ALERT))
     {
         if (pCurrentTrapMsg->pBuff == NULL)
         {
-            uint_32         ulLen;
+            FTE_UINT32         ulLen;
             FTE_OBJECT_PTR  pObj = FTE_OBJ_get(pCurrentTrapMsg->xParams.xAlert.nOID);    
             if (pObj == NULL)
             {
@@ -2334,7 +2486,7 @@ char const *MIB_get_msgAlert(pointer param)
             }            
             
             ulLen = FTE_JSON_VALUE_buffSize(pJSONValue) + 1;
-            pCurrentTrapMsg->pBuff = (char_ptr)FTE_MEM_alloc(ulLen);
+            pCurrentTrapMsg->pBuff = (FTE_CHAR_PTR)FTE_MEM_alloc(ulLen);
             if (pCurrentTrapMsg == NULL)
             {
                 ERROR("Not enough memory!\n");
@@ -2357,12 +2509,12 @@ char const *MIB_get_msgAlert(pointer param)
  * for Admin
  ******************************************************************************/
 
-uint_32 MIB_set_adminOID(pointer dummy, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_adminOID(FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
     return   SNMP_ERROR_noError;
 }
 
-char const *MIB_get_adminMAC(pointer dummy)
+FTE_CHAR const _PTR_ MIB_get_adminMAC(FTE_VOID_PTR dummy)
 {
     _enet_address   pMAC;
     
@@ -2378,14 +2530,14 @@ char const *MIB_get_adminMAC(pointer dummy)
 }
 
 
-uint_32 MIB_set_adminMAC(pointer dummy, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_adminMAC(FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
     return   SNMP_ERROR_noError;
 }
 
-static  int_32    _nFactoryResetKey = 0;
+static  FTE_INT32    _nFactoryResetKey = 0;
 
-char const *MIB_get_adminFactoryReset(pointer dummy)
+FTE_CHAR const _PTR_ MIB_get_adminFactoryReset(FTE_VOID_PTR dummy)
 {
     _nFactoryResetKey = (RTCS_rand() & 0x7FFFFFFF);
 
@@ -2395,11 +2547,11 @@ char const *MIB_get_adminFactoryReset(pointer dummy)
 }
 
 
-uint_32 MIB_set_adminFactoryReset(pointer dummy, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_adminFactoryReset(FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
     sprintf(_buff, "%08x", _nFactoryResetKey);
 
-    if ((_nFactoryResetKey == 0) || varlen != 8 || strncmp(_buff, (char*)varptr, 8) != 0)
+    if ((_nFactoryResetKey == 0) || ulVarLen != 8 || strncmp(_buff, (char*)pVar, 8) != 0)
     {
         return  SNMP_ERROR_wrongValue;
     }
@@ -2410,25 +2562,25 @@ uint_32 MIB_set_adminFactoryReset(pointer dummy, uchar_ptr varptr, uint_32 varle
 }
 
 
-char const *MIB_get_adminSystemTime(pointer dummy)
+FTE_CHAR const _PTR_ MIB_get_adminSystemTime(FTE_VOID_PTR dummy)
 {
     TIME_STRUCT xTime;
     
     _time_get(&xTime);
-    FTE_TIME_toString(&xTime, _buff, sizeof(_buff));
+    FTE_TIME_toStr(&xTime, _buff, sizeof(_buff));
 
     return  _buff;
 }
 
 
-uint_32 MIB_set_adminSystemTime(pointer dummy, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_adminSystemTime(FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
     TIME_STRUCT xTime;
     
 
-    strncpy(_buff, (char_ptr)varptr, varlen);
-    _buff[varlen] = '\0';
-    if (FTE_TIME_toTime((char_ptr)_buff, &xTime) != MQX_OK)
+    strncpy(_buff, (FTE_CHAR_PTR)pVar, ulVarLen);
+    _buff[ulVarLen] = '\0';
+    if (FTE_TIME_toTime((FTE_CHAR_PTR)_buff, &xTime) != FTE_RET_OK)
     {
         return  SNMP_ERROR_badValue;
     }
@@ -2443,9 +2595,9 @@ uint_32 MIB_set_adminSystemTime(pointer dummy, uchar_ptr varptr, uint_32 varlen)
     return   SNMP_ERROR_noError;
 }
 
-static  int_32    _nResetKey = 0;
+static  FTE_INT32    _nResetKey = 0;
 
-char const *MIB_get_adminReset(pointer dummy)
+FTE_CHAR const _PTR_ MIB_get_adminReset(FTE_VOID_PTR dummy)
 {
     _nResetKey = (RTCS_rand() & 0x7FFFFFFF);
 
@@ -2454,16 +2606,16 @@ char const *MIB_get_adminReset(pointer dummy)
     return  _buff;
 }
 
-static void _config_save(pointer params)
+static void _config_save(FTE_VOID_PTR pParams)
 {
     FTE_CFG_save(TRUE);
 }
 
-uint_32 MIB_set_adminReset(pointer dummy, uchar_ptr varptr, uint_32 varlen)
+FTE_UINT32 MIB_set_adminReset(FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
     sprintf(_buff, "%08x", _nResetKey);
 
-    if ((_nResetKey == 0) || varlen != 8 || strncmp(_buff, (char*)varptr, 8) != 0)
+    if ((_nResetKey == 0) || ulVarLen != 8 || strncmp(_buff, (char*)pVar, 8) != 0)
     {
         return  SNMP_ERROR_wrongValue;
     }
@@ -2475,14 +2627,14 @@ uint_32 MIB_set_adminReset(pointer dummy, uchar_ptr varptr, uint_32 varlen)
 }
 
 
-boolean MIB_find_dbgBTEntry
+FTE_BOOL MIB_find_dbgBTEntry
 (
-    uint_32        op,
-    pointer        index,
-    pointer _PTR_  instance
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
 )
 { 
-    uint_32              nIndex = *(uint_32_ptr)index;
+    FTE_UINT32              nIndex = *(FTE_UINT32_PTR)index;
 
     if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
     {
@@ -2494,19 +2646,19 @@ boolean MIB_find_dbgBTEntry
         return  FALSE;
     }
 
-    *instance = (pointer)(nIndex - 1);
-    *(uint_32_ptr)index = nIndex;
+    *instance = (FTE_VOID_PTR)(nIndex - 1);
+    *(FTE_UINT32_PTR)index = nIndex;
                     
     return TRUE;
 } /* Endbody */
 
 
-uint_32 MIB_get_dbgBTIndex(pointer dummy)
+FTE_UINT32 MIB_get_dbgBTIndex(FTE_VOID_PTR dummy)
 {
-    return  (uint_32)dummy + 1;
+    return  (FTE_UINT32)dummy + 1;
 }
 
-char const *MIB_get_dbgBTTime(pointer dummy)
+FTE_CHAR const _PTR_ MIB_get_dbgBTTime(FTE_VOID_PTR dummy)
 {
     return  _unknown;
 }
@@ -4083,11 +4235,11 @@ const RTCSMIB_VALUE MIBVALUE_dbgBTTime =
 /******************************************************************************
  * Shell command
  ******************************************************************************/
-int_32  FTE_SNMPD_SHELL_cmd(int_32 argc, char_ptr argv[] )
+FTE_INT32  FTE_SNMPD_SHELL_cmd(FTE_INT32 argc, FTE_CHAR_PTR argv[] )
 {
-    uint_32  result;
-    boolean  print_usage, shorthelp = FALSE;
-    int_32   return_code = SHELL_EXIT_SUCCESS;
+    FTE_UINT32  result;
+    FTE_BOOL  print_usage, shorthelp = FALSE;
+    FTE_INT32   return_code = SHELL_EXIT_SUCCESS;
  
     print_usage = Shell_check_help_request(argc, argv, &shorthelp );
 
@@ -4143,7 +4295,7 @@ int_32  FTE_SNMPD_SHELL_cmd(int_32 argc, char_ptr argv[] )
             {
                 if (strcmp(argv[2], "list") == 0)
                 { 
-                    uint_32     i;
+                    FTE_UINT32     i;
                     
                     for( i = 0 ; i < FTE_CFG_NET_TRAP_count() ; i++)
                     {

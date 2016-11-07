@@ -8,30 +8,43 @@
 #include "enet.h"
 #include "phy_mv88e6060.h"
 
-static  FTE_NET_CFG_PTR _pCfgNet = NULL;
+static  
+FTE_NET_CFG_PTR _pCfgNet = NULL;
 
-int_32 FTE_NET_init(FTE_NET_CFG_PTR pConfig)
+static  
+MQX_TICK_STRUCT _xLastCheckTime;
+
+static  
+FTE_BOOL        _bLiveCheck = FALSE;
+
+static  
+FTE_UINT32      _ulKeepAliveTime = FTE_SYS_KEEP_ALIVE_TIME;
+
+FTE_RET FTE_NET_init
+(
+    FTE_NET_CFG_PTR pConfig
+)
 {
-    int_32          ret;
+    FTE_INT32       xRet;
     _enet_address   xMACAddress;
     
     /* Init RTCS */
     _RTCSPCB_init = 8;
     _RTCSPCB_grow = 4;
     _RTCSPCB_max = 32;
-   _RTCS_msgpool_init = 8;
-   _RTCS_msgpool_grow = 4;
-   _RTCS_msgpool_max  = 32;
-   _RTCS_socket_part_init = 8;
-   _RTCS_socket_part_grow = 4;
-   _RTCS_socket_part_max  = 32;
+    _RTCS_msgpool_init = 8;
+    _RTCS_msgpool_grow = 4;
+    _RTCS_msgpool_max  = 32;
+    _RTCS_socket_part_init = 8;
+    _RTCS_socket_part_grow = 4;
+    _RTCS_socket_part_max  = 32;
     
     _RTCSTASK_stacksize = 2400;
     
-    ret = RTCS_create();
-    if (ret != RTCS_OK) 
+    xRet = RTCS_create();
+    if (xRet != RTCS_OK) 
     {
-        printf("RTCS failed to initialize, error = 0x%X\n", ret);
+        printf("RTCS failed to initialize, error = 0x%X\n", xRet);
         goto error;
     }
 
@@ -39,10 +52,10 @@ int_32 FTE_NET_init(FTE_NET_CFG_PTR pConfig)
 
     /* Init ENET device */
     FTE_SYS_getMAC(xMACAddress);
-    ret = ipcfg_init_device (FTE_NET_PHY_ADDR, xMACAddress);
-    if (ret != RTCS_OK) 
+    xRet = ipcfg_init_device (FTE_NET_PHY_ADDR, xMACAddress);
+    if (xRet != RTCS_OK) 
     {
-        printf("IPCFG: Device init failed. Error = 0x%X\n", ret);
+        printf("IPCFG: Device init failed. Error = 0x%X\n", xRet);
         _task_set_error(MQX_OK);
         
         goto error;
@@ -50,26 +63,63 @@ int_32 FTE_NET_init(FTE_NET_CFG_PTR pConfig)
 
     _pCfgNet = pConfig;
     
-    return  RTCS_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  RTCS_ERROR;
+    return  xRet;
 }
 
-uint_32 FTE_NET_bind(void)
+FTE_RET     FTE_NET_isActive
+(
+    FTE_BOOL_PTR pActive
+)
 {
-    int_32  ret = IPCFG_OK;
+    ASSERT(pActive != NULL);
+    
+    *pActive = ipcfg_get_link_active (BSP_DEFAULT_ENET_DEVICE);
+    
+    return  FTE_RET_OK;
+}
+
+FTE_RET FTE_NET_STATE_get
+(
+    FTE_NET_STATE_PTR   pState
+)
+{
+    ASSERT(pState != NULL);
+    
+    *pState = (FTE_NET_STATE)ipcfg_get_state(BSP_DEFAULT_ENET_DEVICE);
+
+    return  FTE_RET_OK;
+}
+
+FTE_CHAR const _PTR_ FTE_NET_STATE_print
+(
+    FTE_NET_STATE   xState
+)
+{
+    return  ipcfg_get_state_string ((IPCFG_STATE)xState);
+}
+
+FTE_RET FTE_NET_bind
+(
+    void
+)
+{
+    FTE_RET xRet = FTE_RET_OK;
+    FTE_NET_STATE   xState;
     
     if (_pCfgNet->nType == FTE_NET_TYPE_DHCP)
     {
-        ret = ipcfg_bind_dhcp_wait (BSP_DEFAULT_ENET_DEVICE, FALSE, &_pCfgNet->xIPData);
-        if (ret != IPCFG_OK)
+        xRet = ipcfg_bind_dhcp_wait (BSP_DEFAULT_ENET_DEVICE, FALSE, &_pCfgNet->xIPData);
+        if (xRet != FTE_RET_OK)
         {
-            printf ("Error during dhcp bind %08x!\n", ret);
+            printf ("Error during dhcp bind %08x!\n", xRet);
             goto error;
         }
 
-        if (ipcfg_get_state(BSP_DEFAULT_ENET_DEVICE) == IPCFG_STATE_DHCPAUTO_IP)
+        FTE_NET_STATE_get(&xState);
+        if (xState == FTE_NET_STATE_DHCPAUTO_IP)
         {
             printf ("Bind via auto ip.\n");
         }
@@ -82,10 +132,10 @@ uint_32 FTE_NET_bind(void)
     else
     {        
         /* Bind IPv4 address */
-        ret = ipcfg_bind_staticip (BSP_DEFAULT_ENET_DEVICE, &_pCfgNet->xIPData);
-        if (ret != RTCS_OK) 
+        xRet = ipcfg_bind_staticip (BSP_DEFAULT_ENET_DEVICE, &_pCfgNet->xIPData);
+        if (xRet != FTE_RET_OK) 
         {
-            printf("\nIPCFG: Failed to bind IP address. Error = 0x%X", ret);
+            printf("\nIPCFG: Failed to bind IP address. Error = 0x%X", xRet);
             goto error;
         }
         
@@ -100,30 +150,39 @@ error:
     return  MQX_ERROR;
 }
 
-uint_32 FTE_NET_unbind(void)
+FTE_RET FTE_NET_unbind
+(
+    void
+)
 {
     ipcfg_unbind(BSP_DEFAULT_ENET_DEVICE);
     printf ("Unbind successful.\n");
 
     FTE_SYS_STATE_disconnected();
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-int_32  FTE_NET_getMACAddress(_enet_address address)
+FTE_RET  FTE_NET_getMACAddress
+(
+    _enet_address address
+)
 {
     if (_pCfgNet == NULL)
     {
-        return  RTCS_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     ENET_get_mac_address(FTE_NET_PHY_ADDR, _pCfgNet->xIPData.ip, address);
     
-    return  RTCS_OK;
+    return  FTE_RET_OK;
 }
 
 #if FTE_SNMPD_SUPPORTED
-int_32  FTE_NET_SERVER_count(void)
+FTE_INT32  FTE_NET_SERVER_count
+(
+    void
+)
 {
     FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
     
@@ -131,13 +190,16 @@ int_32  FTE_NET_SERVER_count(void)
 }
 
 
-uint_32  FTE_NET_SERVER_getAt(uint_32 idx)
+FTE_UINT32  FTE_NET_SERVER_getAt
+(
+    FTE_UINT32 ulIndex
+)
 {
     FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
      
-    if (pCfgNet->xSNMP.xTrap.ulCount > idx)
+    if (pCfgNet->xSNMP.xTrap.ulCount > ulIndex)
     {
-        return  pCfgNet->xSNMP.xTrap.pList[idx];
+        return  pCfgNet->xSNMP.xTrap.pList[ulIndex];
     }
     else
     {
@@ -145,7 +207,10 @@ uint_32  FTE_NET_SERVER_getAt(uint_32 idx)
     }
 }
 
-boolean FTE_NET_SERVER_isExist(_ip_address ip)
+FTE_BOOL FTE_NET_SERVER_isExist
+(
+    _ip_address ip
+)
 {
     FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
    
@@ -166,12 +231,10 @@ boolean FTE_NET_SERVER_isExist(_ip_address ip)
 }
 #endif
 
-
-static  MQX_TICK_STRUCT _xLastCheckTime;
-static  boolean         _bLiveCheck = FALSE;
-static  uint_32         _ulKeepAliveTime = FTE_SYS_KEEP_ALIVE_TIME;
-
-_mqx_uint   FTE_NET_liveCheckInit(uint_32 ulKeepAliveTime)
+FTE_RET FTE_NET_liveCheckInit
+(
+    FTE_UINT32  ulKeepAliveTime
+)
 {
     if ((ulKeepAliveTime >= FTE_SYS_KEEP_ALIVE_TIME_MIN) && (ulKeepAliveTime <= FTE_SYS_KEEP_ALIVE_TIME_MAX))
     {
@@ -183,7 +246,10 @@ _mqx_uint   FTE_NET_liveCheckInit(uint_32 ulKeepAliveTime)
     return  MQX_ERROR;
 } 
 
-_mqx_uint   FTE_NET_liveCheckStart(void)
+FTE_RET   FTE_NET_liveCheckStart
+(
+    void
+)
 {
     _time_get_elapsed_ticks(&_xLastCheckTime);
     _bLiveCheck = TRUE;
@@ -191,26 +257,38 @@ _mqx_uint   FTE_NET_liveCheckStart(void)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_NET_liveCheckStop(void)
+FTE_RET   FTE_NET_liveCheckStop
+(
+    void
+)
 {
     _bLiveCheck = FALSE;
     
     return  MQX_OK;
 }
 
-boolean     FTE_NET_isLiveChecking(void)
+FTE_BOOL     FTE_NET_isLiveChecking
+(
+    void
+)
 {
     return  _bLiveCheck;
 }
 
-_mqx_uint   FTE_NET_lastLiveCheckTime(MQX_TICK_STRUCT_PTR pTime)
+FTE_RET   FTE_NET_lastLiveCheckTime
+(
+    MQX_TICK_STRUCT_PTR pTime
+)
 {
     memcpy(pTime, &_xLastCheckTime, sizeof(MQX_TICK_STRUCT));
     
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_NET_liveTouch(void)
+FTE_RET   FTE_NET_liveTouch
+(
+    void
+)
 {
     _time_get_elapsed_ticks(&_xLastCheckTime);
 
@@ -218,13 +296,16 @@ _mqx_uint   FTE_NET_liveTouch(void)
 }
 
 
-boolean     FTE_NET_isStable(void)
+FTE_BOOL     FTE_NET_isStable
+(
+    void
+)
 {
     if (_bLiveCheck)
     {
         MQX_TICK_STRUCT xCurrentTime;
-        boolean         bOverflow = FALSE;
-        uint_32         ulDiffTime;
+        FTE_BOOL         bOverflow = FALSE;
+        FTE_UINT32         ulDiffTime;
         
         _time_get_elapsed_ticks(&xCurrentTime);
         
@@ -238,16 +319,20 @@ boolean     FTE_NET_isStable(void)
     return  TRUE;
 }
 
-int_32  FTE_PHY_SHELL_cmd(int_32 argc, char_ptr argv[] )
+FTE_INT32  FTE_PHY_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[] 
+)
 { 
-    boolean              bPrintUsage, bShortHelp = FALSE;
-    int_32               nRet = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   nRet = SHELL_EXIT_SUCCESS;
 
-    bPrintUsage = Shell_check_help_request (argc, argv, &bShortHelp);
+    bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
     if (!bPrintUsage)
     {
-        switch(argc)
+        switch(nArgc)
         {
         case    1:
             {
@@ -257,7 +342,7 @@ int_32  FTE_PHY_SHELL_cmd(int_32 argc, char_ptr argv[] )
                     printf("%2d : ", nRegID);
                     for(nPhyID = 0 ; nPhyID < 16  ; nPhyID++)
                     {
-                        uint_32 ulValue;
+                        FTE_UINT32 ulValue;
                         phy_mv88e6060_get_reg(nPhyID, nRegID, &ulValue);
                         printf("%04x ", ulValue);
                     }
@@ -268,15 +353,15 @@ int_32  FTE_PHY_SHELL_cmd(int_32 argc, char_ptr argv[] )
             
         case    3:
             {
-                uint_32 nPhyID, nRegID, ulValue;
+                FTE_UINT32 nPhyID, nRegID, ulValue;
 
-                if (!Shell_parse_hexnum(argv[1], &nPhyID))
+                if (!Shell_parse_hexnum(pArgv[1], &nPhyID))
                 {
                     bPrintUsage = TRUE;
                     break;
                 }
 
-                if (!Shell_parse_hexnum(argv[2], &nRegID))
+                if (!Shell_parse_hexnum(pArgv[2], &nRegID))
                 {
                     bPrintUsage = TRUE;
                     break;
@@ -295,21 +380,21 @@ int_32  FTE_PHY_SHELL_cmd(int_32 argc, char_ptr argv[] )
 
         case    4:
             {
-                uint_32 nPhyID, nRegID, ulValue ;
+                FTE_UINT32 nPhyID, nRegID, ulValue ;
 
-                if (!Shell_parse_hexnum(argv[1], &nPhyID))
+                if (!Shell_parse_hexnum(pArgv[1], &nPhyID))
                 {
                     bPrintUsage = TRUE;
                     break;
                 }
 
-                if (!Shell_parse_hexnum(argv[2], &nRegID))
+                if (!Shell_parse_hexnum(pArgv[2], &nRegID))
                 {
                     bPrintUsage = TRUE;
                     break;
                 }
 
-                if (!Shell_parse_hexnum(argv[3], &ulValue))
+                if (!Shell_parse_hexnum(pArgv[3], &ulValue))
                 {
                     bPrintUsage = TRUE;
                     break;
@@ -331,11 +416,14 @@ int_32  FTE_PHY_SHELL_cmd(int_32 argc, char_ptr argv[] )
     return  nRet;
 }
 
-int_32 FTE_NET_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
+FTE_INT32 FTE_NET_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[] 
+)
 { 
-    boolean                 bPrintUsage, bShortHelp = FALSE;
-    int_32                  nRet = SHELL_EXIT_SUCCESS;
-    uint_32                 ulEnetDevice = BSP_DEFAULT_ENET_DEVICE;
+    FTE_BOOL                 bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32                  nRet = SHELL_EXIT_SUCCESS;
     FTE_NET_CFG             xNetCfg;
     
     bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
@@ -344,29 +432,29 @@ int_32 FTE_NET_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
     {
     case    1:
         {
-            IPCFG_STATE             xState;
-            boolean                 bLink;
-            boolean                 bTask;
+            FTE_NET_STATE            xState;
+            FTE_BOOL                 bLink;
+            FTE_BOOL                 bTask;
             _enet_address           xMAC= {0};
             IPCFG_IP_ADDRESS_DATA   xIPData;
 #if RTCSCFG_IPCFG_ENABLE_DNS
             _ip_address             xDNS;
 #endif
 
-            xState = ipcfg_get_state (ulEnetDevice);
-            if (xState != IPCFG_STATE_INIT)
+            FTE_NET_STATE_get(&xState);
+            if (xState != FTE_NET_STATE_INIT)
             {
-                bLink = ipcfg_get_link_active (ulEnetDevice);
+                FTE_NET_isActive(&bLink);
                 bTask = ipcfg_task_status ();
-                ipcfg_get_mac (ulEnetDevice, xMAC);
-                ipcfg_get_ip (ulEnetDevice, &xIPData);
+                ipcfg_get_mac (0, xMAC);
+                ipcfg_get_ip (0, &xIPData);
         /* It take amount of addresses for device and store it to n */
 #if RTCSCFG_IPCFG_ENABLE_DNS
-                xDNS = ipcfg_get_dns_ip (ulEnetDevice, 0);
+                xDNS = ipcfg_get_dns_ip (0, 0);
 #endif
                 printf ("Link: %s\n", bLink ? "on" : "off");
                 printf ("MAC : %02x:%02x:%02x:%02x:%02x:%02x\n", xMAC[0], xMAC[1], xMAC[2], xMAC[3], xMAC[4], xMAC[5]);
-                printf ("IP4 : %d.%d.%d.%d type: %s\n", IPBYTES(xIPData.ip), ipcfg_get_state_string (xState) );
+                printf ("IP4 : %d.%d.%d.%d type: %s\n", IPBYTES(xIPData.ip), FTE_NET_STATE_print(xState) );
         /************************************************/
                 printf ("MASK: %d.%d.%d.%d\n", IPBYTES(xIPData.mask));
 #if RTCSCFG_ENABLE_GATEWAYS
@@ -380,7 +468,7 @@ int_32 FTE_NET_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
             }
             else
             {
-                printf ("Ethernet device %d not yet initialized.\n", ulEnetDevice);
+                printf ("Ethernet device %d not yet initialized.\n", 0);
             }
             return SHELL_EXIT_SUCCESS;
         }
@@ -398,15 +486,15 @@ int_32 FTE_NET_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
             }
             else if (strcmp(pArgv[1], "stat") == 0)
             {
-                FTE_NET_printStats();
+                FTE_NET_STATISTICS_print();
             }
 #if RTCSCFG_IPCFG_ENABLE_DNS
             else if (strcmp(pArgv[1], "dns") == 0)
             {
-                uint_32     i;
+                FTE_UINT32     i;
                 _ip_address xDNS;
 
-                for (i = 0, xDNS = ipcfg_get_dns_ip (ulEnetDevice, i); xDNS != 0 ; i++, xDNS = ipcfg_get_dns_ip (ulEnetDevice, i))
+                for (i = 0, xDNS = ipcfg_get_dns_ip (0, i); xDNS != 0 ; i++, xDNS = ipcfg_get_dns_ip (0, i))
                 {
                     printf ("%d: %d.%d.%d.%d\n", i + 1, IPBYTES(xDNS));
                 }
@@ -434,7 +522,7 @@ int_32 FTE_NET_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
                         printf ("Error in dns command, invalid ip address!\n");
                         return SHELL_EXIT_ERROR;
                     }
-                    if (ipcfg_add_dns_ip (ulEnetDevice, xDNS))
+                    if (ipcfg_add_dns_ip (0, xDNS))
                     {
                         printf ("Add dns ip successful.\n");
                     }
@@ -451,7 +539,7 @@ int_32 FTE_NET_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
                         printf ("Error in dns command, invalid ip address!\n");
                         return SHELL_EXIT_ERROR;
                     }
-                    if (ipcfg_del_dns_ip (ulEnetDevice, xDNS))
+                    if (ipcfg_del_dns_ip (0, xDNS))
                     {
                         printf ("Del dns ip successful.\n");
                     }
@@ -547,7 +635,10 @@ error:
     return  nRet;
 } 
 
-void    FTE_NET_printStats(void)
+void    FTE_NET_STATISTICS_print
+(
+    void
+)
 {
     IP_STATS_PTR    pStats = IP_stats();
     if (pStats != NULL)

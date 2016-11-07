@@ -4,18 +4,19 @@
 #include "sys/fte_sys.h"
 #include "fte_sys_bl.h"
 #if FTE_V2    
-static void     _sys_power_in_int_cb(void *params);
+static void     _sys_power_in_int_cb(FTE_VOID_PTR params);
 #endif
-static void     _sys_sw_detect_int_cb(void *params);
-static void     _sys_sw_pushed(boolean bPowerCtrl);
+static void     _sys_sw_detect_int_cb(FTE_VOID_PTR params);
+static void     _sys_sw_pushed(FTE_BOOL bPowerCtrl);
 
-void            _FTE_SYS_factoryResetPushed(boolean bPowerCtrl);
-static void     _FTE_SYS_INT_CB_factoryReset(void *params);
+void            _FTE_SYS_factoryResetPushed(FTE_BOOL bPowerCtrl);
+static void     _FTE_SYS_INT_CB_factoryReset(FTE_VOID_PTR params);
 
 
 static  MQX_TICK_STRUCT             _xSWPushStartTick;
-static  boolean                     _bShutdown = 0;
-static  uint_32                     _nState = 0;
+static  FTE_BOOL                    _bShutdown = 0;
+static  FTE_UINT32                     _nState = 0;
+static  FTE_BOOL                    _bLiveCheck = FALSE;
 static  FTE_SYS_STATE_CHANGE_FPTR   _FTE_SYS_CB_stateChanged = NULL;
 
 void    FTE_SYS_powerUp(void)
@@ -90,7 +91,10 @@ void    FTE_SYS_STATE_setAlert(void)
     }
 }
 
-_mqx_uint   fte_sys_lock_create(FTE_SYS_LOCK_PTR _PTR_ ppKey)
+FTE_RET fte_sys_lock_create
+(
+    FTE_SYS_LOCK_PTR _PTR_ ppKey
+)
 {
     *ppKey = (FTE_SYS_LOCK_PTR)FTE_MEM_alloc(sizeof(FTE_SYS_LOCK));
     if (*ppKey == NULL)
@@ -106,7 +110,10 @@ _mqx_uint   fte_sys_lock_create(FTE_SYS_LOCK_PTR _PTR_ ppKey)
     return  MQX_OK;
 }
 
-_mqx_uint   fte_sys_lock_enable(FTE_SYS_LOCK_PTR pKey)
+FTE_RET   fte_sys_lock_enable
+(
+    FTE_SYS_LOCK_PTR pKey
+)
 {
     ASSERT(pKey != NULL);
     
@@ -116,7 +123,10 @@ _mqx_uint   fte_sys_lock_enable(FTE_SYS_LOCK_PTR pKey)
     return  MQX_OK;
 }
 
-_mqx_uint   fte_sys_lock_disable(FTE_SYS_LOCK_PTR pKey)
+FTE_RET   fte_sys_lock_disable
+(
+    FTE_SYS_LOCK_PTR    pKey
+)
 {
     ASSERT(pKey != NULL);
     
@@ -126,7 +136,10 @@ _mqx_uint   fte_sys_lock_disable(FTE_SYS_LOCK_PTR pKey)
     return  MQX_OK;
 }
 
-_mqx_uint   fte_sys_lock_destroy(FTE_SYS_LOCK_PTR pKey)
+FTE_RET   fte_sys_lock_destroy
+(
+    FTE_SYS_LOCK_PTR pKey
+)
 {
     if (pKey == NULL)
     {
@@ -140,17 +153,20 @@ _mqx_uint   fte_sys_lock_destroy(FTE_SYS_LOCK_PTR pKey)
     return  MQX_OK;
 }
 
-uint_32 FTE_SYS_STATE_get(void)
+FTE_UINT32 FTE_SYS_STATE_get(void)
 {
     return  _nState;
 }
 
-void    FTE_SYS_STATE_setChangeCB(FTE_SYS_STATE_CHANGE_FPTR fCallback)
+void    FTE_SYS_STATE_setChangeCB
+(
+    FTE_SYS_STATE_CHANGE_FPTR fCallback
+)
 {
     _FTE_SYS_CB_stateChanged = fCallback;
 }
 
-_mqx_uint FTE_SYS_DEVICE_resetInit(void)
+FTE_RET FTE_SYS_DEVICE_resetInit(void)
 {
     FTE_GPIO_PTR    pResetGPIO = FTE_GPIO_get(FTE_DEV_GPIO_RESET);
     if (pResetGPIO == NULL)
@@ -166,8 +182,33 @@ _mqx_uint FTE_SYS_DEVICE_resetInit(void)
     return  FTE_SYS_DEVICE_reset();    
 }
 
+FTE_RET   FTE_SYS_liveCheckStart(void)
+{
 
-_mqx_uint  FTE_SYS_DEVICE_reset(void)
+    FTE_NET_liveCheckStart();
+
+    _bLiveCheck = TRUE;
+    
+    return  MQX_OK;
+}
+
+FTE_RET   FTE_SYS_liveCheckStop(void)
+{
+    
+    FTE_NET_liveCheckStop();
+    
+    _bLiveCheck = FALSE;
+    
+    return  MQX_OK;
+}
+
+FTE_BOOL    FTE_SYS_isLiveChecking(void)
+{
+    return  _bLiveCheck;
+}
+
+
+FTE_RET  FTE_SYS_DEVICE_reset(void)
 {
     FTE_GPIO_PTR    pResetGPIO = FTE_GPIO_get(FTE_DEV_GPIO_RESET);
     if (pResetGPIO == NULL)
@@ -181,7 +222,7 @@ _mqx_uint  FTE_SYS_DEVICE_reset(void)
     return  MQX_OK;
 }
 
-_mqx_uint FTE_SYS_powerHoldInit(void)
+FTE_RET FTE_SYS_powerHoldInit(void)
 {
     FTE_GPIO_PTR    pPowerHoldGPIO = FTE_GPIO_get(FTE_DEV_GPIO_POWER_HOLD);
     if (pPowerHoldGPIO == NULL)
@@ -211,7 +252,10 @@ _mqx_uint FTE_SYS_powerHoldInit(void)
     return  FTE_SYS_powerHold(TRUE);    
 }
 
-_mqx_uint  FTE_SYS_powerHold(boolean bHoldOn)
+FTE_RET  FTE_SYS_powerHold
+(
+    FTE_BOOL    bHoldOn
+)
 {
     FTE_GPIO_PTR    pPowerHoldGPIO = FTE_GPIO_get(FTE_DEV_GPIO_POWER_HOLD);
     if (pPowerHoldGPIO == NULL)
@@ -241,7 +285,7 @@ _mqx_uint  FTE_SYS_powerHold(boolean bHoldOn)
 void FTE_SYS_powerStateInit(void)
 {
 #if FTE_V2    
-    boolean bValue;
+    FTE_BOOL bValue;
     FTE_GPIO_PTR    pGPIO_PowerIn = FTE_GPIO_get(FTE_DEV_GPIO_POWER_IN);
 
     FTE_GPIO_attach(pGPIO_PowerIn, FTE_DEV_TYPE_ROOT);
@@ -263,9 +307,12 @@ void FTE_SYS_powerStateInit(void)
 }
 
 #if FTE_V2    
-void _sys_power_in_int_cb(void *params)
+void _sys_power_in_int_cb
+(
+    FTE_VOID_PTR  params
+)
 {
-    boolean bValue;
+    FTE_BOOL bValue;
     FTE_GPIO_PTR    pGPIO_PowerIn = FTE_GPIO_get(FTE_DEV_GPIO_POWER_IN);
     
     FTE_GPIO_INT_setEnable(pGPIO_PowerIn, FALSE);
@@ -285,7 +332,7 @@ void _sys_power_in_int_cb(void *params)
 
 void    FTE_SYS_SWDetectInit(void)
 {
-    boolean bValue;
+    FTE_BOOL bValue;
     FTE_GPIO_PTR    pGPIO_SW_Detect = FTE_GPIO_get(FTE_DEV_GPIO_SW_DETECT);
 
     FTE_GPIO_attach(pGPIO_SW_Detect, FTE_DEV_TYPE_ROOT);
@@ -309,9 +356,12 @@ void    FTE_SYS_SWDetectInit(void)
     FTE_GPIO_INT_setEnable(pGPIO_SW_Detect, TRUE);
 }
 
-void _sys_sw_detect_int_cb(void *params)
+void _sys_sw_detect_int_cb
+(
+    FTE_VOID_PTR    params
+)
 {
-    boolean bValue;
+    FTE_BOOL bValue;
     FTE_GPIO_PTR    pGPIO_SW_Detect = FTE_GPIO_get(FTE_DEV_GPIO_SW_DETECT);
     
     FTE_GPIO_INT_setEnable(pGPIO_SW_Detect, FALSE);
@@ -321,7 +371,7 @@ void _sys_sw_detect_int_cb(void *params)
     {
         if (_bShutdown)
         {
-            boolean         bOverflow;
+            FTE_BOOL         bOverflow;
             MQX_TICK_STRUCT xTicks;
             
             _time_get_elapsed_ticks(&xTicks);
@@ -343,7 +393,7 @@ void _sys_sw_detect_int_cb(void *params)
     
 }
 
-void     _sys_sw_pushed(boolean bPowerCtrl)
+void     _sys_sw_pushed(FTE_BOOL bPowerCtrl)
 {
     if (bPowerCtrl)
     {
@@ -351,7 +401,8 @@ void     _sys_sw_pushed(boolean bPowerCtrl)
     }
 }
 
-static boolean _bFactoryResetPushed = FALSE;
+static 
+FTE_BOOL _bFactoryResetPushed = FALSE;
 
 
 void    FTE_SYS_factoryResetInit(void)
@@ -369,14 +420,17 @@ void    FTE_SYS_factoryResetInit(void)
     }
 }
 
-boolean FTE_SYS_isfactoryResetPushed(void)
+FTE_BOOL FTE_SYS_isfactoryResetPushed(void)
 {
     return  _bFactoryResetPushed;
 }
 
-void _FTE_SYS_INT_CB_factoryReset(void *params)
+void _FTE_SYS_INT_CB_factoryReset
+(
+    FTE_VOID_PTR    params
+)
 {
-    boolean bValue;
+    FTE_BOOL bValue;
     FTE_GPIO_PTR    pGPIO_factoryReset = FTE_GPIO_get(FTE_DEV_GPIO_FACTORY_RESET);
 
     FTE_GPIO_INT_setEnable(pGPIO_factoryReset, FALSE);
@@ -397,9 +451,15 @@ void _FTE_SYS_INT_CB_factoryReset(void *params)
 
 }
 
-static uint_32  _hFactoryResetTimer = 0;
+static 
+FTE_UINT32  _hFactoryResetTimer = 0;
 
-void _FTE_SYS_CB_factoryReset(_timer_id nID, pointer pData, MQX_TICK_STRUCT_PTR pTick)
+void _FTE_SYS_CB_factoryReset
+(
+    _timer_id   nID, 
+    pointer     pData, 
+    MQX_TICK_STRUCT_PTR pTick
+)
 {
     if (nID == _hFactoryResetTimer)
     {
@@ -413,7 +473,7 @@ void _FTE_SYS_CB_factoryReset(_timer_id nID, pointer pData, MQX_TICK_STRUCT_PTR 
     }
 }
 
-void     FTE_SYS_factoryReset(boolean bPushed)
+void     FTE_SYS_factoryReset(FTE_BOOL bPushed)
 {
     MQX_TICK_STRUCT xTicks;
 
@@ -441,10 +501,14 @@ void     FTE_SYS_factoryReset(boolean bPushed)
 }
 
 
-int_32  FTE_SYS_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
+FTE_INT32  FTE_SYS_SHELL_cmd
+(
+    FTE_INT32   nArgc, 
+    FTE_CHAR_PTR pArgv[]
+)
 {
-    boolean              bPrintUsage, bShortHelp = FALSE;
-    int_32               nReturnCode = SHELL_EXIT_SUCCESS;
+    FTE_BOOL              bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32               nReturnCode = SHELL_EXIT_SUCCESS;
 
     bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
@@ -456,8 +520,8 @@ int_32  FTE_SYS_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
             {
                 MQX_TICK_STRUCT     xLastCheckTime;
                 MQX_TICK_STRUCT     xTempTick;
-                boolean             bOverflow = FALSE;
-                uint_32             ulDiffTime;
+                FTE_BOOL             bOverflow = FALSE;
+                FTE_UINT32             ulDiffTime;
                 
                 printf("<Network Live Information>\n");
                 printf("%16s : %s\n", "State", FTE_NET_isLiveChecking()?"RUNNING":"STOP");
@@ -466,6 +530,10 @@ int_32  FTE_SYS_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
                 _time_get_elapsed_ticks(&xTempTick);
                 ulDiffTime = _time_diff_seconds(&xTempTick, &xLastCheckTime, &bOverflow);
                 printf("%16s : %4d seconds\n",   "Elapsed Time", ulDiffTime);
+                
+                printf("<Device Live Information>\n");
+                printf("%16s : %4d\n", "Max Allowed Retry", FTE_OBJ_CHECK_FAILURE_COUNT_MAX);
+                printf("%16s : %4d\n", "Allowed Retry", FTE_CFG_SYS_getAllowedFailureCount());
             }
             break;
             
@@ -482,7 +550,7 @@ int_32  FTE_SYS_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
             {
                 if (strcmp(pArgv[1], "keepalive") == 0)
                 {
-                    uint_32  ulKeepAliveTime = 0;
+                    FTE_UINT32  ulKeepAliveTime = 0;
                     
                     if (!Shell_parse_uint_32(pArgv[2], &ulKeepAliveTime))
                     {
@@ -543,10 +611,14 @@ int_32  FTE_SYS_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
 }
 
 
-int_32  FTE_SYS_RESET_cmd(int_32 nArgc, char_ptr pArgv[])
+FTE_INT32  FTE_SYS_RESET_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[]
+)
 {
-    boolean              bPrintUsage, bShortHelp = FALSE;
-    int_32               nReturnCode = SHELL_EXIT_SUCCESS;
+    FTE_BOOL              bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32               nReturnCode = SHELL_EXIT_SUCCESS;
 
     bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
@@ -577,10 +649,14 @@ int_32  FTE_SYS_RESET_cmd(int_32 nArgc, char_ptr pArgv[])
     return  0;
 }
 
-int_32  FTE_SYS_SHUTDOWN_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
+FTE_INT32  FTE_SYS_SHUTDOWN_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[]
+)
 {
-    boolean              bPrintUsage, bShortHelp = FALSE;
-    int_32               nReturnCode = SHELL_EXIT_SUCCESS;
+    FTE_BOOL              bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32               nReturnCode = SHELL_EXIT_SUCCESS;
     
     bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
@@ -621,7 +697,7 @@ void    FTE_LCD_init(void)
 }
 
 
-uint_32     FTE_SYS_getTime(void)
+FTE_UINT32     FTE_SYS_getTime(void)
 {
     TIME_STRUCT     xTime;
                 
@@ -630,14 +706,14 @@ uint_32     FTE_SYS_getTime(void)
     return  xTime.SECONDS;
 }
 
-static boolean  bSystemIsStable = TRUE;
+static FTE_BOOL  bSystemIsStable = TRUE;
 
 void FTE_SYS_setUnstable(void)
 {
     bSystemIsStable = FALSE;
 }
 
-boolean FTE_SYS_isStable(void)
+FTE_BOOL FTE_SYS_isStable(void)
 {
     return  bSystemIsStable;
 }
@@ -649,12 +725,15 @@ void FTE_SYS_reset(void)
 }
 
 
-_mqx_uint   FTE_SYS_getOID(uint_8_ptr pOID)
+FTE_RET   FTE_SYS_getOID
+(
+    FTE_UINT8_PTR   pOID
+)
 {
     return  FTE_SYS_BL_getOID(pOID);
 }
 
-char_ptr    FTE_SYS_getOIDString(void)
+FTE_CHAR_PTR    FTE_SYS_getOIDString(void)
 {
     static  uint_8 pOIDString[FTE_OID_SIZE+1] = {'\0', };
     
@@ -663,10 +742,10 @@ char_ptr    FTE_SYS_getOIDString(void)
         FTE_SYS_getOID(pOIDString);
     }
     
-    return  (char_ptr)pOIDString;
+    return  (FTE_CHAR_PTR)pOIDString;
 }
 
-_mqx_uint   FTE_SYS_getMAC(uint_8_ptr pMAC)
+FTE_RET   FTE_SYS_getMAC(FTE_UINT8_PTR pMAC)
 {
     return  FTE_SYS_BL_getMAC(pMAC);
 }

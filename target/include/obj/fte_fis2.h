@@ -23,7 +23,7 @@ typedef FTE_FIS_MODEL_INFO const _PTR_ FTE_FIS_MODEL_INFO_CONST_PTR;
 /*****************************************************************************
  * FIS Object Structure Description
  *****************************************************************************/
-typedef struct _fte_fis_config_struct
+typedef struct FTE_FIS_CONFIG_STRUCT
 {
     FTE_COMMON_CONFIG   xCommon;
     uint_32             nModel;
@@ -38,7 +38,7 @@ typedef struct _fte_fis_config_struct
 
 typedef FTE_FIS_CONFIG const _PTR_ FTE_FIS_CONFIG_CONST_PTR;
 
-typedef struct  _fte_fis_status_struct
+typedef struct  FTE_FIS_STATUS_STRUCT
 {
     uint_32         xFlags;
     FTE_VALUE_PTR   pValue;
@@ -54,17 +54,7 @@ typedef struct  _fte_fis_status_struct
     FTE_FIS_MODEL_INFO_CONST_PTR  pModelInfo;
 }   FTE_FIS_STATUS, _PTR_ FTE_FIS_STATUS_PTR;
 
-typedef struct _fte_fis_action_struct
-{
-    _mqx_uint       (*f_init)(FTE_OBJECT_PTR pSelf);
-    _mqx_uint       (*f_run)(FTE_OBJECT_PTR pSelf);
-    _mqx_uint       (*f_stop)(FTE_OBJECT_PTR pSelf);
-    _mqx_uint       (*f_get)(FTE_OBJECT_PTR pSelf, uint_32_ptr pValue, TIME_STRUCT_PTR pTimeStamp);
-    _mqx_uint       (*f_set)(FTE_OBJECT_PTR pSelf, uint_32 nValue);
-    uint_32         (*f_print_value)(FTE_OBJECT_PTR pSelf, char_ptr pBuff, uint_32 nBuffLen);
-}   FTE_FIS_ACTION, _PTR_ FTE_FIS_ACTION_PTR;
-
-_mqx_uint   fte_fis_attach(FTE_OBJECT_PTR pObj);
-_mqx_uint   fte_fis_detach(FTE_OBJECT_PTR pObj);
+_mqx_uint   FTE_FIS_attach(FTE_OBJECT_PTR pObj);
+_mqx_uint   FTE_FIS_detach(FTE_OBJECT_PTR pObj);
 
 #endif

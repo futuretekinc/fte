@@ -34,13 +34,13 @@
 #define DUMP(...)
 #endif
 void        FTE_DEBUG_init(void);
-_mqx_int    FTE_DEBUG_trace(uint_32 ulModule, const char _PTR_ fmt_ptr, ... );
-_mqx_int    FTE_DEBUG_traceOn(uint_32 ulModule);
-_mqx_int    FTE_DEBUG_traceOff(uint_32 ulModule);
-boolean     FTE_DEBUG_isTraceOn(uint_32 ulModule);
-_mqx_int    FTE_DEBUG_error(const char _PTR_ pFuncName, int nLine, const char _PTR_ fmt_ptr, ... );
-_mqx_int    FTE_DEBUG_dump(const char _PTR_ pFuncName, int nLine, char *pTitle, void *pBuff, uint_32 ulSize, uint_32 ulWrapLen);
+FTE_RET     FTE_DEBUG_trace(FTE_UINT32 ulModule, const char _PTR_ fmt_ptr, ... );
+FTE_RET     FTE_DEBUG_traceOn(FTE_UINT32 ulModule);
+FTE_RET     FTE_DEBUG_traceOff(FTE_UINT32 ulModule);
+FTE_BOOL    FTE_DEBUG_isTraceOn(FTE_UINT32 ulModule);
+FTE_RET     FTE_DEBUG_error(const char _PTR_ pFuncName, FTE_INT32 nLine, const char _PTR_ fmt_ptr, ... );
+FTE_RET     FTE_DEBUG_dump(const char _PTR_ pFuncName, FTE_INT32 nLine, FTE_CHAR_PTR pTitle, FTE_VOID_PTR pBuff, FTE_UINT32 ulSize, FTE_UINT32 ulWrapLen);
 
-int_32 FTE_TRACE_SHELL_cmd(int_32 nArgc, char_ptr pArgv[]);
+FTE_INT32   FTE_TRACE_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
 
 #endif

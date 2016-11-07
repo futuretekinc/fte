@@ -16,27 +16,39 @@
 #define FTE_GUS_MODEL_CIAS_SIOUX_CU         13
 #define FTE_GUS_MODEL_IOEX                  14
 #define FTE_GUS_MODEL_DOTECH_FX3D           15
-#define FTE_GUS_RESPONSE_TIME   500
+#define FTE_GUS_MODEL_ELT_AQM100M           16
+
+#define FTE_GUS_RESPONSE_TIME               500
+
+#define FTE_GUS_FLAG_SHARED                 0x00000001
 
 typedef struct FTE_GUS_MODEL_INFO_STRUCT
 {
-    uint_32             nModel;
-    char_ptr            pName;
-    uint_32             nMaxResponseTime;
-    uint_32             nFieldCount;  
+    FTE_UINT32          nModel;
+    FTE_CHAR_PTR        pName;
+    FTE_UINT32          xFlags;
+    FTE_UCS_UART_CONFIG xUARTConfig;
+    FTE_UINT32          nMaxResponseTime;
+    FTE_UINT32          nFieldCount;  
     FTE_VALUE_TYPE_PTR  pValueTypes;
-    _mqx_uint           (*f_attach)(FTE_OBJECT_PTR pObj);
-    _mqx_uint           (*f_detach)(FTE_OBJECT_PTR pObj);
-    _mqx_uint           (*f_start_measurement)(FTE_OBJECT_PTR pObj);
-    _mqx_uint           (*f_init)(FTE_OBJECT_PTR pObj);
-    _mqx_uint           (*f_request)(FTE_OBJECT_PTR pObj);
-    _mqx_uint           (*f_received)(FTE_OBJECT_PTR pObj);
-    _mqx_uint           (*f_set)(FTE_OBJECT_PTR pObject, uint_32 nIndex, FTE_VALUE_PTR pValue);
-    _mqx_uint           (*f_get)(FTE_OBJECT_PTR pObject, uint_32 nIndex, FTE_VALUE_PTR pValue);
-    _mqx_uint           (*f_set_config)(FTE_OBJECT_PTR pObject, char_ptr pBuff);
-    _mqx_uint           (*f_get_config)(FTE_OBJECT_PTR pObject, char_ptr pBuff, uint_32 ulBuffLen);
-    _mqx_uint           (*f_set_child_config)(FTE_OBJECT_PTR pChild, char_ptr pBuff);
-    _mqx_uint           (*f_get_child_config)(FTE_OBJECT_PTR pChild, char_ptr pBuff, uint_32 ulBuffLen);
+    FTE_RET             (*fCreate)(FTE_CHAR_PTR pDeviceID, FTE_OBJECT_PTR _PTR_ ppObj);
+    FTE_RET             (*fDestroy)(FTE_OBJECT_PTR _PTR_ ppObj);
+    FTE_RET             (*fAttach)(FTE_OBJECT_PTR pObj);
+    FTE_RET             (*fDetach)(FTE_OBJECT_PTR pObj);
+    FTE_RET             (*fStartMeasurement)(FTE_OBJECT_PTR pObj);
+    FTE_RET             (*fInit)(FTE_OBJECT_PTR pObj);
+    FTE_RET             (*fFinal)(FTE_OBJECT_PTR pObj);
+    FTE_RET             (*fRun)(FTE_OBJECT_PTR pObj);
+    FTE_RET             (*fStop)(FTE_OBJECT_PTR pObj);
+    FTE_RET             (*fUpdate)(FTE_OBJECT_PTR pObj);
+    FTE_RET             (*fRequest)(FTE_OBJECT_PTR pObj);
+    FTE_RET             (*fReceived)(FTE_OBJECT_PTR pObj);
+    FTE_RET             (*fSet)(FTE_OBJECT_PTR pObject, FTE_UINT32 nIndex, FTE_VALUE_PTR pValue);
+    FTE_RET             (*fGet)(FTE_OBJECT_PTR pObject, FTE_UINT32 nIndex, FTE_VALUE_PTR pValue);
+    FTE_RET             (*fSetConfig)(FTE_OBJECT_PTR pObject, FTE_CHAR_PTR pBuff);
+    FTE_RET             (*fGetConfig)(FTE_OBJECT_PTR pObject, FTE_CHAR_PTR pBuff, FTE_UINT32 ulBuffLen);
+    FTE_RET             (*fSetChildConfig)(FTE_OBJECT_PTR pChild, FTE_CHAR_PTR pBuff);
+    FTE_RET             (*fGetChildConfig)(FTE_OBJECT_PTR pChild, FTE_CHAR_PTR pBuff, FTE_UINT32 ulBuffLen);
 
 } FTE_GUS_MODEL_INFO, _PTR_ FTE_GUS_MODEL_INFO_PTR;
 
@@ -47,32 +59,37 @@ typedef FTE_GUS_MODEL_INFO const _PTR_ FTE_GUS_MODEL_INFO_CONST_PTR;
 typedef struct FTE_GUS_CONFIG_STRUCT
 {
     FTE_COMMON_CONFIG   xCommon;
-    uint_32             nModel;
-    uint_32             nUCSID;
-    uint_32             nInterval;
-    uint_32             nSensorID;
+    FTE_UINT32          nModel;
+    FTE_UINT32          nUCSID;
+    FTE_UINT32          nInterval;
+    FTE_UINT32          nSensorID;
 }   FTE_GUS_CONFIG, _PTR_ FTE_GUS_CONFIG_PTR;
 
 typedef FTE_GUS_CONFIG const _PTR_ FTE_GUS_CONFIG_CONST_PTR;
 
 typedef struct FTE_GUS_STATUS_STRUCT
 {
-    FTE_OBJECT_STATUS       xCommon;
-    uint_32                 hRepeatTimer;
-    uint_32                 hConvertTimer;
-    FTE_UCS_PTR             pUCS;
+    FTE_OBJECT_STATUS   xCommon;
+    FTE_UINT32          hRepeatTimer;
+    FTE_UINT32          hConvertTimer;
+    FTE_UCS_PTR         pUCS;
     FTE_GUS_MODEL_INFO_CONST_PTR  pModelInfo;
-    uint_32                 nTrial;
+    FTE_UINT32          nTrial;
     
-    _mqx_uint               xRet;
-    FTE_LIST                xChildList;
+    FTE_RET             xRet;
+    FTE_LIST            xChildList;
 }   FTE_GUS_STATUS, _PTR_ FTE_GUS_STATUS_PTR;
 
-_mqx_uint       FTE_GUS_search(void);
-_mqx_uint       FTE_GUS_attach(FTE_OBJECT_PTR pObj);
-_mqx_uint       FTE_GUS_detach(FTE_OBJECT_PTR pObj);
-_mqx_uint       FTE_GUS_attachChild(FTE_OBJECT_PTR pSelf, uint_32 nChild);
-_mqx_uint       FTE_GUS_detachChild(FTE_OBJECT_PTR pSelf, uint_32 nChild);
-int_32     FTE_GUS_SHELL_cmd(int_32 argc, char_ptr argv[] );
+FTE_RET     FTE_GUS_search(void);
+FTE_RET     FTE_GUS_attach(FTE_OBJECT_PTR pObj, FTE_VOID_PTR pOpts);
+FTE_RET     FTE_GUS_detach(FTE_OBJECT_PTR pObj);
+FTE_RET     FTE_GUS_attachChild(FTE_OBJECT_PTR pSelf, FTE_UINT32 nChild);
+FTE_RET     FTE_GUS_detachChild(FTE_OBJECT_PTR pSelf, FTE_UINT32 nChild);
+
+FTE_INT32   FTE_GUS_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[] 
+);
 
 #endif

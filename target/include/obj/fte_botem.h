@@ -1,25 +1,29 @@
 #ifndef _FTE_BOTEM_H__
 #define _FTE_BOTEM_H__
 
-uint_32     fte_botem_pn1500_request_data(FTE_OBJECT_PTR pObj);
-_mqx_uint   fte_botem_pn1500_receive_data(FTE_OBJECT_PTR pObj);
-_mqx_uint   fte_botem_pn1500_set(FTE_OBJECT_PTR pObject, uint_32 nIndex, FTE_VALUE_PTR pValue);
-_mqx_uint   fte_botem_pn1500_set_multi(FTE_OBJECT_PTR pSelf, uint_32 nIndex, FTE_VALUE_PTR pValue);
-_mqx_uint   fte_botem_pn1500_setConfig(FTE_OBJECT_PTR pDevice, char_ptr pJSON);
-_mqx_uint   fte_botem_pn1500_getConfig(FTE_OBJECT_PTR pDevice, char_ptr pBuff, uint_32 ulBuffLen);
+#define FTE_BOTEM_PN1500_DEFAULT_UPDATE_INTERVAL    2000
 
-extern FTE_VALUE_TYPE  FTE_BOTEM_PN1500_valueTypes[];
+#define FTE_BOTEM_PN1500_DEFAULT_FULL_DUPLEX  FALSE
+#define FTE_BOTEM_PN1500_DEFAULT_BAUDRATE     9600
+#define FTE_BOTEM_PN1500_DEFAULT_DATABITS     8
+#define FTE_BOTEM_PN1500_DEFAULT_PARITY       FTE_UART_PARITY_NONE
+#define FTE_BOTEM_PN1500_DEFAULT_STOPBITS     FTE_UART_STOP_BITS_1
 
-#define FTE_BOTEM_PN1500_SENS  {\
-        .nModel     = FTE_GUS_MODEL_BOTEM_PN1500,   \
-        .pName      = "BOTEM PN1500",               \
-        .nFieldCount= 3,                            \
-        .pValueTypes= FTE_BOTEM_PN1500_valueTypes,  \
-        .f_request  = fte_botem_pn1500_request_data,\
-        .f_received = fte_botem_pn1500_receive_data,\
-        .f_set      = fte_botem_pn1500_set,         \
-        .f_set_config = fte_botem_pn1500_setConfig, \
-        .f_get_config = fte_botem_pn1500_getConfig  \
-    }
+
+FTE_UINT32  FTE_BOTEM_PN1500_request(FTE_OBJECT_PTR pObj);
+FTE_RET     FTE_BOTEM_PN1500_received(FTE_OBJECT_PTR pObj);
+FTE_RET     FTE_BOTEM_PN1500_set(FTE_OBJECT_PTR pObject, FTE_UINT32 nIndex, FTE_VALUE_PTR pValue);
+FTE_RET     FTE_BOTEM_PN1500_set_multi(FTE_OBJECT_PTR pSelf, FTE_UINT32 nIndex, FTE_VALUE_PTR pValue);
+FTE_RET     FTE_BOTEM_PN1500_setConfig(FTE_OBJECT_PTR pDevice, FTE_CHAR_PTR pJSON);
+FTE_RET     FTE_BOTEM_PN1500_getConfig(FTE_OBJECT_PTR pDevice, FTE_CHAR_PTR pBuff, FTE_UINT32 ulBuffLen);
+
+extern  
+FTE_GUS_CONFIG FTE_BOTEM_PN1500_defaultConfig;
+
+extern  
+FTE_VALUE_TYPE  FTE_BOTEM_PN1500_valueTypes[];
+
+extern  const 
+FTE_GUS_MODEL_INFO   FTE_MOTEM_PN1500_GUSModelInfo;
 
 #endif

@@ -10,96 +10,49 @@
     #define FTE_GUS_TRIAL_MAX 3
 #endif
 
-static  _mqx_uint   _gus_run(FTE_OBJECT_PTR pObj);
-static  _mqx_uint   _gus_stop(FTE_OBJECT_PTR pObj);
-static  _mqx_uint   _gus_startMeasurement(FTE_OBJECT_PTR pObj);
-static  void        _gus_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
-static  _mqx_uint   _gus_setMulti(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_PTR pValue);
-static  _mqx_uint   _gus_getMulti(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_PTR pValue);
-static  void        _gus_restartConvert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
-static  uint_32     _gus_getUpdateInterval(FTE_OBJECT_PTR pObj);
-static  _mqx_uint   _gus_setUpdateInterval(FTE_OBJECT_PTR pObj, uint_32 nInterval);
-static  _mqx_uint   _gus_getStatistics(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTICS_PTR pStatistic);
-static  _mqx_uint   _gus_setConfig(FTE_OBJECT_PTR pObj, char_ptr pJSON);
-static  _mqx_uint   _gus_getConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 ulBuffLen);
-static  _mqx_uint   _gus_setChildConfig(FTE_OBJECT_PTR pObj, FTE_OBJECT_PTR pChild, char_ptr pJSON);
-static  _mqx_uint   _gus_getChildConfig(FTE_OBJECT_PTR pObj, FTE_OBJECT_PTR pChild, char_ptr pBuff, uint_32 ulBuffLen);
-static  _mqx_uint   _gus_attachChild(FTE_OBJECT_PTR pObj, uint_32 nChild);
-static  _mqx_uint   _gus_detachChild(FTE_OBJECT_PTR pObj, uint_32 nChild);
-static  _mqx_uint   _gus_child_count(FTE_OBJECT_PTR pObj, uint_32_ptr pulCount);
-static  _mqx_uint   _gus_get_child(FTE_OBJECT_PTR pObj, uint_32 ulIndex, FTE_OBJECT_ID _PTR_ pxID);
+static  FTE_RET     FTE_GUS_run(FTE_OBJECT_PTR pObj);
+static  FTE_RET     FTE_GUS_stop(FTE_OBJECT_PTR pObj);
+static  FTE_RET     FTE_GUS_startMeasurement(FTE_OBJECT_PTR pObj);
+static  void        FTE_GUS_done(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
+static  FTE_RET     FTE_GUS_setMulti(FTE_OBJECT_PTR pObj, FTE_UINT32 nIndex, FTE_VALUE_PTR pValue);
+static  FTE_RET     FTE_GUS_getMulti(FTE_OBJECT_PTR pObj, FTE_UINT32 nIndex, FTE_VALUE_PTR pValue);
+static  void        FTE_GUS_restartConvert(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
+static  FTE_RET     FTE_GUS_getUpdateInterval(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pulInterval);
+static  FTE_RET     FTE_GUS_setUpdateInterval(FTE_OBJECT_PTR pObj, FTE_UINT32 nInterval);
+static  FTE_RET     FTE_GUS_getStatistics(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTICS_PTR pStatistic);
+static  FTE_RET     FTE_GUS_setConfig(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pJSON);
+static  FTE_RET     FTE_GUS_getConfig(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pBuff, FTE_UINT32 ulBuffLen);
+static  FTE_RET     FTE_GUS_setChildConfig(FTE_OBJECT_PTR pObj, FTE_OBJECT_PTR pChild, FTE_CHAR_PTR pJSON);
+static  FTE_RET     FTE_GUS_getChildConfig(FTE_OBJECT_PTR pObj, FTE_OBJECT_PTR pChild, FTE_CHAR_PTR pBuff, FTE_UINT32 ulBuffLen);
+static  FTE_RET     FTE_GUS_attachChild(FTE_OBJECT_PTR pObj, FTE_UINT32 nChild);
+static  FTE_RET     FTE_GUS_detachChild(FTE_OBJECT_PTR pObj, FTE_UINT32 nChild);
+static  FTE_RET     FTE_GUS_getChildCount(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pulCount);
+static  FTE_RET     FTE_GUS_getChild(FTE_OBJECT_PTR pObj, FTE_UINT32 ulIndex, FTE_OBJECT_ID _PTR_ pxID);
 
-static  FTE_GUS_MODEL_INFO_CONST_PTR _gus_get_model_info(uint_32 nModel);
- 
 static  FTE_OBJECT_ACTION _Action = 
 { 
-    .f_run          = _gus_run,
-    .f_stop         = _gus_stop, 
-    .f_set_multi    = _gus_setMulti,
-    .f_get_multi    = _gus_getMulti,
-    .f_get_update_interval  = _gus_getUpdateInterval,
-    .f_set_update_interval  = _gus_setUpdateInterval,
-    .f_get_statistic        = _gus_getStatistics,
-    .f_set_config           = _gus_setConfig,
-    .f_get_config           = _gus_getConfig,
-    .f_attach_child         = _gus_attachChild,
-    .f_detach_child         = _gus_detachChild,
-    .f_get_child_count      = _gus_child_count,
-    .f_get_child            = _gus_get_child,
-    .f_set_child_config     = _gus_setChildConfig,
-    .f_get_child_config     = _gus_getChildConfig,
+    .fRun   = FTE_GUS_run,
+    .fStop  = FTE_GUS_stop, 
+    .fSetMulti  = FTE_GUS_setMulti,
+    .fGetMulti  = FTE_GUS_getMulti,
+    .fGetInterval   = FTE_GUS_getUpdateInterval,
+    .fSetInterval   = FTE_GUS_setUpdateInterval,
+    .fGetStatistics = FTE_GUS_getStatistics,
+    .fSetConfig     = FTE_GUS_setConfig,
+    .fGetConfig     = FTE_GUS_getConfig,
+    .fAttachChild   = FTE_GUS_attachChild,
+    .fDetachChild   = FTE_GUS_detachChild,
+    .fGetChildCount = FTE_GUS_getChildCount,
+    .fGetChild      = FTE_GUS_getChild,
+    .fSetChildConfig    = FTE_GUS_setChildConfig,
+    .fGetChildConfig    = FTE_GUS_getChildConfig,
 }; 
  
-const FTE_GUS_MODEL_INFO  _pGUSModelInfos[] =
-{
-#if FTE_PM1001_SUPPORTED
-    FTE_PM1001_DESCRIPTOR,
-#endif
-#if FTE_COZIR_AX50001_SUPPORTED
-    FTE_COZIR_AX5000_DESCRIPTOR,
-#endif
-#if FTE_TASCON_HEM12_SUPPORTED
-    FTE_TASCON_HEM12_DESCRIPTOR,
-#endif
-#if FTE_FIS361_SUPPORTED
-    FTE_FIS3061_DESCRIPTOR,
-#endif
-#if FTE_SH_MV250_SUPPORTED
-    FTE_SH_MV250_DESCRIPTOR,
-#endif
-#if FTE_TRUEYES_AIRQ_SUPPORTED
-    FTE_TRUEYES_AIRQ_DESCRIPTOR,
-#endif
-#if FTE_ELT_AQM100_SUPPORTED
-    FTE_ELT_AQM100_DESCRIPTOR,
-#endif
-#if FTE_MST_MEX510C_SUPPORTED
-    FTE_MST_MEX510C_DESCRIPTOR,
-#endif
-#if FTE_GS_DPC_HL_SUPPORTED
-    FTE_GS_DPC_HL_DESCRIPTOR,
-#endif
-#if FTE_TASCON_HEM12_06M_SUPPORTED
-    FTE_TASCON_HEM12_06M_DESCRIPTOR,
-#endif
-#if FTE_BOTEM_PN1500_SUPPORTED
-    FTE_BOTEM_PN1500_SENS,
-#endif
-#if FTE_FTLM_SUPPORTED
-    FTE_FTLM_SENS,
-#endif
-#if FTE_CIAS_SIOUX_CU_SUPPORTED
-    FTE_CIAS_SIOUX_CU_SENS,
-#endif
-#if FTE_IOEX_SUPPORTED
-    FTE_IOEX_DESCRIPTOR,
-#endif
-#if FTE_DOTECH_SUPPORTED
-    FTE_DOTECH_FX3D_DESCRIPTOR,
-#endif
-};
- 
-_mqx_uint   FTE_GUS_attach(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_GUS_attach
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_VOID_PTR    pOpts
+)
 {
     FTE_GUS_STATUS_PTR              pStatus;
     FTE_UCS_PTR                     pUCS = NULL;
@@ -108,7 +61,7 @@ _mqx_uint   FTE_GUS_attach(FTE_OBJECT_PTR pObj)
 
     pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;    
     
-    pStatus->pModelInfo = _gus_get_model_info(((FTE_GUS_CONFIG_PTR)pObj->pConfig)->nModel);
+    pStatus->pModelInfo = pOpts;
     if (pStatus->pModelInfo == NULL)
     {
         goto error;
@@ -121,9 +74,9 @@ _mqx_uint   FTE_GUS_attach(FTE_OBJECT_PTR pObj)
     
     pObj->pAction = &_Action;
 
-    if (pStatus->pModelInfo->f_attach != NULL)
+    if (pStatus->pModelInfo->fAttach != NULL)
     {
-        if (pStatus->pModelInfo->f_attach(pObj) != MQX_OK)
+        if (pStatus->pModelInfo->fAttach(pObj) != FTE_RET_OK)
         {
             goto error;
         }
@@ -136,7 +89,7 @@ _mqx_uint   FTE_GUS_attach(FTE_OBJECT_PTR pObj)
             goto error;
         }
         
-        if (FTE_UCS_attach(pUCS, pObj->pConfig->xCommon.nID) != MQX_OK)
+        if (FTE_UCS_attach(pUCS, pObj->pConfig->xCommon.nID) != FTE_RET_OK)
         {
             goto error;
         }
@@ -144,7 +97,7 @@ _mqx_uint   FTE_GUS_attach(FTE_OBJECT_PTR pObj)
         pStatus->pUCS = pUCS;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
     if (pUCS != NULL)
@@ -163,16 +116,19 @@ error:
     
 }
 
-_mqx_uint FTE_GUS_detach(FTE_OBJECT_PTR pObj)
+FTE_RET FTE_GUS_detach
+(
+    FTE_OBJECT_PTR pObj
+)
 {
     FTE_GUS_STATUS_PTR  pStatus;
 
     ASSERT(pObj != NULL);
 
     pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
-    if (pStatus->pModelInfo->f_detach != NULL)
+    if (pStatus->pModelInfo->fDetach != NULL)
     {
-        pStatus->pModelInfo->f_detach(pObj);
+        pStatus->pModelInfo->fDetach(pObj);
     }
     else if (pStatus->pUCS != NULL)
     {
@@ -182,10 +138,14 @@ _mqx_uint FTE_GUS_detach(FTE_OBJECT_PTR pObj)
     
     pObj->pAction = NULL;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint       _gus_child_count(FTE_OBJECT_PTR pObj, uint_32_ptr pulCount)
+FTE_RET FTE_GUS_getChildCount
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32_PTR  pulCount
+)
 {
     ASSERT((pObj != NULL) && (pulCount != NULL));
     
@@ -193,10 +153,15 @@ _mqx_uint       _gus_child_count(FTE_OBJECT_PTR pObj, uint_32_ptr pulCount)
     
     *pulCount = FTE_LIST_count(&pStatus->xChildList);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint       _gus_get_child(FTE_OBJECT_PTR pObj, uint_32 ulIndex, FTE_OBJECT_ID _PTR_ pxID)
+FTE_RET FTE_GUS_getChild
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      ulIndex, 
+    FTE_OBJECT_ID _PTR_ pxID
+)
 {
     ASSERT((pObj != NULL) && (pxID != NULL));
 
@@ -210,48 +175,53 @@ _mqx_uint       _gus_get_child(FTE_OBJECT_PTR pObj, uint_32 ulIndex, FTE_OBJECT_
     
     *pxID = xID;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 
 }
 
-_mqx_uint       _gus_attachChild(FTE_OBJECT_PTR pObj, uint_32 nChild)
+
+FTE_RET FTE_GUS_attachChild
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nChild
+)
 {
     FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
 
     FTE_LIST_pushBack(&pStatus->xChildList, (pointer)nChild);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint       _gus_detachChild(FTE_OBJECT_PTR pObj, uint_32 nChild)
+FTE_RET FTE_GUS_detachChild
+(
+    FTE_OBJECT_PTR pObj, 
+    FTE_UINT32  nChild
+)
 {
     FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
 
     FTE_LIST_remove(&pStatus->xChildList, (pointer)nChild);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-FTE_GUS_MODEL_INFO_CONST_PTR _gus_get_model_info(uint_32 nModel)
-{
-    for(int i = 0 ; i < sizeof(_pGUSModelInfos) / sizeof(FTE_GUS_MODEL_INFO) ; i++)
-    {
-        if (nModel == _pGUSModelInfos[i].nModel)
-        {
-            return  &_pGUSModelInfos[i];
-        }
-    }
-    
-    return  NULL;
-}
-
-_mqx_uint   _gus_run(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_GUS_run
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
 
     FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
+    
+    if (pStatus->pModelInfo->fRun != NULL)
+    {
+        return  pStatus->pModelInfo->fRun(pObj);
+    }
+
     FTE_GUS_CONFIG_PTR    pConfig = (FTE_GUS_CONFIG_PTR)pObj->pConfig;
-    
+        
     if (pStatus->hConvertTimer != 0)
     {
         _timer_cancel(pStatus->hConvertTimer);
@@ -263,20 +233,28 @@ _mqx_uint   _gus_run(FTE_OBJECT_PTR pObj)
         _timer_cancel(pStatus->hRepeatTimer);
         pStatus->hRepeatTimer = 0;
     }
-    
-    _gus_startMeasurement(pObj);
-    
-    pStatus->hRepeatTimer   = FTE_OBJ_runLoop(pObj, _gus_restartConvert, pConfig->nInterval * 1000);    
 
-    return  MQX_OK;
+    FTE_GUS_startMeasurement(pObj);
+
+    pStatus->hRepeatTimer   = FTE_OBJ_runLoop(pObj, FTE_GUS_restartConvert, pConfig->nInterval);    
+
+    return  FTE_RET_OK;
 }
 
-_mqx_uint   _gus_stop(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_GUS_stop
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
 
     FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     
+    if (pStatus->pModelInfo->fRun != NULL)
+    {
+        return  pStatus->pModelInfo->fStop(pObj);
+    }
+
     if (pStatus->hConvertTimer != 0)
     {
         _timer_cancel(pStatus->hConvertTimer);
@@ -289,43 +267,51 @@ _mqx_uint   _gus_stop(FTE_OBJECT_PTR pObj)
         pStatus->hRepeatTimer = 0;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 }
 
-_mqx_uint _gus_startMeasurement(FTE_OBJECT_PTR pObj)
+FTE_RET FTE_GUS_startMeasurement
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT((pObj != NULL) && (pObj->pStatus != NULL));
     FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
         
     _time_get_elapsed_ticks(&pStatus->xCommon.xStartTicks);
     
-    if (pStatus->pModelInfo->f_request != NULL)
+    if (pStatus->pModelInfo->fRequest != NULL)
     {
-        pStatus->pModelInfo->f_request(pObj);
+        pStatus->pModelInfo->fRequest(pObj);
         if (pStatus->pModelInfo->nMaxResponseTime != 0)
         {
-            pStatus->hConvertTimer  = FTE_OBJ_runMeasurement(pObj, _gus_done, pStatus->pModelInfo->nMaxResponseTime);
+            pStatus->hConvertTimer  = FTE_OBJ_runMeasurement(pObj, FTE_GUS_done, pStatus->pModelInfo->nMaxResponseTime);
         }
         else
         {
-            pStatus->hConvertTimer  = FTE_OBJ_runMeasurement(pObj, _gus_done, FTE_GUS_RESPONSE_TIME);    
+            pStatus->hConvertTimer  = FTE_OBJ_runMeasurement(pObj, FTE_GUS_done, FTE_GUS_RESPONSE_TIME);    
         }
         
     }
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 }
 
-void _gus_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
+void FTE_GUS_done
+(
+    _timer_id   id, 
+    pointer     pData, 
+    MQX_TICK_STRUCT_PTR pTick
+)
 {
-    FTE_OBJECT_PTR        pObj = (FTE_OBJECT_PTR)data_ptr;
+    FTE_OBJECT_PTR        pObj = (FTE_OBJECT_PTR)pData;
     FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
 
-    if (pStatus->pModelInfo->f_received != NULL)
+    if (pStatus->pModelInfo->fReceived != NULL)
     {
-        if (pStatus->pModelInfo->f_received(pObj) != MQX_OK)
+        if (pStatus->pModelInfo->fReceived(pObj) != FTE_RET_OK)
         {
             FT_OBJ_STAT_incFailed(&pStatus->xCommon.xStatistics);
             goto error;
@@ -347,21 +333,32 @@ error:
 }
 
 
-static void _gus_restartConvert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
+static 
+void FTE_GUS_restartConvert
+(
+    _timer_id   id, 
+    pointer     pData, 
+    MQX_TICK_STRUCT_PTR pTick
+)
 {
-    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)data_ptr;
+    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)pData;
 
     if (FTE_OBJ_IS_ENABLED(pObj))
     {
-        _gus_startMeasurement(pObj);
+        FTE_GUS_startMeasurement(pObj);
     }
     else
     {
-        _gus_stop(pObj);
+        FTE_GUS_stop(pObj);
     }
 }
  
-_mqx_uint    _gus_setMulti(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_PTR pValue)
+FTE_RET    FTE_GUS_setMulti
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nIndex, 
+    FTE_VALUE_PTR   pValue
+)
 {
     ASSERT((pObj != NULL) && (pValue != NULL));
     
@@ -369,16 +366,21 @@ _mqx_uint    _gus_setMulti(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_PTR pV
     
     if (FTE_OBJ_IS_ENABLED(pObj))
     {
-        if (pStatus->pModelInfo->f_set != NULL)
+        if (pStatus->pModelInfo->fSet != NULL)
         {
-            return  pStatus->pModelInfo->f_set(pObj, nIndex, pValue);
+            return  pStatus->pModelInfo->fSet(pObj, nIndex, pValue);
         }
     }
 
     return  MQX_ERROR;
 }
 
-_mqx_uint    _gus_getMulti(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_PTR pValue)
+FTE_RET FTE_GUS_getMulti
+(   
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nIndex, 
+    FTE_VALUE_PTR   pValue
+)
 {
     ASSERT((pObj != NULL) && (pValue != NULL));
     
@@ -386,9 +388,9 @@ _mqx_uint    _gus_getMulti(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_PTR pV
     
     if (FTE_OBJ_IS_ENABLED(pObj))
     {
-        if (pStatus->pModelInfo->f_get != NULL)
+        if (pStatus->pModelInfo->fGet != NULL)
         {
-            return  pStatus->pModelInfo->f_get(pObj, nIndex, pValue);
+            return  pStatus->pModelInfo->fGet(pObj, nIndex, pValue);
         }
         else
         {
@@ -396,31 +398,77 @@ _mqx_uint    _gus_getMulti(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_PTR pV
             {
                 FTE_VALUE_copy(pValue, &pObj->pStatus->pValue[nIndex]);
                 
-                return  MQX_OK;
+                return  FTE_RET_OK;
             }
         }
     }
 
     return  MQX_ERROR;
 }
-_mqx_uint   _gus_setConfig(FTE_OBJECT_PTR pObj, char_ptr pJSON)
+
+FTE_RET FTE_GUS_setConfig
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_CHAR_PTR    pJSON
+)
 {
     ASSERT((pObj != NULL) && (pJSON != NULL));
     
     FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     
-    if (FTE_OBJ_IS_ENABLED(pObj))
+    if ((pStatus->pModelInfo == NULL) || (pStatus->pModelInfo->fSetConfig == NULL))
     {
-        if (pStatus->pModelInfo->f_set_config != NULL)
-        {
-            return  pStatus->pModelInfo->f_set_config(pObj, pJSON);
-        }
+        return  FTE_RET_NOT_SUPPORTED_FUNCTION;
     }
-
-    return  MQX_ERROR;
+    
+    return  pStatus->pModelInfo->fSetConfig(pObj, pJSON);
 }
 
-_mqx_uint   _gus_getConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 ulBuffLen)
+FTE_RET FTE_GUS_getConfig
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_CHAR_PTR    pBuff, 
+    FTE_UINT32      ulBuffLen
+)
+{
+    ASSERT((pObj != NULL) && (pBuff != NULL));
+    
+    FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
+    
+    if ((pStatus->pModelInfo == NULL) || (pStatus->pModelInfo->fGetConfig == NULL))
+    {
+        return  FTE_RET_NOT_SUPPORTED_FUNCTION;
+    }
+    
+    return  pStatus->pModelInfo->fGetConfig(pObj, pBuff, ulBuffLen);
+}
+
+FTE_RET FTE_GUS_setChildConfig
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_OBJECT_PTR  pChild, 
+    FTE_CHAR_PTR    pJSON
+)
+{
+    ASSERT((pObj != NULL) && (pJSON != NULL));
+    
+    FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
+    
+    if ((pStatus->pModelInfo == NULL) || (pStatus->pModelInfo->fSetChildConfig == NULL))
+    {
+        return  FTE_RET_NOT_SUPPORTED_FUNCTION;
+    }
+
+    return  pStatus->pModelInfo->fSetChildConfig(pChild, pJSON);
+}
+
+FTE_RET FTE_GUS_getChildConfig
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_OBJECT_PTR  pChild, 
+    FTE_CHAR_PTR    pBuff, 
+    FTE_UINT32      ulBuffLen
+)
 {
     ASSERT((pObj != NULL) && (pBuff != NULL));
     
@@ -428,57 +476,33 @@ _mqx_uint   _gus_getConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 ulBuffLe
     
     if (FTE_OBJ_IS_ENABLED(pObj))
     {
-        if (pStatus->pModelInfo->f_get_config != NULL)
+        if (pStatus->pModelInfo->fGetChildConfig != NULL)
         {
-            return  pStatus->pModelInfo->f_get_config(pObj, pBuff, ulBuffLen);
+            return  pStatus->pModelInfo->fGetChildConfig(pChild, pBuff, ulBuffLen);
         }
     }
 
     return  MQX_ERROR;
 }
 
-_mqx_uint   _gus_setChildConfig(FTE_OBJECT_PTR pObj, FTE_OBJECT_PTR pChild, char_ptr pJSON)
-{
-    ASSERT((pObj != NULL) && (pJSON != NULL));
-    
-    FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
-    
-    if (FTE_OBJ_IS_ENABLED(pObj))
-    {
-        if (pStatus->pModelInfo->f_set_child_config != NULL)
-        {
-            return  pStatus->pModelInfo->f_set_child_config(pChild, pJSON);
-        }
-    }
-
-    return  MQX_ERROR;
-}
-
-_mqx_uint   _gus_getChildConfig(FTE_OBJECT_PTR pObj, FTE_OBJECT_PTR pChild, char_ptr pBuff, uint_32 ulBuffLen)
-{
-    ASSERT((pObj != NULL) && (pBuff != NULL));
-    
-    FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
-    
-    if (FTE_OBJ_IS_ENABLED(pObj))
-    {
-        if (pStatus->pModelInfo->f_get_child_config != NULL)
-        {
-            return  pStatus->pModelInfo->f_get_child_config(pChild, pBuff, ulBuffLen);
-        }
-    }
-
-    return  MQX_ERROR;
-}
-
-uint_32      _gus_getUpdateInterval(FTE_OBJECT_PTR pObj)
+FTE_RET FTE_GUS_getUpdateInterval
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32_PTR  pulInterval
+)
 {
     FTE_GUS_CONFIG_PTR  pConfig = (FTE_GUS_CONFIG_PTR)pObj->pConfig;
     
-    return  pConfig->nInterval;
+    *pulInterval = pConfig->nInterval;
+    
+    return  FTE_RET_OK;
 }
 
-_mqx_uint    _gus_setUpdateInterval(FTE_OBJECT_PTR pObj, uint_32 nInterval)
+FTE_RET FTE_GUS_setUpdateInterval
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nInterval
+)
 {
     FTE_GUS_CONFIG_PTR  pConfig = (FTE_GUS_CONFIG_PTR)pObj->pConfig;
     
@@ -486,18 +510,23 @@ _mqx_uint    _gus_setUpdateInterval(FTE_OBJECT_PTR pObj, uint_32 nInterval)
     
     FTE_CFG_OBJ_save(pObj);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-static  _mqx_uint   _gus_getStatistics(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTICS_PTR pStatistic)
+static  
+FTE_RET   FTE_GUS_getStatistics
+(   
+    FTE_OBJECT_PTR  pObj, 
+    FTE_OBJECT_STATISTICS_PTR pStatistics
+)
 {
-    ASSERT((pObj != NULL) && (pStatistic != NULL));
+    ASSERT((pObj != NULL) && (pStatistics != NULL));
     
     FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
         
-    memcpy(pStatistic, &pStatus->xCommon.xStatistics, sizeof(FTE_OBJECT_STATISTICS));
+    memcpy(pStatistics, &pStatus->xCommon.xStatistics, sizeof(FTE_OBJECT_STATISTICS));
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 

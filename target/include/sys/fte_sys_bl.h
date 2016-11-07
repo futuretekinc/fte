@@ -1,11 +1,11 @@
 #ifndef __FTE_SYS_BL_H__
 #define __FTE_SYS_BL_H__
 
-_mqx_uint       FTE_SYS_BL_startUpgrade(void);
-_mqx_uint       FTE_SYS_BL_load(void);
-_mqx_uint       FTE_SYS_BL_save(void);
-int_32          FTE_SYS_BL_cmd(int_32 nArgc, char_ptr pArgv[]);
-_mqx_uint       FTE_SYS_BL_getOID(uint_8_ptr pOID);
-_mqx_uint       FTE_SYS_BL_getMAC(unsigned char *pMAC);
+FTE_RET     FTE_SYS_BL_startUpgrade(void);
+FTE_RET     FTE_SYS_BL_load(void);
+FTE_RET     FTE_SYS_BL_save(void);
+FTE_INT32   FTE_SYS_BL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
+FTE_RET     FTE_SYS_BL_getOID(FTE_UINT8_PTR pOID);
+FTE_RET     FTE_SYS_BL_getMAC(FTE_UINT8_PTR pMAC);
 
 #endif

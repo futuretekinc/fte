@@ -1,8 +1,8 @@
 #ifndef _FTE_TRUEYES_H__
 #define _FTE_TRUEYES_H__
 
-#ifndef FTE_TRUEYES_AIRQ_INTERVAL           
-#define FTE_TRUEYES_AIRQ_INTERVAL           5
+#ifndef FTE_TRUEYES_AIRQ_DEFAULT_UPDATE_INTERVAL
+#define FTE_TRUEYES_AIRQ_DEFAULT_UPDATE_INTERVAL    5000
 #endif
 
 #ifndef FTE_TRUEYES_AIRQ_EVENT_TYPE_ABOVE   
@@ -25,18 +25,23 @@
 #define FTE_TRUEYES_AIRQ_EVENT_DELAY        0
 #endif
 
-uint_32     FTE_AIRQ_request(FTE_OBJECT_PTR pObj);
-_mqx_uint   FTE_AIRQ_received(FTE_OBJECT_PTR pObj);
+#define FTE_TRUEYES_AIRQ_DEFAULT_FULL_DUPLEX  FALSE
+#define FTE_TRUEYES_AIRQ_DEFAULT_BAUDRATE     9600
+#define FTE_TRUEYES_AIRQ_DEFAULT_DATABITS     8
+#define FTE_TRUEYES_AIRQ_DEFAULT_PARITY       FTE_UART_PARITY_NONE
+#define FTE_TRUEYES_AIRQ_DEFAULT_STOPBITS     FTE_UART_STOP_BITS_1
 
-extern  FTE_VALUE_TYPE  FTE_TRUEYES_AIRQ_valueTypes[];
 
-#define FTE_TRUEYES_AIRQ_DESCRIPTOR  {\
-        .nModel         = FTE_GUS_MODEL_TRUEYES_AIRQ,   \
-        .pName          = "TRUEYES AIRQ",               \
-        .nFieldCount    = 4,                            \
-         .pValueTypes   = FTE_TRUEYES_AIRQ_valueTypes,  \
-        .f_request      = FTE_AIRQ_request,     \
-        .f_received     = FTE_AIRQ_received     \
-    }
+FTE_UINT32  FTE_AIRQ_request(FTE_OBJECT_PTR pObj);
+FTE_RET     FTE_AIRQ_received(FTE_OBJECT_PTR pObj);
+
+extern  
+FTE_GUS_CONFIG FTE_TRUEYES_AIRQ_defaultConfig;
+
+extern  
+FTE_VALUE_TYPE  FTE_TRUEYES_AIRQ_valueTypes[];
+
+extern  const 
+FTE_GUS_MODEL_INFO    FTE_TRUEYES_AIRQ_GUSModelInfo;
 
 #endif

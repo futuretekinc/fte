@@ -9,65 +9,69 @@
     #define FTE_MULTI_TRIAL_MAX 3
 #endif
 
-static  _mqx_uint   _multi_run(FTE_OBJECT_PTR pObj);
-static  _mqx_uint   _multi_stop(FTE_OBJECT_PTR pObj);
-static  _mqx_uint   _multi_start_measurement(FTE_OBJECT_PTR pObj);
-static  void        _multi_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
-static  _mqx_uint   _multi_get(FTE_OBJECT_PTR pObj, uint_32_ptr pValue, TIME_STRUCT *xTimeStamp);
-static  _mqx_uint   _multi_set(FTE_OBJECT_PTR pSelf, uint_32 nValue);
-static  _mqx_uint   _multi_set_multi(FTE_OBJECT_PTR pSelf, uint_32 nIndex, uint_32 nValue);
-static  void        _multi_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
-static  uint_32     _multi_get_update_interval(FTE_OBJECT_PTR pObj);
-static  _mqx_uint   _multi_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInterval);
+static  FTE_RET   FTE_MULTI_run(FTE_OBJECT_PTR pObj);
+static  FTE_RET   FTE_MULTI_stop(FTE_OBJECT_PTR pObj);
+static  FTE_RET   FTE_MULTI_startMeasurement(FTE_OBJECT_PTR pObj);
+static  void      FTE_MULTI_done(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
+static  FTE_RET   FTE_MULTI_get(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pValue, TIME_STRUCT_PTR xTimeStamp);
+static  FTE_RET   FTE_MULTI_set(FTE_OBJECT_PTR pSelf, FTE_UINT32 nValue);
+static  FTE_RET   FTE_MULTI_setMulti(FTE_OBJECT_PTR pSelf, FTE_UINT32 nIndex, FTE_UINT32 nValue);
+static  void      FTE_MULTI_restartConvert(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
+static  FTE_UINT32     FTE_MULTI_getUpdateInterval(FTE_OBJECT_PTR pObj);
+static  FTE_RET   FTE_MULTI_setUpdateInterval(FTE_OBJECT_PTR pObj, FTE_UINT32 nInterval);
 #if 0
-static  _mqx_uint   _multi_get_event_type(FTE_OBJECT_PTR pObj, uint_32_ptr pEventType);
-static  _mqx_uint   _multi_set_event_type(FTE_OBJECT_PTR pObj, uint_32   nEventType);
-static  _mqx_uint   _multi_get_upper_limit(FTE_OBJECT_PTR pObj, uint_32_ptr pValue);
-static  _mqx_uint   _multi_set_upper_limit(FTE_OBJECT_PTR pObj, uint_32   nValue);
-static  _mqx_uint   _multi_get_lower_limit(FTE_OBJECT_PTR pObj, uint_32_ptr pValue);
-static  _mqx_uint   _multi_set_lower_limit(FTE_OBJECT_PTR pObj, uint_32   nValue);
-static  _mqx_uint   _multi_get_threshold(FTE_OBJECT_PTR pObj, uint_32_ptr pValue);
-static  _mqx_uint   _multi_set_threshold(FTE_OBJECT_PTR pObj, uint_32   nValue);
-static  _mqx_uint   _multi_get_event_delay(FTE_OBJECT_PTR pObj, uint_32_ptr pValue);
-static  _mqx_uint   _multi_set_event_delay(FTE_OBJECT_PTR pObj, uint_32   nValue);
-static  _mqx_uint   _multi_event_condition(FTE_OBJECT_PTR pObj, boolean *pResult);
+static  FTE_RET   FTE_MULTI_getEventType(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pEventType);
+static  FTE_RET   FTE_MULTI_setEventType(FTE_OBJECT_PTR pObj, FTE_UINT32   nEventType);
+static  FTE_RET   FTE_MULTI_getUpperLimit(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pValue);
+static  FTE_RET   FTE_MULTI_setUpperLimit(FTE_OBJECT_PTR pObj, FTE_UINT32   nValue);
+static  FTE_RET   FTE_MULTI_getLowerLimit(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pValue);
+static  FTE_RET   FTE_MULTI_setLowerLimit(FTE_OBJECT_PTR pObj, FTE_UINT32   nValue);
+static  FTE_RET   FTE_MULTI_getThreshold(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pValue);
+static  FTE_RET   FTE_MULTI_setThreshold(FTE_OBJECT_PTR pObj, FTE_UINT32   nValue);
+static  FTE_RET   FTE_MULTI_getEventDelay(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pValue);
+static  FTE_RET   FTE_MULTI_setEventDelay(FTE_OBJECT_PTR pObj, FTE_UINT32   nValue);
+static  FTE_RET   FTE_MULTI_eventCondition(FTE_OBJECT_PTR pObj, FTE_BOOL_PTR pResult);
 #endif
-static  _mqx_uint   _multi_get_statistic(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTIC_PTR pStatistic);
-static  FTE_MULTI_MODEL_INFO_CONST_PTR _multi_get_model_info(uint_32 nModel);
+static  FTE_RET   FTE_MULTI_get_statistic(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTIC_PTR pStatistic);
+static  FTE_MULTI_MODEL_INFO_CONST_PTR FTE_MULTI_getModelInfo(FTE_UINT32 nModel);
 
 
 static  FTE_OBJECT_ACTION _Action = 
 {
-    .f_run          = _multi_run,
-    .f_stop         = _multi_stop, 
-    .f_get          = _multi_get,
-    .f_set          = _multi_set,
-    .f_set_multi    = _multi_set_multi,
-    .f_get_update_interval  = _multi_get_update_interval,
-    .f_set_update_interval  = _multi_set_update_interval,
+    .f_run          = FTE_MULTI_run,
+    .f_stop         = FTE_MULTI_stop, 
+    .f_get          = FTE_MULTI_get,
+    .f_set          = FTE_MULTI_set,
+    .f_set_multi    = FTE_MULTI_setMulti,
+    .f_get_update_interval  = FTE_MULTI_getUpdateInterval,
+    .f_set_update_interval  = FTE_MULTI_setUpdateInterval,
 #if 0
-    .f_get_event_type       = _multi_get_event_type,
-    .f_set_event_type       = _multi_set_event_type,
-    .f_get_upper_limit      = _multi_get_upper_limit,
-    .f_set_upper_limit      = _multi_set_upper_limit,
-    .f_get_lower_limit      = _multi_get_lower_limit,
-    .f_set_lower_limit      = _multi_set_lower_limit,
-    .f_get_threshold        = _multi_get_threshold,
-    .f_set_threshold        = _multi_set_threshold,
-    .f_get_event_delay      = _multi_get_event_delay,
-    .f_set_event_delay      = _multi_set_event_delay,
-    .f_event_condition      = _multi_event_condition,
+    .f_get_event_type       = FTE_MULTI_getEventType,
+    .f_set_event_type       = FTE_MULTI_setEventType,
+    .f_get_upper_limit      = FTE_MULTI_getUpperLimit,
+    .f_set_upper_limit      = FTE_MULTI_setUpperLimit,
+    .f_get_lower_limit      = FTE_MULTI_getLowerLimit,
+    .f_set_lower_limit      = FTE_MULTI_setLowerLimit,
+    .f_get_threshold        = FTE_MULTI_getThreshold,
+    .f_set_threshold        = FTE_MULTI_setThreshold,
+    .f_get_event_delay      = FTE_MULTI_getEventDelay,
+    .f_set_event_delay      = FTE_MULTI_setEventDelay,
+    .f_event_condition      = FTE_MULTI_eventCondition,
 #endif
-    .f_get_statistic        = _multi_get_statistic
+    .f_get_statistic        = FTE_MULTI_get_statistic
 }; 
  
-const FTE_MULTI_MODEL_INFO  _pMULTIModelInfos[] =
+const 
+FTE_MULTI_MODEL_INFO  _pMULTIModelInfos[] =
 {
     FTE_MODEL_BOTEM_PN1500_SENS
 };
 
 
-_mqx_uint   fte_multi_attach(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_MULTI_attach
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_MULTI_STATUS_PTR              pStatus;
     FTE_UCS_PTR                     pUCS = NULL;
@@ -76,7 +80,7 @@ _mqx_uint   fte_multi_attach(FTE_OBJECT_PTR pObj)
 
     pStatus = (FTE_MULTI_STATUS_PTR)pObj->pStatus;    
     
-    pStatus->pModelInfo = _multi_get_model_info(((FTE_MULTI_CONFIG_PTR)pObj->pConfig)->nModel);
+    pStatus->pModelInfo = FTE_MULTI_getModelInfo(((FTE_MULTI_CONFIG_PTR)pObj->pConfig)->nModel);
     if (pStatus->pModelInfo == NULL)
     {
         goto error;
@@ -124,7 +128,10 @@ error:
     
 }
 
-_mqx_uint fte_multi_detach(FTE_OBJECT_PTR pObj)
+FTE_RET FTE_MULTI_detach
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_MULTI_STATUS_PTR  pStatus;
 
@@ -149,7 +156,10 @@ _mqx_uint fte_multi_detach(FTE_OBJECT_PTR pObj)
     return  MQX_OK;
 }
 
-FTE_MULTI_MODEL_INFO_CONST_PTR _multi_get_model_info(uint_32 nModel)
+FTE_MULTI_MODEL_INFO_CONST_PTR FTE_MULTI_getModelInfo
+(
+    FTE_UINT32  nModel
+)
 {
     for(int i = 0 ; i < sizeof(_pMULTIModelInfos) / sizeof(FTE_MULTI_MODEL_INFO) ; i++)
     {
@@ -162,22 +172,28 @@ FTE_MULTI_MODEL_INFO_CONST_PTR _multi_get_model_info(uint_32 nModel)
     return  NULL;
 }
 
-_mqx_uint   _multi_run(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_MULTI_run
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
 
     FTE_MULTI_STATUS_PTR    pStatus = (FTE_MULTI_STATUS_PTR)pObj->pStatus;
     FTE_MULTI_CONFIG_PTR    pConfig = (FTE_MULTI_CONFIG_PTR)pObj->pConfig;
     
-    _multi_stop(pObj);
-    _multi_start_measurement(pObj);
+    FTE_MULTI_stop(pObj);
+    FTE_MULTI_startMeasurement(pObj);
     
-    pStatus->hRepeatTimer   = FTE_OBJ_runLoop(pObj, _multi_restart_convert, pConfig->nInterval * 1000);    
+    pStatus->hRepeatTimer   = FTE_OBJ_runLoop(pObj, FTE_MULTI_restartConvert, pConfig->nInterval);    
 
     return  MQX_OK;
 }
 
-_mqx_uint   _multi_stop(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_MULTI_stop
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
 
@@ -199,7 +215,10 @@ _mqx_uint   _multi_stop(FTE_OBJECT_PTR pObj)
     
 }
 
-_mqx_uint _multi_start_measurement(FTE_OBJECT_PTR pObj)
+FTE_RET FTE_MULTI_startMeasurement
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT((pObj != NULL) && (pObj->pStatus != NULL));
     FTE_MULTI_STATUS_PTR    pStatus = (FTE_MULTI_STATUS_PTR)pObj->pStatus;
@@ -207,7 +226,7 @@ _mqx_uint _multi_start_measurement(FTE_OBJECT_PTR pObj)
     if (pStatus->pModelInfo->f_request_data != NULL)
     {
         pStatus->pModelInfo->f_request_data(pObj);
-        pStatus->hConvertTimer  = FTE_OBJ_runMeasurement(pObj, _multi_done, FTE_MULTI_RESPONSE_TIME);    
+        pStatus->hConvertTimer  = FTE_OBJ_runMeasurement(pObj, FTE_MULTI_done, FTE_MULTI_RESPONSE_TIME);    
 #if FTE_DEBUG
         pStatus->xStatistic.nTotalTrial++;
 #endif    
@@ -217,9 +236,14 @@ _mqx_uint _multi_start_measurement(FTE_OBJECT_PTR pObj)
     
 }
 
-void _multi_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
+void FTE_MULTI_done
+(
+    _timer_id   id, 
+    pointer     pData, 
+    MQX_TICK_STRUCT_PTR pTick
+)
 {
-    FTE_OBJECT_PTR          pObj = (FTE_OBJECT_PTR)data_ptr;
+    FTE_OBJECT_PTR          pObj = (FTE_OBJECT_PTR)pData;
 //    FTE_MULTI_CONFIG_PTR    pConfig = (FTE_MULTI_CONFIG_PTR)pObj->pConfig;
     FTE_MULTI_STATUS_PTR    pStatus = (FTE_MULTI_STATUS_PTR)pObj->pStatus;
     //boolean                 bOccurred = FALSE;
@@ -244,21 +268,31 @@ error:
 }
 
 
-static void _multi_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
+void FTE_MULTI_restartConvert
+(   
+    _timer_id   id, 
+    pointer     pData, 
+    MQX_TICK_STRUCT_PTR pTick
+)
 {
-    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)data_ptr;
+    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)pData;
 
     if (FTE_OBJ_IS_ENABLED(pObj))
     {
-        _multi_start_measurement(pObj);
+        FTE_MULTI_startMeasurement(pObj);
     }
     else
     {
-        _multi_stop(pObj);
+        FTE_MULTI_stop(pObj);
     }
 }
 
-_mqx_uint    _multi_get(FTE_OBJECT_PTR pObj, uint_32 *pValue, TIME_STRUCT *xTimeStamp)
+FTE_RET    FTE_MULTI_get
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32_PTR  pValue, 
+    TIME_STRUCT_PTR xTimeStamp
+)
 {
     ASSERT(pObj != NULL && pValue != NULL);
     
@@ -278,7 +312,11 @@ _mqx_uint    _multi_get(FTE_OBJECT_PTR pObj, uint_32 *pValue, TIME_STRUCT *xTime
     return  MQX_ERROR;
 }
 
-_mqx_uint    _multi_set(FTE_OBJECT_PTR pObj, uint_32 nValue)
+FTE_RET    FTE_MULTI_set
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nValue
+)
 {
     ASSERT(pObj != NULL);
     
@@ -292,7 +330,12 @@ _mqx_uint    _multi_set(FTE_OBJECT_PTR pObj, uint_32 nValue)
     return  MQX_ERROR;
 }
 
-_mqx_uint    _multi_set_multi(FTE_OBJECT_PTR pObj, uint_32 nIndex, uint_32 nValue)
+FTE_RET    FTE_MULTI_setMulti
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nIndex, 
+    FTE_UINT32      nValue
+)
 {
     ASSERT(pObj != NULL);
     
@@ -311,14 +354,21 @@ _mqx_uint    _multi_set_multi(FTE_OBJECT_PTR pObj, uint_32 nIndex, uint_32 nValu
     return  MQX_ERROR;
 }
 
-uint_32      _multi_get_update_interval(FTE_OBJECT_PTR pObj)
+FTE_UINT32  FTE_MULTI_getUpdateInterval
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_MULTI_CONFIG_PTR  pConfig = (FTE_MULTI_CONFIG_PTR)pObj->pConfig;
     
     return  pConfig->nInterval;
 }
 
-_mqx_uint    _multi_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInterval)
+FTE_RET    FTE_MULTI_setUpdateInterval
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nInterval
+)
 {
     FTE_MULTI_CONFIG_PTR  pConfig = (FTE_MULTI_CONFIG_PTR)pObj->pConfig;
     
@@ -331,7 +381,11 @@ _mqx_uint    _multi_set_update_interval(FTE_OBJECT_PTR pObj, uint_32 nInterval)
 
 
 #if 0
-_mqx_uint   _multi_get_event_type(FTE_OBJECT_PTR pObj, uint_32_ptr pEventType)
+FTE_RET   FTE_MULTI_getEventType
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32_PTR  pEventType
+)
 {
     FTE_MULTI_CONFIG_PTR    pConfig;
     
@@ -344,7 +398,11 @@ _mqx_uint   _multi_get_event_type(FTE_OBJECT_PTR pObj, uint_32_ptr pEventType)
     return  MQX_OK;
 }
 
-_mqx_uint   _multi_set_event_type(FTE_OBJECT_PTR pObj, uint_32   nEventType)
+FTE_RET   FTE_MULTI_setEventType
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nEventType
+)
 {
     FTE_MULTI_CONFIG_PTR    pConfig;
     
@@ -357,7 +415,11 @@ _mqx_uint   _multi_set_event_type(FTE_OBJECT_PTR pObj, uint_32   nEventType)
     return  MQX_OK;
 }
 
-_mqx_uint   _multi_get_upper_limit(FTE_OBJECT_PTR pObj, uint_32_ptr pValue)
+FTE_RET   FTE_MULTI_getUpperLimit
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32_PTR  pValue
+)
 {
     FTE_MULTI_CONFIG_PTR    pConfig;
     
@@ -370,7 +432,11 @@ _mqx_uint   _multi_get_upper_limit(FTE_OBJECT_PTR pObj, uint_32_ptr pValue)
     return  MQX_OK;
 }
 
-_mqx_uint   _multi_set_upper_limit(FTE_OBJECT_PTR pObj, uint_32   nValue)
+FTE_RET   FTE_MULTI_setUpperLimit
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nValue
+)
 {
     FTE_MULTI_CONFIG_PTR    pConfig;
     
@@ -383,7 +449,11 @@ _mqx_uint   _multi_set_upper_limit(FTE_OBJECT_PTR pObj, uint_32   nValue)
     return  MQX_OK;
 }
 
-_mqx_uint   _multi_get_lower_limit(FTE_OBJECT_PTR pObj, uint_32_ptr pValue)
+FTE_RET   FTE_MULTI_getLowerLimit
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32_PTR  pValue
+)
 {
     FTE_MULTI_CONFIG_PTR    pConfig;
     
@@ -396,7 +466,11 @@ _mqx_uint   _multi_get_lower_limit(FTE_OBJECT_PTR pObj, uint_32_ptr pValue)
     return  MQX_OK;
 }
 
-_mqx_uint   _multi_set_lower_limit(FTE_OBJECT_PTR pObj, uint_32   nValue)
+FTE_RET   FTE_MULTI_setLowerLimit
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nValue
+)
 {
     FTE_MULTI_CONFIG_PTR    pConfig;
     
@@ -409,7 +483,11 @@ _mqx_uint   _multi_set_lower_limit(FTE_OBJECT_PTR pObj, uint_32   nValue)
     return  MQX_OK;
 }
 
-_mqx_uint   _multi_get_threshold(FTE_OBJECT_PTR pObj, uint_32_ptr pValue)
+FTE_RET   FTE_MULTI_getThreshold
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32_PTR  pValue
+)
 {
     FTE_MULTI_CONFIG_PTR    pConfig;
     
@@ -422,7 +500,11 @@ _mqx_uint   _multi_get_threshold(FTE_OBJECT_PTR pObj, uint_32_ptr pValue)
     return  MQX_OK;
 }
 
-_mqx_uint   _multi_set_threshold(FTE_OBJECT_PTR pObj, uint_32   nValue)
+FTE_RET   FTE_MULTI_setThreshold
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nValue
+)
 {
     FTE_MULTI_CONFIG_PTR    pConfig;
     
@@ -435,7 +517,11 @@ _mqx_uint   _multi_set_threshold(FTE_OBJECT_PTR pObj, uint_32   nValue)
     return  MQX_OK;
 }
 
-_mqx_uint   _multi_get_event_delay(FTE_OBJECT_PTR pObj, uint_32_ptr pValue)
+FTE_RET   FTE_MULTI_getEventDelay
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32_PTR  pValue
+)
 {
     FTE_MULTI_CONFIG_PTR    pConfig;
     
@@ -448,7 +534,11 @@ _mqx_uint   _multi_get_event_delay(FTE_OBJECT_PTR pObj, uint_32_ptr pValue)
     return  MQX_OK;
 }
 
-_mqx_uint   _multi_set_event_delay(FTE_OBJECT_PTR pObj, uint_32   nValue)
+FTE_RET   FTE_MULTI_setEventDelay
+(   
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nValue
+)
 {
     FTE_MULTI_CONFIG_PTR    pConfig;
     
@@ -461,7 +551,11 @@ _mqx_uint   _multi_set_event_delay(FTE_OBJECT_PTR pObj, uint_32   nValue)
     return  MQX_OK;
 }
 
-_mqx_uint   _multi_event_condition(FTE_OBJECT_PTR pObj, boolean *pResult)
+FTE_RET   FTE_MULTI_eventCondition
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_BOOL_PTR    pResult
+)
 {
     FTE_MULTI_CONFIG_PTR    pConfig;
     FTE_MULTI_STATUS_PTR    pStatus;
@@ -511,7 +605,11 @@ _mqx_uint   _multi_event_condition(FTE_OBJECT_PTR pObj, boolean *pResult)
 }
 #endif
 
-static  _mqx_uint   _multi_get_statistic(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTIC_PTR pStatistic)
+FTE_RET   FTE_MULTI_get_statistic
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_OBJECT_STATISTIC_PTR pStatistic
+)
 {
     ASSERT((pObj != NULL) && (pStatistic != NULL));
     

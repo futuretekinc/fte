@@ -5,7 +5,7 @@ static const FTE_SHT_CONFIG fte_init_sht_config =
     .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE,
     .nSDA       = FTE_DEV_LWGPIO_SHT_SDA,
     .nSCL       = FTE_DEV_LWGPIO_SHT_SCL,
-    .nInterval  = FTE_SHT_INTERVAL
+    .nInterval  = FTE_SHT_DEFAULT_UPDATE_INTERVAL
 };
 
 const FTE_OBJECT_CONFIG_PTR pInitObjConfigs[] = 

@@ -15,7 +15,19 @@ typedef enum    _fte_net_type
     FTE_NET_TYPE_DHCP   = 1
 }   FTE_NET_TYPE;
 
-typedef struct _fte_net_config_struct
+typedef enum    FTE_NET_STATE_ENUM
+{
+    FTE_NET_STATE_INIT      = IPCFG_STATE_INIT,
+    FTE_NET_STATE_UNBIND    = IPCFG_STATE_UNBOUND,
+    FTE_NET_STATE_BUSY      = IPCFG_STATE_BUSY,
+    FTE_NET_STATE_STATIC_IP = IPCFG_STATE_STATIC_IP,
+    FTE_NET_STATE_DHCP_IP   = IPCFG_STATE_DHCP_IP,
+    FTE_NET_STATE_AUTO_IP   = IPCFG_STATE_AUTO_IP,
+    FTE_NET_STATE_DHCPAUTO_IP=IPCFG_STATE_DHCPAUTO_IP,
+    FTE_NET_STATE_BOOT      = IPCFG_STATE_BOOT
+}   FTE_NET_STATE, _PTR_ FTE_NET_STATE_PTR;
+
+typedef struct FTE_NET_CONFIG_STRUCT
 {
     FTE_NET_TYPE                nType;
     IPCFG_IP_ADDRESS_DATA       xIPData;
@@ -35,29 +47,33 @@ typedef struct _fte_net_config_struct
     
 }   FTE_NET_CFG, _PTR_ FTE_NET_CFG_PTR;
 
-int_32  FTE_NET_init(FTE_NET_CFG_PTR pConfig);
-int_32  FTE_NET_getMACAddress(_enet_address address);
+FTE_RET     FTE_NET_init(FTE_NET_CFG_PTR pConfig);
+FTE_RET     FTE_NET_getMACAddress(_enet_address address);
 
-uint_32 FTE_NET_bind(void);
-uint_32 FTE_NET_unbind(void);
+FTE_RET     FTE_NET_isActive(FTE_BOOL_PTR pActive);
+FTE_RET     FTE_NET_bind(FTE_VOID);
+FTE_RET     FTE_NET_unbind(FTE_VOID);
 
-int_32  FTE_NET_SERVER_count(void);
-uint_32 FTE_NET_SERVER_getAt(uint_32 idx);
-boolean FTE_NET_SERVER_isExist(_ip_address ip);
+FTE_RET     FTE_NET_STATE_get(FTE_NET_STATE_PTR   pState);
+FTE_CHAR const _PTR_    FTE_NET_STATE_print(FTE_NET_STATE xState);
 
-void    FTE_NET_printStats(void);
+FTE_INT32   FTE_NET_SERVER_count(FTE_VOID);
+FTE_UINT32  FTE_NET_SERVER_getAt(FTE_UINT32 ulIndex);
+FTE_BOOL    FTE_NET_SERVER_isExist(_ip_address ip);
 
 
-_mqx_uint   FTE_NET_liveCheckInit(uint_32 ulKeepAliveTime);
-_mqx_uint   FTE_NET_liveCheckStart(void);
-_mqx_uint   FTE_NET_liveCheckStop(void);
-boolean     FTE_NET_isLiveChecking(void);
-_mqx_uint   FTE_NET_lastLiveCheckTime(MQX_TICK_STRUCT_PTR pTime);
-_mqx_uint   FTE_NET_liveTouch(void);
-boolean     FTE_NET_isStable(void);
+void        FTE_NET_STATISTICS_print(FTE_VOID);
 
-int_32  FTE_PHY_SHELL_cmd(int_32 argc, char_ptr argv[] );
-int_32  FTE_NET_SHELL_cmd(int_32 argc, char_ptr argv[] );
+FTE_RET     FTE_NET_liveCheckInit(FTE_UINT32 ulKeepAliveTime);
+FTE_RET     FTE_NET_liveCheckStart(FTE_VOID);
+FTE_RET     FTE_NET_liveCheckStop(FTE_VOID);
+FTE_BOOL    FTE_NET_isLiveChecking(FTE_VOID);
+FTE_RET     FTE_NET_lastLiveCheckTime(MQX_TICK_STRUCT_PTR pTime);
+FTE_RET     FTE_NET_liveTouch(FTE_VOID);
+FTE_BOOL    FTE_NET_isStable(FTE_VOID);
+
+FTE_INT32   FTE_PHY_SHELL_cmd(FTE_INT32 argc, char_ptr argv[] );
+FTE_INT32   FTE_NET_SHELL_cmd(FTE_INT32 argc, char_ptr argv[] );
 
 #include "fte_mqtt.h"
 #include "fte_telnetd.h"

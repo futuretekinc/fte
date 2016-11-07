@@ -12,7 +12,7 @@
 #define FTE_DB_SECTOR_MAX       31
 #define FTE_DB_BLOCK_MAX        30
 
-typedef uint_32 FTE_DB_SECTOR_TYPE;
+typedef FTE_UINT32 FTE_DB_SECTOR_TYPE;
 
 #define FTE_DB_SECTOR_TYPE_UNUSED       0xFFFFFFFF
 #define FTE_DB_SECTOR_TYPE_OBJECT       0x5AA5F00F
@@ -34,8 +34,8 @@ typedef struct  FTE_DB_LOG_HEAD_STRUCT
 typedef struct  FTE_DB_OBJECT_STRUCT
 {
     FTE_OBJECT_ID       xID;
-    uint_32             ulCount;
-    uint_32             ulSectorIndex;
+    FTE_UINT32             ulCount;
+    FTE_UINT32             ulSectorIndex;
 }   FTE_DB_OBJECT, _PTR_ FTE_DB_OBJECT_PTR;
 
 typedef struct FTE_DB_SECTOR_HEAD_STRUCT
@@ -52,50 +52,53 @@ typedef struct  FTE_DB_OBJECT_SECTOR_STRUCT
 {
     FTE_DB_SECTOR_TYPE  xType;
     FTE_OBJECT_ID       xID;
-    uint_32             ulPageGroupIndex;
-    uint_32             ulPageGroup;
-    uint_32             ulSlotGroupIndex;
-    uint_32             ulSlotGroup;
+    FTE_UINT32             ulPageGroupIndex;
+    FTE_UINT32             ulPageGroup;
+    FTE_UINT32             ulSlotGroupIndex;
+    FTE_UINT32             ulSlotGroup;
 }   FTE_DB_OBJECT_SECTOR, _PTR_ FTE_DB_OBJECT_SECTOR_PTR;
 
 typedef struct  FTE_DB_HEAD_STRUCT
 {
-    uint_32         ulCRC;
-    uint_32         ulTag;
-    uint_32         ulID;
+    FTE_UINT32         ulCRC;
+    FTE_UINT32         ulTag;
+    FTE_UINT32         ulID;
 }   FTE_DB_HEAD, _PTR_ FTE_DB_HEAD_PTR;
 
 typedef struct  FTE_DB_STRUCT
 {
-    uint_32                 ulBaseAddress;
-    uint_32                 ulSectorCount;
+    FTE_UINT32                 ulBaseAddress;
+    FTE_UINT32                 ulSectorCount;
     FTE_M25P16_PTR          pM25P16;
     FTE_DB_HEAD             xHead;
     FTE_DB_OBJECT_SECTOR    pSectors[FTE_DB_SECTOR_MAX];
-    uint_32                 ulObjectCount;
+    FTE_UINT32                 ulObjectCount;
     FTE_DB_OBJECT           pObjects[FTE_DB_SECTOR_MAX];
 }   FTE_DB_FLASH, _PTR_ FTE_DB_PTR;
 
 
-static _mqx_uint FTE_DB_HEAD_init(FTE_DB_PTR pFlash);
+static FTE_RET FTE_DB_HEAD_init(FTE_DB_PTR pFlash);
 
-static _mqx_uint FTE_DB_HEAD_read(FTE_DB_PTR pFlash);
-static _mqx_uint FTE_DB_HEAD_write(FTE_DB_PTR pFlash);
-static _mqx_uint FTE_DB_dump(uint_32 ulAddress, uint_8_ptr pBuff, uint_32 ulLen);
+static FTE_RET FTE_DB_HEAD_read(FTE_DB_PTR pFlash);
+static FTE_RET FTE_DB_HEAD_write(FTE_DB_PTR pFlash);
+static FTE_RET FTE_DB_dump(FTE_UINT32 ulAddress, FTE_UINT8_PTR pBuff, FTE_UINT32 ulLen);
 
-static _mqx_uint FTE_DB_SECTOR_read(FTE_DB_PTR pFlash, uint_32 ulIndex, uint_32 ulOffset, uint_8_ptr pBuff, uint_32 ulLen);
-static _mqx_uint FTE_DB_SECTOR_write(FTE_DB_PTR pFlash, uint_32 ulIndex, uint_32 ulOffset, uint_8_ptr pBuff, uint_32 ulLen);
-static _mqx_uint FTE_DB_SECTOR_erase(FTE_DB_PTR pFlash, uint_32 ulIndex);
+static FTE_RET FTE_DB_SECTOR_read(FTE_DB_PTR pFlash, FTE_UINT32 ulIndex, FTE_UINT32 ulOffset, FTE_UINT8_PTR pBuff, FTE_UINT32 ulLen);
+static FTE_RET FTE_DB_SECTOR_write(FTE_DB_PTR pFlash, FTE_UINT32 ulIndex, FTE_UINT32 ulOffset, FTE_UINT8_PTR pBuff, FTE_UINT32 ulLen);
+static FTE_RET FTE_DB_SECTOR_erase(FTE_DB_PTR pFlash, FTE_UINT32 ulIndex);
 
-        _mqx_uint FTE_DB_SECTOR_getHead(FTE_DB_PTR pFlash, uint_32 ulSectorIndex, FTE_DB_SECTOR_HEAD_PTR pSectorHead);
-        _mqx_uint FTE_DB_SECTOR_setHead(FTE_DB_PTR pFlash, uint_32 ulSectorIndex, FTE_DB_SECTOR_HEAD_PTR pSectorHead);
+        FTE_RET FTE_DB_SECTOR_getHead(FTE_DB_PTR pFlash, FTE_UINT32 ulSectorIndex, FTE_DB_SECTOR_HEAD_PTR pSectorHead);
+        FTE_RET FTE_DB_SECTOR_setHead(FTE_DB_PTR pFlash, FTE_UINT32 ulSectorIndex, FTE_DB_SECTOR_HEAD_PTR pSectorHead);
 
 
 FTE_DB_PTR    pFlash = NULL;
 
-_mqx_uint   FTE_DB_init(boolean bForce)
+FTE_RET   FTE_DB_init
+(
+    FTE_BOOL    bForce
+)
 {
-    _mqx_uint       ulRet;
+    FTE_RET       ulRet;
     FTE_M25P16_PTR  pM25P16;
     
     pM25P16 = FTE_M25P16_get(FTE_DEV_M25P16_0);
@@ -136,7 +139,7 @@ _mqx_uint   FTE_DB_init(boolean bForce)
         {
             FTE_DB_SECTOR_HEAD  xHead;
             
-            ulRet = FTE_DB_SECTOR_read(pFlash, i, 0, (uint_8_ptr)&xHead, sizeof(xHead));
+            ulRet = FTE_DB_SECTOR_read(pFlash, i, 0, (FTE_UINT8_PTR)&xHead, sizeof(xHead));
             if (ulRet != MQX_OK)
             {
                 pFlash->pSectors[i].xType = FTE_DB_SECTOR_TYPE_CRASHED;
@@ -148,16 +151,16 @@ _mqx_uint   FTE_DB_init(boolean bForce)
                 case    FTE_DB_SECTOR_TYPE_OBJECT:
                     {
                         int nPageGroupIndex;
-                        uint_32 pPageGroups[16];
-                        uint_32 ulPageGroupState;
-                        uint_32 ulPageIndex;
-                        uint_32 ulSlotGroupState;
-                        uint_32 ulSlotIndex;
+                        FTE_UINT32 pPageGroups[16];
+                        FTE_UINT32 ulPageGroupState;
+                        FTE_UINT32 ulPageIndex;
+                        FTE_UINT32 ulSlotGroupState;
+                        FTE_UINT32 ulSlotIndex;
                         
                         pFlash->pSectors[i].xType   = xHead.xType;
                         pFlash->pSectors[i].xID     = xHead.xParams.xObject.xID;
 
-                        ulRet = FTE_DB_SECTOR_read(pFlash, i, sizeof(FTE_DB_OBJECT_HEAD), (uint_8_ptr)pPageGroups, sizeof(pPageGroups));
+                        ulRet = FTE_DB_SECTOR_read(pFlash, i, sizeof(FTE_DB_OBJECT_HEAD), (FTE_UINT8_PTR)pPageGroups, sizeof(pPageGroups));
                         if (ulRet != MQX_OK)
                         {
                             pFlash->pSectors[i].xType = FTE_DB_SECTOR_TYPE_CRASHED;
@@ -185,11 +188,11 @@ _mqx_uint   FTE_DB_init(boolean bForce)
                         
                         if (ulPageIndex != 16)
                         {
-                            uint_32 ulOffset;
+                            FTE_UINT32 ulOffset;
                             
-                            ulOffset = sizeof(FTE_DB_OBJECT_HEAD) + sizeof(uint_32) * 16 + ulPageIndex * 4;
+                            ulOffset = sizeof(FTE_DB_OBJECT_HEAD) + sizeof(FTE_UINT32) * 16 + ulPageIndex * 4;
                             
-                            ulRet = FTE_DB_SECTOR_read(pFlash, i, ulOffset, (uint_8_ptr)&ulSlotGroupState, 4);
+                            ulRet = FTE_DB_SECTOR_read(pFlash, i, ulOffset, (FTE_UINT8_PTR)&ulSlotGroupState, 4);
                             if (ulRet != MQX_OK)
                             {
                                 pFlash->pSectors[i].xType = FTE_DB_SECTOR_TYPE_CRASHED;
@@ -232,7 +235,10 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint   FTE_DB_OBJ_create(FTE_OBJECT_ID xID)
+FTE_RET   FTE_DB_OBJ_create
+(
+    FTE_OBJECT_ID   xID
+)
 {
     FTE_DB_SECTOR_TYPE  xSectorType;
     int i, nSectorIndex = -1, nObjectIndex = -1;
@@ -297,7 +303,7 @@ _mqx_uint   FTE_DB_OBJ_create(FTE_OBJECT_ID xID)
         FTE_DB_SECTOR_erase(pFlash, nSectorIndex);
     }
 
-    FTE_DB_SECTOR_write(pFlash, nSectorIndex, 0, (uint_8_ptr)&xSectorHead, sizeof(xSectorHead)); 
+    FTE_DB_SECTOR_write(pFlash, nSectorIndex, 0, (FTE_UINT8_PTR)&xSectorHead, sizeof(xSectorHead)); 
     
     pFlash->pObjects[i].xID             = xID;
     pFlash->pObjects[i].ulSectorIndex   = nSectorIndex;
@@ -308,7 +314,10 @@ _mqx_uint   FTE_DB_OBJ_create(FTE_OBJECT_ID xID)
     return  MQX_ERROR;
 }
 
-_mqx_uint   FTE_DB_OBJ_destroy(FTE_OBJECT_ID xID)
+FTE_RET   FTE_DB_OBJ_destroy
+(
+    FTE_OBJECT_ID   xID
+)
 {
     int i, j;
     
@@ -319,7 +328,7 @@ _mqx_uint   FTE_DB_OBJ_destroy(FTE_OBJECT_ID xID)
             FTE_DB_SECTOR_HEAD  xSectorHead;
 
             xSectorHead.xType = FTE_DB_SECTOR_TYPE_DESTROYED;
-            FTE_DB_SECTOR_write(pFlash, pFlash->pObjects[i].ulSectorIndex, 0, (uint_8_ptr)&xSectorHead, sizeof(xSectorHead)); 
+            FTE_DB_SECTOR_write(pFlash, pFlash->pObjects[i].ulSectorIndex, 0, (FTE_UINT8_PTR)&xSectorHead, sizeof(xSectorHead)); 
 
             for(j = i+1 ; j < pFlash->ulObjectCount ; i++, j++)
             {
@@ -335,7 +344,10 @@ _mqx_uint   FTE_DB_OBJ_destroy(FTE_OBJECT_ID xID)
     return  MQX_INVALID_OBJECT;
 }
 
-uint_32     FTE_DB_OBJ_count(FTE_OBJECT_ID xID)
+FTE_UINT32  FTE_DB_OBJ_count
+(
+    FTE_OBJECT_ID   xID
+)
 {
      int i;
     
@@ -350,7 +362,11 @@ uint_32     FTE_DB_OBJ_count(FTE_OBJECT_ID xID)
     return  0;
 }
 
-_mqx_uint   FTE_DB_OBJ_appendValue(FTE_OBJECT_ID xID, FTE_DB_VALUE_PTR pValue)
+FTE_RET   FTE_DB_OBJ_appendValue
+(
+    FTE_OBJECT_ID       xID, 
+    FTE_DB_VALUE_PTR    pValue
+)
 {
     int i;
     
@@ -359,7 +375,7 @@ _mqx_uint   FTE_DB_OBJ_appendValue(FTE_OBJECT_ID xID, FTE_DB_VALUE_PTR pValue)
         if (pFlash->pObjects[i].xID == xID)
         {
 #if 0
-            uint_32 ulOffet = pFlash->pObjects[i].ulCount * 8;            
+            FTE_UINT32 ulOffet = pFlash->pObjects[i].ulCount * 8;            
             pFlash->pObjects[i].ulCount++;
 #endif
             
@@ -370,10 +386,14 @@ _mqx_uint   FTE_DB_OBJ_appendValue(FTE_OBJECT_ID xID, FTE_DB_VALUE_PTR pValue)
 }
 
 
-int_32      FTE_DB_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
+FTE_INT32   FTE_DB_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[]
+)
 {
-    boolean bPrintUsage, bShortHelp = FALSE;
-    int_32  nReturnCode = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   nReturnCode = SHELL_EXIT_SUCCESS;
     
     bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
@@ -415,7 +435,7 @@ int_32      FTE_DB_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
         {
             if (strcmp(pArgv[1], "create") == 0)
             {
-                uint_32 xID;
+                FTE_UINT32 xID;
                 
                 if (Shell_parse_hexnum(pArgv[2], &xID) == FALSE)
                 {
@@ -427,7 +447,7 @@ int_32      FTE_DB_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
             }
             else if (strcmp(pArgv[1], "destroy") == 0)
             {
-                uint_32 xID;
+                FTE_UINT32 xID;
                 
                 if (Shell_parse_hexnum(pArgv[2], &xID) == FALSE)
                 {
@@ -445,7 +465,7 @@ int_32      FTE_DB_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
             {
                 TIME_STRUCT     xTime;
                 FTE_DB_VALUE    xValue;
-                uint_32         xID;
+                FTE_UINT32         xID;
                 
                 if (Shell_parse_hexnum(pArgv[2], &xID) == FALSE)
                 {
@@ -467,7 +487,7 @@ int_32      FTE_DB_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
             }
             else if (strcmp(pArgv[1], "destroy") == 0)
             {
-                uint_32 xID;
+                FTE_UINT32 xID;
                 
                 if (Shell_parse_hexnum(pArgv[2], &xID) == FALSE)
                 {
@@ -479,7 +499,7 @@ int_32      FTE_DB_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
             }
             else if (strcmp(pArgv[1], "dump") == 0)
             {
-                uint_32 ulAddress, ulLen;
+                FTE_UINT32 ulAddress, ulLen;
                 
                 if (Shell_parse_hexnum(pArgv[2], &ulAddress) == FALSE)
                 {
@@ -493,7 +513,7 @@ int_32      FTE_DB_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
                     break;
                 }
                 
-                uint_8_ptr  pBuff = FTE_MEM_alloc(ulLen);
+                FTE_UINT8_PTR  pBuff = FTE_MEM_alloc(ulLen);
                 
                 if (FTE_DB_dump(ulAddress, pBuff, ulLen) == MQX_OK)
                 {
@@ -536,31 +556,37 @@ int_32      FTE_DB_SHELL_cmd(int_32 nArgc, char_ptr pArgv[])
     return  nReturnCode;
 }
 
-_mqx_uint FTE_DB_HEAD_init(FTE_DB_PTR pFlash)
+FTE_RET FTE_DB_HEAD_init
+(
+    FTE_DB_PTR  pFlash
+)
 {
     memset(&pFlash->xHead, 0, sizeof(pFlash->xHead));
 
     return  FTE_DB_HEAD_write(pFlash);
 }
 
-_mqx_uint   FTE_DB_HEAD_read(FTE_DB_PTR pFlash)
+FTE_RET   FTE_DB_HEAD_read
+(
+    FTE_DB_PTR  pFlash
+)
 {
-    _mqx_uint           ulRet;
-    uint_32             ulCRC;
-    int                 i;
+    FTE_RET     ulRet;
+    FTE_UINT32  ulCRC;
+    int         i;
     FTE_DB_HEAD   xHead = {.ulID = 0};
     
     for(i = 0 ; i < FTE_DB_PAGE_PER_SECTOR ; i++)
     {
         FTE_DB_HEAD   xTmpHead;
         
-        ulRet = FTE_M25P16_read(pFlash->pM25P16, pFlash->ulBaseAddress + i * FTE_DB_PAGE_SIZE, (uint_8_ptr)&xTmpHead, sizeof(FTE_DB_HEAD));
+        ulRet = FTE_M25P16_read(pFlash->pM25P16, pFlash->ulBaseAddress + i * FTE_DB_PAGE_SIZE, (FTE_UINT8_PTR)&xTmpHead, sizeof(FTE_DB_HEAD));
         if (ulRet != MQX_OK)
         {
             continue;
         }
 
-        ulCRC = fte_crc32(0, (void *)&xTmpHead.ulTag, sizeof(xTmpHead) - sizeof(uint_32));    
+        ulCRC = FTE_CRC32(0, &xTmpHead.ulTag, sizeof(xTmpHead) - sizeof(FTE_UINT32));    
         if ((xTmpHead.ulTag != FTE_DB_TAG) || (xTmpHead.ulCRC != ulCRC))
         {
             continue;
@@ -582,13 +608,16 @@ _mqx_uint   FTE_DB_HEAD_read(FTE_DB_PTR pFlash)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_DB_HEAD_write(FTE_DB_PTR pFlash)
+FTE_RET FTE_DB_HEAD_write
+(
+    FTE_DB_PTR  pFlash
+)
 {
-    uint_32 ulPageIndex;
+    FTE_UINT32 ulPageIndex;
 
     pFlash->xHead.ulTag = FTE_DB_TAG;
     pFlash->xHead.ulID += 1;
-    pFlash->xHead.ulCRC = fte_crc32(0, (void *)&pFlash->xHead.ulTag, sizeof(pFlash->xHead) - sizeof(uint_32));        
+    pFlash->xHead.ulCRC = FTE_CRC32(0, &pFlash->xHead.ulTag, sizeof(pFlash->xHead) - sizeof(FTE_UINT32));        
     
     ulPageIndex = (pFlash->xHead.ulID - 1) % FTE_DB_PAGE_PER_SECTOR;
     if (ulPageIndex == 0)
@@ -596,12 +625,15 @@ _mqx_uint   FTE_DB_HEAD_write(FTE_DB_PTR pFlash)
         FTE_M25P16_eraseSector(pFlash->pM25P16, pFlash->ulBaseAddress);
     }    
 
-    return  FTE_M25P16_write(pFlash->pM25P16, pFlash->ulBaseAddress + ulPageIndex * FTE_DB_PAGE_SIZE, (uint_8_ptr)&pFlash->xHead, sizeof(FTE_DB_HEAD));
+    return  FTE_M25P16_write(pFlash->pM25P16, pFlash->ulBaseAddress + ulPageIndex * FTE_DB_PAGE_SIZE, (FTE_UINT8_PTR)&pFlash->xHead, sizeof(FTE_DB_HEAD));
 }
 
-
-
-_mqx_uint FTE_DB_dump(uint_32 ulAddress, uint_8_ptr pBuff, uint_32 ulLen)
+FTE_RET FTE_DB_dump
+(   
+    FTE_UINT32      ulAddress, 
+    FTE_UINT8_PTR   pBuff, 
+    FTE_UINT32      ulLen
+)
 {
     if (pFlash == NULL)
     {
@@ -611,45 +643,73 @@ _mqx_uint FTE_DB_dump(uint_32 ulAddress, uint_8_ptr pBuff, uint_32 ulLen)
     return  FTE_M25P16_read(pFlash->pM25P16, ulAddress, pBuff, ulLen);
 }
 
-_mqx_uint FTE_DB_SECTOR_read(FTE_DB_PTR pFlash, uint_32 ulIndex, uint_32 ulOffset, uint_8_ptr pBuff, uint_32 ulLen)
+FTE_RET FTE_DB_SECTOR_read
+(
+    FTE_DB_PTR  pFlash, 
+    FTE_UINT32  ulIndex, 
+    FTE_UINT32  ulOffset, 
+    FTE_UINT8_PTR   pBuff, 
+    FTE_UINT32  ulLen
+)
 {
     ASSERT((pFlash != NULL) && (ulIndex < FTE_DB_SECTOR_MAX) && ((ulOffset + ulLen) <= FTE_DB_SECTOR_SIZE) && (pBuff != NULL));
     
     return  FTE_M25P16_read(pFlash->pM25P16, ((ulIndex + 1) * FTE_DB_SECTOR_SIZE) + ulOffset, pBuff, ulLen); 
 }
 
-_mqx_uint FTE_DB_SECTOR_write(FTE_DB_PTR pFlash, uint_32 ulIndex, uint_32 ulOffset, uint_8_ptr pBuff, uint_32 ulLen)
+FTE_RET FTE_DB_SECTOR_write
+(
+    FTE_DB_PTR  pFlash, 
+    FTE_UINT32  ulIndex, 
+    FTE_UINT32  ulOffset, 
+    FTE_UINT8_PTR   pBuff, 
+    FTE_UINT32  ulLen
+)
 {
     ASSERT((pFlash != NULL) && (ulIndex < FTE_DB_SECTOR_MAX) && ((ulOffset + ulLen) <= FTE_DB_SECTOR_SIZE) && (pBuff != NULL));
     
     return  FTE_M25P16_write(pFlash->pM25P16, ((ulIndex + 1) * FTE_DB_SECTOR_SIZE) + ulOffset, pBuff, ulLen); 
 }
 
-_mqx_uint FTE_DB_SECTOR_erase(FTE_DB_PTR pFlash, uint_32 ulIndex)
+FTE_RET FTE_DB_SECTOR_erase
+(
+    FTE_DB_PTR  pFlash, 
+    FTE_UINT32  ulIndex
+)
 {
     ASSERT((pFlash != NULL) && (ulIndex < FTE_DB_SECTOR_MAX));
     
     return  FTE_M25P16_eraseSector(pFlash->pM25P16, ((ulIndex + 1) * FTE_DB_SECTOR_SIZE)); 
 }
 
-_mqx_uint FTE_DB_SECTOR_getHead(FTE_DB_PTR pFlash, uint_32 ulSectorIndex, FTE_DB_SECTOR_HEAD_PTR pSectorHead)
+FTE_RET FTE_DB_SECTOR_getHead
+(
+    FTE_DB_PTR  pFlash, 
+    FTE_UINT32  ulSectorIndex, 
+    FTE_DB_SECTOR_HEAD_PTR  pSectorHead
+)
 {
-    uint_32 ulOffset;
+    FTE_UINT32 ulOffset;
     
     ASSERT((pFlash != NULL) && (ulSectorIndex < FTE_DB_SECTOR_MAX) && (pSectorHead != NULL));
     
     ulOffset = (ulSectorIndex + 1) * FTE_DB_SECTOR_SIZE - FTE_DB_PAGE_SIZE;
     
-    return  FTE_M25P16_read(pFlash->pM25P16, ulOffset, (uint_8_ptr)pSectorHead, sizeof(FTE_DB_SECTOR_HEAD)); 
+    return  FTE_M25P16_read(pFlash->pM25P16, ulOffset, (FTE_UINT8_PTR)pSectorHead, sizeof(FTE_DB_SECTOR_HEAD)); 
 }
 
-_mqx_uint FTE_DB_SECTOR_setHead(FTE_DB_PTR pFlash, uint_32 ulSectorIndex, FTE_DB_SECTOR_HEAD_PTR pSectorHead)
+FTE_RET FTE_DB_SECTOR_setHead
+(
+    FTE_DB_PTR  pFlash, 
+    FTE_UINT32  ulSectorIndex, 
+    FTE_DB_SECTOR_HEAD_PTR pSectorHead
+)
 {
-    uint_32 ulOffset;
+    FTE_UINT32 ulOffset;
     
     ASSERT((pFlash != NULL) && (ulSectorIndex < FTE_DB_SECTOR_MAX) && (pSectorHead != NULL));
     
     ulOffset = (ulSectorIndex + 1) * FTE_DB_SECTOR_SIZE - FTE_DB_PAGE_SIZE;
     
-    return  FTE_M25P16_write(pFlash->pM25P16, ulOffset, (uint_8_ptr)pSectorHead, sizeof(FTE_DB_SECTOR_HEAD)); 
+    return  FTE_M25P16_write(pFlash->pM25P16, ulOffset, (FTE_UINT8_PTR)pSectorHead, sizeof(FTE_DB_SECTOR_HEAD)); 
 }

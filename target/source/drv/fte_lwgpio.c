@@ -4,13 +4,17 @@
 #include <assert.h>
 #include <lwgpio_kgpio.h>
 #include <lwgpio.h>
+#include "fte_type.h"
 #include "fte_mem.h"
 #include "fte_drv.h"
   
 static FTE_LWGPIO_PTR   _pHead  = NULL;
-static uint_32          _nGPIOs = 0;
+static FTE_UINT32          _nGPIOs = 0;
  
-_mqx_uint FTE_LWGPIO_create(FTE_LWGPIO_CONFIG_CONST_PTR pConfig)
+FTE_RET FTE_LWGPIO_create
+(
+    FTE_LWGPIO_CONFIG_CONST_PTR     pConfig
+)
 {   
     FTE_LWGPIO_PTR  pLWGPIO;
     
@@ -31,7 +35,11 @@ _mqx_uint FTE_LWGPIO_create(FTE_LWGPIO_CONFIG_CONST_PTR pConfig)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_LWGPIO_attach(FTE_LWGPIO_PTR pLWGPIO, uint_32 nParent)
+FTE_RET   FTE_LWGPIO_attach
+(
+    FTE_LWGPIO_PTR  pLWGPIO, 
+    FTE_UINT32      nParent
+)
 {
     assert(pLWGPIO != NULL);
     
@@ -54,7 +62,10 @@ _mqx_uint   FTE_LWGPIO_attach(FTE_LWGPIO_PTR pLWGPIO, uint_32 nParent)
     return  MQX_OK;
 }
     
-_mqx_uint   FTE_LWGPIO_detach(FTE_LWGPIO_PTR pLWGPIO)
+FTE_RET   FTE_LWGPIO_detach
+(
+    FTE_LWGPIO_PTR  pLWGPIO
+)
 {
     if (pLWGPIO != NULL)
     {
@@ -67,12 +78,15 @@ _mqx_uint   FTE_LWGPIO_detach(FTE_LWGPIO_PTR pLWGPIO)
     return  MQX_ERROR;
 }
 
-uint_32 FTE_LWGPIO_count(void)
+FTE_UINT32 FTE_LWGPIO_count(void)
 {
     return  _nGPIOs;
 }
 
-FTE_LWGPIO_PTR FTE_LWGPIO_get(uint_32 nID)
+FTE_LWGPIO_PTR FTE_LWGPIO_get
+(
+    FTE_UINT32  nID
+)
 {
     FTE_LWGPIO_PTR pLWGPIO = _pHead;
     
@@ -88,7 +102,11 @@ FTE_LWGPIO_PTR FTE_LWGPIO_get(uint_32 nID)
     
     return  NULL;
 }
-_mqx_uint   FTE_LWGPIO_setValue(FTE_LWGPIO_PTR pLWGPIO, boolean value)
+FTE_RET   FTE_LWGPIO_setValue
+(
+    FTE_LWGPIO_PTR  pLWGPIO, 
+    FTE_BOOL        value
+)
 {
     assert(pLWGPIO != NULL);
     if (pLWGPIO == NULL)
@@ -108,7 +126,11 @@ _mqx_uint   FTE_LWGPIO_setValue(FTE_LWGPIO_PTR pLWGPIO, boolean value)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_LWGPIO_getValue(FTE_LWGPIO_PTR pLWGPIO, boolean *value)
+FTE_RET   FTE_LWGPIO_getValue
+(
+    FTE_LWGPIO_PTR  pLWGPIO, 
+    FTE_BOOL_PTR    value
+)
 {
     assert(pLWGPIO != NULL);
     if (pLWGPIO == NULL)
@@ -128,7 +150,11 @@ _mqx_uint   FTE_LWGPIO_getValue(FTE_LWGPIO_PTR pLWGPIO, boolean *value)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_LWGPIO_setDirection(FTE_LWGPIO_PTR pLWGPIO, LWGPIO_DIR nValue)
+FTE_RET   FTE_LWGPIO_setDirection
+(
+    FTE_LWGPIO_PTR  pLWGPIO, 
+    LWGPIO_DIR      nValue
+)
 {
     assert(pLWGPIO != NULL);
     if (pLWGPIO == NULL)
@@ -141,7 +167,11 @@ _mqx_uint   FTE_LWGPIO_setDirection(FTE_LWGPIO_PTR pLWGPIO, LWGPIO_DIR nValue)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_LWGPIO_setPullUp(FTE_LWGPIO_PTR pLWGPIO, boolean bEnable)
+FTE_RET   FTE_LWGPIO_setPullUp
+(
+    FTE_LWGPIO_PTR  pLWGPIO, 
+    FTE_BOOL        bEnable
+)
 {
     assert(pLWGPIO != NULL);
     if (pLWGPIO == NULL)
@@ -161,7 +191,11 @@ _mqx_uint   FTE_LWGPIO_setPullUp(FTE_LWGPIO_PTR pLWGPIO, boolean bEnable)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_LWGPIO_setPullDown(FTE_LWGPIO_PTR pLWGPIO, boolean bEnable)
+FTE_RET   FTE_LWGPIO_setPullDown
+(
+    FTE_LWGPIO_PTR  pLWGPIO, 
+    FTE_BOOL        bEnable
+)
 {
     assert(pLWGPIO != NULL);
     if (pLWGPIO == NULL)
@@ -181,7 +215,12 @@ _mqx_uint   FTE_LWGPIO_setPullDown(FTE_LWGPIO_PTR pLWGPIO, boolean bEnable)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_LWGPIO_setISR(FTE_LWGPIO_PTR pLWGPIO, void (*func)(void *), void *params)
+FTE_RET   FTE_LWGPIO_setISR
+(
+    FTE_LWGPIO_PTR  pLWGPIO, 
+    void            (*func)(FTE_VOID_PTR ), 
+    FTE_VOID_PTR params
+)
 {
     assert(pLWGPIO != NULL);
     if (pLWGPIO == NULL)
@@ -194,7 +233,13 @@ _mqx_uint   FTE_LWGPIO_setISR(FTE_LWGPIO_PTR pLWGPIO, void (*func)(void *), void
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_LWGPIO_INT_init(FTE_LWGPIO_PTR pLWGPIO, uint_32 priority, uint_32 subpriority, boolean enable)
+FTE_RET   FTE_LWGPIO_INT_init
+(
+    FTE_LWGPIO_PTR  pLWGPIO, 
+    FTE_UINT32      priority, 
+    FTE_UINT32      subpriority, 
+    FTE_BOOL        enable
+)
 {
     assert(pLWGPIO != NULL);
     if (pLWGPIO == NULL)
@@ -207,7 +252,11 @@ _mqx_uint   FTE_LWGPIO_INT_init(FTE_LWGPIO_PTR pLWGPIO, uint_32 priority, uint_3
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_LWGPIO_INT_setPolarity(FTE_LWGPIO_PTR pLWGPIO, uint_32 polarity)
+FTE_RET   FTE_LWGPIO_INT_setPolarity
+(
+    FTE_LWGPIO_PTR  pLWGPIO, 
+    FTE_UINT32      polarity
+)
 {
     assert(pLWGPIO != NULL);
     if (pLWGPIO == NULL)
@@ -275,7 +324,11 @@ _mqx_uint   FTE_LWGPIO_INT_setPolarity(FTE_LWGPIO_PTR pLWGPIO, uint_32 polarity)
     return  MQX_OK;
 }
 
-_mqx_uint    FTE_LWGPIO_INT_setEnable(FTE_LWGPIO_PTR pLWGPIO, boolean enable)
+FTE_RET    FTE_LWGPIO_INT_setEnable
+(
+    FTE_LWGPIO_PTR  pLWGPIO, 
+    FTE_BOOL        enable
+)
 {
     assert(pLWGPIO != NULL);
     if (pLWGPIO == NULL)
@@ -288,7 +341,11 @@ _mqx_uint    FTE_LWGPIO_INT_setEnable(FTE_LWGPIO_PTR pLWGPIO, boolean enable)
     return  MQX_OK;
 }
 
-_mqx_uint    FTE_LWGPIO_INT_getFlag(FTE_LWGPIO_PTR pLWGPIO, boolean *flag)
+FTE_RET    FTE_LWGPIO_INT_getFlag
+(
+    FTE_LWGPIO_PTR  pLWGPIO, 
+    FTE_BOOL_PTR    flag
+)
 {
     assert(pLWGPIO != NULL);
     if (pLWGPIO == NULL)
@@ -301,7 +358,10 @@ _mqx_uint    FTE_LWGPIO_INT_getFlag(FTE_LWGPIO_PTR pLWGPIO, boolean *flag)
     return  MQX_OK;
 }
 
-_mqx_uint    FTE_LWGPIO_INT_clrFlag(FTE_LWGPIO_PTR pLWGPIO)
+FTE_RET    FTE_LWGPIO_INT_clrFlag
+(
+    FTE_LWGPIO_PTR  pLWGPIO
+)
 {
     assert(pLWGPIO != NULL);
     if (pLWGPIO == NULL)
@@ -314,16 +374,20 @@ _mqx_uint    FTE_LWGPIO_INT_clrFlag(FTE_LWGPIO_PTR pLWGPIO)
     return  MQX_OK;
 }
 
-int_32      FTE_LWGPIO_SHELL_cmd(int_32 argc, char_ptr argv[] )
+FTE_INT32      FTE_LWGPIO_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[]
+)
 {
-    boolean              print_usage, shorthelp = FALSE;
-    int_32               return_code = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   xRet = SHELL_EXIT_SUCCESS;
     
-    print_usage = Shell_check_help_request (argc, argv, &shorthelp);
+    bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
-    if (!print_usage)
+    if (!bPrintUsage)
     { 
-        switch(argc)
+        switch(nArgc)
         {
         case    1:
             { 
@@ -346,25 +410,25 @@ int_32      FTE_LWGPIO_SHELL_cmd(int_32 argc, char_ptr argv[] )
             
         default:
             {
-                print_usage = TRUE;
+                bPrintUsage = TRUE;
             }
         }
     }
 
-   if (print_usage || (return_code !=SHELL_EXIT_SUCCESS))
+   if (bPrintUsage || (xRet !=SHELL_EXIT_SUCCESS))
     {
-        if (shorthelp)
+        if (bShortHelp)
         {
-            printf ("%s [<xDevID>]n", argv[0]);
+            printf ("%s [<xDevID>]n", pArgv[0]);
         }
         else
         {
-            printf("Usage : %s [<xDevID>]\n", argv[0]);
+            printf("Usage : %s [<xDevID>]\n", pArgv[0]);
             printf("        xDevID - GPIO ID\n");
         }
     }
 
-    return   return_code;
+    return   xRet;
 }
 
 /******************************************************************************

@@ -14,10 +14,10 @@
 typedef struct _FTE_RL_CONFIG_STRUCT
 {
     FTE_COMMON_CONFIG   xCommon;
-    uint_32             nGPIOOpen;
-    uint_32             nGPIOClose;
-    uint_32             nInitClosed;
-    uint_32             nLED;
+    FTE_UINT32             nGPIOOpen;
+    FTE_UINT32             nGPIOClose;
+    FTE_UINT32             nInitClosed;
+    FTE_UINT32             nLED;
 }   FTE_RL_CONFIG, _PTR_ FTE_RL_CONFIG_PTR;
 
 typedef struct  _FTE_RL_STATUS_STRUCT
@@ -27,18 +27,18 @@ typedef struct  _FTE_RL_STATUS_STRUCT
     FTE_GPIO_PTR        pGPIOClose;
 }   FTE_RL_STATUS, _PTR_ FTE_RL_STATUS_PTR;
 
-_mqx_uint   FTE_RL_attach(FTE_OBJECT_PTR pObj);
-_mqx_uint   FTE_RL_detach(FTE_OBJECT_PTR pObj);
-uint_32     FTE_RL_printValue(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 nLen);
+FTE_RET     FTE_RL_attach(FTE_OBJECT_PTR pObj, FTE_VOID_PTR pOpts);
+FTE_RET     FTE_RL_detach(FTE_OBJECT_PTR pObj);
+FTE_UINT32  FTE_RL_printValue(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pBuff, FTE_UINT32 nLen);
 
-uint_32     FTE_RL_count(void);
+FTE_UINT32  FTE_RL_count(void);
 
-_mqx_uint  FTE_RL_setValue(FTE_OBJECT_ID  nID, boolean bValue);
-_mqx_uint   FTE_RL_getInitState(FTE_OBJECT_PTR obj, uint_32_ptr pState);
-_mqx_uint   FTE_RL_setInitState(FTE_OBJECT_PTR obj, uint_32 nState);
+FTE_RET     FTE_RL_setValue(FTE_OBJECT_ID  nID, FTE_BOOL bValue);
+FTE_RET     FTE_RL_getInitState(FTE_OBJECT_PTR obj, FTE_UINT32_PTR pState);
+FTE_RET     FTE_RL_setInitState(FTE_OBJECT_PTR obj, FTE_UINT32 nState);
 
-_mqx_uint   FTE_RL_setPermanent(FTE_OBJECT_ID  nID);
+FTE_RET     FTE_RL_setPermanent(FTE_OBJECT_ID  nID);
 
-int_32      FTE_RL_SHELL_cmd(int_32 argc, char_ptr argv[]);
+FTE_INT32   FTE_RL_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
 
 #endif

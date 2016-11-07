@@ -8,19 +8,21 @@
 #define FTE_CIAS_SIOUX_CU_DEFAULT_DISTANCE      50
 #define FTE_CIAS_SIOUX_CU_DEFAULT_SNESOR_COUNT  7
 
+#define FTE_CIAS_SIOUX_CU_DEFAULT_UPDATE_INTERVAL   2000
+
 typedef struct FTE_CIAS_ALARM_STRUCT
 {
-    uint_32     ulValue;
+    FTE_UINT32     ulValue;
     TIME_STRUCT xVOT;           // valid operation time
 }   FTE_CIAS_ALARM, _PTR_ FTE_CIAS_ALARM_PTR;
 
 typedef struct FTE_CIAS_ZONE_STRUCT
 {
-    uint_8      nDeviceNumber;
+    FTE_UINT8      nDeviceNumber;
     boolean     bInOperation;
-    uint_8      bSensorCount;
-    uint_32     ulAlarm;
-    uint_32     ulValue;
+    FTE_UINT8      bSensorCount;
+    FTE_UINT32     ulAlarm;
+    FTE_UINT32     ulValue;
     TIME_STRUCT xVOT;           // valid operation time
 }   FTE_CIAS_ZONE, _PTR_ FTE_CIAS_ZONE_PTR;
 
@@ -37,60 +39,50 @@ typedef struct  FTE_CIAS_SIOUX_CU_STATUS_STRUCT
 typedef struct  FTE_CIAS_SIOUX_CU_STRUCT
 {
     _task_id        xTaskID;
-    uint_32         ulObjectID;
-    uint_32         ulSensorCount;
-    uint_32         ulDistance;    
+    FTE_UINT32         ulObjectID;
+    FTE_UINT32         ulSensorCount;
+    FTE_UINT32         ulDistance;    
     FTE_CIAS_ALARM  pAlarms[8];
     FTE_CIAS_ZONE   pZones[FTE_CIAS_SIOUX_CU_ZONE_MAX];
 }   FTE_CIAS_SIOUX_CU, _PTR_ FTE_CIAS_SIOUX_CU_PTR;
 
 typedef struct  FTE_CIAS_SIOUX_CU_TASK_PARAM_STRUCT
 {
-    uint_32     ulUCSDevID;
+    FTE_UINT32     ulUCSDevID;
 }   FTE_CIAS_SIOUX_CU_TASK_PARAM, _PTR_ FTE_CIAS_SIOUX_CU_TASK_PARAM_PTR;
 
 typedef struct  FTE_CIAS_SIOUX_CU_ZONE_CONFIG_STRUCT
 {
-    uint_8      nDeviceNumber;
-    uint_8      bActivation;
+    FTE_UINT8      nDeviceNumber;
+    FTE_UINT8      bActivation;
 }   FTE_CIAS_SIOUX_CU_ZONE_CONFIG, _PTR_ FTE_CIAS_SIOUX_CU_ZONE_CONFIG_PTR;
 
 typedef struct  FTE_CIAS_SIOUX_CU_EXT_CONFIG_STRUCT
 {
     
-    uint_32     ulDistance;
-    uint_32     ulSensorCount;
+    FTE_UINT32     ulDistance;
+    FTE_UINT32     ulSensorCount;
     FTE_CIAS_SIOUX_CU_ZONE_CONFIG   pZones[FTE_CIAS_SIOUX_CU_ZONE_MAX];
 }   FTE_CIAS_SIOUX_CU_EXT_CONFIG, _PTR_ FTE_CIAS_SIOUX_CU_EXT_CONFIG_PTR;
 
-void        FTE_CIAS_SIOUX_CU_init(uint_32 ulObjectID);
-_mqx_uint   FTE_CIAS_SIOUX_CU_attach(FTE_OBJECT_PTR pObj);
-_mqx_uint   FTE_CIAS_SIOUX_CU_detach(FTE_OBJECT_PTR pObj);
-_mqx_uint   FTE_CIAS_SIOUX_CU_setConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff);
-_mqx_uint   FTE_CIAS_SIOUX_CU_getConfig(FTE_OBJECT_PTR pObject, char_ptr pBuff, uint_32 ulBuffLen);
+void        FTE_CIAS_SIOUX_CU_init(FTE_UINT32 ulObjectID);
+FTE_RET     FTE_CIAS_SIOUX_CU_attach(FTE_OBJECT_PTR pObj);
+FTE_RET     FTE_CIAS_SIOUX_CU_detach(FTE_OBJECT_PTR pObj);
 
-_mqx_uint   FTE_CIAS_SIOUX_CU_initDefaultExtConfig(FTE_CIAS_SIOUX_CU_EXT_CONFIG_PTR pConfig);
+FTE_RET     FTE_CIAS_SIOUX_CU_initDefaultExtConfig(FTE_CIAS_SIOUX_CU_EXT_CONFIG_PTR pConfig);
 
-void        FTE_CIAS_SIOUX_CU_task(uint_32 datas);
-int_32      FTE_CIAS_SIOUX_CU_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] );
+void        FTE_CIAS_SIOUX_CU_task(FTE_UINT32 datas);
+FTE_INT32   FTE_CIAS_SIOUX_CU_SHELL_cmd(FTE_INT32 nArgc, char_ptr pArgv[] );
 
-uint_32     FTE_CIAS_SIOUX_CU_request(FTE_OBJECT_PTR pObj);
-_mqx_uint   FTE_CIAS_SIOUX_CU_received(FTE_OBJECT_PTR pObj);
-uint_32     FTE_CIAS_SIOUX_CU_get(FTE_OBJECT_PTR pObject, uint_32 ulIndex, FTE_VALUE_PTR pValue);
+FTE_UINT32  FTE_CIAS_SIOUX_CU_get(FTE_OBJECT_PTR pObject, FTE_UINT32 ulIndex, FTE_VALUE_PTR pValue);
 
-extern FTE_VALUE_TYPE  FTE_CIAS_SIOUX_CU_valueTypes[];
+extern  
+FTE_GUS_CONFIG FTE_CIAS_SIOUX_CU_defaultConfig;
 
-#define FTE_CIAS_SIOUX_CU_SENS  {\
-        .nModel         = FTE_GUS_MODEL_CIAS_SIOUX_CU,  \
-        .pName          = "CIAS_SIOUX_CU",              \
-        .nFieldCount    = FTE_CIAS_SIOUX_CU_ALARM_MAX + FTE_CIAS_SIOUX_CU_ZONE_MAX, \
-        .pValueTypes    = FTE_CIAS_SIOUX_CU_valueTypes, \
-        .f_attach       = FTE_CIAS_SIOUX_CU_attach,     \
-        .f_detach       = FTE_CIAS_SIOUX_CU_detach,     \
-        .f_get          = FTE_CIAS_SIOUX_CU_get,        \
-        .f_request      = FTE_CIAS_SIOUX_CU_request,    \
-        .f_received     = FTE_CIAS_SIOUX_CU_received,   \
-        .f_set_config   = FTE_CIAS_SIOUX_CU_setConfig,  \
-        .f_get_config   = FTE_CIAS_SIOUX_CU_getConfig,  \
-    }
+extern  
+FTE_VALUE_TYPE  FTE_CIAS_SIOUX_CU_valueTypes[];
+
+extern  const 
+FTE_GUS_MODEL_INFO    FTE_CIAS_SIOUX_CU_GUSModelInfo;
+
 #endif

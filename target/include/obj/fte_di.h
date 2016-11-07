@@ -11,10 +11,10 @@
 typedef struct _fte_di_config_struct
 {
     FTE_COMMON_CONFIG   xCommon;
-    uint_32             nGPIO;
-    uint_32             nLED;
-    uint_32             ulDelay;
-    uint_32             ulHold;
+    FTE_UINT32             nGPIO;
+    FTE_UINT32             nLED;
+    FTE_UINT32             ulDelay;
+    FTE_UINT32             ulHold;
 }   FTE_DI_CONFIG, _PTR_ FTE_DI_CONFIG_PTR;
 
 typedef struct  _fte_di_status_struct
@@ -24,22 +24,25 @@ typedef struct  _fte_di_status_struct
     FTE_VALUE           xPresetValue;
 }   FTE_DI_STATUS, _PTR_ FTE_DI_STATUS_PTR;
 
-_mqx_uint       FTE_DI_attach(FTE_OBJECT_PTR pObj);
-_mqx_uint       FTE_DI_detach (FTE_OBJECT_PTR pObj);
-uint_32         FTE_DI_printValue(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 nLen);
+FTE_RET     FTE_DI_attach(FTE_OBJECT_PTR pObj, FTE_VOID_PTR pOpts);
+FTE_RET     FTE_DI_detach (FTE_OBJECT_PTR pObj);
+FTE_UINT32  FTE_DI_printValue(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pBuff, FTE_UINT32 nLen);
 
-uint_32         FTE_DI_count(void);
-_mqx_uint       FTE_DI_update(void);
+FTE_UINT32  FTE_DI_count(void);
+FTE_RET     FTE_DI_update(void);
 
-_mqx_uint       FTE_DI_getValue(FTE_OBJECT_ID  nID, uint_32_ptr pValue);
-boolean         FTE_DI_isActive(FTE_OBJECT_ID  nID);
-_mqx_uint       FTE_DI_INT_lock(FTE_OBJECT_PTR  pObj);
-_mqx_uint       FTE_DI_INT_unlock(FTE_OBJECT_PTR  pObj);
-_mqx_uint       FTE_DI_setPolarity(FTE_OBJECT_PTR pObj, boolean bActiveHI);
+FTE_RET     FTE_DI_getValue(FTE_OBJECT_ID  nID, FTE_UINT32_PTR pValue);
+FTE_BOOL    FTE_DI_isActive(FTE_OBJECT_ID  nID);
+FTE_RET     FTE_DI_INT_lock(FTE_OBJECT_PTR  pObj);
+FTE_RET     FTE_DI_INT_unlock(FTE_OBJECT_PTR  pObj);
+FTE_RET     FTE_DI_setPolarity(FTE_OBJECT_PTR pObj, FTE_BOOL bActiveHI);
 
 
 #define     FTE_DI_POLARITY(pObj)    FTE_OBJ_FLAG_IS_SET((pObj)->pConfig->xFlags, FTE_DI_CONFIG_FLAG_POLARITY_HI)
 
-int_32      FTE_DI_SHELL_cmd(int_32 argc, char_ptr argv[]);
+FTE_INT32   FTE_DI_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
+
+extern  
+FTE_DI_CONFIG FTE_GPIO_DI_defaultConfig;
 
 #endif

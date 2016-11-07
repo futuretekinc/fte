@@ -22,8 +22,8 @@ typedef enum
 
 typedef struct _FTE_GPIO_CONFIG_STRUCT
 {
-    uint_32         nID;
-    uint_32         nDevID;
+    FTE_UINT32         nID;
+    FTE_UINT32         nDevID;
     FTE_GPIO_DIR    nDIR;
     FTE_GPIO_VALUE  nInit;
     FTE_GPIO_VALUE  nActive;
@@ -35,26 +35,26 @@ typedef struct _FTE_GPIO_STRUCT
 {
     struct _FTE_GPIO_STRUCT *   pNext;
     FTE_GPIO_CONFIG_CONST_PTR   pConfig;
-    uint_32                     nParent;
-    FTE_DRIVER_PTR              pPort;
+    FTE_UINT32      nParent;
+    FTE_DRIVER_PTR  pPort;
 }   FTE_GPIO, _PTR_ FTE_GPIO_PTR;
 
-_mqx_uint   FTE_GPIO_create(FTE_GPIO_CONFIG_PTR pConfig);
-_mqx_uint   FTE_GPIO_attach(FTE_GPIO_PTR pGPIO, uint_32 nParent);
-_mqx_uint   FTE_GPIO_detach(FTE_GPIO_PTR pGPIO);
-uint_32     FTE_GPIO_count(void);
+FTE_RET   FTE_GPIO_create(FTE_GPIO_CONFIG_PTR pConfig);
+FTE_RET   FTE_GPIO_attach(FTE_GPIO_PTR pGPIO, FTE_UINT32 nParent);
+FTE_RET   FTE_GPIO_detach(FTE_GPIO_PTR pGPIO);
+FTE_UINT32     FTE_GPIO_count(void);
 
-FTE_GPIO_PTR FTE_GPIO_get(uint_32 xDevID);
+FTE_GPIO_PTR FTE_GPIO_get(FTE_UINT32 xDevID);
 
-_mqx_uint   FTE_GPIO_setValue(FTE_GPIO_PTR pGPIO, boolean bValue);
-_mqx_uint   FTE_GPIO_getValue(FTE_GPIO_PTR pGPIO, boolean *pbValue);
-_mqx_uint   FTE_GPIO_setDir(FTE_GPIO_PTR pGPIO, FTE_GPIO_DIR xValue);
-_mqx_uint   FTE_GPIO_setISR(FTE_GPIO_PTR pGPIO,void (*isr)(void*), void*);
-_mqx_uint   FTE_GPIO_INT_init(FTE_GPIO_PTR pGPIO, uint_32 ulPriority, uint_32 ulSubPriority, boolean bEnable);
-_mqx_uint   FTE_GPIO_INT_setPolarity(FTE_GPIO_PTR pGPIO, uint_32 ulPolarity);
-_mqx_uint   FTE_GPIO_INT_setEnable(FTE_GPIO_PTR pGPIO, boolean bEnable);
-_mqx_uint   FTE_GPIO_INT_getFlag(FTE_GPIO_PTR pGPIO, boolean *pbFlag);
-_mqx_uint   FTE_GPIO_INT_clrFlag(FTE_GPIO_PTR pGPIO);
+FTE_RET   FTE_GPIO_setValue(FTE_GPIO_PTR pGPIO, FTE_BOOL bValue);
+FTE_RET   FTE_GPIO_getValue(FTE_GPIO_PTR pGPIO, FTE_BOOL_PTR pbValue);
+FTE_RET   FTE_GPIO_setDir(FTE_GPIO_PTR pGPIO, FTE_GPIO_DIR xValue);
+FTE_RET   FTE_GPIO_setISR(FTE_GPIO_PTR pGPIO,void (*isr)(FTE_VOID_PTR), FTE_VOID_PTR);
+FTE_RET   FTE_GPIO_INT_init(FTE_GPIO_PTR pGPIO, FTE_UINT32 ulPriority, FTE_UINT32 ulSubPriority, FTE_BOOL bEnable);
+FTE_RET   FTE_GPIO_INT_setPolarity(FTE_GPIO_PTR pGPIO, FTE_UINT32 ulPolarity);
+FTE_RET   FTE_GPIO_INT_setEnable(FTE_GPIO_PTR pGPIO, FTE_BOOL bEnable);
+FTE_RET   FTE_GPIO_INT_getFlag(FTE_GPIO_PTR pGPIO, FTE_BOOL_PTR pbFlag);
+FTE_RET   FTE_GPIO_INT_clrFlag(FTE_GPIO_PTR pGPIO);
 
-int_32      FTE_GPIO_SHELL_cmd(int_32 argc, char_ptr argv[] );
+FTE_INT32   FTE_GPIO_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[] );
 #endif

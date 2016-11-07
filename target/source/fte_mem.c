@@ -4,20 +4,26 @@
 #include "fte_mem.h"
 #include "fte_sys.h"
 
+#define FTE_MEM_DEFAULT_CAPTURE_COUNT       300
+#define FTE_MEM_DEFAULT_CAPTURE_SKIP_COUNT   300
 typedef struct
 {
-    uint_32     ulSize;
-    void _PTR_  pMem;
+    FTE_UINT32     ulSize;
+    FTE_VOID_PTR    pMem;
 }   FTE_MEM_BLOCK, _PTR_ FTE_MEM_BLOCK_PTR;
 
-static  uint_32 nTotalSize = 0;
-static  uint_32 ulMemTuples = 0;
-static  uint_32 ulMemTuplesMax = 0;
+static  FTE_UINT32 nTotalSize = 0;
+static  FTE_UINT32 ulMemTuples = 0;
+static  FTE_UINT32 ulMemTuplesMax = 0;
 static  FTE_MEM_BLOCK_PTR pMemTuples= NULL;
-static  boolean bCapture    = FALSE;
-static  boolean bVerbose    = FALSE;
+static  FTE_BOOL    bCapture    = FALSE;
+static  FTE_BOOL    bVerbose    = FALSE;
+static  FTE_UINT32  ulSkipCount = 0;
 
-_mqx_uint   FTE_MEM_CAPTURE_create(uint_32 ulTuples)
+FTE_RET   FTE_MEM_CAPTURE_create
+(
+    FTE_UINT32 ulTuples
+)
 {
     if ((pMemTuples != NULL) || (ulTuples == 0))
     {
@@ -48,16 +54,25 @@ void FTE_MEM_CAPTURE_destroy(void)
     pMemTuples      = NULL;
 }
 
-void *  _FTE_MEM_DEBUG_alloc(const char *pFunc, int nLine, uint_32 ulSize)
+void *  _FTE_MEM_DEBUG_alloc(const char *pFunc, int nLine, FTE_UINT32 ulSize)
 {
-    if (bCapture && pMemTuples)
+    if (bCapture)
     {
         void _PTR_ pBlock = NULL;
         
-        if (ulMemTuples < ulMemTuplesMax)
+        if (pMemTuples == NULL)
         {
-            pBlock = _mem_alloc_system(ulSize);        
-            if (pBlock != NULL)
+            FTE_MEM_CAPTURE_create(FTE_MEM_DEFAULT_CAPTURE_COUNT);
+        }
+        
+        pBlock = _mem_alloc_system(ulSize);        
+        if (pBlock != NULL)
+        {
+            if (ulSkipCount < FTE_MEM_DEFAULT_CAPTURE_SKIP_COUNT)
+            {
+                ulSkipCount++;
+            }
+            else  if (ulMemTuples < ulMemTuplesMax)
             {
                 for(int i = 0 ; i < ulMemTuplesMax ; i++)
                 {
@@ -77,11 +92,11 @@ void *  _FTE_MEM_DEBUG_alloc(const char *pFunc, int nLine, uint_32 ulSize)
         {
             if (pBlock != NULL)
             {
-                printf("%16s[%04d] : %08lx, %4d, %5d\n", pFunc, nLine, pBlock, ulSize, _mem_get_free());
+                printf("MEM ALLOC : %16s[%04d] : %08lx, %4d, %5d\n", pFunc, nLine, pBlock, ulSize, _mem_get_free());
             }
             else
             {
-                printf("%16s[%04d] : not allocated, %5d\n", pFunc, nLine, _mem_get_free());
+                printf("MEM ALLOC : %16s[%04d] : not allocated, %5d\n", pFunc, nLine, _mem_get_free());
             }
         }
         
@@ -93,16 +108,25 @@ void *  _FTE_MEM_DEBUG_alloc(const char *pFunc, int nLine, uint_32 ulSize)
     }
 }
 
-void *  _FTE_MEM_DEBUG_allocZero(const char *pFunc, int nLine, uint_32 ulSize)
+void *  _FTE_MEM_DEBUG_allocZero(const char *pFunc, int nLine, FTE_UINT32 ulSize)
 {
-    if (bCapture && pMemTuples)
+    if (bCapture)
     {
         void _PTR_ pBlock = NULL;
         
-        if (ulMemTuples < ulMemTuplesMax)
+        if (pMemTuples == NULL)
         {
-            pBlock = _mem_alloc_system_zero(ulSize);        
-            if (pBlock != NULL)
+            FTE_MEM_CAPTURE_create(FTE_MEM_DEFAULT_CAPTURE_COUNT);
+        }
+        
+        pBlock = _mem_alloc_system_zero(ulSize);        
+        if (pBlock != NULL)
+        {
+            if (ulSkipCount < FTE_MEM_DEFAULT_CAPTURE_SKIP_COUNT)
+            {
+                ulSkipCount++;
+            }
+            else if (ulMemTuples < ulMemTuplesMax)
             {
                 for(int i = 0 ; i < ulMemTuplesMax ; i++)
                 {
@@ -122,11 +146,11 @@ void *  _FTE_MEM_DEBUG_allocZero(const char *pFunc, int nLine, uint_32 ulSize)
         {
             if (pBlock != NULL)
             {
-                printf("%16s[%04d] : %08lx, %4d, %5d\n", pFunc, nLine, pBlock, ulSize, _mem_get_free());
+                printf("MEM ALLOC : %16s[%04d] : %08lx, %4d, %5d\n", pFunc, nLine, pBlock, ulSize, _mem_get_free());
             }
             else
             {
-                printf("%16s[%04d] : not allocated, %5d\n", pFunc, nLine, _mem_get_free());
+                printf("MEM ALLOC : %16s[%04d] : not allocated, %5d\n", pFunc, nLine, _mem_get_free());
             }
         }
         
@@ -140,30 +164,39 @@ void *  _FTE_MEM_DEBUG_allocZero(const char *pFunc, int nLine, uint_32 ulSize)
 
 void    _FTE_MEM_DEBUG_free(const char *pFunc, int nLine, void *pMem)
 {
-    if (bCapture && pMemTuples)
+    if (bCapture)
     {
-        if (bVerbose)
+        
+        if (pMemTuples == NULL)
         {
-            printf("%16s[%04d] : %08lx", pFunc, nLine, pMem);
+            FTE_MEM_CAPTURE_create(FTE_MEM_DEFAULT_CAPTURE_COUNT);
         }
         
-         for(int i = 0 ; i < ulMemTuplesMax ; i++)
+        if (bVerbose)
         {
-            if (pMemTuples[i].pMem == pMem)
-            {
-                if (bVerbose)
-                {
-                    printf(", %4d", pMemTuples[i].ulSize);
-                }
-                nTotalSize -= pMemTuples[i].ulSize;   
-                pMemTuples[i].pMem = NULL;
-                pMemTuples[i].ulSize = 0;
-                ulMemTuples--;
-                break;
-            }
+            printf("MEM FREE  : %16s[%04d] : %08lx", pFunc, nLine, pMem);
         }
-       
-        _mem_free(pMem);
+        
+        if (pMem != NULL)
+        {
+             for(int i = 0 ; i < ulMemTuplesMax ; i++)
+            {
+                if (pMemTuples[i].pMem == pMem)
+                {
+                    if (bVerbose)
+                    {
+                        printf(", %4d", pMemTuples[i].ulSize);
+                    }
+                    nTotalSize -= pMemTuples[i].ulSize;   
+                    pMemTuples[i].pMem = NULL;
+                    pMemTuples[i].ulSize = 0;
+                    ulMemTuples--;
+                    break;
+                }
+            }
+           
+            _mem_free(pMem);
+        }
         
         if (bVerbose)
         {
@@ -172,7 +205,10 @@ void    _FTE_MEM_DEBUG_free(const char *pFunc, int nLine, void *pMem)
     }
     else
     {
-        _mem_free(pMem);
+        if (pMem != NULL)
+        {
+            _mem_free(pMem);
+        }
     }
 }
 
@@ -182,7 +218,7 @@ void    _FTE_MEM_DEBUG_free(const char *pFunc, int nLine, void *pMem)
  ******************************************************************************/
 int_32  FTE_MEM_SHELL_cmd(int_32 nArgc, char_ptr ppArgv[])
 {
-    boolean              bPrintUsage, bShortHelp = FALSE;
+    FTE_BOOL              bPrintUsage, bShortHelp = FALSE;
     int_32               nRet = SHELL_EXIT_SUCCESS;
     
     bPrintUsage = Shell_check_help_request (nArgc, ppArgv, &bShortHelp);
@@ -228,7 +264,7 @@ int_32  FTE_MEM_SHELL_cmd(int_32 nArgc, char_ptr ppArgv[])
                     {
                         if (pMemTuples == NULL)
                         {
-                            FTE_MEM_CAPTURE_create(100);
+                            FTE_MEM_CAPTURE_create(FTE_MEM_DEFAULT_CAPTURE_COUNT);
                         }
                         bCapture = TRUE;
                     }
@@ -269,7 +305,7 @@ int_32  FTE_MEM_SHELL_cmd(int_32 nArgc, char_ptr ppArgv[])
                     }
                     else
                     {
-                        uint_32 ulCount;
+                        FTE_UINT32 ulCount;
                         if (Shell_parse_number(ppArgv[2], &ulCount) != TRUE)
                         {
                             bPrintUsage = TRUE;

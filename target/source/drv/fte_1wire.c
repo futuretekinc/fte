@@ -3,13 +3,20 @@
 #if FTE_1WIRE_SUPPORTED
 
 #define FTE_1WIRE_TIME_SLOT (1000000 / (FTE_1WIRE_BAUDRATE))
-_mqx_uint               FTE_1WIRE_readBits(FTE_1WIRE_PTR p1Wire, uint_8_ptr data, uint_32 bit_len);
-_mqx_uint               FTE_1WIRE_writeBits(FTE_1WIRE_PTR p1Wire, uint_8_ptr data, uint_32 bit_len);
-_mqx_uint               FTE_1WIRE_search(FTE_1WIRE_PTR p1Wire, FTE_1WIRE_ROM_CODE_PTR pROMCodes, uint_32 max_count);
-static void             _FTE_1WIRE_autoRecoveryRun(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
+static 
+FTE_RET     FTE_1WIRE_readBits(FTE_1WIRE_PTR p1Wire, FTE_UINT8_PTR data, FTE_UINT32 bit_len);
+
+static 
+FTE_RET     FTE_1WIRE_writeBits(FTE_1WIRE_PTR p1Wire, FTE_UINT8_PTR data, FTE_UINT32 bit_len);
+
+static 
+FTE_UINT32  FTE_1WIRE_search(FTE_1WIRE_PTR p1Wire, FTE_1WIRE_ROM_CODE_PTR pROMCodes, FTE_UINT32 max_count);
+
+static 
+void _FTE_1WIRE_autoRecoveryRun(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
 
 static FTE_1WIRE_PTR    _pHead      = NULL;
-static uint_32          _n1Wires    = 0;
+static FTE_UINT32          _n1Wires    = 0;
 
 static FTE_1WIRE_FAMILY_NAME   _pFamilyNames[] = 
 {
@@ -17,7 +24,7 @@ static FTE_1WIRE_FAMILY_NAME   _pFamilyNames[] =
     {   .xFamilyCode = 0x0}
 };
  
-_mqx_uint   FTE_1WIRE_create(FTE_1WIRE_CONFIG_CONST_PTR pConfig)
+FTE_RET FTE_1WIRE_create(FTE_1WIRE_CONFIG_CONST_PTR pConfig)
 {
     FTE_1WIRE_PTR   p1Wire;
     
@@ -67,7 +74,11 @@ error:
     return  MQX_ERROR;
 }
 
-_mqx_uint   FTE_1WIRE_attach(FTE_1WIRE_PTR p1Wire, uint_32 nParent)
+FTE_RET FTE_1WIRE_attach
+(
+    FTE_1WIRE_PTR   p1Wire, 
+    FTE_UINT32      nParent
+)
 {
     assert(p1Wire != NULL);
     if (p1Wire == NULL)
@@ -96,7 +107,10 @@ _mqx_uint   FTE_1WIRE_attach(FTE_1WIRE_PTR p1Wire, uint_32 nParent)
 }
 
 
-_mqx_uint   FTE_1WIRE_detach(FTE_1WIRE_PTR p1Wire)
+FTE_RET FTE_1WIRE_detach
+(
+    FTE_1WIRE_PTR   p1Wire
+)
 {
     assert(p1Wire != NULL);
     if (p1Wire == NULL)
@@ -112,7 +126,10 @@ _mqx_uint   FTE_1WIRE_detach(FTE_1WIRE_PTR p1Wire)
 
 }
 
-FTE_1WIRE_PTR    FTE_1WIRE_get(uint_32 nID)
+FTE_1WIRE_PTR    FTE_1WIRE_get
+(   
+    FTE_UINT32  nID
+)
 {
     FTE_1WIRE_PTR   p1Wire;
     
@@ -130,7 +147,10 @@ FTE_1WIRE_PTR    FTE_1WIRE_get(uint_32 nID)
     return  NULL;
 }
 
-_mqx_uint   FTE_1WIRE_discovery(FTE_1WIRE_PTR p1Wire)
+FTE_RET FTE_1WIRE_discovery
+(
+    FTE_1WIRE_PTR   p1Wire
+)
 {
     assert (p1Wire != NULL);
     if (p1Wire == NULL)
@@ -148,7 +168,7 @@ _mqx_uint   FTE_1WIRE_discovery(FTE_1WIRE_PTR p1Wire)
     return  MQX_OK;
 }
 
-uint_32 FTE_1WIRE_count(void)
+FTE_UINT32 FTE_1WIRE_count(void)
 {
     return  _n1Wires;
 }
@@ -158,7 +178,10 @@ pointer FTE_1WIRE_getFirst(void)
     return  _pHead;
 }
 
-pointer FTE_1WIRE_getNext(pointer p1Wire)
+pointer FTE_1WIRE_getNext
+(
+    pointer     p1Wire
+)
 {
     if (p1Wire != NULL)
     {
@@ -168,7 +191,10 @@ pointer FTE_1WIRE_getNext(pointer p1Wire)
     return  NULL;
 }
 
-uint_32     FTE_1WIRE_DEV_count(FTE_1WIRE_PTR p1Wire)
+FTE_UINT32     FTE_1WIRE_DEV_count
+(
+    FTE_1WIRE_PTR       p1Wire
+)
 {
     if (p1Wire == NULL)
     {
@@ -178,7 +204,12 @@ uint_32     FTE_1WIRE_DEV_count(FTE_1WIRE_PTR p1Wire)
     return  p1Wire->nROMCodes;
 }
 
-_mqx_uint   FTE_1WIRE_DEV_getROMCode(FTE_1WIRE_PTR p1Wire, uint_32 nIdx, FTE_1WIRE_ROM_CODE pROMCode)
+FTE_RET FTE_1WIRE_DEV_getROMCode
+(
+    FTE_1WIRE_PTR       p1Wire, 
+    FTE_UINT32          nIdx, 
+    FTE_1WIRE_ROM_CODE  pROMCode
+)
 {
     assert(p1Wire != NULL);    
     if (p1Wire == NULL)
@@ -191,7 +222,11 @@ _mqx_uint   FTE_1WIRE_DEV_getROMCode(FTE_1WIRE_PTR p1Wire, uint_32 nIdx, FTE_1WI
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_1WIRE_DEV_appendROMCode(FTE_1WIRE_PTR p1Wire, FTE_1WIRE_ROM_CODE pROMCode)
+FTE_RET FTE_1WIRE_DEV_appendROMCode
+(
+    FTE_1WIRE_PTR       p1Wire, 
+    FTE_1WIRE_ROM_CODE  pROMCode
+)
 {
     assert(p1Wire != NULL);    
     if (p1Wire == NULL)
@@ -209,21 +244,26 @@ _mqx_uint   FTE_1WIRE_DEV_appendROMCode(FTE_1WIRE_PTR p1Wire, FTE_1WIRE_ROM_CODE
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_1WIRE_read(FTE_1WIRE_PTR p1Wire, uint_8_ptr buff, uint_32 buff_len)
+FTE_RET FTE_1WIRE_read
+(
+    FTE_1WIRE_PTR   p1Wire, 
+    FTE_UINT8_PTR   pBuff, 
+    FTE_UINT32      nBuffLen
+)
 {
-    uint_32 i, j;
+    FTE_UINT32 i, j;
     assert(p1Wire != NULL);    
     if (p1Wire == NULL)
     {
         return  MQX_INVALID_DEVICE;
     }
     
-    memset(buff, 0, buff_len);
-    for(i = 0 ; i < buff_len; i++)
+    memset(pBuff, 0, nBuffLen);
+    for(i = 0 ; i < nBuffLen; i++)
     {
         for(j = 0 ; j < 8 ; j++)
         {
-            boolean bit = 0;
+            FTE_BOOL bit = 0;
             _int_disable();
             FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_OUTPUT);
             fte_udelay(2);
@@ -232,7 +272,7 @@ _mqx_uint   FTE_1WIRE_read(FTE_1WIRE_PTR p1Wire, uint_8_ptr buff, uint_32 buff_l
             FTE_LWGPIO_getValue(p1Wire->pLWGPIO, &bit);
             if (bit)
             {
-                buff[i] |= 1 << j;
+                pBuff[i] |= 1 << j;
             }
             fte_udelay(FTE_1WIRE_TIME_SLOT - 7);
             _int_enable();
@@ -242,9 +282,14 @@ _mqx_uint   FTE_1WIRE_read(FTE_1WIRE_PTR p1Wire, uint_8_ptr buff, uint_32 buff_l
     return MQX_OK;
 }
 
-_mqx_uint   FTE_1WIRE_write(FTE_1WIRE_PTR p1Wire, uint_8_ptr buff, uint_32 len)
+FTE_RET FTE_1WIRE_write
+(
+    FTE_1WIRE_PTR   p1Wire, 
+    FTE_UINT8_PTR   pBuff, 
+    FTE_UINT32      len
+)
 {
-    uint_32 i, j;
+    FTE_UINT32 i, j;
     assert(p1Wire != NULL);    
     if (p1Wire == NULL)
     {
@@ -258,7 +303,7 @@ _mqx_uint   FTE_1WIRE_write(FTE_1WIRE_PTR p1Wire, uint_8_ptr buff, uint_32 len)
             _int_disable();
             FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_OUTPUT);
             fte_udelay(5);
-            if (((buff[i] >> j) & 0x01) == 0)
+            if (((pBuff[i] >> j) & 0x01) == 0)
             {
                 fte_udelay(FTE_1WIRE_TIME_SLOT - 20);
                 FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_INPUT);
@@ -277,19 +322,19 @@ _mqx_uint   FTE_1WIRE_write(FTE_1WIRE_PTR p1Wire, uint_8_ptr buff, uint_32 len)
     
     return MQX_OK;
 }
-#define GET_BIT_AT(value,n) ((((uint_8_ptr)value)[n / 8] >> (n % 8)) & 0x01)
-#define SET_BIT_AT(value,n) (((uint_8_ptr)value)[n / 8] |= 1 << (n % 8))
-#define CLR_BIT_AT(value,n) (((uint_8_ptr)value)[n / 8] &= ~(1 << (n % 8)))
+#define GET_BIT_AT(value,n) ((((FTE_UINT8_PTR)value)[n / 8] >> (n % 8)) & 0x01)
+#define SET_BIT_AT(value,n) (((FTE_UINT8_PTR)value)[n / 8] |= 1 << (n % 8))
+#define CLR_BIT_AT(value,n) (((FTE_UINT8_PTR)value)[n / 8] &= ~(1 << (n % 8)))
 
-_mqx_uint   FTE_1WIRE_search(FTE_1WIRE_PTR p1Wire, FTE_1WIRE_ROM_CODE_PTR pROMCodes, uint_32 nMaxCount)
+FTE_UINT32  FTE_1WIRE_search(FTE_1WIRE_PTR p1Wire, FTE_1WIRE_ROM_CODE_PTR pROMCodes, FTE_UINT32 nMaxCount)
 {
-    int_32  i, j;
-    int_32  nCount = 0;
-    boolean bFound;
-    uint_8  data;
-    uint_8  pROMCode[8];
-    uint_8  pComPos[64];
-    uint_8  nComPos = 0;
+    FTE_INT32  i, j;
+    FTE_INT32  nCount = 0;
+    FTE_BOOL bFound;
+    FTE_UINT8  data;
+    FTE_UINT8  pROMCode[8];
+    FTE_UINT8  pComPos[64];
+    FTE_UINT8  nComPos = 0;
     
     FTE_1WIRE_lock(p1Wire);    
     
@@ -392,7 +437,7 @@ finished:
     return  nCount;
 }
 
-void    _fte_1wire_print_info(void)
+void    FTE_1WIRE_printInfo(void)
 {
     FTE_1WIRE_PTR   p1Wire;
     
@@ -428,7 +473,10 @@ void    _fte_1wire_print_info(void)
     }                       
 }
 
-void    _fte_1wire_print_devices(FTE_1WIRE_PTR p1Wire)
+void    FTE_1WIRE_printDevices
+(
+    FTE_1WIRE_PTR   p1Wire
+)
 {
     assert(p1Wire != NULL);
     
@@ -447,29 +495,33 @@ void    _fte_1wire_print_devices(FTE_1WIRE_PTR p1Wire)
     }
 }
 
-int_32  FTE_1WIRE_SHELL_cmd(int_32 argc, char_ptr argv[] )
+FTE_INT32  FTE_1WIRE_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[] 
+)
 { 
-    boolean              print_usage, shorthelp = FALSE;
-    int_32               return_code = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   xRet = SHELL_EXIT_SUCCESS;
     
-    print_usage = Shell_check_help_request (argc, argv, &shorthelp);
+    bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
-    if (print_usage)
+    if (bPrintUsage)
     { 
         goto    error;
     }
     
-    switch(argc)
+    switch(nArgc)
     {
     case    1:
         {
-            _fte_1wire_print_info();
+            FTE_1WIRE_printInfo();
         }
         break;
         
     case    2:
         {
-            if (strncmp(argv[1], "discovery", strlen(argv[1])) == 0)
+            if (strncmp(pArgv[1], "discovery", strlen(pArgv[1])) == 0)
             {
                 FTE_1WIRE_PTR   p1Wire = _pHead;
                 
@@ -495,22 +547,22 @@ int_32  FTE_1WIRE_SHELL_cmd(int_32 argc, char_ptr argv[] )
                     p1Wire = p1Wire->pNext;
                 }
             }
-            else if (strcmp(argv[1], "all") == 0)
+            else if (strcmp(pArgv[1], "all") == 0)
             {
                 FTE_1WIRE_PTR   p1Wire = _pHead;
                 
                 while(p1Wire != NULL)
                 {
-                    _fte_1wire_print_devices(p1Wire);                    
+                    FTE_1WIRE_printDevices(p1Wire);                    
                 }
             }
             else
             {
-                uint_32 nID;
+                FTE_UINT32 nID;
                 
-                if (! Shell_parse_hexnum( argv[1], &nID))  
+                if (! Shell_parse_hexnum( pArgv[1], &nID))  
                 {
-                    return_code = SHELL_EXIT_ERROR;
+                    xRet = SHELL_EXIT_ERROR;
                     goto error;
                 }
                 
@@ -518,32 +570,32 @@ int_32  FTE_1WIRE_SHELL_cmd(int_32 argc, char_ptr argv[] )
                 if (p1Wire == NULL)
                 {
                     printf("1-Wire xDevID%d not exists!\n", nID);
-                   return_code = SHELL_EXIT_ERROR;
+                   xRet = SHELL_EXIT_ERROR;
                    goto error;
                 }
 
-                _fte_1wire_print_devices(p1Wire);
+                FTE_1WIRE_printDevices(p1Wire);
             }
         }
         break;
     
     case    3:
         {
-            if (strncmp(argv[1], "discovery", strlen(argv[1])) == 0)
+            if (strncmp(pArgv[1], "discovery", strlen(pArgv[1])) == 0)
             {
                 FTE_1WIRE_PTR   p1Wire;
-                uint_32 nID;
+                FTE_UINT32 nID;
                 
-                if (! Shell_parse_hexnum( argv[2], &nID))  
+                if (! Shell_parse_hexnum( pArgv[2], &nID))  
                 {
-                    return_code = SHELL_EXIT_ERROR;
+                    xRet = SHELL_EXIT_ERROR;
                     goto error;
                 }
             
                 p1Wire = FTE_1WIRE_get(nID);
                 if( p1Wire == NULL)
                 {
-                    return_code = SHELL_EXIT_ERROR;
+                    xRet = SHELL_EXIT_ERROR;
                     goto error;
                 }
                 
@@ -565,28 +617,28 @@ int_32  FTE_1WIRE_SHELL_cmd(int_32 argc, char_ptr argv[] )
         
     case    4:
         {
-            if (strcmp(argv[1], "add") == 0)
+            if (strcmp(pArgv[1], "add") == 0)
             {
                 FTE_1WIRE_PTR   p1Wire;
-                uint_32 nID;
+                FTE_UINT32 nID;
                 
-                uint_8  pROMCode[8];
+                FTE_UINT8  pROMCode[8];
                 
-                if (! Shell_parse_hexnum( argv[2], &nID))  
+                if (! Shell_parse_hexnum( pArgv[2], &nID))  
                 {
-                    return_code = SHELL_EXIT_ERROR;
+                    xRet = SHELL_EXIT_ERROR;
                     goto error;
                 }
             
                 p1Wire = FTE_1WIRE_get(nID);
                 if( p1Wire == NULL)
                 {
-                    return_code = SHELL_EXIT_ERROR;
+                    xRet = SHELL_EXIT_ERROR;
                     goto error;
                 }
                 
                 
-                if (strlen(argv[3]) != 16)
+                if (strlen(pArgv[3]) != 16)
                 {
                     printf("Invalid ROM Code\n");
                     goto error;
@@ -594,19 +646,19 @@ int_32  FTE_1WIRE_SHELL_cmd(int_32 argc, char_ptr argv[] )
                 
                 for(int i = 0 ; i < 8 ; i++)
                 {
-                    uint_8  nHI, nLO;
+                    FTE_UINT8  nHI, nLO;
                     
-                    if ('0' <= argv[3][i*2] && argv[3][i*2] <= '9')
+                    if ('0' <= pArgv[3][i*2] && pArgv[3][i*2] <= '9')
                     {
-                        nHI = argv[3][i*2] - '0';
+                        nHI = pArgv[3][i*2] - '0';
                     }
-                    else if ('A' <= argv[3][i*2] && argv[3][i*2] <= 'F')
+                    else if ('A' <= pArgv[3][i*2] && pArgv[3][i*2] <= 'F')
                     {
-                        nHI = argv[3][i*2] - 'A' + 10;
+                        nHI = pArgv[3][i*2] - 'A' + 10;
                     }
-                    else if ('a' <= argv[3][i*2] && argv[3][i*2] <= 'f')
+                    else if ('a' <= pArgv[3][i*2] && pArgv[3][i*2] <= 'f')
                     {
-                        nHI = argv[3][i*2] - 'a' + 10;
+                        nHI = pArgv[3][i*2] - 'a' + 10;
                     }
                     else
                     {
@@ -614,17 +666,17 @@ int_32  FTE_1WIRE_SHELL_cmd(int_32 argc, char_ptr argv[] )
                         goto error;
                     }
                     
-                    if ('0' <= argv[3][i*2+1] && argv[3][i*2+1] <= '9')
+                    if ('0' <= pArgv[3][i*2+1] && pArgv[3][i*2+1] <= '9')
                     {
-                        nLO = argv[3][i*2+1] - '0';
+                        nLO = pArgv[3][i*2+1] - '0';
                     }
-                    else if ('A' <= argv[3][i*2+1] && argv[3][i*2+1] <= 'F')
+                    else if ('A' <= pArgv[3][i*2+1] && pArgv[3][i*2+1] <= 'F')
                     {
-                        nLO = argv[3][i*2+1] - 'A' + 10;
+                        nLO = pArgv[3][i*2+1] - 'A' + 10;
                     }
-                    else if ('a' <= argv[3][i*2+1] && argv[3][i*2+1] <= 'f')
+                    else if ('a' <= pArgv[3][i*2+1] && pArgv[3][i*2+1] <= 'f')
                     {
-                        nLO = argv[3][i*2+1] - 'a' + 10;
+                        nLO = pArgv[3][i*2+1] - 'a' + 10;
                     }
                     else
                     {
@@ -641,19 +693,19 @@ int_32  FTE_1WIRE_SHELL_cmd(int_32 argc, char_ptr argv[] )
         break;
         
     default:
-        print_usage = TRUE;    
+        bPrintUsage = TRUE;    
     }
 
 error:    
-    if (print_usage || (return_code !=SHELL_EXIT_SUCCESS))
+    if (bPrintUsage || (xRet !=SHELL_EXIT_SUCCESS))
     {
-        if (shorthelp)
+        if (bShortHelp)
         {
-            printf ("%s [ discovery | info ] [<xChannel>] \n", argv[0]);
+            printf ("%s [ discovery | info ] [<xChannel>] \n", pArgv[0]);
         }
         else
         {
-            printf("Usage : %s [ discovery | info ] [<xChannel>] \n", argv[0]);
+            printf("Usage : %s [ discovery | info ] [<xChannel>] \n", pArgv[0]);
             printf("        xDevID - 1WIRE Channel \n");
             printf("        discovery - discover connected devices\n");
             printf("        info - channel informations\n");
@@ -661,10 +713,10 @@ error:
     }
     
 
-    return   return_code;
+    return   xRet;
 }
 
-_mqx_uint   FTE_1WIRE_reset(FTE_1WIRE_PTR p1Wire)
+FTE_RET FTE_1WIRE_reset(FTE_1WIRE_PTR p1Wire)
 {
     assert(p1Wire != NULL);
     if (p1Wire == NULL)
@@ -681,7 +733,7 @@ _mqx_uint   FTE_1WIRE_reset(FTE_1WIRE_PTR p1Wire)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_1WIRE_writeByte(FTE_1WIRE_PTR p1Wire, uint_8 data)
+FTE_RET FTE_1WIRE_writeByte(FTE_1WIRE_PTR p1Wire, FTE_UINT8 data)
 {
     assert(p1Wire != NULL);
     if (p1Wire == NULL)
@@ -692,7 +744,7 @@ _mqx_uint   FTE_1WIRE_writeByte(FTE_1WIRE_PTR p1Wire, uint_8 data)
     return  FTE_1WIRE_writeBits(p1Wire, &data, 8);
 }
 
-_mqx_uint   FTE_1WIRE_writeBits(FTE_1WIRE_PTR p1Wire, uint_8_ptr data, uint_32 bit_len)
+FTE_RET FTE_1WIRE_writeBits(FTE_1WIRE_PTR p1Wire, FTE_UINT8_PTR data, FTE_UINT32 bit_len)
 {
     int             i;
 
@@ -745,19 +797,24 @@ _mqx_uint   FTE_1WIRE_writeBits(FTE_1WIRE_PTR p1Wire, uint_8_ptr data, uint_32 b
     return MQX_OK;
 }
 
-_mqx_uint   FTE_1WIRE_readBits(FTE_1WIRE_PTR p1Wire, uint_8_ptr data, uint_32 bit_len)
+FTE_RET FTE_1WIRE_readBits
+(
+    FTE_1WIRE_PTR   p1Wire, 
+    FTE_UINT8_PTR   data, 
+    FTE_UINT32      bit_len
+)
 {
     int     i;
-    uint_8  buff;
+    FTE_UINT8  nBuff;
  
     assert(p1Wire != NULL);
     
     for(i = 0 ; i < bit_len / 8; i++)
     {
-        buff = 0;
+        nBuff = 0;
         for(int j = 0 ; j < 8 ; j++)
         {
-            boolean bit = 0;
+            FTE_BOOL bit = 0;
             
             _int_disable();
             FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_OUTPUT);
@@ -767,19 +824,19 @@ _mqx_uint   FTE_1WIRE_readBits(FTE_1WIRE_PTR p1Wire, uint_8_ptr data, uint_32 bi
             FTE_LWGPIO_getValue(p1Wire->pLWGPIO, &bit);
             if (bit)
             {
-                buff |= 1 << j;
+                nBuff |= 1 << j;
             }
             _int_enable();
             fte_udelay(FTE_1WIRE_TIME_SLOT - 7);
         }
         
-        data[i] = buff;
+        data[i] = nBuff;
     }
     
-    buff = 0;
+    nBuff = 0;
     for(int j = 0 ; j < bit_len % 8 ; j++)
     {
-        boolean bit = 0;
+        FTE_BOOL bit = 0;
         
         _int_disable();
         FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_OUTPUT);
@@ -789,41 +846,46 @@ _mqx_uint   FTE_1WIRE_readBits(FTE_1WIRE_PTR p1Wire, uint_8_ptr data, uint_32 bi
         FTE_LWGPIO_getValue(p1Wire->pLWGPIO, &bit);
         if (bit)
         {
-            buff |= 1 << j;
+            nBuff |= 1 << j;
         }
         _int_enable();
         fte_udelay(FTE_1WIRE_TIME_SLOT - 7);
     }
-    data[i] = buff;
+    data[i] = nBuff;
  
     
     
     return MQX_ERROR;
 }
 
-char_ptr    FTE_1WIRE_getFailmyName(uint_32 code)
+FTE_CHAR_PTR    FTE_1WIRE_getFailmyName
+(
+    FTE_UINT32  ulCode
+)
 {
-    static char buff[16];
+    static FTE_CHAR pBuff[16];
     
-    FTE_1WIRE_FAMILY_NAME_PTR _family = _pFamilyNames;
+    FTE_1WIRE_FAMILY_NAME_PTR pFamilyName = _pFamilyNames;
     
-    while(_family->xFamilyCode)
+    while(pFamilyName->xFamilyCode)
     {
-        if (code == _family->xFamilyCode)
+        if (ulCode == pFamilyName->xFamilyCode)
         {
-            return  _family->pName;
+            return  pFamilyName->pName;
         }
         
-        _family++;
+        pFamilyName++;
     }
     
-    snprintf(buff, sizeof(buff), "unknown(%02x)", code);
-    return  buff;
+    snprintf(pBuff, sizeof(pBuff), "unknown(%02x)", ulCode);
+    
+    return  pBuff;
 }
 
-static uint_32          _n1WireRecoveryTimerID = 0;
+static 
+FTE_UINT32          _n1WireRecoveryTimerID = 0;
 
-_mqx_uint   fte_1wire_auto_recovery_start(void)
+FTE_RET FTE_1WIRE_autoRecoveryStart(void)
 {
     MQX_TICK_STRUCT     xTicks;            
     MQX_TICK_STRUCT     xDTicks;
@@ -838,7 +900,12 @@ _mqx_uint   fte_1wire_auto_recovery_start(void)
     return  MQX_OK;
 }
 
-void _FTE_1WIRE_autoRecoveryRun(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
+void _FTE_1WIRE_autoRecoveryRun
+(
+    _timer_id   id, 
+    pointer     data_ptr, 
+    MQX_TICK_STRUCT_PTR tick_ptr
+)
 {
     if (_n1WireRecoveryTimerID != id)
     {
@@ -848,7 +915,10 @@ void _FTE_1WIRE_autoRecoveryRun(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_
     FTE_1WIRE_discovery(0);    
 }
 
-_mqx_uint   FTE_1WIRE_lock(FTE_1WIRE_PTR p1Wire)
+FTE_RET FTE_1WIRE_lock
+(
+    FTE_1WIRE_PTR   p1Wire
+)
 {
     assert(p1Wire != NULL);
     
@@ -861,7 +931,10 @@ _mqx_uint   FTE_1WIRE_lock(FTE_1WIRE_PTR p1Wire)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_1WIRE_unlock(FTE_1WIRE_PTR p1Wire)
+FTE_RET FTE_1WIRE_unlock
+(
+    FTE_1WIRE_PTR   p1Wire
+)
 {   
     assert(p1Wire != NULL);
 

@@ -1,11 +1,12 @@
 #include <mqx.h>
 #include <bsp.h>
+#include "fte_type.h"
 #include "fte_md5.h"
 
 /* forward declaration */
-static void fte_md5_transform (uint_32_ptr buf, uint_32_ptr in);
+static void FTE_MD5_transform (FTE_UINT32_PTR pBuf, FTE_UINT32_PTR in);
 
-static uchar PADDING[64] = 
+static FTE_UINT8 PADDING[64] = 
 {
   0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -29,113 +30,129 @@ static uchar PADDING[64] =
 /* FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4 */
 /* Rotation is separate from addition to prevent recomputation */
 #define FF(a, b, c, d, x, s, ac) \
-  {(a) += F ((b), (c), (d)) + (x) + (uint_32)(ac); \
+  {(a) += F ((b), (c), (d)) + (x) + (FTE_UINT32)(ac); \
    (a) = ROTATE_LEFT ((a), (s)); \
    (a) += (b); \
   }
 #define GG(a, b, c, d, x, s, ac) \
-  {(a) += G ((b), (c), (d)) + (x) + (uint_32)(ac); \
+  {(a) += G ((b), (c), (d)) + (x) + (FTE_UINT32)(ac); \
    (a) = ROTATE_LEFT ((a), (s)); \
    (a) += (b); \
   }
 #define HH(a, b, c, d, x, s, ac) \
-  {(a) += H ((b), (c), (d)) + (x) + (uint_32)(ac); \
+  {(a) += H ((b), (c), (d)) + (x) + (FTE_UINT32)(ac); \
    (a) = ROTATE_LEFT ((a), (s)); \
    (a) += (b); \
   }
 #define II(a, b, c, d, x, s, ac) \
-  {(a) += I ((b), (c), (d)) + (x) + (uint_32)(ac); \
+  {(a) += I ((b), (c), (d)) + (x) + (FTE_UINT32)(ac); \
    (a) = ROTATE_LEFT ((a), (s)); \
    (a) += (b); \
   }
 
-void fte_md5_init (FTS_MD5_CTX_PTR ctx)
+void FTE_MD5_init
+(
+    FTS_MD5_CTX_PTR     pCTX
+)
 {
-  ctx->i[0] = ctx->i[1] = (uint_32)0;
+  pCTX->i[0] = pCTX->i[1] = (FTE_UINT32)0;
 
   /* Load magic initialization constants.
    */
-  ctx->buf[0] = (uint_32)0x67452301;
-  ctx->buf[1] = (uint_32)0xefcdab89;
-  ctx->buf[2] = (uint_32)0x98badcfe;
-  ctx->buf[3] = (uint_32)0x10325476;
+  pCTX->pScratchBuf[0] = (FTE_UINT32)0x67452301;
+  pCTX->pScratchBuf[1] = (FTE_UINT32)0xefcdab89;
+  pCTX->pScratchBuf[2] = (FTE_UINT32)0x98badcfe;
+  pCTX->pScratchBuf[3] = (FTE_UINT32)0x10325476;
 }
 
-void fte_md5_update (FTS_MD5_CTX_PTR ctx, uchar_ptr inBuf, uint_32 inLen)
+void FTE_MD5_update 
+(
+    FTS_MD5_CTX_PTR     pCTX, 
+    FTE_UINT8_PTR       pData, 
+    FTE_UINT32          nDataLen
+)
 {
-  uint_32 in[16];
+  FTE_UINT32 in[16];
   int mdi;
   unsigned int i, ii;
 
   /* compute number of bytes mod 64 */
-  mdi = (int)((ctx->i[0] >> 3) & 0x3F);
+  mdi = (int)((pCTX->i[0] >> 3) & 0x3F);
 
   /* update number of bits */
-  if ((ctx->i[0] + ((uint_32)inLen << 3)) < ctx->i[0])
-    ctx->i[1]++;
-  ctx->i[0] += ((uint_32)inLen << 3);
-  ctx->i[1] += ((uint_32)inLen >> 29);
+  if ((pCTX->i[0] + ((FTE_UINT32)nDataLen << 3)) < pCTX->i[0])
+    pCTX->i[1]++;
+  pCTX->i[0] += ((FTE_UINT32)nDataLen << 3);
+  pCTX->i[1] += ((FTE_UINT32)nDataLen >> 29);
 
-  while (inLen--) {
+  while (nDataLen--) {
     /* add new character to buffer, increment mdi */
-    ctx->in[mdi++] = *inBuf++;
+    pCTX->pInBuf[mdi++] = *pData++;
 
     /* transform if necessary */
     if (mdi == 0x40) {
       for (i = 0, ii = 0; i < 16; i++, ii += 4)
-        in[i] = (((uint_32)ctx->in[ii+3]) << 24) |
-                (((uint_32)ctx->in[ii+2]) << 16) |
-                (((uint_32)ctx->in[ii+1]) << 8) |
-                ((uint_32)ctx->in[ii]);
-      fte_md5_transform (ctx->buf, in);
+        in[i] = (((FTE_UINT32)pCTX->pInBuf[ii+3]) << 24) |
+                (((FTE_UINT32)pCTX->pInBuf[ii+2]) << 16) |
+                (((FTE_UINT32)pCTX->pInBuf[ii+1]) << 8) |
+                ((FTE_UINT32)pCTX->pInBuf[ii]);
+      FTE_MD5_transform (pCTX->pScratchBuf, in);
       mdi = 0;
     }
   }
 }
 
-void fte_md5_final (FTS_MD5_CTX_PTR ctx)
+void FTE_MD5_final
+(
+    FTS_MD5_CTX_PTR     pCTX
+)
 {
-  uint_32 in[16];
+  FTE_UINT32 in[16];
   int mdi;
   unsigned int i, ii;
   unsigned int padLen;
 
   /* save number of bits */
-  in[14] = ctx->i[0];
-  in[15] = ctx->i[1];
+  in[14] = pCTX->i[0];
+  in[15] = pCTX->i[1];
 
   /* compute number of bytes mod 64 */
-  mdi = (int)((ctx->i[0] >> 3) & 0x3F);
+  mdi = (int)((pCTX->i[0] >> 3) & 0x3F);
 
   /* pad out to 56 mod 64 */
   padLen = (mdi < 56) ? (56 - mdi) : (120 - mdi);
-  fte_md5_update (ctx, PADDING, padLen);
+  FTE_MD5_update (pCTX, PADDING, padLen);
 
   /* append length in bits and transform */
   for (i = 0, ii = 0; i < 14; i++, ii += 4)
-    in[i] = (((uint_32)ctx->in[ii+3]) << 24) |
-            (((uint_32)ctx->in[ii+2]) << 16) |
-            (((uint_32)ctx->in[ii+1]) << 8) |
-            ((uint_32)ctx->in[ii]);
-  fte_md5_transform (ctx->buf, in);
+    in[i] = (((FTE_UINT32)pCTX->pInBuf[ii+3]) << 24) |
+            (((FTE_UINT32)pCTX->pInBuf[ii+2]) << 16) |
+            (((FTE_UINT32)pCTX->pInBuf[ii+1]) << 8) |
+            ((FTE_UINT32)pCTX->pInBuf[ii]);
+  FTE_MD5_transform (pCTX->pScratchBuf, in);
 
-  /* store buffer in digest */
+  /* store buffer in pDigest */
   for (i = 0, ii = 0; i < 4; i++, ii += 4) {
-    ctx->digest[ii] = (uchar)(ctx->buf[i] & 0xFF);
-    ctx->digest[ii+1] =
-      (uchar)((ctx->buf[i] >> 8) & 0xFF);
-    ctx->digest[ii+2] =
-      (uchar)((ctx->buf[i] >> 16) & 0xFF);
-    ctx->digest[ii+3] =
-      (uchar)((ctx->buf[i] >> 24) & 0xFF);
+    pCTX->pDigest[ii] = (FTE_UINT8)(pCTX->pScratchBuf[i] & 0xFF);
+    pCTX->pDigest[ii+1] =
+      (FTE_UINT8)((pCTX->pScratchBuf[i] >> 8) & 0xFF);
+    pCTX->pDigest[ii+2] =
+      (FTE_UINT8)((pCTX->pScratchBuf[i] >> 16) & 0xFF);
+    pCTX->pDigest[ii+3] =
+      (FTE_UINT8)((pCTX->pScratchBuf[i] >> 24) & 0xFF);
   }
 }
 
 /* Basic MD5 step. Transform buf based on in.
  */
-static void fte_md5_transform (uint_32_ptr buf, uint_32_ptr in)
+static 
+void FTE_MD5_transform 
+(
+    FTE_UINT32_PTR  pBuf, 
+    FTE_UINT32_PTR in
+)
 {
-  uint_32 a = buf[0], b = buf[1], c = buf[2], d = buf[3];
+  FTE_UINT32 a = pBuf[0], b = pBuf[1], c = pBuf[2], d = pBuf[3];
 
   /* Round 1 */
 #define S11 7
@@ -225,19 +242,24 @@ static void fte_md5_transform (uint_32_ptr buf, uint_32_ptr in)
   II ( c, d, a, b, in[ 2], S43,  718787259); /* 63 */
   II ( b, c, d, a, in[ 9], S44, 3951481745); /* 64 */
 
-  buf[0] += a;
-  buf[1] += b;
-  buf[2] += c;
-  buf[3] += d;
+  pBuf[0] += a;
+  pBuf[1] += b;
+  pBuf[2] += c;
+  pBuf[3] += d;
 }
 
-void fte_md5(uchar_ptr inBuf, uint_32 inLen, uchar digest[16])
+void FTE_MD5_calc
+(
+    FTE_UINT8_PTR   pData, 
+    FTE_UINT32      nDataLen, 
+    FTE_UINT8       pDigest[16]
+)
 {
-    FTS_MD5_CTX ctx;
+    FTS_MD5_CTX xCTX;
     
-    fte_md5_init(&ctx);
-    fte_md5_update(&ctx, inBuf, inLen);
-    fte_md5_final(&ctx);
+    FTE_MD5_init(&xCTX);
+    FTE_MD5_update(&xCTX, pData, nDataLen);
+    FTE_MD5_final(&xCTX);
     
-    memcpy(digest, ctx.digest, 16);
+    memcpy(pDigest, xCTX.pDigest, 16);
 }

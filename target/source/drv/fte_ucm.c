@@ -7,7 +7,10 @@ static  FTE_LIST    _UCMs =
     .pHead  = NULL
 };
 
-_mqx_uint       FTE_UCM_create(FTE_UCM_CONFIG_CONST_PTR pConfig)
+FTE_RET       FTE_UCM_create
+(
+    FTE_UCM_CONFIG_CONST_PTR    pConfig
+)
 {
     FTE_UCS_PTR pUCS = NULL;
     FTE_UCM_PTR pUCM = NULL;
@@ -39,7 +42,11 @@ _mqx_uint       FTE_UCM_create(FTE_UCM_CONFIG_CONST_PTR pConfig)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_UCM_attach(FTE_UCM_PTR pUCM, uint_32 nParent)
+FTE_RET   FTE_UCM_attach
+(
+    FTE_UCM_PTR pUCM, 
+    FTE_UINT32  nParent
+)
 {
     ASSERT(pUCM != NULL);
     if (pUCM == NULL)
@@ -63,7 +70,11 @@ _mqx_uint   FTE_UCM_attach(FTE_UCM_PTR pUCM, uint_32 nParent)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_UCM_detach(FTE_UCM_PTR pUCM, uint_32 nParent)
+FTE_RET   FTE_UCM_detach
+(
+    FTE_UCM_PTR pUCM, 
+    FTE_UINT32  nParent
+)
 {
     ASSERT(pUCM != NULL);
     if (pUCM == NULL)
@@ -83,7 +94,10 @@ _mqx_uint   FTE_UCM_detach(FTE_UCM_PTR pUCM, uint_32 nParent)
     return  MQX_OK;
 }
 
-FTE_UCM_PTR     FTE_UCM_get(uint_32 xID)
+FTE_UCM_PTR     FTE_UCM_get
+(
+    FTE_UINT32  xID
+)
 {
     pointer     pIter   = NULL;
     FTE_UCM_PTR pUCM    = NULL;
@@ -102,14 +116,20 @@ FTE_UCM_PTR     FTE_UCM_get(uint_32 xID)
     return  NULL;
 }
 
-uint_32     FTE_UCM_getParent(FTE_UCM_PTR pUCM)
+FTE_UINT32     FTE_UCM_getParent
+(
+    FTE_UCM_PTR     pUCM
+)
 {
     ASSERT(pUCM != NULL);
     
     return  pUCM->nParent;
 }
 
-_mqx_uint       FTE_UCM_clear(FTE_UCM_PTR pUCM)
+FTE_RET       FTE_UCM_clear
+(
+    FTE_UCM_PTR     pUCM
+)
 {
     FTE_UCS_PTR pUCS;
     
@@ -134,10 +154,16 @@ _mqx_uint       FTE_UCM_clear(FTE_UCM_PTR pUCM)
     return MQX_OK;
 }
 
-_mqx_uint   FTE_UCM_read(FTE_UCM_PTR pUCM, uint_8_ptr pBuff, uint_32 nBuffLen, uint_32_ptr pReadLen)
+FTE_RET   FTE_UCM_read
+(
+    FTE_UCM_PTR     pUCM, 
+    FTE_UINT8_PTR   pBuff, 
+    FTE_UINT32      nBuffLen, 
+    FTE_UINT32_PTR pReadLen
+)
 {
     FTE_UCS_PTR pUCS;
-    uint_32 nReadLen;
+    FTE_UINT32 nReadLen;
     
     ASSERT((pUCM != NULL) && (pBuff != NULL));
     if (pUCM == NULL)
@@ -164,10 +190,16 @@ _mqx_uint   FTE_UCM_read(FTE_UCM_PTR pUCM, uint_8_ptr pBuff, uint_32 nBuffLen, u
     return MQX_OK;
 }
 
-_mqx_uint   FTE_UCM_write(FTE_UCM_PTR pUCM, uint_8_ptr pData, uint_32 nDataLen, uint_32_ptr pWrittenLen)
+FTE_RET   FTE_UCM_write
+(
+    FTE_UCM_PTR     pUCM, 
+    FTE_UINT8_PTR   pData, 
+    FTE_UINT32      nDataLen, 
+    FTE_UINT32_PTR  pWrittenLen
+)
 {
     FTE_UCS_PTR pUCS;
-    uint_32 nWrittenLen;
+    FTE_UINT32 nWrittenLen;
     
     ASSERT((pUCM != NULL) && (pData != NULL));
     if (pUCM == NULL)

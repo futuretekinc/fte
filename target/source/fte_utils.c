@@ -75,21 +75,24 @@ boolean fte_parse_enet_address
    return TRUE;   
 }
 
-boolean fte_parse_float
+FTE_RET FTE_strToFLOAT
 (
-    char_ptr    pString, 
-    double _PTR_ pValue
+    FTE_CHAR_PTR    pString, 
+    FTE_FLOAT_PTR   pValue
 )
 {
-    int     i;
-    double  dValue = 0;
-    boolean bNagative = FALSE;
-    boolean bInteger = TRUE;
-    double  dDevider = 10;
+    ASSERT((pString != NULL) && (pValue != NULL));
     
-    if ((pString == NULL) && (strlen(pString) == 0))
+    FTE_INT32   i;
+    FTE_FLOAT   dValue = 0;
+    FTE_BOOL    bNagative = FALSE;
+    FTE_BOOL    bInteger = TRUE;
+    FTE_FLOAT   dDevider = 10;
+    
+    if (strlen(pString) == 0)
     {
-        return  FALSE;
+        *pValue = 0;
+        return  FTE_RET_OK;
     }
 
     for(i = 0 ; i < strlen(pString) ; i++)
@@ -111,7 +114,7 @@ boolean fte_parse_float
     }
     else if (!isdigit(pString[i]))
     {
-        return  FALSE;
+        return  FTE_RET_INVALID_ARGUMENT;
     }
     
     for(; i < strlen(pString) ; i++)
@@ -132,7 +135,7 @@ boolean fte_parse_float
         {
             if (!bInteger)
             {
-                return  FALSE;
+                return  FTE_RET_INVALID_ARGUMENT;
             }
             
             bInteger = FALSE;
@@ -152,13 +155,12 @@ boolean fte_parse_float
         *pValue = dValue;
     }
     
-    return  TRUE;
+    return  FTE_RET_OK;
 
 }
 
 uint_32 fte_parse_hex_string(char_ptr pString, uint_8 *pBuff, uint_32 ulBuffLen)
 {
-    int i;
     uint_32 ulStringLen = strlen(pString);
     
     if (((ulStringLen % 2) == 1) || ((ulStringLen / 2) > ulBuffLen))
@@ -208,3 +210,70 @@ uint_32 fte_parse_hex_string(char_ptr pString, uint_8 *pBuff, uint_32 ulBuffLen)
    return   ulStringLen / 2;
 }
 
+FTE_RET FTE_strToUINT32
+(
+    FTE_CHAR_PTR     pString,
+    FTE_UINT32_PTR   pValue
+)
+{
+    if ((pString == NULL) || (pValue == NULL))
+    {
+        return  FTE_RET_ASSERT;
+    }
+    
+    FTE_UINT32  i = 0;
+    FTE_UINT32  ulValue = 0;
+   
+   while (isdigit(pString[i]))  
+   {
+        ulValue = ulValue * 10 + (pString[i++]-'0');
+   }
+   
+   if (pString[i]!='\0')
+   {
+       return   FTE_RET_INVALID_ARGUMENT;
+   }
+   
+   *pValue = ulValue;
+   
+   return FTE_RET_OK;
+}
+
+FTE_RET FTE_strToHex
+(
+    FTE_CHAR_PTR     pString,
+    FTE_UINT32_PTR   pValue
+)
+{
+    if ((pString == NULL) || (pValue == NULL))
+    {
+        return  FTE_RET_ASSERT;
+    }
+    
+    FTE_UINT32  ulValue = 0;
+    FTE_UINT32  ulStringLen = strlen(pString);
+    
+    for(FTE_INT32   i = 0 ; i < ulStringLen ;i++)
+    {
+        if ('0' <= pString[i] && pString[i] <= '9')
+        {
+            ulValue = ulValue * 16 + (pString[i] - '0');
+        }
+        else if ('A' <= pString[i] && pString[i] <= 'F')
+        {
+            ulValue = ulValue * 16 + (pString[i] - 'A') + 10;
+        }
+        else if ('a' <= pString[i] && pString[i] <= 'f')
+        {
+            ulValue = ulValue * 16 + (pString[i] - 'a') + 10;
+        }
+        else {
+            return   FTE_RET_INVALID_ARGUMENT;
+        }
+    }
+
+    
+   *pValue = ulValue;
+   
+   return FTE_RET_OK;
+}

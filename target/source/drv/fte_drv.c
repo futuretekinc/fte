@@ -7,10 +7,16 @@ typedef struct _FTE_DRIVER_DESCRIPT_CONTENT_STRUCT
     FTE_DRIVER_DESCRIPT_CONST_PTR               pDescript;
 } FTE_DRIVER_DESCRIPT_CONTENT, _PTR_ FTE_DRIVER_DESCRIPT_CONTENT_PTR;
 
-static FTE_DRIVER_DESCRIPT_CONTENT_PTR  _pHead  = NULL;
-static uint_32                          _nCount = 0;
+static 
+FTE_DRIVER_DESCRIPT_CONTENT_PTR  _pHead  = NULL;
 
-_mqx_uint   FTE_DRV_init(FTE_DRIVER_DESCRIPT_CONST_PTR pDescript)
+static 
+FTE_UINT32                          _nCount = 0;
+
+FTE_RET   FTE_DRV_init
+(
+    FTE_DRIVER_DESCRIPT_CONST_PTR   pDescript
+)
 {
     FTE_DRIVER_DESCRIPT_CONTENT_PTR pContent;
     
@@ -29,7 +35,11 @@ _mqx_uint   FTE_DRV_init(FTE_DRIVER_DESCRIPT_CONST_PTR pDescript)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_DRV_create(fte_dev_type xType, void *pParams)
+FTE_RET   FTE_DRV_create
+(
+    fte_dev_type    xType, 
+    FTE_VOID_PTR    pParams
+)
 {
     FTE_DRIVER_DESCRIPT_CONTENT_PTR pContent;
     

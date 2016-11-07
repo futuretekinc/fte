@@ -11,7 +11,7 @@
 
 static FTE_M25P16_PTR _pHead = NULL;
 
-FTE_M25P16_PTR FTE_M25P16_get(uint_32 nID)
+FTE_M25P16_PTR FTE_M25P16_get(FTE_UINT32 nID)
 {
     FTE_M25P16_PTR    pM25P16;
     
@@ -34,11 +34,18 @@ FTE_M25P16_PTR FTE_M25P16_get_first(void)
     return  _pHead;
 }
 
-FTE_M25P16_PTR FTE_M25P16_getNext(FTE_M25P16_PTR pObj)
+FTE_M25P16_PTR FTE_M25P16_getNext
+(
+    FTE_M25P16_PTR  pObj
+)
 {
     return  pObj->pNext;
 }
-_mqx_uint   FTE_M25P16_create(FTE_M25P16_CONFIG_PTR pConfig)
+
+FTE_RET   FTE_M25P16_create
+(
+    FTE_M25P16_CONFIG_PTR   pConfig
+)
 {
     FTE_M25P16_PTR    pM25P16;
     
@@ -56,7 +63,11 @@ _mqx_uint   FTE_M25P16_create(FTE_M25P16_CONFIG_PTR pConfig)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_M25P16_attach(FTE_M25P16_PTR pM25P16, uint_32 nParent)
+FTE_RET   FTE_M25P16_attach
+(
+    FTE_M25P16_PTR  pM25P16, 
+    FTE_UINT32      nParent
+)
 {
     FTE_SPI_PTR     pSPI;
     FTE_LWGPIO_PTR  pLWGPIO_Hold, pLWGPIO_WP;
@@ -127,7 +138,11 @@ error1:
     return  MQX_ERROR;
 }
 
-_mqx_uint   FTE_M25P16_detach(FTE_M25P16_PTR pM25P16, uint_32 nParentID)
+FTE_RET   FTE_M25P16_detach
+(
+    FTE_M25P16_PTR  pM25P16, 
+    FTE_UINT32      nParentID
+)
 {
     ASSERT(pM25P16 != NULL);
     
@@ -141,11 +156,15 @@ _mqx_uint   FTE_M25P16_detach(FTE_M25P16_PTR pM25P16, uint_32 nParentID)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_M25P16_eraseSector(FTE_M25P16_PTR pM25P16, uint_32 ulAddress)
+FTE_RET   FTE_M25P16_eraseSector
+(
+    FTE_M25P16_PTR  pM25P16, 
+    FTE_UINT32      ulAddress
+)
 {
-    _mqx_uint   ulRet;
-    uint_8      pEraseSectorCmd[4];
-    uint_32     ulStatus;
+    FTE_RET   ulRet;
+    FTE_UINT8      pEraseSectorCmd[4];
+    FTE_UINT32     ulStatus;
     int         nCount;
     
     ASSERT((pM25P16 != NULL) && (pM25P16->pSPI != NULL));
@@ -196,10 +215,13 @@ _mqx_uint   FTE_M25P16_eraseSector(FTE_M25P16_PTR pM25P16, uint_32 ulAddress)
     return  MQX_OK;
 }
 
-boolean FTE_M25P16_isExist(FTE_M25P16_PTR pM25P16)
+FTE_BOOL FTE_M25P16_isExist
+(
+    FTE_M25P16_PTR  pM25P16
+)
 {
-    uint_8      pCmd[1] = { FTE_M25P16_READ_IDENT };
-    uint_8      pBuff[20];
+    FTE_UINT8      pCmd[1] = { FTE_M25P16_READ_IDENT };
+    FTE_UINT8      pBuff[20];
     
     ASSERT((pM25P16 != NULL) && (pM25P16->pSPI != NULL));
 
@@ -216,9 +238,15 @@ boolean FTE_M25P16_isExist(FTE_M25P16_PTR pM25P16)
     return  TRUE;
 }
 
-_mqx_uint   FTE_M25P16_read(FTE_M25P16_PTR pM25P16, uint_32 ulAddress, uint_8_ptr pBuff, uint_32 ulLen)
+FTE_RET   FTE_M25P16_read
+(
+    FTE_M25P16_PTR  pM25P16, 
+    FTE_UINT32      ulAddress, 
+    FTE_UINT8_PTR   pBuff, 
+    FTE_UINT32      ulLen
+)
 {
-    uint_8  pCmd[4];
+    FTE_UINT8  pCmd[4];
     
     ASSERT((pM25P16 != NULL) && (pM25P16->pSPI != NULL));
     
@@ -230,12 +258,18 @@ _mqx_uint   FTE_M25P16_read(FTE_M25P16_PTR pM25P16, uint_32 ulAddress, uint_8_pt
     return  FTE_SPI_read(pM25P16->pSPI, pCmd, sizeof(pCmd), pBuff, ulLen);
 }
 
-_mqx_uint   FTE_M25P16_write(FTE_M25P16_PTR pM25P16, uint_32 ulAddress, uint_8_ptr pBuff, uint_32 ulLen)
+FTE_RET   FTE_M25P16_write
+(
+    FTE_M25P16_PTR  pM25P16, 
+    FTE_UINT32      ulAddress, 
+    FTE_UINT8_PTR   pBuff, 
+    FTE_UINT32      ulLen
+)
 {
-    _mqx_uint   ulRet;
-    uint_8      pReadStatusCmd[1] = {FTE_M25P16_CMD_READ_STATUS};
-    uint_8      pEraseSectorCmd[4];
-    uint_8      pStatus[1];
+    FTE_RET   ulRet;
+    FTE_UINT8      pReadStatusCmd[1] = {FTE_M25P16_CMD_READ_STATUS};
+    FTE_UINT8      pEraseSectorCmd[4];
+    FTE_UINT8      pStatus[1];
     int         nCount;
     
     ASSERT((pM25P16 != NULL) && (pM25P16->pSPI != NULL));
@@ -285,13 +319,17 @@ _mqx_uint   FTE_M25P16_write(FTE_M25P16_PTR pM25P16, uint_32 ulAddress, uint_8_p
     return  MQX_OK;
 }
 
-_mqx_uint       FTE_M25P16_writeEnable(FTE_M25P16_PTR pM25P16, boolean bON)
+FTE_RET       FTE_M25P16_writeEnable
+(
+    FTE_M25P16_PTR  pM25P16, 
+    FTE_BOOL        bON
+)
 {
     ASSERT((pM25P16 != NULL) && (pM25P16->pSPI != NULL));
     
     if (bON)
     {
-        uint_8      pCmd[1] = {FTE_M25P16_CMD_WRITE_ENABLE};
+        FTE_UINT8      pCmd[1] = {FTE_M25P16_CMD_WRITE_ENABLE};
         
         if (FTE_SPI_write(pM25P16->pSPI, pCmd, sizeof(pCmd), NULL, 0) != MQX_OK)
         {
@@ -302,7 +340,7 @@ _mqx_uint       FTE_M25P16_writeEnable(FTE_M25P16_PTR pM25P16, boolean bON)
     }
     else
     {
-        uint_8      pCmd[1] = {FTE_M25P16_CMD_WRITE_DISABLE};
+        FTE_UINT8      pCmd[1] = {FTE_M25P16_CMD_WRITE_DISABLE};
         
         if (FTE_SPI_write(pM25P16->pSPI, pCmd, sizeof(pCmd), NULL, 0) != MQX_OK)
         {
@@ -315,15 +353,22 @@ _mqx_uint       FTE_M25P16_writeEnable(FTE_M25P16_PTR pM25P16, boolean bON)
     return  MQX_OK;
 }
 
-boolean         fte_M25P16_isWriteEnabled(FTE_M25P16_PTR pM25P16)
+FTE_BOOL    FTE_M25P16_isWriteEnabled
+(
+    FTE_M25P16_PTR  pM25P16
+)
 {
     return  pM25P16->bWriteEnable;
 }
 
-_mqx_uint       FTE_M25P16_readStatus(FTE_M25P16_PTR pM25P16, uint_32_ptr pulStatus)
+FTE_RET FTE_M25P16_readStatus
+(
+    FTE_M25P16_PTR  pM25P16, 
+    FTE_UINT32_PTR  pulStatus
+)
 {
-    uint_8      pBuff[1];
-    uint_8      pReadStatusCmd[1] = {FTE_M25P16_CMD_READ_STATUS};
+    FTE_UINT8      pBuff[1];
+    FTE_UINT8      pReadStatusCmd[1] = {FTE_M25P16_CMD_READ_STATUS};
 
     if (FTE_SPI_read(pM25P16->pSPI, pReadStatusCmd, sizeof(pReadStatusCmd), pBuff, sizeof(pBuff)) != MQX_OK)
     {

@@ -11,7 +11,7 @@
 
 
 #ifndef FTE_OBJ_MAX_COUNT
-#define FTE_OBJ_MAX_COUNT               ((2048 - sizeof(uint_32) * 4) / sizeof(FTE_OBJECT_CONFIG))
+#define FTE_OBJ_MAX_COUNT               ((2048 - sizeof(FTE_UINT32) * 4) / sizeof(FTE_OBJECT_CONFIG))
 #endif
 
 #ifndef FTE_LOG_BOOT_TIME_MAX_COUNT
@@ -33,20 +33,18 @@ void    FTE_CFG_unlock(void);
 void    _FTE_CFG_auto_save(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
 
 FTE_CFG_EVENT_PTR       FTE_CFG_EVENT_create(FTE_CFG_EVENT_PTR pConfig);
-_mqx_uint               FTE_CFG_CERT_load(void);
-_mqx_uint               FTE_CFG_CERT_save(void);
+FTE_RET               FTE_CFG_CERT_load(void);
+FTE_RET               FTE_CFG_CERT_save(void);
 
 void                    FTE_CFG_DBG_setBootTime(void);
 
 typedef struct  _FTE_CFG_POOL_STRUCT
 {
-    uint_32             crc;
-    uint_32             tag;
-    int_32              nID;
-    char                pModel[FTE_MODEL_LENGTH+1];
-//    uint_8              pMAC[FTE_MAC_SIZE];
-//    uint_8              pOID[FTE_OID_SIZE+1];
-    char                location[FTE_LOCATION_MAX_LEN+1];
+    FTE_UINT32          ulCRC;
+    FTE_UINT32          ulTag;
+    FTE_INT32           nID;
+    FTE_CHAR            pModel[FTE_MODEL_LENGTH+1];
+    FTE_CHAR            pLocation[FTE_LOCATION_MAX_LEN+1];
     
     FTE_SYS_CONFIG      xSystem;
     FTE_SHELL_CONFIG    xShell;
@@ -55,28 +53,28 @@ typedef struct  _FTE_CFG_POOL_STRUCT
 
 typedef struct _FTE_CFG_OBJECT_POOL_STRUCT
 {
-    uint_32             crc;
-    uint_32             tag;
-    int_32              nID;
+    FTE_UINT32             ulCRC;
+    FTE_UINT32             ulTag;
+    FTE_INT32              nID;
 
-    uint_32             uiObjectCount;
+    FTE_UINT32             uiObjectCount;
     FTE_OBJECT_CONFIG   pObjects[FTE_OBJ_MAX_COUNT];
 } FTE_CFG_OBJECT_POOL, _PTR_ FTE_CFG_OBJECT_POOL_PTR;
 
 typedef struct _FTE_CFG_EVENT_POOL_STRUCT
 {
-    uint_32             crc;
-    uint_32             tag;
-    int_32              nID;
-    uint_32             uiEventCount;
-    FTE_EVENT_CONFIG    pEvents[(0x800 - sizeof(uint_32) * 4) / sizeof(FTE_EVENT_CONFIG)];
+    FTE_UINT32             ulCRC;
+    FTE_UINT32             ulTag;
+    FTE_INT32              nID;
+    FTE_UINT32             uiEventCount;
+    FTE_EVENT_CONFIG    pEvents[(0x800 - sizeof(FTE_UINT32) * 4) / sizeof(FTE_EVENT_CONFIG)];
 }   FTE_CFG_EVENT_POOL, _PTR_ FTE_CFG_EVENT_POOL_PTR;
 
 typedef struct _FTE_CFG_EXT_POOL_STRUCT
 {
-    uint_32             crc;
-    uint_32             tag;
-    int_32              nID;
+    FTE_UINT32             ulCRC;
+    FTE_UINT32             ulTag;
+    FTE_INT32              nID;
 #if FTE_CIAS_SIOUX_CU_SUPPORTED
     FTE_CIAS_SIOUX_CU_EXT_CONFIG    xCU;
 #endif
@@ -90,49 +88,49 @@ typedef struct _FTE_CFG_EXT_POOL_STRUCT
 
 typedef struct _FTE_CFG_CERT_POOL_HEAD_STRUCT
 {
-    uint_32             crc;
-    uint_32             tag;
-    int_32              nID;
-    uint_32             ulCertLen;
+    FTE_UINT32             ulCRC;
+    FTE_UINT32             ulTag;
+    FTE_INT32              nID;
+    FTE_UINT32             ulCertLen;
 }   FTE_CFG_CERT_POOL_HEAD, _PTR_ FTE_CFG_CERT_POOL_HEAD_PTR;
 
 typedef struct _FTE_CFG_CERT_POOL_STRUCT
 {
-    uint_32             crc;
-    uint_32             tag;
-    int_32              nID;
-    uint_32             ulCertLen;
-    uint_8              pCert[4096 - sizeof(uint_32)*4];
+    FTE_UINT32             ulCRC;
+    FTE_UINT32             ulTag;
+    FTE_INT32              nID;
+    FTE_UINT32             ulCertLen;
+    uint_8              pCert[4096 - sizeof(FTE_UINT32)*4];
 }   FTE_CFG_CERT_POOL, _PTR_ FTE_CFG_CERT_POOL_PTR;
 
 typedef struct  _FTE_CFG_struct
 {
     FTE_CFG_DESC const *    pDESC;
-    boolean                 bPoolModified;
+    FTE_BOOL                 bPoolModified;
     FTE_CFG_POOL            xPool;
-    boolean                 bObjectPoolModified;
+    FTE_BOOL                 bObjectPoolModified;
     FTE_CFG_OBJECT_POOL     xObjectPool;
-    boolean                 bEventPoolModified;
+    FTE_BOOL                 bEventPoolModified;
     FTE_CFG_EVENT_POOL      xEventPool;
-    boolean                 bExtPoolModified;
+    FTE_BOOL                 bExtPoolModified;
     FTE_CFG_EXT_POOL        xExtPool;
-    uint_32                 ulIndex;
+    FTE_UINT32                 ulIndex;
 }   FTE_CONFIG, _PTR_ FTE_CFG_PTR;
 
 static FTE_CONFIG   _config = { .pDESC = NULL, };
 static LWSEM_STRUCT _xLWSEM; 
 
-_mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
+FTE_RET   FTE_CFG_init(FTE_CFG_DESC const *desc)
 {
-    _mqx_int                i;
-    boolean                 bIgnore = TRUE;
+    FTE_INT32               i;
+    FTE_BOOL                bIgnore = TRUE;
     MQX_TICK_STRUCT         xTicks, xDTicks;
     FTE_CFG_POOL_PTR        pPool = NULL;
     FTE_CFG_OBJECT_POOL_PTR pObjectPool = NULL;
     FTE_CFG_EVENT_POOL_PTR  pEventPool = NULL;
     FTE_CFG_EXT_POOL_PTR    pExtPool = NULL;
     FTE_CFG_CERT_POOL_PTR   pCertPool = NULL;
-    void _PTR_              pBuff = NULL;
+    FTE_VOID_PTR              pBuff = NULL;
     
     assert(_config.pDESC == NULL && desc != NULL);
     
@@ -141,7 +139,7 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
         return  MQX_ERROR;
     }
     
-    pBuff = (void _PTR_)FTE_MEM_allocZero(4096);
+    pBuff = (FTE_VOID_PTR)FTE_MEM_allocZero(4096);
     if (pBuff == NULL)
     {
         return  MQX_ERROR;
@@ -189,9 +187,9 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
         read(fp, (char_ptr)pPool, sizeof(FTE_CFG_POOL));
         fclose(fp);
         
-        if ((pPool->crc != fte_crc32(0, (char_ptr)&pPool->tag, sizeof(FTE_CFG_POOL) - sizeof(uint_32))) ||
-            (pPool->tag != FTE_CFG_POOL_VERSION) || 
-            (pPool->nID > (uint_32)MAX_INT_32))
+        if ((pPool->ulCRC != FTE_CRC32(0, &pPool->ulTag, sizeof(FTE_CFG_POOL) - sizeof(FTE_UINT32))) ||
+            (pPool->ulTag != FTE_CFG_POOL_VERSION) || 
+            (pPool->nID > (FTE_UINT32)MAX_INT_32))
         {
             continue;
         }
@@ -207,7 +205,7 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
     {
         for(int nMTD = 2 ; nMTD < 4 ; nMTD++)
         {
-            int_32          nLen;
+            FTE_INT32          nLen;
             MQX_FILE_PTR    fp;    
             
             /* Open the flash device */
@@ -222,9 +220,9 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
             fclose(fp);
             
             if ((nLen != sizeof(FTE_CFG_OBJECT_POOL)) ||
-                (pObjectPool->crc != fte_crc32(0, (char_ptr)&pObjectPool->tag, sizeof(FTE_CFG_OBJECT_POOL) - sizeof(uint_32))) ||
-                (pObjectPool->tag != FTE_CFG_OBJECT_POOL_VERSION) || 
-                (pObjectPool->nID > (uint_32)MAX_INT_32))
+                (pObjectPool->ulCRC != FTE_CRC32(0, &pObjectPool->ulTag, sizeof(FTE_CFG_OBJECT_POOL) - sizeof(FTE_UINT32))) ||
+                (pObjectPool->ulTag != FTE_CFG_OBJECT_POOL_VERSION) || 
+                (pObjectPool->nID > (FTE_UINT32)MAX_INT_32))
             {
                 continue;
             }
@@ -250,9 +248,9 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
             read(fp, (char_ptr)pEventPool, sizeof(FTE_CFG_EVENT_POOL));
             fclose(fp);
 
-            if ((pEventPool->crc != fte_crc32(0, (char_ptr)&pEventPool->tag, sizeof(FTE_CFG_EVENT_POOL) - sizeof(uint_32))) ||
-                (pEventPool->tag != FTE_CFG_EVENT_POOL_VERSION) || 
-                (pEventPool->nID > (uint_32)MAX_INT_32))
+            if ((pEventPool->ulCRC != FTE_CRC32(0, &pEventPool->ulTag, sizeof(FTE_CFG_EVENT_POOL) - sizeof(FTE_UINT32))) ||
+                (pEventPool->ulTag != FTE_CFG_EVENT_POOL_VERSION) || 
+                (pEventPool->nID > (FTE_UINT32)MAX_INT_32))
             {
                 continue;
             }
@@ -278,9 +276,9 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
             read(fp, (char_ptr)pExtPool, sizeof(FTE_CFG_EXT_POOL));
             fclose(fp);
 
-            if ((pExtPool->crc != fte_crc32(0, (char_ptr)&pExtPool->tag, sizeof(FTE_CFG_EXT_POOL) - sizeof(uint_32))) ||
-                (pExtPool->tag != FTE_CFG_EXT_POOL_VERSION) || 
-                (pExtPool->nID > (uint_32)MAX_INT_32))
+            if ((pExtPool->ulCRC != FTE_CRC32(0, &pExtPool->ulTag, sizeof(FTE_CFG_EXT_POOL) - sizeof(FTE_UINT32))) ||
+                (pExtPool->ulTag != FTE_CFG_EXT_POOL_VERSION) || 
+                (pExtPool->nID > (FTE_UINT32)MAX_INT_32))
             {
                 continue;
             }
@@ -294,7 +292,7 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
     
     if (_config.xPool.nID == 0)
     {
-        _config.xPool.tag    = FTE_CFG_POOL_VERSION;
+        _config.xPool.ulTag    = FTE_CFG_POOL_VERSION;
         strcpy(_config.xPool.pModel, FTE_MODEL);
         
         FTE_CFG_SYS_set(desc->pSystem);
@@ -304,17 +302,19 @@ _mqx_uint   FTE_CFG_init(FTE_CFG_DESC const *desc)
     
     if (_config.xObjectPool.nID == 0)
     {
-        _config.xObjectPool.tag    = FTE_CFG_OBJECT_POOL_VERSION;
+        _config.xObjectPool.ulTag    = FTE_CFG_OBJECT_POOL_VERSION;
         
         for( i = 0 ; i < desc->nObjects ; i++)
         {
-            FTE_CFG_OBJ_create(desc->pObjects[i], NULL, 0, NULL);
+            FTE_OBJECT_CONFIG_PTR   pNewConfig;
+            
+            FTE_CFG_OBJ_create(desc->pObjects[i], &pNewConfig, NULL, 0, NULL);
         }
     } 
     
     if (_config.xEventPool.nID == 0)
     {
-        _config.xEventPool.tag    = FTE_CFG_EVENT_POOL_VERSION;
+        _config.xEventPool.ulTag    = FTE_CFG_EVENT_POOL_VERSION;
         
         for( i = 0 ; i < desc->nEvents ; i++)
         {
@@ -383,7 +383,7 @@ error:
 }
 
 
-_mqx_uint FTE_CFG_save(boolean force)
+FTE_RET FTE_CFG_save(FTE_BOOL force)
 {
     ASSERT(_config.pDESC != NULL);
     
@@ -397,7 +397,7 @@ _mqx_uint FTE_CFG_save(boolean force)
         for(i = 0 ; i < 2 ; i++)
         {
             _config.xPool.nID++;
-            _config.xPool.crc = fte_crc32(0, (pointer)&_config.xPool.tag, sizeof(FTE_CFG_POOL) - sizeof(uint_32));   
+            _config.xPool.ulCRC = FTE_CRC32(0, &_config.xPool.ulTag, sizeof(FTE_CFG_POOL) - sizeof(FTE_UINT32));   
         
             int nMTD = _config.xPool.nID & 0x01;
             
@@ -431,7 +431,7 @@ _mqx_uint FTE_CFG_save(boolean force)
         for(i = 0 ; i < 2 ; i++)
         {
             _config.xObjectPool.nID++;
-            _config.xObjectPool.crc = fte_crc32(0, (pointer)&_config.xObjectPool.tag, sizeof(FTE_CFG_OBJECT_POOL) - sizeof(uint_32));   
+            _config.xObjectPool.ulCRC = FTE_CRC32(0, &_config.xObjectPool.ulTag, sizeof(FTE_CFG_OBJECT_POOL) - sizeof(FTE_UINT32));   
         
             int nMTD = _config.xObjectPool.nID & 0x01;
             
@@ -465,7 +465,7 @@ _mqx_uint FTE_CFG_save(boolean force)
         for(i = 0 ; i < 2 ; i++)
         {
             _config.xEventPool.nID++;
-            _config.xEventPool.crc = fte_crc32(0, (pointer)&_config.xEventPool.tag, sizeof(FTE_CFG_EVENT_POOL) - sizeof(uint_32));   
+            _config.xEventPool.ulCRC = FTE_CRC32(0, &_config.xEventPool.ulTag, sizeof(FTE_CFG_EVENT_POOL) - sizeof(FTE_UINT32));   
         
             int nMTD = _config.xEventPool.nID & 0x01;
 
@@ -498,7 +498,7 @@ _mqx_uint FTE_CFG_save(boolean force)
         for(i = 0 ; i < 2 ; i++)
         {
             _config.xExtPool.nID++;
-            _config.xExtPool.crc = fte_crc32(0, (pointer)&_config.xExtPool.tag, sizeof(FTE_CFG_EXT_POOL) - sizeof(uint_32));   
+            _config.xExtPool.ulCRC = FTE_CRC32(0, &_config.xExtPool.ulTag, sizeof(FTE_CFG_EXT_POOL) - sizeof(FTE_UINT32));   
         
             int nMTD = _config.xExtPool.nID & 0x01;
 
@@ -536,9 +536,9 @@ success:
     return  MQX_OK;
 }
 
-_mqx_uint FTE_CFG_clear(void) 
+FTE_RET FTE_CFG_clear(void) 
 {
-    _mqx_int        i;
+    FTE_INT32   i;
 
     assert(_config.pDESC != NULL);
     
@@ -548,21 +548,67 @@ _mqx_uint FTE_CFG_clear(void)
     memset(&_config.xEventPool, 0, sizeof(FTE_CFG_EVENT_POOL));
     memset(&_config.xExtPool, 0, sizeof(FTE_CFG_EXT_POOL));
 
-    _config.xPool.tag    = FTE_CFG_POOL_VERSION;    
+    _config.xPool.ulTag    = FTE_CFG_POOL_VERSION;    
     FTE_CFG_unlock();
     
     FTE_CFG_SYS_set(_config.pDESC->pSystem);
     FTE_CFG_SHELL_set(_config.pDESC->pShell);
     FTE_CFG_NET_set(_config.pDESC->pNetwork);        
    
-    _config.xObjectPool.tag    = FTE_CFG_OBJECT_POOL_VERSION;    
+    _config.xObjectPool.ulTag    = FTE_CFG_OBJECT_POOL_VERSION;    
     for( i = 0 ; i < _config.pDESC->nObjects ; i++)
     {
-        FTE_CFG_OBJ_create(_config.pDESC->pObjects[i], NULL, 0, NULL);
+        FTE_OBJECT_CONFIG_PTR   pNewConfig;
+            
+        FTE_CFG_OBJ_create(_config.pDESC->pObjects[i], &pNewConfig, NULL, 0, NULL);
     }
     
     FTE_CFG_lock();
-    _config.xEventPool.tag    = FTE_CFG_EVENT_POOL_VERSION;
+    _config.xEventPool.ulTag    = FTE_CFG_EVENT_POOL_VERSION;
+    FTE_CFG_unlock();
+      
+    for( i = 0 ; i < _config.pDESC->nEvents ; i++)
+    {
+        FTE_CFG_EVENT_create(_config.pDESC->pEvents[i]);
+    }
+
+    FTE_CFG_lock();
+    FTE_CFG_EXT_init();
+    FTE_CFG_unlock();
+    
+    FTE_CFG_save(TRUE);
+    
+    return  MQX_OK;
+}
+
+FTE_RET FTE_CFG_clearObject(void) 
+{
+    FTE_INT32   i;
+
+    assert(_config.pDESC != NULL);
+    
+    FTE_CFG_lock();
+    memset(&_config.xObjectPool, 0, sizeof(FTE_CFG_OBJECT_POOL));
+    memset(&_config.xEventPool, 0, sizeof(FTE_CFG_EVENT_POOL));
+    memset(&_config.xExtPool, 0, sizeof(FTE_CFG_EXT_POOL));
+
+    _config.xPool.ulTag    = FTE_CFG_POOL_VERSION;    
+    FTE_CFG_unlock();
+    
+    FTE_CFG_SYS_set(_config.pDESC->pSystem);
+    FTE_CFG_SHELL_set(_config.pDESC->pShell);
+    FTE_CFG_NET_set(_config.pDESC->pNetwork);        
+   
+    _config.xObjectPool.ulTag    = FTE_CFG_OBJECT_POOL_VERSION;    
+    for( i = 0 ; i < _config.pDESC->nObjects ; i++)
+    {
+        FTE_OBJECT_CONFIG_PTR   pNewConfig;
+            
+        FTE_CFG_OBJ_create(_config.pDESC->pObjects[i], &pNewConfig, NULL, 0, NULL);
+    }
+    
+    FTE_CFG_lock();
+    _config.xEventPool.ulTag    = FTE_CFG_EVENT_POOL_VERSION;
     FTE_CFG_unlock();
       
     for( i = 0 ; i < _config.pDESC->nEvents ; i++)
@@ -591,12 +637,12 @@ void    FTE_CFG_unlock(void)
     _int_enable();
 }
 
-boolean FTE_CFG_isChanged(void)
+FTE_BOOL FTE_CFG_isChanged(void)
 {
     return  _config.bPoolModified;
 }
 
-_mqx_uint   FTE_CFG_OBJ_save(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_CFG_OBJ_save(FTE_OBJECT_PTR pObj)
 {
     FTE_OBJECT_CONFIG_PTR pConfig = FTE_CFG_OBJ_get(pObj->pConfig->xCommon.nID);
     if (pConfig == NULL)
@@ -612,19 +658,19 @@ _mqx_uint   FTE_CFG_OBJ_save(FTE_OBJECT_PTR pObj)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_CFG_getLocation(char_ptr pLocation, uint_32 nLen)
+FTE_RET   FTE_CFG_getLocation(char_ptr pLocation, FTE_UINT32 nLen)
 {
-    if (nLen < strlen(_config.xPool.location))
+    if (nLen < strlen(_config.xPool.pLocation))
     {
         return  MQX_INVALID_SIZE;
     }
     
-    strncpy(pLocation, _config.xPool.location, nLen);
+    strncpy(pLocation, _config.xPool.pLocation, nLen);
     
     return  MQX_OK;
 }
  
-_mqx_uint   FTE_CFG_setLocation(char_ptr pLocation, uint_32 nLen)
+FTE_RET   FTE_CFG_setLocation(char_ptr pLocation, FTE_UINT32 nLen)
 {
     if (nLen > FTE_LOCATION_MAX_LEN)
     {
@@ -632,23 +678,23 @@ _mqx_uint   FTE_CFG_setLocation(char_ptr pLocation, uint_32 nLen)
     }
     
     FTE_CFG_lock();
-    strncpy(_config.xPool.location, pLocation, nLen);
+    strncpy(_config.xPool.pLocation, pLocation, nLen);
     _config.bPoolModified = TRUE;
     FTE_CFG_unlock();
     
     return  MQX_OK;
 }
 
-uint_32 FTE_CFG_objects_count(void)
+FTE_UINT32 FTE_CFG_objects_count(void)
 {
     return  _config.xObjectPool.uiObjectCount;
 }
 
-pointer FTE_CFG_OBJ_get(uint_32 oid)
+pointer FTE_CFG_OBJ_get(FTE_UINT32 oid)
 {
     if (_config.pDESC != NULL && _config.xObjectPool.uiObjectCount != 0)
     {
-        _mqx_uint   i;
+        FTE_RET   i;
     
         for(i = 0 ; i < FTE_OBJ_MAX_COUNT ; i++)
         {
@@ -662,7 +708,7 @@ pointer FTE_CFG_OBJ_get(uint_32 oid)
     return  NULL;
 }
 
-pointer             FTE_CFG_OBJ_getAt(uint_32 oid, uint_32 ulMask, uint_32 ulIdx)
+pointer             FTE_CFG_OBJ_getAt(FTE_UINT32 oid, FTE_UINT32 ulMask, FTE_UINT32 ulIdx)
 {
     if ((_config.pDESC != NULL) && (ulIdx < _config.xObjectPool.uiObjectCount))
     {
@@ -672,7 +718,7 @@ pointer             FTE_CFG_OBJ_getAt(uint_32 oid, uint_32 ulMask, uint_32 ulIdx
         }
         else
         {
-            _mqx_uint   i;
+            FTE_RET   i;
         
             for(i = 0 ; i < FTE_OBJ_MAX_COUNT ; i++)
             {
@@ -692,11 +738,11 @@ pointer             FTE_CFG_OBJ_getAt(uint_32 oid, uint_32 ulMask, uint_32 ulIdx
     return  NULL;
 }
 
-FTE_OBJECT_CONFIG_PTR FTE_CFG_OBJ_alloc(uint_32 nID)
+FTE_OBJECT_CONFIG_PTR FTE_CFG_OBJ_alloc(FTE_UINT32 nID)
 {    
     if (_config.pDESC != NULL && _config.xObjectPool.uiObjectCount != FTE_OBJ_MAX_COUNT)
     {
-        _mqx_uint   i;
+        FTE_RET   i;
         
         for(i = 0 ; i < FTE_OBJ_MAX_COUNT ; i++)
         {
@@ -713,11 +759,11 @@ FTE_OBJECT_CONFIG_PTR FTE_CFG_OBJ_alloc(uint_32 nID)
     return  NULL;
 }
 
-_mqx_uint   FTE_CFG_OBJ_free(uint_32 oid)
+FTE_RET   FTE_CFG_OBJ_free(FTE_UINT32 oid)
 {
     if (_config.pDESC != NULL && _config.xObjectPool.uiObjectCount != 0)
     {
-        _mqx_uint   i;
+        FTE_RET   i;
          
         for(i = 0 ; i < FTE_OBJ_MAX_COUNT ; i++)
         {
@@ -734,64 +780,77 @@ _mqx_uint   FTE_CFG_OBJ_free(uint_32 oid)
     return  MQX_ERROR;
 }
 
-FTE_OBJECT_CONFIG_PTR FTE_CFG_OBJ_create
+FTE_RET FTE_CFG_OBJ_create
 (
-    FTE_OBJECT_CONFIG_PTR   pConfig,
+    FTE_OBJECT_CONFIG_PTR   pBase,
+    FTE_OBJECT_CONFIG_PTR _PTR_ ppNewConfig,
     FTE_OBJECT_CONFIG_PTR _PTR_ pChildObjects,
-    uint_32                 ulMaxCount,
-    uint_32_ptr             pulCount
+    FTE_UINT32                 ulMaxCount,
+    FTE_UINT32_PTR             pulCount
 )
 {
-    uint_32 ulChildCount = 0;
+    FTE_UINT32 ulChildCount = 0;
     
-    FTE_OBJECT_CONFIG_PTR pObject = FTE_CFG_OBJ_alloc(pConfig->xCommon.nID);
-    if (pObject != NULL)
+    FTE_OBJECT_CONFIG_PTR pConfig = FTE_CFG_OBJ_alloc(pBase->xCommon.nID);
+    if (pConfig == NULL)
     {
-        int     i;
-        uint_32 ulGroupID = 0;
-        uint_32 ulCount = FTE_CFG_OBJ_count(pConfig->xCommon.nID & FTE_OBJ_CLASS_MASK, FTE_OBJ_CLASS_MASK);
-        
-        memcpy(pObject, pConfig, sizeof(FTE_OBJECT_CONFIG));
-        pObject->xCommon.nID = (pConfig->xCommon.nID & FTE_OBJ_TYPE_MASK) | (ulCount + 1);
-        snprintf(pObject->xCommon.pName, MAX_OBJECT_NAME_LEN, "%s-%04x",  pConfig->xCommon.pName, (uint_16)pObject->xCommon.nID);                
-        ulGroupID = (pObject->xCommon.nID >> 16) & 0xFF;
-        
-        for(i = 0 ; i < pObject->xCommon.ulChild ; i++)
+        return  FTE_RET_INSUFFICIENT_MEMORY;
+    }
+            
+    int     i;
+    FTE_UINT32 ulIndexID = 0;
+    FTE_UINT32 ulGroupID = 0;
+    FTE_UINT32 ulCount = FTE_CFG_OBJ_count(pBase->xCommon.nID & FTE_OBJ_CLASS_MASK, FTE_OBJ_CLASS_MASK);
+    
+    ulIndexID = (ulCount + 1);
+    
+    memcpy(pConfig, pBase, sizeof(FTE_OBJECT_CONFIG));
+    if (pConfig->xCommon.ulChild != 0)
+    {
+        ulGroupID = ulIndexID;
+    }
+
+    pConfig->xCommon.nID = (pBase->xCommon.nID & FTE_OBJ_TYPE_MASK) | (ulGroupID << 8) | ulIndexID;
+    
+    snprintf(pConfig->xCommon.pName, MAX_OBJECT_NAME_LEN, "%s-%04x",  pBase->xCommon.pName, ulIndexID);
+    
+    for(i = 0 ; i < pConfig->xCommon.ulChild ; i++)
+    {
+        FTE_OBJECT_CONFIG_PTR pChild = FTE_CFG_OBJ_alloc(pConfig->xCommon.pChild[i]->xCommon.nID);
+        if (pChild != NULL)
         {
-            FTE_OBJECT_CONFIG_PTR pChild = FTE_CFG_OBJ_alloc(pObject->xCommon.pChild[i]->xCommon.nID);
-            if (pChild != NULL)
+            ulCount = FTE_CFG_OBJ_count(pConfig->xCommon.pChild[i]->xCommon.nID & FTE_OBJ_CLASS_MASK, FTE_OBJ_CLASS_MASK);
+            
+            memcpy(pChild, pConfig->xCommon.pChild[i], sizeof(FTE_OBJECT_CONFIG));
+            memset(pChild->xCommon.pName, 0, sizeof(pChild->xCommon.pName));
+            snprintf(pChild->xCommon.pName, MAX_OBJECT_NAME_LEN, "%s-%04x",  pConfig->xCommon.pChild[i]->xCommon.pName, (uint_16)pConfig->xCommon.nID);                
+            ((FTE_IFCE_CONFIG_PTR)pChild)->nDevID = pConfig->xCommon.nID;
+            pChild->xCommon.nID = (pConfig->xCommon.pChild[i]->xCommon.nID & FTE_OBJ_TYPE_MASK) | (ulGroupID << 8) | (ulCount + 1);
+            
+            if ((pChildObjects != NULL) && (ulChildCount < ulMaxCount))
             {
-                ulCount = FTE_CFG_OBJ_count(pObject->xCommon.pChild[i]->xCommon.nID & FTE_OBJ_CLASS_MASK, FTE_OBJ_CLASS_MASK);
-                
-                memcpy(pChild, pObject->xCommon.pChild[i], sizeof(FTE_OBJECT_CONFIG));
-                memset(pChild->xCommon.pName, 0, sizeof(pChild->xCommon.pName));
-                snprintf(pChild->xCommon.pName, MAX_OBJECT_NAME_LEN, "%s-%04x",  pObject->xCommon.pChild[i]->xCommon.pName, (uint_16)pObject->xCommon.nID);                
-                ((FTE_IFCE_CONFIG_PTR)pChild)->nDevID = pObject->xCommon.nID;
-                pChild->xCommon.nID = (pObject->xCommon.pChild[i]->xCommon.nID & FTE_OBJ_TYPE_MASK) | (ulGroupID << 8) | (ulCount + 1);
-                
-                if ((pChildObjects != NULL) && (ulChildCount < ulMaxCount))
-                {
-                    pChildObjects[ulChildCount++] = pChild;
-                }
-                else
-                {
-                    ulCount++;
-                }
+                pChildObjects[ulChildCount++] = pChild;
+            }
+            else
+            {
+                ulCount++;
             }
         }
-
-        if ((pulCount != NULL) && (ulChildCount <= ulMaxCount))
-        {
-            *pulCount = ulChildCount;
-        }
-        
-        _config.bObjectPoolModified = TRUE;
     }
+
+    if ((pulCount != NULL) && (ulChildCount <= ulMaxCount))
+    {
+        *pulCount = ulChildCount;
+    }    
     
-    return  pObject;
+    *ppNewConfig = pConfig;
+    
+    _config.bObjectPoolModified = TRUE;
+    
+    return  FTE_RET_OK;
 }
 
-uint_32 FTE_CFG_OBJ_count(uint_32 ulType, uint_32 ulMask)
+FTE_UINT32 FTE_CFG_OBJ_count(FTE_UINT32 ulType, FTE_UINT32 ulMask)
 {
     if (_config.pDESC != NULL)
     {
@@ -802,7 +861,7 @@ uint_32 FTE_CFG_OBJ_count(uint_32 ulType, uint_32 ulMask)
         else
         {
             int     i;
-            uint_32 ulCount = 0;
+            FTE_UINT32 ulCount = 0;
             for(i = 0 ; i < FTE_OBJ_MAX_COUNT ; i++)
             {
                 if ((_config.xObjectPool.pObjects[i].xCommon.nID & ulMask) == ulType)
@@ -842,11 +901,11 @@ pointer FTE_CFG_OBJ_getNext(void)
 }
 
 
-FTE_CFG_EVENT_PTR FTE_CFG_EVENT_alloc(uint_32  ulOID)
+FTE_CFG_EVENT_PTR FTE_CFG_EVENT_alloc(FTE_UINT32  ulOID)
 {    
     if (_config.pDESC != NULL && _config.xEventPool.uiEventCount != FTE_EVENT_MAX_COUNT)
     {
-        _mqx_uint   i;
+        FTE_RET   i;
         
         for(i = 0 ; i < FTE_EVENT_MAX_COUNT ; i++)
         {
@@ -863,11 +922,11 @@ FTE_CFG_EVENT_PTR FTE_CFG_EVENT_alloc(uint_32  ulOID)
     return  NULL;
 }
 
-_mqx_uint   FTE_CFG_EVENT_free(FTE_CFG_EVENT_PTR pConfig)
+FTE_RET   FTE_CFG_EVENT_free(FTE_CFG_EVENT_PTR pConfig)
 {
     if (_config.pDESC != NULL && _config.xEventPool.uiEventCount != 0)
     {
-        _mqx_uint   i;
+        FTE_RET   i;
          
         for(i = 0 ; i < FTE_EVENT_MAX_COUNT ; i++)
         {
@@ -897,7 +956,7 @@ FTE_CFG_EVENT_PTR FTE_CFG_EVENT_create(FTE_CFG_EVENT_PTR pConfig)
     return  pEvent;
 }
 
-uint_32 FTE_CFG_EVENT_count(void)
+FTE_UINT32 FTE_CFG_EVENT_count(void)
 {
     if (_config.pDESC != NULL)
     {
@@ -907,7 +966,7 @@ uint_32 FTE_CFG_EVENT_count(void)
     return  0;
 }
 
-uint_32 FTE_CFG_EVENT_getAt(uint_32 ulIndex, FTE_CFG_EVENT_PTR _PTR_ ppConfig)
+FTE_UINT32 FTE_CFG_EVENT_getAt(FTE_UINT32 ulIndex, FTE_CFG_EVENT_PTR _PTR_ ppConfig)
 {
     if ((_config.pDESC != NULL) && (ulIndex < _config.xEventPool.uiEventCount))
     {
@@ -952,9 +1011,9 @@ pointer FTE_CFG_EVENT_getNext(void)
     return  NULL;
 }
 
-_mqx_uint   FTE_CFG_EXT_init(void)
+FTE_RET   FTE_CFG_EXT_init(void)
 {
-    _config.xExtPool.tag    = FTE_CFG_EXT_POOL_VERSION;
+    _config.xExtPool.ulTag    = FTE_CFG_EXT_POOL_VERSION;
 #if FTE_CIAS_SIOUX_CU_SUPPORTED
     FTE_CIAS_SIOUX_CU_initDefaultExtConfig(&_config.xExtPool.xCU);
 #endif
@@ -970,7 +1029,7 @@ _mqx_uint   FTE_CFG_EXT_init(void)
 } 
 
 #if FTE_CIAS_SIOUX_CU_SUPPORTED
-_mqx_uint   FTE_CFG_CIAS_getExtConfig(void _PTR_ pBuff, uint_32 ulBuffLen)
+FTE_RET   FTE_CFG_CIAS_getExtConfig(FTE_VOID_PTR pBuff, FTE_UINT32 ulBuffLen)
 {
     if ((_config.pDESC == NULL) || (ulBuffLen != sizeof(_config.xExtPool.xCU)))
     {
@@ -982,7 +1041,7 @@ _mqx_uint   FTE_CFG_CIAS_getExtConfig(void _PTR_ pBuff, uint_32 ulBuffLen)
     return  MQX_OK;    
 }
 
-_mqx_uint   FTE_CFG_CIAS_setExtConfig(void _PTR_ pCIAS, uint_32 ulCIASLen)
+FTE_RET   FTE_CFG_CIAS_setExtConfig(FTE_VOID_PTR pCIAS, FTE_UINT32 ulCIASLen)
 {
     if ((_config.pDESC == NULL) || (ulCIASLen != sizeof(_config.xExtPool.xCU)))
     {
@@ -997,7 +1056,7 @@ _mqx_uint   FTE_CFG_CIAS_setExtConfig(void _PTR_ pCIAS, uint_32 ulCIASLen)
 #endif
 
 #if FTE_IOEX_SUPPORTED
-_mqx_uint   FTE_CFG_IOEX_getExtConfig(void _PTR_ pBuff, uint_32 ulBuffLen)
+FTE_RET   FTE_CFG_IOEX_getExtConfig(FTE_VOID_PTR pBuff, FTE_UINT32 ulBuffLen)
 {
     if ((_config.pDESC == NULL) || (ulBuffLen != sizeof(_config.xExtPool.xIOEX)))
     {
@@ -1009,7 +1068,7 @@ _mqx_uint   FTE_CFG_IOEX_getExtConfig(void _PTR_ pBuff, uint_32 ulBuffLen)
     return  MQX_OK;    
 }
 
-_mqx_uint   FTE_CFG_IOEX_setExtConfig(void _PTR_ pIOEX, uint_32 ulIOEXLen)
+FTE_RET   FTE_CFG_IOEX_setExtConfig(FTE_VOID_PTR pIOEX, FTE_UINT32 ulIOEXLen)
 {
     if ((_config.pDESC == NULL) || (ulIOEXLen != sizeof(_config.xExtPool.xIOEX)))
     {
@@ -1024,7 +1083,7 @@ _mqx_uint   FTE_CFG_IOEX_setExtConfig(void _PTR_ pIOEX, uint_32 ulIOEXLen)
 #endif
 
 #if FTE_DOTECH_SUPPORTED
-_mqx_uint   FTE_CFG_DOTECH_getExtConfig(void _PTR_ pBuff, uint_32 ulBuffLen)
+FTE_RET   FTE_CFG_DOTECH_getExtConfig(FTE_VOID_PTR pBuff, FTE_UINT32 ulBuffLen)
 {
     if ((_config.pDESC == NULL) || (ulBuffLen != sizeof(_config.xExtPool.xDOTECH)))
     {
@@ -1036,7 +1095,7 @@ _mqx_uint   FTE_CFG_DOTECH_getExtConfig(void _PTR_ pBuff, uint_32 ulBuffLen)
     return  MQX_OK;    
 }
 
-_mqx_uint   FTE_CFG_DOTECH_setExtConfig(void _PTR_ pDOTECH, uint_32 ulLen)
+FTE_RET   FTE_CFG_DOTECH_setExtConfig(FTE_VOID_PTR pDOTECH, FTE_UINT32 ulLen)
 {
     if ((_config.pDESC == NULL) || (ulLen != sizeof(_config.xExtPool.xDOTECH)))
     {
@@ -1056,7 +1115,7 @@ _mqx_uint   FTE_CFG_DOTECH_setExtConfig(void _PTR_ pDOTECH, uint_32 ulLen)
  ******************************************************************************/
 static FTE_CFG_CERT_POOL_PTR pCertPool = NULL;
 
-boolean FTE_CFG_CERT_valid(void)
+FTE_BOOL FTE_CFG_CERT_valid(void)
 {
     if (pCertPool == NULL)
     {
@@ -1069,7 +1128,7 @@ boolean FTE_CFG_CERT_valid(void)
     return  TRUE;
 }
 
-uint_32 FTE_CFG_CERT_size(void)
+FTE_UINT32 FTE_CFG_CERT_size(void)
 {
     if (pCertPool == NULL)
     {
@@ -1082,7 +1141,7 @@ uint_32 FTE_CFG_CERT_size(void)
     return  pCertPool->ulCertLen;
 }
 
-uint_32 FTE_CFG_CERT_get(void _PTR_ pBuff, uint_32 ulBuffLen)
+FTE_UINT32 FTE_CFG_CERT_get(FTE_VOID_PTR pBuff, FTE_UINT32 ulBuffLen)
 {
     if (pCertPool == NULL)
     {
@@ -1102,7 +1161,7 @@ uint_32 FTE_CFG_CERT_get(void _PTR_ pBuff, uint_32 ulBuffLen)
     return  pCertPool->ulCertLen;
 }
 
-_mqx_uint   FTE_CFG_CERT_load(void)
+FTE_RET   FTE_CFG_CERT_load(void)
 {
     FTE_CFG_CERT_POOL_PTR pTempCertPools = (FTE_CFG_CERT_POOL_PTR)0x7E000;
     
@@ -1119,9 +1178,9 @@ _mqx_uint   FTE_CFG_CERT_load(void)
     for(int i = 0 ; i < 1 ; i++)
     {
         if ((pTempCertPools[i].ulCertLen > sizeof(pTempCertPools[i].pCert)) ||
-            (pTempCertPools[i].tag != FTE_CFG_CERT_POOL_VERSION) ||
-            (pTempCertPools[i].crc != fte_crc32(0, (char_ptr)&pTempCertPools[i].tag, sizeof(FTE_CFG_CERT_POOL_HEAD) - sizeof(uint_32) + pTempCertPools[i].ulCertLen)) ||
-            (pTempCertPools[i].nID > (uint_32)MAX_INT_32))
+            (pTempCertPools[i].ulTag != FTE_CFG_CERT_POOL_VERSION) ||
+            (pTempCertPools[i].ulCRC != FTE_CRC32(0, &pTempCertPools[i].ulTag, sizeof(FTE_CFG_CERT_POOL_HEAD) - sizeof(FTE_UINT32) + pTempCertPools[i].ulCertLen)) ||
+            (pTempCertPools[i].nID > (FTE_UINT32)MAX_INT_32))
         {
             continue;
         }
@@ -1141,7 +1200,7 @@ _mqx_uint   FTE_CFG_CERT_load(void)
 }
 
 
-_mqx_uint   FTE_CFG_CERT_set(void _PTR_ pCert, uint_32 ulCertLen)
+FTE_RET   FTE_CFG_CERT_set(FTE_VOID_PTR pCert, FTE_UINT32 ulCertLen)
 {
     FTE_CFG_CERT_POOL_HEAD  xCertHead;
     
@@ -1153,15 +1212,15 @@ _mqx_uint   FTE_CFG_CERT_set(void _PTR_ pCert, uint_32 ulCertLen)
     {
         xCertHead.nID = pCertPool->nID;
     }
-    xCertHead.tag = FTE_CFG_CERT_POOL_VERSION;
+    xCertHead.ulTag = FTE_CFG_CERT_POOL_VERSION;
         
     for(int i = 0 ; i < 2 ; i++)
     {
         MQX_FILE_PTR    fp;
         
         xCertHead.nID++;
-        xCertHead.crc = fte_crc32(0, (pointer)&xCertHead.tag, sizeof(FTE_CFG_CERT_POOL_HEAD) - sizeof(uint_32));   
-        xCertHead.crc = fte_crc32(xCertHead.crc, pCert, ulCertLen);
+        xCertHead.ulCRC = FTE_CRC32(0, &xCertHead.ulTag, sizeof(FTE_CFG_CERT_POOL_HEAD) - sizeof(FTE_UINT32));   
+        xCertHead.ulCRC = FTE_CRC32(xCertHead.ulCRC, pCert, ulCertLen);
         
         char    pFileName[32];
             
@@ -1190,11 +1249,11 @@ _mqx_uint   FTE_CFG_CERT_set(void _PTR_ pCert, uint_32 ulCertLen)
 /******************************************************************************
  * CERT command
  ******************************************************************************/
-int_32  FTE_CFG_CERT_SHELL_cmd(int_32 argc, char_ptr argv[])
+FTE_INT32  FTE_CFG_CERT_SHELL_cmd(FTE_INT32 argc, char_ptr argv[])
 {
-    boolean     print_usage, shorthelp = FALSE;
-    int_32      return_code = SHELL_EXIT_SUCCESS;
-    uint_32     ulBuffLen = 4096;
+    FTE_BOOL     print_usage, shorthelp = FALSE;
+    FTE_INT32      return_code = SHELL_EXIT_SUCCESS;
+    FTE_UINT32     ulBuffLen = 4096;
     uint_8_ptr  pBuff = NULL;
     
     print_usage = Shell_check_help_request (argc, argv, &shorthelp);
@@ -1212,7 +1271,7 @@ int_32  FTE_CFG_CERT_SHELL_cmd(int_32 argc, char_ptr argv[])
         {
         case    2:
             {
-                uint_32 ulLen;
+                FTE_UINT32 ulLen;
                
                 if (strcmp(argv[1], "show") == 0)
                 {
@@ -1232,8 +1291,8 @@ int_32  FTE_CFG_CERT_SHELL_cmd(int_32 argc, char_ptr argv[])
         case    4:
             {
                 uchar_ptr           pData;
-                uint_32             ulDataLen = 0;
-                uint_32             ulLen;
+                FTE_UINT32             ulDataLen = 0;
+                FTE_UINT32             ulLen;
                 _ip_address         xServerIP = 0;
                 TFTP_DATA_STRUCT    xTFTPData;
 
@@ -1342,7 +1401,7 @@ FTE_NET_CFG_PTR FTE_CFG_NET_get(void)
     return  &_config.xPool.xNetwork;
 }
 
-_mqx_uint   FTE_CFG_NET_copy(FTE_NET_CFG_PTR pCfgNet)
+FTE_RET   FTE_CFG_NET_copy(FTE_NET_CFG_PTR pCfgNet)
 {
     FTE_PRODUCT_DESC const *desc = fte_get_product_desc();
 
@@ -1350,7 +1409,7 @@ _mqx_uint   FTE_CFG_NET_copy(FTE_NET_CFG_PTR pCfgNet)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_CFG_NET_set(FTE_NET_CFG const *pCfgNet)
+FTE_RET   FTE_CFG_NET_set(FTE_NET_CFG const *pCfgNet)
 {
     FTE_PRODUCT_DESC const *desc = fte_get_product_desc();
 
@@ -1363,7 +1422,7 @@ _mqx_uint   FTE_CFG_NET_set(FTE_NET_CFG const *pCfgNet)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_CFG_NET_setIP(_ip_address xIP)
+FTE_RET   FTE_CFG_NET_setIP(_ip_address xIP)
 {
     FTE_CFG_lock();
     _config.xPool.xNetwork.xIPData.ip = xIP;
@@ -1373,7 +1432,7 @@ _mqx_uint   FTE_CFG_NET_setIP(_ip_address xIP)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_CFG_NET_setNetmask(_ip_address xNetmask)
+FTE_RET   FTE_CFG_NET_setNetmask(_ip_address xNetmask)
 {
     FTE_CFG_lock();
     _config.xPool.xNetwork.xIPData.mask = xNetmask;
@@ -1383,7 +1442,7 @@ _mqx_uint   FTE_CFG_NET_setNetmask(_ip_address xNetmask)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_CFG_NET_setGatewayIP(_ip_address xIP)
+FTE_RET   FTE_CFG_NET_setGatewayIP(_ip_address xIP)
 {
     FTE_CFG_lock();
     _config.xPool.xNetwork.xIPData.gateway = xIP;
@@ -1394,12 +1453,12 @@ _mqx_uint   FTE_CFG_NET_setGatewayIP(_ip_address xIP)
 }
 
 #if FTE_SNMPD_SUPPORTED
-uint_32     FTE_CFG_NET_TRAP_count(void)
+FTE_UINT32     FTE_CFG_NET_TRAP_count(void)
 {
     return  _config.xPool.xNetwork.xSNMP.xTrap.ulCount;
 }
 
-_mqx_uint   FTE_CFG_NET_TRAP_clear(void)
+FTE_RET   FTE_CFG_NET_TRAP_clear(void)
 {
     FTE_CFG_lock();
     _config.xPool.xNetwork.xSNMP.xTrap.ulCount = 0;
@@ -1410,7 +1469,7 @@ _mqx_uint   FTE_CFG_NET_TRAP_clear(void)
     return  MQX_OK;
 }
 
-_ip_address FTE_CFG_NET_TRAP_getAt(uint_32 ulIndex)
+_ip_address FTE_CFG_NET_TRAP_getAt(FTE_UINT32 ulIndex)
 {
     if (ulIndex < _config.xPool.xNetwork.xSNMP.xTrap.ulCount)
     {        
@@ -1429,7 +1488,7 @@ _ip_address FTE_CFG_NET_TRAP_getAt(uint_32 ulIndex)
     return  0;
 }
 
-_mqx_uint   FTE_CFG_NET_TRAP_addIP(_ip_address xIP)
+FTE_RET   FTE_CFG_NET_TRAP_addIP(_ip_address xIP)
 {
     if (FTE_CFG_NET_TRAP_isExist(xIP))
     {
@@ -1449,7 +1508,7 @@ _mqx_uint   FTE_CFG_NET_TRAP_addIP(_ip_address xIP)
     return  MQX_ERROR;
 }
     
-_mqx_uint   FTE_CFG_NET_TRAP_delIP(_ip_address xIP)
+FTE_RET   FTE_CFG_NET_TRAP_delIP(_ip_address xIP)
 {
     int i, nIndex = -1;
 
@@ -1480,7 +1539,7 @@ _mqx_uint   FTE_CFG_NET_TRAP_delIP(_ip_address xIP)
     return  MQX_OK;
 }
     
-boolean FTE_CFG_NET_TRAP_isExist(_ip_address nTrapIP)
+FTE_BOOL FTE_CFG_NET_TRAP_isExist(_ip_address nTrapIP)
 {
     if ((nTrapIP != 0) && (_config.xPool.xNetwork.xSNMP.xTrap.ulCount != 0))
     {        
@@ -1508,7 +1567,7 @@ FTE_SYS_CONFIG_PTR  FTE_CFG_SYS_get(void)
     return  &_config.xPool.xSystem;
 }
 
-_mqx_uint   FTE_CFG_SYS_set(FTE_SYS_CONFIG const *pConfig)
+FTE_RET   FTE_CFG_SYS_set(FTE_SYS_CONFIG const *pConfig)
 {
     FTE_CFG_lock();
     memcpy(&_config.xPool.xSystem, pConfig, sizeof(FTE_SYS_CONFIG));
@@ -1520,12 +1579,12 @@ _mqx_uint   FTE_CFG_SYS_set(FTE_SYS_CONFIG const *pConfig)
 }
 
 
-boolean FTE_CFG_SYS_getSystemMonitor(void)
+FTE_BOOL FTE_CFG_SYS_getSystemMonitor(void)
 {
     return  _config.xPool.xSystem.xFlags.bSystemMonitor;
 }
 
-_mqx_uint   FTE_CFG_SYS_setSystemMonitor(boolean bStart)
+FTE_RET   FTE_CFG_SYS_setSystemMonitor(FTE_BOOL bStart)
 {
     FTE_CFG_lock();
     _config.xPool.xSystem.xFlags.bSystemMonitor = bStart;    
@@ -1535,12 +1594,17 @@ _mqx_uint   FTE_CFG_SYS_setSystemMonitor(boolean bStart)
     return  MQX_OK;
 }
 
-uint_32     FTE_CFG_SYS_getKeepAliveTime(void)
+FTE_UINT32     FTE_CFG_SYS_getAllowedFailureCount(void)
+{
+    return  _config.xPool.xSystem.ulAllowFailureCount;
+}
+
+FTE_UINT32     FTE_CFG_SYS_getKeepAliveTime(void)
 {
     return  _config.xPool.xSystem.ulKeepAliveTime;
 }
 
-_mqx_uint   FTE_CFG_SYS_setKeepAliveTime(uint_32 ulTime)
+FTE_RET   FTE_CFG_SYS_setKeepAliveTime(FTE_UINT32 ulTime)
 {
     if (ulTime > FTE_SYS_KEEP_ALIVE_TIME_MAX)
     {
@@ -1564,7 +1628,7 @@ FTE_SHELL_CONFIG_PTR    FTE_CFG_SHELL_get(void)
     return  &_config.xPool.xShell;
 }
 
-_mqx_uint   FTE_CFG_SHELL_set(FTE_SHELL_CONFIG const *pConfig)
+FTE_RET   FTE_CFG_SHELL_set(FTE_SHELL_CONFIG const *pConfig)
 {
     FTE_CFG_lock();
     memcpy(&_config.xPool.xShell, pConfig, sizeof(FTE_SHELL_CONFIG));
@@ -1595,10 +1659,10 @@ void    FTE_CFG_DBG_setBootTime(void)
 /******************************************************************************
  * Shell command
  ******************************************************************************/
-int_32  FTE_CFG_SHELL_cmd(int_32 argc, char_ptr argv[])
+FTE_INT32  FTE_CFG_SHELL_cmd(FTE_INT32 argc, char_ptr argv[])
 {
-    boolean              print_usage, shorthelp = FALSE;
-    int_32               return_code = SHELL_EXIT_SUCCESS;
+    FTE_BOOL              print_usage, shorthelp = FALSE;
+    FTE_INT32               return_code = SHELL_EXIT_SUCCESS;
     
     print_usage = Shell_check_help_request (argc, argv, &shorthelp);
 
@@ -1653,7 +1717,7 @@ int_32  FTE_CFG_SHELL_cmd(int_32 argc, char_ptr argv[])
                     
                     if (_config.bPoolModified == FALSE)
                     {
-                        if (_config.xPool.crc != fte_crc32(0, (pointer)&_config.xPool.tag, sizeof(FTE_CFG_POOL) - sizeof(uint_32)))
+                        if (_config.xPool.ulCRC != FTE_CRC32(0, &_config.xPool.ulTag, sizeof(FTE_CFG_POOL) - sizeof(FTE_UINT32)))
                         {
                             _config.bPoolModified = TRUE;
                         }                    
@@ -1695,10 +1759,10 @@ int_32  FTE_CFG_SHELL_cmd(int_32 argc, char_ptr argv[])
 /******************************************************************************
  * Shell command
  ******************************************************************************/
-int_32  FTE_CFG_SHELL_cmdSave(int_32 argc, char_ptr argv[])
+FTE_INT32  FTE_CFG_SHELL_cmdSave(FTE_INT32 argc, char_ptr argv[])
 {
-    boolean              print_usage, shorthelp = FALSE;
-    int_32               return_code = SHELL_EXIT_SUCCESS;
+    FTE_BOOL              print_usage, shorthelp = FALSE;
+    FTE_INT32               return_code = SHELL_EXIT_SUCCESS;
     
     print_usage = Shell_check_help_request (argc, argv, &shorthelp);
 
@@ -1724,7 +1788,7 @@ int_32  FTE_CFG_SHELL_cmdSave(int_32 argc, char_ptr argv[])
                 
                 if (_config.bPoolModified == FALSE)
                 {
-                    if (_config.xPool.crc != fte_crc32(0, (pointer)&_config.xPool.tag, sizeof(FTE_CFG_POOL) - sizeof(uint_32)))
+                    if (_config.xPool.ulCRC != FTE_CRC32(0, &_config.xPool.ulTag, sizeof(FTE_CFG_POOL) - sizeof(FTE_UINT32)))
                     {
                         _config.bPoolModified = TRUE;
                     }                    

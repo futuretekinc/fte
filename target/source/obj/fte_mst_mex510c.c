@@ -4,6 +4,8 @@
 #include "fte_time.h"
 #include "nxjson.h"
 
+#if FTE_MST_MEX510C_SUPPORTED
+
 #define FTE_MST_MEX510C_FRAME_FIELD_INPUT               1
 #define FTE_MST_MEX510C_FRAME_FIELD_ALERT1              2
 #define FTE_MST_MEX510C_FRAME_FIELD_ALERT2              3
@@ -26,6 +28,359 @@
 #define FTE_MST_MEX510C_FRAME_FIELD_DEVICE_ID           24
 #define FTE_MST_MEX510C_FRAME_FIELD_DIRECT_CTRL         32
 
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_TEMPERATURE_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_TEMP, 0),
+        .pName      = "TEMP",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_TEMPERATURE,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_SET_TEMPERATURE_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_TEMP, 0),
+        .pName      = "SET TEMP",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_SET_TEMPERATURE,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_HIGH_TEMPERATURE_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_TEMP, 0),
+        .pName      = "SET HIGH TEMP",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_SET_HIGH_TEMP,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_LOW_TEMPERATURE_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_TEMP, 0),
+        .pName      = "SET LOW TEMP",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_SET_LOW_TEMP,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_TEMPERATURE_DEVIATION_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_TEMP, 0),
+        .pName      = "COOL DEVIATION",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_COOL_TEMP_DEVIATION,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_HEAT_TEMPERATURE_DEVIATION_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_TEMP, 0),
+        .pName      = "HEAT DEVIATION",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_HEAT_TEMP_DEVIATION,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C__OPERATION_STATE_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "STATE",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_STATE_OPERATION,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_ALARM_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "ALARM",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_ALARM,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_STATE_HEAT_defaultConfig=
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "HEAT",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_STATE_HEAT,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_STATE_DHEAT_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "D.HEAT",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_STATE_DHEAT,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_STATE_FAN_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "FAN",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_STATE_FAN,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_STATE_SOLVALVE_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "SOLVALVE",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_STATE_SOLVALVE,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_STATE_COMP_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0),
+        .pName      = "COMP",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_STATE_COMP,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_DIRECT_CTRL_ENABLE_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DO, 0),
+        .pName      = "CTRL ENABLE",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_DIRECT_CTRL_ENABLE,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_DIRECT_CTRL_A_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DO, 0),
+        .pName      = "CTRL A",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_DIRECT_CTRL_A,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_DIRECT_CTRL_B_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DO, 0),
+        .pName      = "CTRL B",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_DIRECT_CTRL_B,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_DIRECT_CTRL_C_defaultConfig  =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DO, 0),
+        .pName      = "CTRL C",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_DIRECT_CTRL_C,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_DIRECT_CTRL_D_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DO, 0),
+        .pName      = "CTRL D",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_DIRECT_CTRL_D,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_DIRECT_CTRL_E_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DO, 0),
+        .pName      = "CTRL E",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_DIRECT_CTRL_E,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_DIRECT_CTRL_F_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DO, 0),
+        .pName      = "CTRL F",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_DIRECT_CTRL_F,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_DIRECT_CTRL_G_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DO, 0),
+        .pName      = "CTRL G",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_DIRECT_CTRL_G,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_IFCE_CONFIG FTE_MST_MEX510C_DIRECT_CTRL_H_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_DO, 0),
+        .pName      = "CTRL H",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+    },
+    .nDevID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+    .nRegID     = FTE_MST_MEX510C_INDEX_DIRECT_CTRL_H,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
+static const 
+FTE_OBJECT_CONFIG_PTR FTE_MST_MEX510C_defaultChildConfigs[] =
+{
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_TEMPERATURE_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_SET_TEMPERATURE_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_SET_HIGH_TEMPERATURE_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_SET_LOW_TEMPERATURE_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_COOL_TEMPERATURE_DEVIATION_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_HEAT_TEMPERATURE_DEVIATION_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_OPERATION_STATE_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_ALARM_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_STATE_HEAT_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_TATE_DHEAT_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_STATE_FAN_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_STATE_SOLVALVE_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_STATE_COMP_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_DIRECT_CTRL_ENABLE_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_DIRECT_CTRL_A_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_DIRECT_CTRL_B_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_DIRECT_CTRL_C_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_DIRECT_CTRL_D_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_DIRECT_CTRL_E_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_DIRECT_CTRL_F_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_DIRECT_CTRL_G_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_MST_MEX510C_DIRECT_CTRL_H_defaultConfig
+};
+
+FTE_GUS_CONFIG FTE_MST_MEX510C_defaultConfig =
+{
+    .xCommon    =
+    {
+        .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_MEX510C, 0x0001),
+        .pName      = "MEX-510C",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
+        .ulChild    = sizeof(FTE_MST_MEX510C_defaultChildConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR),
+        .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)FTE_MST_MEX510C_defaultChildConfigs
+    },
+    .nModel     = FTE_GUS_MODEL_MST_MEX510C,
+    .nSensorID  = 0x01,
+    .nUCSID     = FTE_DEV_UCS_1,
+    .nInterval  = FTE_MST_MEX510C_DEFAULT_UPDATE_INTERVAL
+};
+
 FTE_VALUE_TYPE  FTE_MST_MEX510C_valueTypes[] =
 {
     FTE_VALUE_TYPE_ULONG,       FTE_VALUE_TYPE_TEMPERATURE, FTE_VALUE_TYPE_TEMPERATURE,   FTE_VALUE_TYPE_TEMPERATURE,
@@ -39,13 +394,42 @@ FTE_VALUE_TYPE  FTE_MST_MEX510C_valueTypes[] =
     FTE_VALUE_TYPE_ULONG,       FTE_VALUE_TYPE_ULONG
 };
 
-static const   char_ptr    pStringTargetTemperature= "targetTemperature";
-static const   char_ptr    pStringCoolingDeviation = "coolingDeviation";
-static const   char_ptr    pStringHeatingDeviation = "heatingDeviation";
-
-_mqx_uint   FTE_MST_MEX510C_setConfig(FTE_OBJECT_PTR  pObj, char_ptr pString)
+const 
+FTE_GUS_MODEL_INFO    FTE_MST_MEX510C_GUSModelInfo = 
 {
-    int_32  nValue = 0;
+    .nModel         = FTE_GUS_MODEL_MST_MEX510C,
+    .pName          = "MEX-510C",
+    .xUARTConfig    = 
+    {
+        .nBaudrate  =   FTE_MST_MEX510C_DEFAULT_BAUDRATE,
+        .nDataBits  =   FTE_MST_MEX510C_DEFAULT_DATABITS,
+        .nParity    =   FTE_MST_MEX510C_DEFAULT_PARITY,
+        .nStopBits  =   FTE_MST_MEX510C_DEFAULT_STOPBITS,
+        .bFullDuplex=   FTE_MST_MEX510C_DEFAULT_FULL_DUPLEX
+    },
+    .nFieldCount    = FTE_MST_MEX510C_INDEX_MAX+1,
+    .pValueTypes    = FTE_MST_MEX510C_valueTypes,
+    .f_request      = fte_mst_mex510c_request_data,
+    .f_received     = fte_mst_mex510c_receive_data,
+    .f_set          = fte_mst_mex510c_set,
+    .f_set_config = FTE_MST_MEX510C_setConfig,
+    .f_get_config = FTE_MST_MEX510C_getConfig
+};
+
+static const   
+FTE_CHAR_PTR    pStringTargetTemperature= "targetTemperature";
+static const   
+FTE_CHAR_PTR    pStringCoolingDeviation = "coolingDeviation";
+static const   
+FTE_CHAR_PTR    pStringHeatingDeviation = "heatingDeviation";
+
+FTE_RET   FTE_MST_MEX510C_setConfig
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_CHAR_PTR    pString
+)
+{
+    FTE_INT32  nValue = 0;
     FTE_GUS_STATUS_PTR  pStatus;
 
     if (pObj == NULL)
@@ -67,22 +451,22 @@ _mqx_uint   FTE_MST_MEX510C_setConfig(FTE_OBJECT_PTR  pObj, char_ptr pString)
 
     if ((pxTemperature != NULL) && (pxTemperature->type != NX_JSON_NULL))
     {
-        uint_32 nLen;
-        uint_16 uiCRC = 0;  
-        uint_8  pBuff[8];
-        uint_8  pCMD[9] = { 0x01, 0x06, 0x00, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00};
+        FTE_UINT32 nLen;
+        FTE_UINT16 uiCRC = 0;  
+        FTE_UINT8  pBuff[8];
+        FTE_UINT8  pCMD[9] = { 0x01, 0x06, 0x00, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00};
 
         if (pxTemperature->type == NX_JSON_DOUBLE)
         {
-            nValue = (uint_32)(pxTemperature->dbl_value * 10);
+            nValue = (FTE_UINT32)(pxTemperature->dbl_value * 10);
         }
         else if (pxTemperature->type == NX_JSON_INTEGER)
         {
-            nValue = (uint_32)(pxTemperature->int_value * 10);
+            nValue = (FTE_UINT32)(pxTemperature->int_value * 10);
         }
         else if (pxTemperature->type == NX_JSON_STRING)
         {
-            nValue = (uint_32)(strtod(pxTemperature->text_value, NULL) * 10);
+            nValue = (FTE_UINT32)(strtod(pxTemperature->text_value, NULL) * 10);
         }
         else
         {
@@ -92,7 +476,7 @@ _mqx_uint   FTE_MST_MEX510C_setConfig(FTE_OBJECT_PTR  pObj, char_ptr pString)
         pCMD[4] = (nValue >> 8) & 0xFF;
         pCMD[5] = (nValue     ) & 0xFF;
 
-        uiCRC = fte_crc16(pCMD, 6);
+        uiCRC = FTE_CRC16(pCMD, 6);
         pCMD[6] = (uiCRC     ) & 0xFF;
         pCMD[7] = (uiCRC >> 8) & 0xFF;
         
@@ -108,22 +492,22 @@ _mqx_uint   FTE_MST_MEX510C_setConfig(FTE_OBJECT_PTR  pObj, char_ptr pString)
     
     if ((pxCoolDeviation != NULL) && (pxCoolDeviation->type != NX_JSON_NULL))
     {
-        uint_32 nLen;
-        uint_16 uiCRC = 0;  
-        uint_8  pBuff[8];
-        uint_8  pCMD[9] = { 0x01, 0x06, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00};
+        FTE_UINT32 nLen;
+        FTE_UINT16 uiCRC = 0;  
+        FTE_UINT8  pBuff[8];
+        FTE_UINT8  pCMD[9] = { 0x01, 0x06, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00};
         
         if (pxCoolDeviation->type == NX_JSON_DOUBLE)
         {
-            nValue = (uint_32)(pxCoolDeviation->dbl_value * 10);
+            nValue = (FTE_UINT32)(pxCoolDeviation->dbl_value * 10);
         }
         else if (pxCoolDeviation->type == NX_JSON_INTEGER)
         {
-            nValue = (uint_32)(pxCoolDeviation->int_value * 10);
+            nValue = (FTE_UINT32)(pxCoolDeviation->int_value * 10);
         }
         else if (pxCoolDeviation->type == NX_JSON_STRING)
         {
-            nValue = (uint_32)(strtod(pxCoolDeviation->text_value, NULL) * 10);
+            nValue = (FTE_UINT32)(strtod(pxCoolDeviation->text_value, NULL) * 10);
         }
         else
         {
@@ -133,7 +517,7 @@ _mqx_uint   FTE_MST_MEX510C_setConfig(FTE_OBJECT_PTR  pObj, char_ptr pString)
         pCMD[4] = (nValue >> 8) & 0xFF;
         pCMD[5] = (nValue     ) & 0xFF;
 
-        uiCRC = fte_crc16(pCMD, 6);
+        uiCRC = FTE_CRC16(pCMD, 6);
         pCMD[6] = (uiCRC     ) & 0xFF;
         pCMD[7] = (uiCRC >> 8) & 0xFF;
         
@@ -149,22 +533,22 @@ _mqx_uint   FTE_MST_MEX510C_setConfig(FTE_OBJECT_PTR  pObj, char_ptr pString)
     
     if ((pxHeatDeviation != NULL) && (pxHeatDeviation->type != NX_JSON_NULL))
     {
-        uint_32 nLen;
-        uint_16 uiCRC = 0;  
-        uint_8  pBuff[8];
-        uint_8  pCMD[9] = { 0x01, 0x06, 0x00, 0x0E, 0x00, 0x00, 0x00, 0x00, 0x00};
+        FTE_UINT32 nLen;
+        FTE_UINT16 uiCRC = 0;  
+        FTE_UINT8  pBuff[8];
+        FTE_UINT8  pCMD[9] = { 0x01, 0x06, 0x00, 0x0E, 0x00, 0x00, 0x00, 0x00, 0x00};
 
         if (pxHeatDeviation->type == NX_JSON_DOUBLE)
         {
-            nValue = (uint_32)(pxHeatDeviation->dbl_value * 10);
+            nValue = (FTE_UINT32)(pxHeatDeviation->dbl_value * 10);
         }
         else if (pxHeatDeviation->type == NX_JSON_INTEGER)
         {
-            nValue = (uint_32)(pxHeatDeviation->int_value * 10);
+            nValue = (FTE_UINT32)(pxHeatDeviation->int_value * 10);
         }
         else if (pxHeatDeviation->type == NX_JSON_STRING)
         {
-            nValue = (uint_32)(strtod(pxHeatDeviation->text_value, NULL) * 10);
+            nValue = (FTE_UINT32)(strtod(pxHeatDeviation->text_value, NULL) * 10);
         }
         else
         {
@@ -174,7 +558,7 @@ _mqx_uint   FTE_MST_MEX510C_setConfig(FTE_OBJECT_PTR  pObj, char_ptr pString)
         pCMD[4] = (nValue >> 8) & 0xFF;
         pCMD[5] = (nValue     ) & 0xFF;
 
-        uiCRC = fte_crc16(pCMD, 6);
+        uiCRC = FTE_CRC16(pCMD, 6);
         pCMD[6] = (uiCRC     ) & 0xFF;
         pCMD[7] = (uiCRC >> 8) & 0xFF;
         
@@ -193,12 +577,17 @@ _mqx_uint   FTE_MST_MEX510C_setConfig(FTE_OBJECT_PTR  pObj, char_ptr pString)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_MST_MEX510C_getConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 ulBuffLen)
+FTE_RET   FTE_MST_MEX510C_getConfig
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_CHAR_PTR    pBuff, 
+    FTE_UINT32      ulBuffLen
+)
 {
     FTE_GUS_STATUS_PTR  pStatus;
     FTE_JSON_VALUE_PTR  pJOSNObject;
     FTE_JSON_VALUE_PTR  pJOSNValue;
-    char                pValueString[32];
+    FTE_CHAR            pValueString[32];
     
     if (pObj == NULL)
     {
@@ -238,26 +627,32 @@ _mqx_uint   FTE_MST_MEX510C_getConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_
     return  MQX_OK;
 }
 
-_mqx_uint   fte_mst_mex510c_request_data(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_MST_MEX510C_requestData
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     FTE_GUS_CONFIG_PTR  pConfig = (FTE_GUS_CONFIG_PTR)pObj->pConfig;
     
-    uint_8  pCMD[] = { 0x01, 0x03, 0x00, 0x00, 0x00, 0x21, 0x85, 0xd2, 0x00};
+    FTE_UINT8  pCMD[] = { 0x01, 0x03, 0x00, 0x00, 0x00, 0x21, 0x85, 0xd2, 0x00};
     
-    pCMD[0] = (uint_8)pConfig->nSensorID;
+    pCMD[0] = (FTE_UINT8)pConfig->nSensorID;
     FTE_UCS_clear(pStatus->pUCS);    
     FTE_UCS_send(pStatus->pUCS, pCMD, sizeof(pCMD), FALSE);    
 
     return  MQX_OK;
 }
 
-_mqx_uint   fte_mst_mex510c_receive_data(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_MST_MEX510C_receiveData
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
-    uint_8      pBuff[128];
-    uint_32     nLen;
-    uint_16     uiCRC;
+    FTE_UINT8      pBuff[128];
+    FTE_UINT32     nLen;
+    FTE_UINT16     uiCRC;
     
     memset(pBuff, 0, sizeof(pBuff));
     
@@ -272,8 +667,8 @@ _mqx_uint   fte_mst_mex510c_receive_data(FTE_OBJECT_PTR pObj)
         return  MQX_ERROR;
     }
     
-    uiCRC = fte_crc16(pBuff, 69);
-    if (uiCRC != (pBuff[69] | ((uint_16)pBuff[70] << 8)))
+    uiCRC = FTE_CRC16(pBuff, 69);
+    if (uiCRC != (pBuff[69] | ((FTE_UINT16)pBuff[70] << 8)))
     {
         return  MQX_ERROR;
     }
@@ -282,21 +677,21 @@ _mqx_uint   fte_mst_mex510c_receive_data(FTE_OBJECT_PTR pObj)
     FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_DEVICE_ID], pBuff[FTE_MST_MEX510C_FRAME_FIELD_DEVICE_ID * 2 + 3]);
     FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_ALARM], (pBuff[FTE_MST_MEX510C_FRAME_FIELD_ALERT2 * 2 + 3] >> 7) & 01);
     FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_STATE_OPERATION], pBuff[FTE_MST_MEX510C_FRAME_FIELD_OP * 2 + 4] & 01);
-    FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_TEMPERATURE],(((uint_16)pBuff[FTE_MST_MEX510C_FRAME_FIELD_CURR_TEMP * 2 + 3] << 8) | pBuff[FTE_MST_MEX510C_FRAME_FIELD_CURR_TEMP * 2 + 4])*10);
-    FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_COOL_TEMP_DEVIATION],(((uint_16)pBuff[FTE_MST_MEX510C_FRAME_FIELD_COOL_DEVIATION * 2 + 3] << 8) | pBuff[FTE_MST_MEX510C_FRAME_FIELD_COOL_DEVIATION * 2 + 4])*10);
-    FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_HEAT_TEMP_DEVIATION],(((uint_16)pBuff[FTE_MST_MEX510C_FRAME_FIELD_HEAT_DEVIATION * 2 + 3] << 8) | pBuff[FTE_MST_MEX510C_FRAME_FIELD_HEAT_DEVIATION * 2 + 4])*10);
-    FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_SET_TEMPERATURE], (((uint_16)pBuff[FTE_MST_MEX510C_FRAME_FIELD_SETUP_TEMP * 2 + 3] << 8) | pBuff[FTE_MST_MEX510C_FRAME_FIELD_SETUP_TEMP * 2 + 4])*10);
-    FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_SET_HIGH_TEMP], (((uint_16)pBuff[FTE_MST_MEX510C_FRAME_FIELD_HIGH_TEMP * 2 + 3] << 8) | pBuff[FTE_MST_MEX510C_FRAME_FIELD_HIGH_TEMP * 2 + 4])*10);
-    FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_SET_LOW_TEMP], (((uint_16)pBuff[FTE_MST_MEX510C_FRAME_FIELD_LOW_TEMP * 2 + 3] << 8) | pBuff[FTE_MST_MEX510C_FRAME_FIELD_LOW_TEMP * 2 + 4])*10);
+    FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_TEMPERATURE],(((FTE_UINT16)pBuff[FTE_MST_MEX510C_FRAME_FIELD_CURR_TEMP * 2 + 3] << 8) | pBuff[FTE_MST_MEX510C_FRAME_FIELD_CURR_TEMP * 2 + 4])*10);
+    FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_COOL_TEMP_DEVIATION],(((FTE_UINT16)pBuff[FTE_MST_MEX510C_FRAME_FIELD_COOL_DEVIATION * 2 + 3] << 8) | pBuff[FTE_MST_MEX510C_FRAME_FIELD_COOL_DEVIATION * 2 + 4])*10);
+    FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_HEAT_TEMP_DEVIATION],(((FTE_UINT16)pBuff[FTE_MST_MEX510C_FRAME_FIELD_HEAT_DEVIATION * 2 + 3] << 8) | pBuff[FTE_MST_MEX510C_FRAME_FIELD_HEAT_DEVIATION * 2 + 4])*10);
+    FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_SET_TEMPERATURE], (((FTE_UINT16)pBuff[FTE_MST_MEX510C_FRAME_FIELD_SETUP_TEMP * 2 + 3] << 8) | pBuff[FTE_MST_MEX510C_FRAME_FIELD_SETUP_TEMP * 2 + 4])*10);
+    FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_SET_HIGH_TEMP], (((FTE_UINT16)pBuff[FTE_MST_MEX510C_FRAME_FIELD_HIGH_TEMP * 2 + 3] << 8) | pBuff[FTE_MST_MEX510C_FRAME_FIELD_HIGH_TEMP * 2 + 4])*10);
+    FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_SET_LOW_TEMP], (((FTE_UINT16)pBuff[FTE_MST_MEX510C_FRAME_FIELD_LOW_TEMP * 2 + 3] << 8) | pBuff[FTE_MST_MEX510C_FRAME_FIELD_LOW_TEMP * 2 + 4])*10);
     
-    uint_16 nOutputState = ((uint_16)pBuff[FTE_MST_MEX510C_FRAME_FIELD_OUTPUT_STATE * 2 + 3] << 8) | pBuff[FTE_MST_MEX510C_FRAME_FIELD_OUTPUT_STATE * 2 + 4];
+    FTE_UINT16 nOutputState = ((FTE_UINT16)pBuff[FTE_MST_MEX510C_FRAME_FIELD_OUTPUT_STATE * 2 + 3] << 8) | pBuff[FTE_MST_MEX510C_FRAME_FIELD_OUTPUT_STATE * 2 + 4];
     FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_STATE_HEAT],(nOutputState >> 4) & 0x01);
     FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_STATE_DHEAT], (nOutputState >> 3) & 0x01);
     FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_STATE_FAN], (nOutputState >> 2) & 0x01);
     FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_STATE_SOLVALVE], (nOutputState >> 1) & 0x01);
     FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_STATE_COMP], (nOutputState >> 0) & 0x01);
     
-    uint_16 nDirectCtrl = ((uint_16)pBuff[FTE_MST_MEX510C_FRAME_FIELD_DIRECT_CTRL * 2 + 3] << 8) | pBuff[FTE_MST_MEX510C_FRAME_FIELD_DIRECT_CTRL * 2 + 4];
+    FTE_UINT16 nDirectCtrl = ((FTE_UINT16)pBuff[FTE_MST_MEX510C_FRAME_FIELD_DIRECT_CTRL * 2 + 3] << 8) | pBuff[FTE_MST_MEX510C_FRAME_FIELD_DIRECT_CTRL * 2 + 4];
 
     FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_DIRECT_CTRL_ENABLE], (nDirectCtrl >> 15) & 0x01);
     FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_DIRECT_CTRL_A], (nDirectCtrl >> 0) & 0x01);
@@ -311,15 +706,20 @@ _mqx_uint   fte_mst_mex510c_receive_data(FTE_OBJECT_PTR pObj)
     return  MQX_OK;
 }
 
-_mqx_uint   fte_mst_mex510c_set(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_PTR pValue)
+FTE_RET   FTE_MST_MEX510C_set
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nIndex, 
+    FTE_VALUE_PTR   pValue
+)
 {
     FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
 
     if (FTE_MST_MEX510C_INDEX_DIRECT_CTRL_ENABLE <= nIndex && nIndex <= FTE_MST_MEX510C_INDEX_DIRECT_CTRL_H)
     {
-        uint_32 ulValue;
-        uint_16 uiValue, uiCRC;
-        uint_8  pCMD[9] = { 0x01, 0x06, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00};
+        FTE_UINT32 ulValue;
+        FTE_UINT16 uiValue, uiCRC;
+        FTE_UINT8  pCMD[9] = { 0x01, 0x06, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00};
         
         FTE_VALUE_copy(&pStatus->xCommon.pValue[nIndex], pValue);
         
@@ -345,7 +745,7 @@ _mqx_uint   fte_mst_mex510c_set(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_P
         pCMD[4] = (uiValue >> 8) & 0xFF;
         pCMD[5] = (uiValue     ) & 0xFF;
 
-        uiCRC = fte_crc16(pCMD, 6);
+        uiCRC = FTE_CRC16(pCMD, 6);
         pCMD[6] = (uiCRC     ) & 0xFF;
         pCMD[7] = (uiCRC >> 8) & 0xFF;
         
@@ -356,3 +756,5 @@ _mqx_uint   fte_mst_mex510c_set(FTE_OBJECT_PTR pObj, uint_32 nIndex, FTE_VALUE_P
     
     return  MQX_ERROR;
 }
+
+#endif

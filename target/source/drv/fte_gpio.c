@@ -1,9 +1,12 @@
 #include "fte_target.h"
 
 static FTE_GPIO_PTR  _pHead     = NULL;
-static uint_32       _nGPIOs    = 0;
+static FTE_UINT32       _nGPIOs    = 0;
  
-_mqx_uint FTE_GPIO_create(FTE_GPIO_CONFIG_PTR pConfig)
+FTE_RET FTE_GPIO_create
+(
+    FTE_GPIO_CONFIG_PTR     pConfig
+)
 {
     FTE_GPIO_PTR    pGPIO;
     
@@ -22,7 +25,11 @@ _mqx_uint FTE_GPIO_create(FTE_GPIO_CONFIG_PTR pConfig)
     return  MQX_OK;
 }
 
-_mqx_uint   FTE_GPIO_attach(FTE_GPIO_PTR pGPIO, uint_32 nParent)
+FTE_RET   FTE_GPIO_attach
+(
+    FTE_GPIO_PTR    pGPIO, 
+    FTE_UINT32      nParent
+)
 {
     assert(pGPIO != NULL);
         if (pGPIO == NULL)
@@ -100,7 +107,10 @@ error:
     return  MQX_ERROR;
 }
     
-_mqx_uint   FTE_GPIO_detach(FTE_GPIO_PTR pGPIO)
+FTE_RET FTE_GPIO_detach
+(
+    FTE_GPIO_PTR    pGPIO
+)
 {
     assert(pGPIO != NULL);
     if (pGPIO == NULL)
@@ -151,12 +161,15 @@ error:
     return  MQX_ERROR;
 }
 
-uint_32 FTE_GPIO_count(void)
+FTE_UINT32 FTE_GPIO_count(void)
 {
     return  _nGPIOs;
 }
 
-FTE_GPIO_PTR FTE_GPIO_get(uint_32 nID)
+FTE_GPIO_PTR FTE_GPIO_get
+(
+    FTE_UINT32  nID
+)
 {
     FTE_GPIO_PTR    pGPIO;
     
@@ -174,7 +187,11 @@ FTE_GPIO_PTR FTE_GPIO_get(uint_32 nID)
     return  NULL;
 }
 
-_mqx_uint   FTE_GPIO_setValue(FTE_GPIO_PTR pGPIO, boolean nValue)
+FTE_RET   FTE_GPIO_setValue
+(
+    FTE_GPIO_PTR    pGPIO, 
+    FTE_BOOL        nValue
+)
 {
     assert(pGPIO != NULL);
     if (pGPIO == NULL)
@@ -209,7 +226,11 @@ _mqx_uint   FTE_GPIO_setValue(FTE_GPIO_PTR pGPIO, boolean nValue)
     
 }
 
-_mqx_uint   FTE_GPIO_getValue(FTE_GPIO_PTR pGPIO, boolean *pValue)
+FTE_RET   FTE_GPIO_getValue
+(
+    FTE_GPIO_PTR    pGPIO, 
+    FTE_BOOL_PTR    pValue
+)
 {
     assert(pGPIO != NULL);
     if (pGPIO == NULL)
@@ -227,7 +248,7 @@ _mqx_uint   FTE_GPIO_getValue(FTE_GPIO_PTR pGPIO, boolean *pValue)
 #if FTE_MCP23S08_SUPPORTED
     case    FTE_DEV_TYPE_MCP23S08:
         {
-            uint_32 nValue;
+            FTE_UINT32 nValue;
             if (FTE_MCP23S08_GPIO_getValue((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, &nValue) != MQX_OK)
             {
                 return  MQX_ERROR;
@@ -252,7 +273,11 @@ _mqx_uint   FTE_GPIO_getValue(FTE_GPIO_PTR pGPIO, boolean *pValue)
     return  MQX_ERROR;
 }
 
-_mqx_uint   FTE_GPIO_setDir(FTE_GPIO_PTR pGPIO, FTE_GPIO_DIR nValue)
+FTE_RET   FTE_GPIO_setDir
+(
+    FTE_GPIO_PTR    pGPIO, 
+    FTE_GPIO_DIR    nValue
+)
 {
     assert(pGPIO != NULL);
     if (pGPIO == NULL)
@@ -288,7 +313,12 @@ _mqx_uint   FTE_GPIO_setDir(FTE_GPIO_PTR pGPIO, FTE_GPIO_DIR nValue)
     return  MQX_ERROR;
 }
 
-_mqx_uint   FTE_GPIO_setISR(FTE_GPIO_PTR pGPIO, void (*f_isr)(void *), void *pParams)
+FTE_RET   FTE_GPIO_setISR
+(
+    FTE_GPIO_PTR    pGPIO, 
+    void (*f_isr)(void *), 
+    FTE_VOID_PTR    pParams
+)
 {
     assert(pGPIO != NULL);
     if (pGPIO == NULL)
@@ -316,7 +346,13 @@ _mqx_uint   FTE_GPIO_setISR(FTE_GPIO_PTR pGPIO, void (*f_isr)(void *), void *pPa
     return  MQX_ERROR;
 }
 
-_mqx_uint   FTE_GPIO_INT_init(FTE_GPIO_PTR pGPIO, uint_32 nPriority, uint_32 nSubpriority, boolean nEnable)
+FTE_RET   FTE_GPIO_INT_init
+(
+    FTE_GPIO_PTR    pGPIO, 
+    FTE_UINT32      nPriority, 
+    FTE_UINT32      nSubpriority, 
+    FTE_BOOL        nEnable
+)
 {
      ASSERT(pGPIO != NULL);
     
@@ -340,7 +376,11 @@ _mqx_uint   FTE_GPIO_INT_init(FTE_GPIO_PTR pGPIO, uint_32 nPriority, uint_32 nSu
     return  MQX_ERROR;
 }
 
-_mqx_uint   FTE_GPIO_INT_setPolarity(FTE_GPIO_PTR pGPIO, uint_32 nPolarity)
+FTE_RET   FTE_GPIO_INT_setPolarity
+(
+    FTE_GPIO_PTR    pGPIO, 
+    FTE_UINT32      nPolarity
+)
 {    
      ASSERT(pGPIO != NULL);
     
@@ -364,7 +404,11 @@ _mqx_uint   FTE_GPIO_INT_setPolarity(FTE_GPIO_PTR pGPIO, uint_32 nPolarity)
     return  MQX_ERROR;
 }
 
-_mqx_uint    FTE_GPIO_INT_setEnable(FTE_GPIO_PTR pGPIO, boolean nEnable)
+FTE_RET    FTE_GPIO_INT_setEnable
+(
+    FTE_GPIO_PTR    pGPIO, 
+    FTE_BOOL        nEnable
+)
 {
      ASSERT(pGPIO != NULL);
     
@@ -388,7 +432,11 @@ _mqx_uint    FTE_GPIO_INT_setEnable(FTE_GPIO_PTR pGPIO, boolean nEnable)
     return  MQX_ERROR;
 }
 
-_mqx_uint    FTE_GPIO_INT_getFlag(FTE_GPIO_PTR pGPIO, boolean *pFlag)
+FTE_RET    FTE_GPIO_INT_getFlag
+(
+    FTE_GPIO_PTR    pGPIO, 
+    FTE_BOOL_PTR    pFlag
+)
 {
      ASSERT(pGPIO != NULL);
     
@@ -412,7 +460,10 @@ _mqx_uint    FTE_GPIO_INT_getFlag(FTE_GPIO_PTR pGPIO, boolean *pFlag)
     return  MQX_ERROR;
 }
 
-_mqx_uint    FTE_GPIO_INT_clrFlag(FTE_GPIO_PTR pGPIO)
+FTE_RET    FTE_GPIO_INT_clrFlag
+(
+    FTE_GPIO_PTR    pGPIO
+)
 {
      ASSERT(pGPIO != NULL);
     
@@ -436,43 +487,139 @@ _mqx_uint    FTE_GPIO_INT_clrFlag(FTE_GPIO_PTR pGPIO)
     return  MQX_ERROR;
 }
 
-int_32      FTE_GPIO_SHELL_cmd(int_32 argc, char_ptr argv[] )
+FTE_RET FTE_GPIO_showList(void)
 {
-    boolean              print_usage, shorthelp = FALSE;
-    int_32               return_code = SHELL_EXIT_SUCCESS;
+    FTE_INT32   nIndex = 0;
+    FTE_GPIO_PTR  pGPIO = _pHead;
     
-    print_usage = Shell_check_help_request (argc, argv, &shorthelp);
+    while(pGPIO != NULL)
+    {
+        printf("%2d %08x %08x",
+               ++nIndex,
+               pGPIO->pConfig->nID,
+               pGPIO->pConfig->nDevID);
+        
+        switch(pGPIO->pConfig->nDIR)
+        {
+        case    FTE_GPIO_DIR_INPUT:
+            {
+                printf("%8s ", "INPUT");
+            }
+            break;
+            
+        case    FTE_GPIO_DIR_OUTPUT:
+            {
+                printf("%8s ", "OUTPUT");
+            }
+            break;
+            
+        case    FTE_GPIO_DIR_NOCHANGE:
+            {
+                printf("%8s ", "NOCHANGE");
+            }
+            break;
+        }
+               
+        switch(pGPIO->pConfig->nInit)
+        {
+        case    FTE_GPIO_VALUE_LOW:
+            {
+                printf("%8s ", "LOW");
+            }
+            break;
+            
+        case    FTE_GPIO_VALUE_HIGH:
+            {
+                printf("%8s ", "HIGH");
+            }
+            break;
+            
+        case    FTE_GPIO_DIR_NOCHANGE:
+            {
+                printf("%8s ", "NOCHANGE");
+            }
+            break;
+        }
+               
+        switch(pGPIO->pConfig->nActive)
+        {
+        case    FTE_GPIO_VALUE_LOW:
+            {
+                printf("%8s ", "LOW");
+            }
+            break;
+            
+        case    FTE_GPIO_VALUE_HIGH:
+            {
+                printf("%8s ", "HIGH");
+            }
+            break;
+            
+        case    FTE_GPIO_DIR_NOCHANGE:
+            {
+                printf("%8s ", "NOCHANGE");
+            }
+            break;
+        }
+        printf("\n");
+               
+        pGPIO = pGPIO->pNext;
+    }
+    
+    return  FTE_RET_OK;
+}
 
-    if (!print_usage)
+FTE_INT32      FTE_GPIO_SHELL_cmd
+(
+    FTE_INT32   nArgc, 
+    FTE_CHAR_PTR pArgv[]
+)
+{
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   xRet = SHELL_EXIT_SUCCESS;
+    
+    bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
+
+    if (!bPrintUsage)
     { 
-        switch(argc)
+        switch(nArgc)
         {
         case    1:
-            { 
+            {
+                FTE_GPIO_showList();
+            }
+            break;
+            
+        case    2:
+            {
+                if (strcasecmp(pArgv[1], "list") == 0)
+                {
+                    FTE_GPIO_showList();
+                }
             }
             break;
             
         default:
             {
-                print_usage = TRUE;
+                bPrintUsage = TRUE;
             }
         }
     }
 
-   if (print_usage || (return_code !=SHELL_EXIT_SUCCESS))
+   if (bPrintUsage || (xRet !=SHELL_EXIT_SUCCESS))
     {
-        if (shorthelp)
+        if (bShortHelp)
         {
-            printf ("%s [<xDevID>]n", argv[0]);
+            printf ("%s [<xDevID>]n", pArgv[0]);
         }
         else
         {
-            printf("Usage : %s [<xDevID>]\n", argv[0]);
+            printf("Usage : %s [<xDevID>]\n", pArgv[0]);
             printf("        xDevID - GPIO ID\n");
         }
     }
 
-    return   return_code;
+    return   xRet;
 }
 
 /******************************************************************************

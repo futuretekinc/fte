@@ -1,6 +1,7 @@
-#include <mqx.h>
+#include "fte_type.h"
 
-static const uint_32 crc32_tab[] = 
+static const 
+FTE_UINT32  pCRC32Table[] = 
 {
 	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
 	0xe963a535, 0x9e6495a3,	0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
@@ -47,18 +48,19 @@ static const uint_32 crc32_tab[] =
 	0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
 
-uint_32
-fte_crc32(uint_32 crc, const void *buf, uint_32 size)
+FTE_UINT32  FTE_CRC32
+(
+    FTE_UINT32  ulCRC, 
+    const FTE_VOID_PTR  pBuf, 
+    FTE_UINT32  ulSize
+)
 {
-	const uint_8 *p;
+	ulCRC = ulCRC ^ ~0U;
 
-	p = buf;
-	crc = crc ^ ~0U;
-
-	while (size--)
+    for(FTE_INT32 i = 0 ; i < ulSize ; i++)
     {
-		crc = crc32_tab[(crc ^ *p++) & 0xFF] ^ (crc >> 8);
+		ulCRC = pCRC32Table[(ulCRC ^ ((FTE_UINT8_PTR)pBuf)[i]) & 0xFF] ^ (ulCRC >> 8);
     }
 
-	return crc ^ ~0U;
+	return ulCRC ^ ~0U;
 }
