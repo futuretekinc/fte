@@ -471,7 +471,7 @@ _mqx_int _bsp_dspi_io_init
     {
         case 0:
             /* Configure GPIOD for SPI0 peripheral function */
-#if 0
+#if 1
             pctl = (PORT_MemMapPtr)PORTC_BASE_PTR;
 
 //            pctl->PCR[4] = PORT_PCR_MUX(2);     /* SPI0.PCS0   */
