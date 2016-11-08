@@ -169,7 +169,7 @@ error:
         FTE_AD7785_detach(pADC);
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
     
 }
 
@@ -180,7 +180,7 @@ FTE_RET FTE_GAI_detach
 {
     if (pObj == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
      FTE_MEM_free(pObj->pStatus);

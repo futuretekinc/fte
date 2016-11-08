@@ -56,7 +56,7 @@ FTE_RET FTE_NET_init
     if (xRet != RTCS_OK) 
     {
         printf("IPCFG: Device init failed. Error = 0x%X\n", xRet);
-        _task_set_error(MQX_OK);
+        _task_set_error(FTE_RET_OK);
         
         goto error;
     }
@@ -144,10 +144,10 @@ FTE_RET FTE_NET_bind
     
     FTE_SYS_STATE_connected();
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET FTE_NET_unbind
@@ -240,10 +240,10 @@ FTE_RET FTE_NET_liveCheckInit
     {
         _time_get_elapsed_ticks(&_xLastCheckTime);
         _ulKeepAliveTime = ulKeepAliveTime;
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 } 
 
 FTE_RET   FTE_NET_liveCheckStart
@@ -254,7 +254,7 @@ FTE_RET   FTE_NET_liveCheckStart
     _time_get_elapsed_ticks(&_xLastCheckTime);
     _bLiveCheck = TRUE;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_NET_liveCheckStop
@@ -264,7 +264,7 @@ FTE_RET   FTE_NET_liveCheckStop
 {
     _bLiveCheck = FALSE;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_BOOL     FTE_NET_isLiveChecking
@@ -282,7 +282,7 @@ FTE_RET   FTE_NET_lastLiveCheckTime
 {
     memcpy(pTime, &_xLastCheckTime, sizeof(MQX_TICK_STRUCT));
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_NET_liveTouch
@@ -292,7 +292,7 @@ FTE_RET   FTE_NET_liveTouch
 {
     _time_get_elapsed_ticks(&_xLastCheckTime);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 

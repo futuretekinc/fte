@@ -45,7 +45,7 @@ FTE_RET   FTE_COZIR_request
     FTE_UCS_clear(pStatus->pUCS);    
     FTE_UCS_send(pStatus->pUCS, "Z\r\n", 3, FALSE);    
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_COZIR_received
@@ -54,24 +54,24 @@ FTE_RET   FTE_COZIR_received
 )
 {
     FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
-    char_ptr    pToken = NULL;
-    uint_32     nIndex = 0;
-    uint_32     nCount = 0;
-    uint_32     nPPM1 = 0;
+    FTE_CHAR_PTR    pToken = NULL;
+    FTE_UINT32     nIndex = 0;
+    FTE_UINT32     nCount = 0;
+    FTE_UINT32     nPPM1 = 0;
 #if 0
-    uint_32     nPPM2;
+    FTE_UINT32     nPPM2;
 #endif
-    uint_8      pBuff[64];
-    char_ptr    pHead;
-    uint_32     nLen;
+    FTE_UINT8      pBuff[64];
+    FTE_CHAR_PTR    pHead;
+    FTE_UINT32     nLen;
     
     nLen = FTE_UCS_recv(pStatus->pUCS, pBuff, sizeof(pBuff));
     if (nLen == 0)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
-    pHead = (char_ptr)pBuff;
+    pHead = (FTE_CHAR_PTR)pBuff;
     while(((pToken = strtok(pHead, " \t\r\n")) != NULL) && (nCount < 2))
     {
         switch(nIndex)
@@ -112,7 +112,7 @@ FTE_RET   FTE_COZIR_received
     
     FTE_VALUE_setPPM(pStatus->xCommon.pValue, nPPM1);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 #endif

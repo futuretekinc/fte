@@ -30,7 +30,7 @@ FTE_FBM_PTR FTE_FBM_create
     pFBM->ulUnit = ulUnit;
     pFBM->ulMaxCount = ulMaxCount;
     
-    _lwsem_create(&pFBM->xSemaphore, 1);
+    FTE_SYS_LOCK_init(&pFBM->xLock, 1);
    
     return  pFBM;
     
@@ -41,7 +41,7 @@ error:
         {
             FTE_FBM_BUFF_PTR    pBuff;
             
-            if (FTE_LIST_popFront(&pFBM->xAllocList, (pointer *)&pBuff) == MQX_OK)
+            if (FTE_LIST_popFront(&pFBM->xAllocList, (pointer *)&pBuff) == FTE_RET_OK)
             {
                 FTE_MEM_free(pBuff);
             }
@@ -51,7 +51,7 @@ error:
         {
             FTE_FBM_BUFF_PTR    pBuff;
             
-            if (FTE_LIST_popFront(&pFBM->xFreeList, (pointer *)&pBuff) == MQX_OK)
+            if (FTE_LIST_popFront(&pFBM->xFreeList, (pointer *)&pBuff) == FTE_RET_OK)
             {
                 FTE_MEM_free(pBuff);
             }
@@ -74,7 +74,7 @@ FTE_RET   FTE_FBM_destroy
         {
             FTE_FBM_BUFF_PTR    pBuff;
             
-            if (FTE_LIST_popFront(&pFBM->xAllocList, (pointer *)&pBuff) == MQX_OK)
+            if (FTE_LIST_popFront(&pFBM->xAllocList, (pointer *)&pBuff) == FTE_RET_OK)
             {
                 FTE_MEM_free(pBuff);
             }
@@ -84,7 +84,7 @@ FTE_RET   FTE_FBM_destroy
         {
             FTE_FBM_BUFF_PTR    pBuff;
             
-            if (FTE_LIST_popFront(&pFBM->xFreeList, (pointer *)&pBuff) == MQX_OK)
+            if (FTE_LIST_popFront(&pFBM->xFreeList, (pointer *)&pBuff) == FTE_RET_OK)
             {
                 FTE_MEM_free(pBuff);
             }
@@ -93,7 +93,7 @@ FTE_RET   FTE_FBM_destroy
         FTE_MEM_free(pFBM);
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_FBM_BUFF_PTR    FTE_FBM_alloc
@@ -108,16 +108,16 @@ FTE_FBM_BUFF_PTR    FTE_FBM_alloc
     {
         FTE_FBM_BUFF_PTR    pBuff;
         
-        _lwsem_wait(&pFBM->xSemaphore);
+        FTE_SYS_LOCK_enable(&pFBM->xLock);
         
-        if (FTE_LIST_popFront(&pFBM->xFreeList, (pointer *)&pBuff) == MQX_OK)
+        if (FTE_LIST_popFront(&pFBM->xFreeList, (pointer *)&pBuff) == FTE_RET_OK)
         {
             FTE_LIST_pushBack(&pFBM->xAllocList, pBuff);
             pBuff->ulSize = ulSize;
             
             pAlloc = pBuff;
         }
-        _lwsem_post(&pFBM->xSemaphore);
+        FTE_SYS_LOCK_disable(&pFBM->xLock);
     }
     
     return  pAlloc;
@@ -131,13 +131,13 @@ void    FTE_FBM_free
 {
     if (pFBM != NULL)
     {
-        _lwsem_wait(&pFBM->xSemaphore);
+        FTE_SYS_LOCK_enable(&pFBM->xLock);
         
-        if (FTE_LIST_remove(&pFBM->xAllocList, pBlock) == MQX_OK)
+        if (FTE_LIST_remove(&pFBM->xAllocList, pBlock) == FTE_RET_OK)
         {
             FTE_LIST_pushBack(&pFBM->xFreeList, pBlock);
         }
         
-        _lwsem_post(&pFBM->xSemaphore);
+        FTE_SYS_LOCK_disable(&pFBM->xLock);
     }
 }

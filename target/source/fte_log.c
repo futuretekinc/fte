@@ -25,7 +25,8 @@ static  FTE_CHAR_PTR    pMTDs[] =
     "flashx:log1"
 };
 
-static  LWSEM_STRUCT        xLWSEM;
+static  
+FTE_SYS_LOCK    xLock;
 
 FTE_RET   FTE_LOG_init(void)
 {
@@ -33,16 +34,16 @@ FTE_RET   FTE_LOG_init(void)
     
     memset(&xPool, 0, sizeof(xPool));
 
-    if (_lwsem_create(&xLWSEM, 1) != MQX_OK)
+    if (FTE_SYS_LOCK_init(&xLock, 1) != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pPool = (FTE_LOG_POOL_PTR)FTE_MEM_allocZero(sizeof(FTE_LOG_POOL));
     if (pPool == NULL)
     {
-        _lwsem_destroy(&xLWSEM);
-        return  MQX_ERROR;
+        FTE_SYS_LOCK_final(&xLock);
+        return  FTE_RET_ERROR;
     }
     
     for(int nMTD = 0 ; nMTD < 1 ; nMTD++)
@@ -57,7 +58,7 @@ FTE_RET   FTE_LOG_init(void)
         }
 
         ioctl(fp, FLASH_IOCTL_ENABLE_SECTOR_CACHE, NULL);
-        read(fp, (char_ptr)pPool, sizeof(FTE_LOG_POOL));
+        read(fp, (FTE_CHAR_PTR)pPool, sizeof(FTE_LOG_POOL));
         fclose(fp);
         
         if ((pPool->ulCRC != FTE_CRC32(0, &pPool->ulTag, sizeof(FTE_LOG_POOL) - sizeof(FTE_UINT32))) ||
@@ -82,7 +83,7 @@ FTE_RET   FTE_LOG_init(void)
     
     FTE_MEM_free(pPool);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_LOG_save(void)
@@ -91,12 +92,12 @@ FTE_RET   FTE_LOG_save(void)
         
     if (!bPoolModified)
     {
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
     
-    if (_lwsem_wait(&xLWSEM) != MQX_OK)
+    if (FTE_SYS_LOCK_enable(&xLock) != FTE_RET_OK)
     {  
-        DEBUG("\n_xLWSEM_wait failed");
+        DEBUG("\n_xLock_wait failed");
     }
 
     xPool.ulID++;
@@ -120,20 +121,20 @@ FTE_RET   FTE_LOG_save(void)
         fclose(fp);
     }
     
-    if (_lwsem_post(&xLWSEM) != MQX_OK)
+    if (FTE_SYS_LOCK_disable(&xLock) != FTE_RET_OK)
     {
-        DEBUG("\n_xLWSEM_post failed");
+        DEBUG("\n_xLock_post failed");
     }
 
     bPoolModified = FALSE;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 FTE_RET   FTE_LOG_addSystem(FTE_LOG_SYSTEM_MESSAGE xMsg)
 {
-    if (_lwsem_wait(&xLWSEM) != MQX_OK)
+    if (FTE_SYS_LOCK_enable(&xLock) != FTE_RET_OK)
     {  
-        DEBUG("\n_xLWSEM_wait failed");
+        DEBUG("\n_xLock_wait failed");
     }
     
     xPool.pLogs[xPool.ulTail].xType         = FTE_LOG_TYPE_SYSTEM;
@@ -150,21 +151,21 @@ FTE_RET   FTE_LOG_addSystem(FTE_LOG_SYSTEM_MESSAGE xMsg)
     
     bPoolModified = TRUE;
     
-    if (_lwsem_post(&xLWSEM) != MQX_OK)
+    if (FTE_SYS_LOCK_disable(&xLock) != FTE_RET_OK)
     {
-        DEBUG("\n_xLWSEM_post failed");
+        DEBUG("\n_xLock_post failed");
     }
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_LOG_addEvent(FTE_OBJECT_ID   nOID, FTE_UINT32 ulLevel, FTE_VALUE_PTR pValue)
 {
     ASSERT(pValue != NULL);
   
-    if (_lwsem_wait(&xLWSEM) != MQX_OK)
+    if (FTE_SYS_LOCK_enable(&xLock) != FTE_RET_OK)
     {  
-        DEBUG("\n_xLWSEM_wait failed");
+        DEBUG("\n_xLock_wait failed");
     }
 
     xPool.pLogs[xPool.ulTail].xType         = FTE_LOG_TYPE_EVENT;
@@ -184,21 +185,21 @@ FTE_RET   FTE_LOG_addEvent(FTE_OBJECT_ID   nOID, FTE_UINT32 ulLevel, FTE_VALUE_P
     
     bPoolModified = TRUE;
 
-    if (_lwsem_post(&xLWSEM) != MQX_OK)
+    if (FTE_SYS_LOCK_disable(&xLock) != FTE_RET_OK)
     {
-        DEBUG("\n_xLWSEM_post failed");
+        DEBUG("\n_xLock_post failed");
     }
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_UINT32 FTE_LOG_del(FTE_UINT32 ulCount)
 {
     FTE_UINT32 ulDeletedCount = 0;
     
-    if (_lwsem_wait(&xLWSEM) != MQX_OK)
+    if (FTE_SYS_LOCK_enable(&xLock) != FTE_RET_OK)
     {  
-        DEBUG("\n_xLWSEM_wait failed");
+        DEBUG("\n_xLock_wait failed");
     }
 
     if (ulCount >= xPool.ulCount)
@@ -214,9 +215,9 @@ FTE_UINT32 FTE_LOG_del(FTE_UINT32 ulCount)
         xPool.ulCount -= ulCount;
     }
     
-    if (_lwsem_post(&xLWSEM) != MQX_OK)
+    if (FTE_SYS_LOCK_disable(&xLock) != FTE_RET_OK)
     {
-        DEBUG("\n_xLWSEM_post failed");
+        DEBUG("\n_xLock_post failed");
     }
 
     return  ulDeletedCount;
@@ -238,12 +239,12 @@ FTE_LOG_PTR FTE_LOG_getAt(FTE_UINT32 nIndex)
     return  &xPool.pLogs[nIndex];
 }
 
-static char_ptr _pSystemMessages[] = 
+static FTE_CHAR_PTR _pSystemMessages[] = 
 {
     "system start!"
 };
 
-char_ptr    FTE_LOG_getSystemMessageString(FTE_LOG_SYSTEM_MESSAGE xMsg)
+FTE_CHAR_PTR    FTE_LOG_getSystemMessageString(FTE_LOG_SYSTEM_MESSAGE xMsg)
 {
     if (xMsg < FTE_LOG_SYSTEM_MESSAGE_END)
     {
@@ -253,20 +254,24 @@ char_ptr    FTE_LOG_getSystemMessageString(FTE_LOG_SYSTEM_MESSAGE xMsg)
     return  "";
 }
 
-int_32          FTE_LOG_SHELL_cmd(int_32 argc, char_ptr argv[])
+FTE_INT32   FTE_LOG_SHELL_cmd
+(
+    FTE_INT32       nArgv, 
+    FTE_CHAR_PTR    pArgv[]
+)
 {
-    boolean              print_usage, shorthelp = FALSE;
-    int_32               return_code = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   xRet = SHELL_EXIT_SUCCESS;
     
-    print_usage = Shell_check_help_request (argc, argv, &shorthelp);
+    bPrintUsage = Shell_check_help_request (nArgv, pArgv, &bShortHelp);
 
-    if (!print_usage)
+    if (!bPrintUsage)
     {
-        switch(argc)
+        switch(nArgv)
         {
         case    1:
             {
-                int_32 i;
+                FTE_INT32 i;
                 
                 for(i =  xPool.ulCount - 1 ; i >= 0; i--)
                 {
@@ -314,13 +319,13 @@ int_32          FTE_LOG_SHELL_cmd(int_32 argc, char_ptr argv[])
             
         case    3:
             {
-                if (strcmp(argv[1], "del") == 0)
+                if (strcmp(pArgv[1], "del") == 0)
                 {
                     FTE_UINT32 ulCount;
                     
-                    if (! Shell_parse_number( argv[2], &ulCount))  
+                    if (! Shell_parse_number( pArgv[2], &ulCount))  
                     {
-                        return_code = SHELL_EXIT_ERROR;
+                        xRet = SHELL_EXIT_ERROR;
                         goto error;
                     }
                     
@@ -332,20 +337,20 @@ int_32          FTE_LOG_SHELL_cmd(int_32 argc, char_ptr argv[])
             break;
             
         default:
-            print_usage = TRUE;
+            bPrintUsage = TRUE;
         }
     }
 
 error:    
-    if (print_usage || (return_code !=SHELL_EXIT_SUCCESS))
+    if (bPrintUsage || (xRet !=SHELL_EXIT_SUCCESS))
     {
-        if (shorthelp)
+        if (bShortHelp)
         {
-            printf ("%s [<Commands>]\n", argv[0]);
+            printf ("%s [<Commands>]\n", pArgv[0]);
         }
         else
         {
-            printf ("Usage: %s [<Commands>]\n", argv[0]);
+            printf ("Usage: %s [<Commands>]\n", pArgv[0]);
             printf ("  Commands :\n");
             printf ("    del <count>\n");
             printf ("        Delete the oldest n logs.\n");
@@ -353,5 +358,5 @@ error:
             printf ("    %-10s = Log count.\n", "<count>");
         }
     }
-    return   return_code;
+    return   xRet;
 }

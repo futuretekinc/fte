@@ -1,6 +1,7 @@
 #include <mqx.h>
 #include <bsp.h>
 #include <shell.h>
+#include "fte_type.h"
 #include "fte_mem.h"
 #include "fte_sys.h"
 
@@ -27,18 +28,18 @@ FTE_RET   FTE_MEM_CAPTURE_create
 {
     if ((pMemTuples != NULL) || (ulTuples == 0))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pMemTuples = (FTE_MEM_BLOCK_PTR)_mem_alloc_system_zero(sizeof(FTE_MEM_BLOCK) * ulTuples);
     if (pMemTuples == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     ulMemTuples     = 0;
     ulMemTuplesMax  = ulTuples;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 void FTE_MEM_CAPTURE_destroy(void)
@@ -54,7 +55,12 @@ void FTE_MEM_CAPTURE_destroy(void)
     pMemTuples      = NULL;
 }
 
-void *  _FTE_MEM_DEBUG_alloc(const char *pFunc, int nLine, FTE_UINT32 ulSize)
+FTE_VOID_PTR _FTE_MEM_DEBUG_alloc
+(
+    const FTE_CHAR _PTR_ pFunc, 
+    FTE_INT32 nLine, 
+    FTE_UINT32 ulSize
+)
 {
     if (bCapture)
     {
@@ -108,7 +114,12 @@ void *  _FTE_MEM_DEBUG_alloc(const char *pFunc, int nLine, FTE_UINT32 ulSize)
     }
 }
 
-void *  _FTE_MEM_DEBUG_allocZero(const char *pFunc, int nLine, FTE_UINT32 ulSize)
+FTE_VOID_PTR _FTE_MEM_DEBUG_allocZero
+(
+    const FTE_CHAR _PTR_ pFunc, 
+    FTE_INT32 nLine, 
+    FTE_UINT32 ulSize
+)
 {
     if (bCapture)
     {
@@ -162,7 +173,12 @@ void *  _FTE_MEM_DEBUG_allocZero(const char *pFunc, int nLine, FTE_UINT32 ulSize
     }
 }
 
-void    _FTE_MEM_DEBUG_free(const char *pFunc, int nLine, void *pMem)
+void    _FTE_MEM_DEBUG_free
+(
+    const FTE_CHAR _PTR_ pFunc, 
+    FTE_INT32 nLine, 
+    FTE_VOID_PTR pMem
+)
 {
     if (bCapture)
     {
@@ -216,10 +232,14 @@ void    _FTE_MEM_DEBUG_free(const char *pFunc, int nLine, void *pMem)
 /******************************************************************************
  * Shell command
  ******************************************************************************/
-int_32  FTE_MEM_SHELL_cmd(int_32 nArgc, char_ptr ppArgv[])
+FTE_INT32  FTE_MEM_SHELL_cmd
+(
+    FTE_INT32   nArgc, 
+    FTE_CHAR_PTR ppArgv[]
+)
 {
-    FTE_BOOL              bPrintUsage, bShortHelp = FALSE;
-    int_32               nRet = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   nRet = SHELL_EXIT_SUCCESS;
     
     bPrintUsage = Shell_check_help_request (nArgc, ppArgv, &bShortHelp);
 
@@ -312,7 +332,7 @@ int_32  FTE_MEM_SHELL_cmd(int_32 nArgc, char_ptr ppArgv[])
                             break;
                         }
                         
-                        if (FTE_MEM_CAPTURE_create(ulCount) == MQX_OK)
+                        if (FTE_MEM_CAPTURE_create(ulCount) == FTE_RET_OK)
                         {
                             bCapture = TRUE;
                         }

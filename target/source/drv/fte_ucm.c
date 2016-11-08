@@ -25,7 +25,7 @@ FTE_RET       FTE_UCM_create
     pUCS = FTE_UCS_get(pConfig->nUCSID);
     if (pUCS == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pUCM = (FTE_UCM_PTR)FTE_MEM_allocZero(sizeof(FTE_UCM));
@@ -39,7 +39,7 @@ FTE_RET       FTE_UCM_create
     
     FTE_LIST_pushBack(&_UCMs, pUCM);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_UCM_attach
@@ -51,23 +51,23 @@ FTE_RET   FTE_UCM_attach
     ASSERT(pUCM != NULL);
     if (pUCM == NULL)
     {
-        return  MQX_INVALID_DEVICE;
+        return  FTE_RET_INVALID_DEVICE;
     }
 
     FTE_UCS_PTR pUCS = FTE_UCS_get(pUCM->pConfig->nUCSID);
     if (pUCS == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
-    if (FTE_UCS_attach(pUCS, pUCM->pConfig->nID) != MQX_OK)
+    if (FTE_UCS_attach(pUCS, pUCM->pConfig->nID) != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pUCM->nParent = nParent;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_UCM_detach
@@ -79,19 +79,19 @@ FTE_RET   FTE_UCM_detach
     ASSERT(pUCM != NULL);
     if (pUCM == NULL)
     {
-        return  MQX_INVALID_DEVICE;
+        return  FTE_RET_INVALID_DEVICE;
     }
 
     FTE_UCS_PTR pUCS = FTE_UCS_get(pUCM->pConfig->nUCSID);
     if (pUCS == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     FTE_UCS_detach(pUCS, pUCM->pConfig->nID);
     pUCM->nParent = 0;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_UCM_PTR     FTE_UCM_get
@@ -136,13 +136,13 @@ FTE_RET       FTE_UCM_clear
     ASSERT(pUCM != NULL);
     if (pUCM == NULL)
     {
-        return  MQX_INVALID_DEVICE;
+        return  FTE_RET_INVALID_DEVICE;
     }
             
     pUCS = FTE_UCS_get(pUCM->pConfig->nUCSID);
     if (pUCS == NULL)
     {
-        return  MQX_INVALID_DEVICE;
+        return  FTE_RET_INVALID_DEVICE;
     }
     
     FTE_UCS_lock(pUCS);
@@ -151,7 +151,7 @@ FTE_RET       FTE_UCM_clear
     
     FTE_UCS_unlock(pUCS);
     
-    return MQX_OK;
+    return FTE_RET_OK;
 }
 
 FTE_RET   FTE_UCM_read
@@ -166,15 +166,11 @@ FTE_RET   FTE_UCM_read
     FTE_UINT32 nReadLen;
     
     ASSERT((pUCM != NULL) && (pBuff != NULL));
-    if (pUCM == NULL)
-    {
-        return  MQX_INVALID_DEVICE;
-    }
             
     pUCS = FTE_UCS_get(pUCM->pConfig->nUCSID);
     if (pUCS == NULL)
     {
-        return  MQX_INVALID_DEVICE;
+        return  FTE_RET_INVALID_DEVICE;
     }
     
     FTE_UCS_lock(pUCS);
@@ -187,7 +183,7 @@ FTE_RET   FTE_UCM_read
     {
         *pReadLen = nReadLen;
     }
-    return MQX_OK;
+    return FTE_RET_OK;
 }
 
 FTE_RET   FTE_UCM_write
@@ -204,13 +200,13 @@ FTE_RET   FTE_UCM_write
     ASSERT((pUCM != NULL) && (pData != NULL));
     if (pUCM == NULL)
     {
-        return  MQX_INVALID_DEVICE;
+        return  FTE_RET_INVALID_DEVICE;
     }
             
     pUCS = FTE_UCS_get(pUCM->pConfig->nUCSID);
     if (pUCS == NULL)
     {
-        return  MQX_INVALID_DEVICE;
+        return  FTE_RET_INVALID_DEVICE;
     }
     
     FTE_UCS_lock(pUCS);
@@ -223,5 +219,5 @@ FTE_RET   FTE_UCM_write
     {
         *pWrittenLen = nWrittenLen;
     }
-    return MQX_OK;
+    return FTE_RET_OK;
 }

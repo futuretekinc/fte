@@ -5,8 +5,8 @@
 
 typedef struct
 {
-    boolean                     bEnable;
-    uint_32                     ulAtthRealmCount;
+    FTE_BOOL    bEnable;
+    FTE_UINT32  ulAtthRealmCount;
     HTTPSRV_AUTH_REALM_STRUCT   pAuthRealms[4];
 }   FTE_HTTP_CFG, _PTR_ FTE_HTTP_CFG_PTR;
 

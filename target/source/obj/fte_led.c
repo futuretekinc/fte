@@ -47,7 +47,7 @@ FTE_RET FTE_LED_attach
         goto error;
     }
     
-    if (FTE_GPIO_attach(pStatus->pGPIO, pConfig->xCommon.nID) != MQX_OK)
+    if (FTE_GPIO_attach(pStatus->pGPIO, pConfig->xCommon.nID) != FTE_RET_OK)
     {
         goto error;
     }
@@ -55,7 +55,7 @@ FTE_RET FTE_LED_attach
     pObj->pAction = (FTE_OBJECT_ACTION_PTR)&_xAction;
     pObj->pStatus = (FTE_OBJECT_STATUS_PTR)pStatus;
 
-    if (_FTE_LED_init(pObj) != MQX_OK)
+    if (_FTE_LED_init(pObj) != FTE_RET_OK)
     {
         FTE_GPIO_detach(pStatus->pGPIO);
         goto error;
@@ -63,7 +63,7 @@ FTE_RET FTE_LED_attach
         
     FTE_LIST_pushBack(&_xObjList, pObj);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 error:
 
     if (pStatus->xCommon.pValue != NULL)
@@ -72,7 +72,7 @@ error:
         pStatus->xCommon.pValue = NULL;
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET FTE_LED_detach
@@ -91,10 +91,10 @@ FTE_RET FTE_LED_detach
     pObj->pAction = NULL;
     pObj->pStatus = NULL;
      
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:    
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 pointer     FTE_LED_get
@@ -105,7 +105,7 @@ pointer     FTE_LED_get
     FTE_OBJECT_PTR      pObj;
     FTE_LIST_ITERATOR   xIter;
     
-    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == MQX_OK)
+    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == FTE_RET_OK)
     {
         while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
         {
@@ -135,7 +135,7 @@ FTE_RET   FTE_LED_setValue
     FTE_OBJECT_PTR pObj = FTE_LED_get(nID);
     if (pObj == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     FTE_VALUE_initDIO(&xValue, bState);
@@ -174,7 +174,7 @@ FTE_RET   _FTE_LED_init
     FTE_VALUE_initLED(&xValue, pConfig->nInit);
     _FTE_LED_setValue(pObj, &xValue);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   _FTE_LED_run
@@ -182,7 +182,7 @@ FTE_RET   _FTE_LED_run
     FTE_OBJECT_PTR  pObj
 )
 {
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   _FTE_LED_stop
@@ -190,7 +190,7 @@ FTE_RET   _FTE_LED_stop
     FTE_OBJECT_PTR  pObj
 )
 {
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET _FTE_LED_setValue
@@ -207,7 +207,7 @@ FTE_RET _FTE_LED_setValue
     {
     case    FTE_LED_STATE_OFF:
         {
-            if (FTE_GPIO_setValue(pStatus->pGPIO,  FALSE) != MQX_OK)
+            if (FTE_GPIO_setValue(pStatus->pGPIO,  FALSE) != FTE_RET_OK)
             {
                 goto error;
             }
@@ -222,7 +222,7 @@ FTE_RET _FTE_LED_setValue
         
     case    FTE_LED_STATE_ON:
         {
-            if (FTE_GPIO_setValue(pStatus->pGPIO,  TRUE) != MQX_OK)
+            if (FTE_GPIO_setValue(pStatus->pGPIO,  TRUE) != FTE_RET_OK)
             {
                 goto error;
             }
@@ -256,11 +256,11 @@ FTE_RET _FTE_LED_setValue
         
     FTE_VALUE_setULONG(pStatus->xCommon.pValue, pValue->xData.xState);
     
-    return   MQX_OK;
+    return   FTE_RET_OK;
 error:
     pStatus->xCommon.xFlags&= ~FTE_OBJ_STATUS_FLAG_VALID;
     
-    return   MQX_ERROR;
+    return   FTE_RET_ERROR;
 }
 
 void _FTE_LED_timerDone
@@ -273,7 +273,7 @@ void _FTE_LED_timerDone
     FTE_OBJECT_PTR      pObj;
     FTE_LIST_ITERATOR   xIter;
     
-    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == MQX_OK)
+    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == FTE_RET_OK)
     {
         while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
         {

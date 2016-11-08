@@ -124,7 +124,7 @@ void SX1276ReadFifo( uint8_t *buffer, uint8_t size )
 
 uint8_t SX1276ReadDio0( void )
 {
-    boolean bValue = 0;
+    FTE_BOOL bValue = 0;
     
     FTE_LWGPIO_getValue(pGPIO[0], &bValue);
 
@@ -133,7 +133,7 @@ uint8_t SX1276ReadDio0( void )
 
  uint8_t SX1276ReadDio1( void )
 {
-    boolean bValue = 0;
+    FTE_BOOL bValue = 0;
     
     FTE_LWGPIO_getValue(pGPIO[1], &bValue);
 
@@ -142,7 +142,7 @@ uint8_t SX1276ReadDio0( void )
 
 uint8_t SX1276ReadDio2( void )
 {
-    boolean bValue = 0;
+    FTE_BOOL bValue = 0;
     
     FTE_LWGPIO_getValue(pGPIO[2], &bValue);
 
@@ -151,7 +151,7 @@ uint8_t SX1276ReadDio2( void )
 
 uint8_t SX1276ReadDio3( void )
 {
-    boolean bValue = 0;
+    FTE_BOOL bValue = 0;
     
     FTE_LWGPIO_getValue(pGPIO[3], &bValue);
 
@@ -160,7 +160,7 @@ uint8_t SX1276ReadDio3( void )
 
 uint8_t SX1276ReadDio4( void )
 {
-    boolean bValue = 0;
+    FTE_BOOL bValue = 0;
     
     FTE_LWGPIO_getValue(pGPIO[4], &bValue);
 
@@ -169,7 +169,7 @@ uint8_t SX1276ReadDio4( void )
 
 uint8_t SX1276ReadDio5( void )
 {
-    boolean bValue = 0;
+    FTE_BOOL bValue = 0;
     
     FTE_LWGPIO_getValue(pGPIO[5], &bValue);
 

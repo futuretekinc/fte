@@ -1,16 +1,19 @@
 #include "fte_target.h"
 
  
-void fte_udelay(uint_32 usec)
+void fte_udelay(FTE_UINT32 usec)
 {
     for(int j = usec*20 ; j > 0 ; j--);
 }
 
-boolean fte_parse_ip_address( char_ptr pIPString, uint_32 _PTR_ pIP)
+FTE_BOOL fte_parse_ip_address
+(    FTE_CHAR_PTR    pIPString, 
+    FTE_UINT32_PTR  pIP
+)
 {
-   uint_32      nNum[4] =  { 0 };
-   uint_32      i, index = 0;
-   uint_32      nTemp = 0;
+   FTE_UINT32      nNum[4] =  { 0 };
+   FTE_UINT32      i, index = 0;
+   FTE_UINT32      nTemp = 0;
    
    if (pIP == NULL) 
    {
@@ -53,9 +56,9 @@ boolean fte_parse_ip_address( char_ptr pIPString, uint_32 _PTR_ pIP)
    return TRUE;
 }
 
-boolean fte_parse_enet_address
+FTE_BOOL fte_parse_enet_address
 (
-   char_ptr         arg, 
+   FTE_CHAR_PTR         arg, 
    _enet_address    enet_address
 )
 {
@@ -159,9 +162,9 @@ FTE_RET FTE_strToFLOAT
 
 }
 
-uint_32 fte_parse_hex_string(char_ptr pString, uint_8 *pBuff, uint_32 ulBuffLen)
+FTE_UINT32 fte_parse_hex_string(FTE_CHAR_PTR pString, FTE_UINT8_PTR pBuff, FTE_UINT32 ulBuffLen)
 {
-    uint_32 ulStringLen = strlen(pString);
+    FTE_UINT32 ulStringLen = strlen(pString);
     
     if (((ulStringLen % 2) == 1) || ((ulStringLen / 2) > ulBuffLen))
     {

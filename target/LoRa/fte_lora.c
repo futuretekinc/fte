@@ -5,10 +5,10 @@
 #include "target.h"
 #include "LoRaMac.h"
 
-void SX1276OnDio0Irq(void *);
-void SX1276OnDio1Irq(void *);
-void SX1276OnDio2Irq(void *);
-void SX1276OnDio3Irq(void *);
+void SX1276OnDio0Irq(FTE_VOID_PTR);
+void SX1276OnDio1Irq(FTE_VOID_PTR);
+void SX1276OnDio2Irq(FTE_VOID_PTR);
+void SX1276OnDio3Irq(FTE_VOID_PTR);
 
 void FTE_LORA_ctrl(uint_32 params)
 {
@@ -19,10 +19,8 @@ void FTE_LORA_ctrl(uint_32 params)
         return;
     }
     
-    boolean bPrevValue[4] = {FALSE,FALSE,FALSE,FALSE};
-    boolean bValue[4] = {FALSE,FALSE,FALSE,FALSE};
-    
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
+    FTE_BOOL    bPrevValue[4] = {FALSE,FALSE,FALSE,FALSE};
+    FTE_BOOL    bValue[4] = {FALSE,FALSE,FALSE,FALSE};
     
     while(TRUE)
     {

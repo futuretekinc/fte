@@ -14,7 +14,7 @@
 
 typedef struct
 {
-    uint_32     ulSize;
+    FTE_UINT32     ulSize;
     FTE_LIST    xFreeList;
     FTE_LIST    xQueue;
 }   FTE_QUEUE, _PTR_ FTE_QUEUE_PTR;

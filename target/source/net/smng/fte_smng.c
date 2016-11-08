@@ -15,21 +15,21 @@
 
 typedef struct
 {
-    uint_32     nMsgType;    
+    FTE_UINT32     nMsgType;    
 }   FTE_SMNG_PACKET, _PTR_ FTE_SMNG_PACKET_PTR;
 
-static  char_ptr    pDiscoveryMsg = NULL;
+static  FTE_CHAR_PTR    pDiscoveryMsg = NULL;
 
 void FTE_SMNG_task(pointer pParams, pointer pCreator)
 {
-    char        _pBuff[1024];
-    uint_32     hSock = socket(PF_INET, SOCK_DGRAM, 0);
-    uint_32     bOption;
-    sockaddr_in xAnyAddr, xRecvAddr;
-    uint_16     nRecvAddrLen;
-    uint_32     nLen;
-    _ip_address xLastRequestHost;
-    TIME_STRUCT xLastResponseTime;
+    FTE_CHAR        _pBuff[1024];
+    FTE_UINT32      hSock = socket(PF_INET, SOCK_DGRAM, 0);
+    FTE_UINT32      bOption;
+    sockaddr_in     xAnyAddr, xRecvAddr;
+    FTE_UINT16      nRecvAddrLen;
+    FTE_UINT32      nLen;
+    _ip_address     xLastRequestHost;
+    TIME_STRUCT     xLastResponseTime;
 
 
     xAnyAddr.sin_family      = AF_INET;
@@ -60,7 +60,7 @@ void FTE_SMNG_task(pointer pParams, pointer pCreator)
 
     while(1)
     {
-        uint_32 nMsgType;
+        FTE_UINT32 nMsgType;
         
         memset(_pBuff, 0, sizeof(_pBuff));
         nLen = recvfrom(hSock, _pBuff, sizeof(_pBuff), 0, &xRecvAddr, &nRecvAddrLen);
@@ -128,7 +128,7 @@ void FTE_SMNG_task(pointer pParams, pointer pCreator)
     
 }
 
-uint_32 FTE_SMNGD_init(void _PTR_ Params)
+FTE_UINT32 FTE_SMNGD_init(void _PTR_ Params)
 { 
    TRACE_ON(DEBUG_NET_SMNG);
 #if 0   
@@ -138,12 +138,12 @@ uint_32 FTE_SMNGD_init(void _PTR_ Params)
     FTE_JSON_VALUE_PTR  pOIDs;
     _enet_address       xMACAddress;
     char                pMACString[20];
-    uint_32             ulMsgLen;
+    FTE_UINT32             ulMsgLen;
 
     pObject = FTE_JSON_VALUE_createObject(3);
     if (pObject == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     pValue = FTE_JSON_VALUE_createString(FTE_SYS_getOIDString());
@@ -159,10 +159,10 @@ uint_32 FTE_SMNGD_init(void _PTR_ Params)
 
     pOIDs = FTE_JSON_VALUE_createArray(FTE_OBJ_DESC_CLASS_count() + FTE_DEVICE_count());
 
-    for(uint_32 i = 0 ; i < FTE_OBJ_DESC_CLASS_count() ; i++)
+    for(FTE_UINT32 i = 0 ; i < FTE_OBJ_DESC_CLASS_count() ; i++)
     {
         char    pOID[32];
-        uint_32 ulClass = FTE_OBJ_DESC_CLASS_getAt(i);
+        FTE_UINT32 ulClass = FTE_OBJ_DESC_CLASS_getAt(i);
         
         if (ulClass != 0)
         {
@@ -177,12 +177,12 @@ uint_32 FTE_SMNGD_init(void _PTR_ Params)
 
     FTE_JSON_OBJECT_setPair((FTE_JSON_OBJECT_PTR)pObject, "oids", pOIDs);
     ulMsgLen = FTE_JSON_VALUE_buffSize(pObject) + 1;            
-    pDiscoveryMsg = (char_ptr)FTE_MEM_alloc(ulMsgLen);
+    pDiscoveryMsg = (FTE_CHAR_PTR)FTE_MEM_alloc(ulMsgLen);
     if (pDiscoveryMsg == NULL)
     {
         ERROR("Not enough memory!\n");
         FTE_SYS_setUnstable();
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
         
     FTE_JSON_VALUE_snprint(pDiscoveryMsg, ulMsgLen, pObject);            
@@ -191,7 +191,7 @@ uint_32 FTE_SMNGD_init(void _PTR_ Params)
     return RTCS_task_create("smng", FTE_NET_SMNG_PRIO, FTE_NET_SMNG_STACK, FTE_SMNG_task, NULL);
 } 
 
-char_ptr FTE_SMNG_getDiscoveryMessage(void)
+FTE_CHAR_PTR FTE_SMNG_getDiscoveryMessage(void)
 {
     if (pDiscoveryMsg == NULL)
     {
@@ -202,7 +202,7 @@ char_ptr FTE_SMNG_getDiscoveryMessage(void)
         _enet_address       xMACAddress;
         char                pMACString[20];
         char                pIPString[20];
-        uint_32             ulMsgLen;
+        FTE_UINT32             ulMsgLen;
         IPCFG_IP_ADDRESS_DATA   xIPData;
 
         pObject = FTE_JSON_VALUE_createObject(4);
@@ -229,10 +229,10 @@ char_ptr FTE_SMNG_getDiscoveryMessage(void)
 
         pOIDs = FTE_JSON_VALUE_createArray(FTE_OBJ_DESC_CLASS_count() + FTE_DEVICE_count());
 
-        for(uint_32 i = 0 ; i < FTE_OBJ_DESC_CLASS_count() ; i++)
+        for(FTE_UINT32 i = 0 ; i < FTE_OBJ_DESC_CLASS_count() ; i++)
         {
             char    pOID[32];
-            uint_32 ulClass = FTE_OBJ_DESC_CLASS_getAt(i);
+            FTE_UINT32 ulClass = FTE_OBJ_DESC_CLASS_getAt(i);
             
             if (ulClass != 0)
             {
@@ -247,7 +247,7 @@ char_ptr FTE_SMNG_getDiscoveryMessage(void)
 
         FTE_JSON_OBJECT_setPair((FTE_JSON_OBJECT_PTR)pObject, "oids", pOIDs);
         ulMsgLen = FTE_JSON_VALUE_buffSize(pObject) + 1;            
-        pDiscoveryMsg = (char_ptr)FTE_MEM_alloc(ulMsgLen);
+        pDiscoveryMsg = (FTE_CHAR_PTR)FTE_MEM_alloc(ulMsgLen);
         if (pDiscoveryMsg == NULL)
         {
             ERROR("Not enough memory!\n");
@@ -266,25 +266,29 @@ char_ptr FTE_SMNG_getDiscoveryMessage(void)
 /******************************************************************************
  * Shell command
  ******************************************************************************/
-int_32  FTE_SMNGD_SHELL_cmd(int_32 argc, char_ptr argv[] )
+FTE_INT32  FTE_SMNGD_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[] 
+)
 {
-    boolean  print_usage, shorthelp = FALSE;
-    int_32   return_code = SHELL_EXIT_SUCCESS;
+    FTE_BOOL  bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   xRet = SHELL_EXIT_SUCCESS;
  
-    print_usage = Shell_check_help_request(argc, argv, &shorthelp );
+    bPrintUsage = Shell_check_help_request(nArgc, pArgv, &bShortHelp );
 
-    if (!print_usage)  
+    if (!bPrintUsage)  
     {
-        switch(argc)  
+        switch(nArgc)  
         {
         case    3:
             {
-                if (strcmp(argv[1], "class") == 0)
+                if (strcmp(pArgv[1], "class") == 0)
                 {
-                    if (strcmp(argv[2], "list") == 0)
+                    if (strcmp(pArgv[2], "list") == 0)
                     {
-                        uint_32 i,j, ulCount;
-                        uint_32 pulClassIDs[16];
+                        FTE_UINT32 i,j, ulCount;
+                        FTE_UINT32 pulClassIDs[16];
 
                         ulCount = FTE_OBJ_DESC_CLASS_count();
                         
@@ -299,7 +303,7 @@ int_32  FTE_SMNGD_SHELL_cmd(int_32 argc, char_ptr argv[] )
                             {
                                 if (pulClassIDs[i] > pulClassIDs[j])
                                 {
-                                    uint_32 ulTemp = pulClassIDs[i];
+                                    FTE_UINT32 ulTemp = pulClassIDs[i];
                                     pulClassIDs[i] = pulClassIDs[j];
                                     pulClassIDs[j] = ulTemp;
                                 }
@@ -308,7 +312,7 @@ int_32  FTE_SMNGD_SHELL_cmd(int_32 argc, char_ptr argv[] )
                         
                         for(i = 0 ; i < ulCount ; i++)
                         {
-                            uint_32 ulClass = pulClassIDs[i];
+                            FTE_UINT32 ulClass = pulClassIDs[i];
                             char    pClassName[32];
                             
                             FTE_OBJ_CLASS_getName(ulClass, pClassName, sizeof(pClassName));
@@ -321,16 +325,16 @@ int_32  FTE_SMNGD_SHELL_cmd(int_32 argc, char_ptr argv[] )
             
         case    4:
             {
-                if (strcmp(argv[1], "class") == 0)
+                if (strcmp(pArgv[1], "class") == 0)
                 {
-                    if (strcmp(argv[2], "hide") == 0)
+                    if (strcmp(pArgv[2], "hide") == 0)
                     {
-                        uint_32 ulClass;
+                        FTE_UINT32 ulClass;
                         
-                        if (Shell_parse_hexnum(argv[3], &ulClass) != TRUE)
+                        if (Shell_parse_hexnum(pArgv[3], &ulClass) != TRUE)
                         {
-                            printf("Invalid Class ID[%s]\n", argv[3]);
-                            return_code = SHELL_EXIT_ERROR;
+                            printf("Invalid Class ID[%s]\n", pArgv[3]);
+                            xRet = SHELL_EXIT_ERROR;
                             break;
                         }
 
@@ -340,21 +344,21 @@ int_32  FTE_SMNGD_SHELL_cmd(int_32 argc, char_ptr argv[] )
             break;
             
         default:
-            print_usage = TRUE;
+            bPrintUsage = TRUE;
             goto error;
         }
     }
     
 error:    
-    if (print_usage)  
+    if (bPrintUsage)  
     {
-        if (shorthelp)  
+        if (bShortHelp)  
         {
-            printf("%s <command>\n", argv[0]);
+            printf("%s <command>\n", pArgv[0]);
         } 
         else  
         {
-            printf("Usage: %s <command>\n",argv[0]);
+            printf("Usage: %s <command>\n",pArgv[0]);
             printf("  Commands:\n");
             printf("    class list\n");
             printf("        Supported object type list\n");
@@ -362,5 +366,5 @@ error:
     }
     
     
-   return return_code;
+   return xRet;
 } /* Endbody */

@@ -9,20 +9,20 @@ typedef FTE_1WIRE_ROM_CODE _PTR_ FTE_1WIRE_ROM_CODE_PTR;
 
 typedef struct _FTE_1WIRE_CONFIG_STRUCT
 {
-    FTE_UINT32     nID;
-    FTE_UINT32     xType;
-    char_ptr    pName;
-    FTE_UINT32     xGPIO;
-    FTE_UINT32     nMaxDevices;
-    FTE_UINT32     xFlags;
+    FTE_UINT32      nID;
+    FTE_UINT32      xType;
+    FTE_CHAR_PTR    pName;
+    FTE_UINT32      xGPIO;
+    FTE_UINT32      nMaxDevices;
+    FTE_UINT32      xFlags;
 }   FTE_1WIRE_CONFIG, _PTR_ FTE_1WIRE_CONFIG_PTR;
 
 typedef FTE_1WIRE_CONFIG const _PTR_ FTE_1WIRE_CONFIG_CONST_PTR;
 
 typedef struct _FTE_1WIRE_FAMILY_NAME_STRUCT
 {
-    FTE_UINT8      xFamilyCode;
-    char_ptr    pName;
+    FTE_UINT8       xFamilyCode;
+    FTE_CHAR_PTR    pName;
 }   FTE_1WIRE_FAMILY_NAME, _PTR_ FTE_1WIRE_FAMILY_NAME_PTR;
 
 typedef struct _FTE_1WIRE_STRUCT
@@ -32,7 +32,7 @@ typedef struct _FTE_1WIRE_STRUCT
     FTE_1WIRE_CONFIG_CONST_PTR  pConfig;
     FTE_1WIRE_ROM_CODE_PTR      pROMCodes;
     FTE_UINT32                  nROMCodes;
-    LWSEM_STRUCT                xLWSEM;
+    FTE_SYS_LOCK                xLock;
     FTE_LWGPIO_PTR              pLWGPIO;
 }   FTE_1WIRE, _PTR_ FTE_1WIRE_PTR;
 
@@ -40,11 +40,11 @@ FTE_RET FTE_1WIRE_create(FTE_1WIRE_CONFIG_CONST_PTR pConfig);
 FTE_RET FTE_1WIRE_attach(FTE_1WIRE_PTR p1WIRE, FTE_UINT32 nParent);
 FTE_RET FTE_1WIRE_detach(FTE_1WIRE_PTR p1WIRE);
 
-FTE_1WIRE_PTR   FTE_1WIRE_get(FTE_UINT32 nID);
+FTE_RET FTE_1WIRE_get(FTE_UINT32 nID, FTE_1WIRE_PTR _PTR_ pp1WIRE);
 
-FTE_UINT32  FTE_1WIRE_count(void);
-pointer     FTE_1WIRE_getFirst(void);
-pointer     FTE_1WIRE_getNext(pointer);
+FTE_UINT32      FTE_1WIRE_count(void);
+FTE_VOID_PTR    FTE_1WIRE_getFirst(void);
+FTE_VOID_PTR    FTE_1WIRE_getNext(FTE_VOID_PTR);
 
 FTE_RET     FTE_1WIRE_lock(FTE_1WIRE_PTR p1WIRE);
 FTE_RET     FTE_1WIRE_unlock(FTE_1WIRE_PTR p1WIRE);
@@ -55,11 +55,11 @@ FTE_RET     FTE_1WIRE_read(FTE_1WIRE_PTR p1WIRE, FTE_UINT8_PTR pBuff, FTE_UINT32
 FTE_RET     FTE_1WIRE_write(FTE_1WIRE_PTR p1WIRE, FTE_UINT8_PTR pBuff, FTE_UINT32 nBuff);
 FTE_RET     FTE_1WIRE_writeByte(FTE_1WIRE_PTR p1WIRE, FTE_UINT8 nData);
 
-FTE_UINT32  FTE_1WIRE_DEV_count(FTE_1WIRE_PTR p1WIRE);
+FTE_RET     FTE_1WIRE_DEV_count(FTE_1WIRE_PTR p1WIRE, FTE_UINT32_PTR pCount);
 FTE_RET     FTE_1WIRE_DEV_getROMCode(FTE_1WIRE_PTR p1WIRE, FTE_UINT32 nIdx, FTE_1WIRE_ROM_CODE pROMCode);
 FTE_RET     FTE_1WIRE_DEV_appendROMCode(FTE_1WIRE_PTR p1Wire, FTE_1WIRE_ROM_CODE pROMCode);
 
-FTE_CHAR_PTR    FTE_1WIRE_getFailmyName(FTE_UINT32 xCode);
+FTE_RET     FTE_1WIRE_getFamilyName(FTE_UINT32 xCode, FTE_CHAR_PTR pBuff, FTE_UINT32 ulLen);
 
 FTE_INT32   FTE_1WIRE_SHELL_cmd(FTE_INT32   nArgc, FTE_CHAR_PTR pArgv[] );
 #endif

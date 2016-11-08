@@ -6,7 +6,8 @@
 
 #if FTE_TRUEYES_AIRQ_SUPPORTED
 
-static const FTE_IFCE_CONFIG FTE_TRUEYES_AIRQ_TEMPERATURE_defaultConfig =
+static const 
+FTE_IFCE_CONFIG FTE_TRUEYES_AIRQ_TEMPERATURE_defaultConfig =
 {
     .xCommon    =
     {
@@ -19,7 +20,8 @@ static const FTE_IFCE_CONFIG FTE_TRUEYES_AIRQ_TEMPERATURE_defaultConfig =
     .nInterval  = FTE_TRUEYES_AIRQ_DEFAULT_UPDATE_INTERVAL
 };
 
-static const FTE_IFCE_CONFIG FTE_TRUEYES_AIRQ_HUMIDITY_defaultConfig  =
+static const 
+FTE_IFCE_CONFIG FTE_TRUEYES_AIRQ_HUMIDITY_defaultConfig  =
 {
     .xCommon    =
     {
@@ -32,7 +34,8 @@ static const FTE_IFCE_CONFIG FTE_TRUEYES_AIRQ_HUMIDITY_defaultConfig  =
     .nInterval  = FTE_TRUEYES_AIRQ_DEFAULT_UPDATE_INTERVAL
 };
 
-static const FTE_IFCE_CONFIG FTE_TRUEYES_AIRQ_CO2_defaultConfig  =
+static const 
+FTE_IFCE_CONFIG FTE_TRUEYES_AIRQ_CO2_defaultConfig  =
 {
     .xCommon    =
     {
@@ -45,7 +48,8 @@ static const FTE_IFCE_CONFIG FTE_TRUEYES_AIRQ_CO2_defaultConfig  =
     .nInterval  = FTE_TRUEYES_AIRQ_DEFAULT_UPDATE_INTERVAL
 };
 
-static const FTE_OBJECT_CONFIG_PTR FTE_TRUEYES_AIRQ_defaultChildConfigs[] =
+static const 
+FTE_OBJECT_CONFIG_PTR FTE_TRUEYES_AIRQ_defaultChildConfigs[] =
 {
     (FTE_OBJECT_CONFIG_PTR)&FTE_TRUEYES_AIRQ_TEMPERATURE_defaultConfig,
     (FTE_OBJECT_CONFIG_PTR)&FTE_TRUEYES_AIRQ_HUMIDITY_defaultConfig,
@@ -100,42 +104,45 @@ FTE_RET   FTE_AIRQ_request(FTE_OBJECT_PTR pObj)
     FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     FTE_GUS_CONFIG_PTR  pConfig = (FTE_GUS_CONFIG_PTR)pObj->pConfig;
     
-    uint_8  pCMD[] = { 0x00, 0x03, 0x00, 0x65, 0x00, 0x05, 0x95, 0xd6, 0x00};
+    FTE_UINT8  pCMD[] = { 0x00, 0x03, 0x00, 0x65, 0x00, 0x05, 0x95, 0xd6, 0x00};
     
-    pCMD[0] = (uint_8)pConfig->nSensorID;
+    pCMD[0] = (FTE_UINT8)pConfig->nSensorID;
     FTE_UCS_clear(pStatus->pUCS);    
     FTE_UCS_send(pStatus->pUCS, pCMD, sizeof(pCMD), FALSE);    
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-FTE_RET   FTE_AIRQ_received(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_AIRQ_received
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
-    uint_32     nCO2    = 0;
-    uint_32     nTEMP   = 0;
-    uint_32     nHUMI   = 0;
-    uint_32     nCO     = 0;
-    uint_8      pBuff[64];
-    uint_32     nLen;
+    FTE_UINT32     nCO2    = 0;
+    FTE_UINT32     nTEMP   = 0;
+    FTE_UINT32     nHUMI   = 0;
+    FTE_UINT32     nCO     = 0;
+    FTE_UINT8      pBuff[64];
+    FTE_UINT32     nLen;
     
     memset(pBuff, 0, sizeof(pBuff));
     
     nLen = FTE_UCS_recv(pStatus->pUCS, pBuff, sizeof(pBuff));
     if (nLen != 15)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_INVALID_MSG_FRAME;
     }
 
     if ((pBuff[0] != 0x01))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_INVALID_MSG_FRAME;
     }
     
-    nCO2    = (uint_16)pBuff[3] << 8 | pBuff[4];
-    nTEMP   = (uint_16)pBuff[5] << 8 | pBuff[6];
-    nHUMI   = (uint_16)pBuff[7] << 8 | pBuff[8];
-    nCO     = (uint_16)pBuff[9] << 8 | pBuff[10];
+    nCO2    = (FTE_UINT16)pBuff[3] << 8 | pBuff[4];
+    nTEMP   = (FTE_UINT16)pBuff[5] << 8 | pBuff[6];
+    nHUMI   = (FTE_UINT16)pBuff[7] << 8 | pBuff[8];
+    nCO     = (FTE_UINT16)pBuff[9] << 8 | pBuff[10];
 
     FTE_VALUE_setPPM(&pStatus->xCommon.pValue[0], nCO2);
     FTE_VALUE_setTemperature(&pStatus->xCommon.pValue[1], nTEMP * 10);
@@ -144,7 +151,7 @@ FTE_RET   FTE_AIRQ_received(FTE_OBJECT_PTR pObj)
 
     pStatus->xCommon.xFlags = FTE_FLAG_SET(pStatus->xCommon.xFlags, FTE_OBJ_STATUS_FLAG_VALID);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 #endif

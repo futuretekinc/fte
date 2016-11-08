@@ -14,6 +14,7 @@
 #include "fte_assert.h"
 #include "fte_debug.h"
 #include "fte_task.h"
+#include "fte_sys.h"
 #define VERSION(A,B,C,D)                ((((A) & 0xFF) << 24) | (((B) & 0xFF) << 16) | (((C) & 0xFF) << 8) | ((D) & 0xFF))
 
 #define FTE_STATE_POWER_UP              0x0001
@@ -134,7 +135,6 @@ typedef struct _PRODUCT_DESC_STRUCT
 
 extern  const SHELL_COMMAND_STRUCT shell_commands[];
 
-FTE_PRODUCT_DESC const *fte_get_product_desc(void);
 FTE_RET     FTE_PLATFORM_init(void);
 FTE_RET     FTE_PLATFORM_run(void);
 

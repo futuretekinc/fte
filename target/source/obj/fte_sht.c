@@ -26,7 +26,7 @@ static
 void    FTE_SHT_done
 (
     _timer_id   id, 
-    pointer     pData, 
+    FTE_VOID_PTR     pData, 
     MQX_TICK_STRUCT_PTR pTick
 );
 
@@ -52,7 +52,7 @@ static
 void    FTE_SHT_restartConvert
 (
     _timer_id       id, 
-    pointer         pData, 
+    FTE_VOID_PTR         pData, 
     MQX_TICK_STRUCT_PTR pTick
 );
 
@@ -269,7 +269,7 @@ error:
     FTE_LWGPIO_detach(pLWGPIO_SDA);
     FTE_LWGPIO_detach(pLWGPIO_SCL);
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
     
 }
 
@@ -289,7 +289,7 @@ FTE_RET FTE_SHT_detach
     return  FTE_RET_OK;
     
 error:    
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_SHT_init
@@ -362,7 +362,7 @@ static
 void FTE_SHT_done
 (
     _timer_id   id, 
-    pointer     pData, 
+    FTE_VOID_PTR     pData, 
     MQX_TICK_STRUCT_PTR pTick
 )
 {
@@ -441,7 +441,7 @@ static
 void FTE_SHT_restartConvert
 (
     _timer_id   id, 
-    pointer     pData, 
+    FTE_VOID_PTR     pData, 
     MQX_TICK_STRUCT_PTR pTick
 )
 {
@@ -473,7 +473,7 @@ FTE_RET FTE_SHT_create
     FTE_OBJECT_PTR _PTR_ ppObj
 )
 {
-    int i;
+    FTE_INT32 i;
     FTE_RET                 xRet;
     FTE_OBJECT_CONFIG_PTR   pConfig;
     FTE_OBJECT_CONFIG_PTR   pChildConfig[2];
@@ -597,7 +597,7 @@ FTE_BOOL FTE_SHT_DATA_get
 
 FTE_RET   FTE_SHT_connectionReset(FTE_OBJECT_PTR pObj)
 {
-    for(int i = 0 ; i < 9 ; i++)
+    for(FTE_INT32 i = 0 ; i < 9 ; i++)
     {
         FTE_SHT_SCK_setHi(pObj);
         FTE_SHT_SCK_setLo(pObj);
@@ -626,13 +626,18 @@ FTE_RET   FTE_SHT_startTransmission(FTE_OBJECT_PTR pObj)
     return  FTE_RET_OK;
 }
  
-FTE_RET   _sht_write(FTE_OBJECT_PTR pObj, uint_8_ptr pData, FTE_UINT32 nData)
+FTE_RET   _sht_write
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT8_PTR   pData, 
+    FTE_UINT32      nData
+)
 {
     ASSERT(pObj != NULL);
 
-    for(int i = 0 ; i < nData ; i++)
+    for(FTE_INT32 i = 0 ; i < nData ; i++)
     {
-        for(int j = 0 ; j < 8 ; j++)
+        for(FTE_INT32 j = 0 ; j < 8 ; j++)
         {
             if ((pData[i] >> (7-j)) & 0x01)
             {
@@ -655,20 +660,25 @@ FTE_RET   _sht_write(FTE_OBJECT_PTR pObj, uint_8_ptr pData, FTE_UINT32 nData)
     }
     else
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 }
 
-FTE_RET   _sht_read(FTE_OBJECT_PTR pObj, uint_8_ptr pBuff, FTE_UINT32 nData)
+FTE_RET   _sht_read
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT8_PTR   pBuff, 
+    FTE_UINT32      nData
+)
 {
     ASSERT(pObj != NULL);
 
-    for(int i = 0 ; i < nData ; i++)
+    for(FTE_INT32 i = 0 ; i < nData ; i++)
     {
-        uint_8  nByte = 0;
+        FTE_UINT8  nByte = 0;
         
         FTE_SHT_DATA_inMode(pObj);
-        for(int j = 0 ; j < 8 ; j++)
+        for(FTE_INT32 j = 0 ; j < 8 ; j++)
         {
             FTE_SHT_SCK_setHi(pObj);
             if (i < 2)
@@ -699,9 +709,14 @@ FTE_RET   _sht_read(FTE_OBJECT_PTR pObj, uint_8_ptr pBuff, FTE_UINT32 nData)
     return  FTE_RET_OK;
 }
 
-FTE_RET   _sht_send_cmd(FTE_OBJECT_PTR pObj, FTE_UINT32 nAddr, FTE_UINT32 nCmd)
+FTE_RET   _sht_send_cmd
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nAddr, 
+    FTE_UINT32      nCmd
+)
 {
-    uint_8  pData[1];
+    FTE_UINT8  pData[1];
     ASSERT(pObj != NULL);
 
     
@@ -711,7 +726,10 @@ FTE_RET   _sht_send_cmd(FTE_OBJECT_PTR pObj, FTE_UINT32 nAddr, FTE_UINT32 nCmd)
     return  _sht_write(pObj, pData, 1);
 }
 
-FTE_RET   FTE_SHT_startConvert(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_SHT_startConvert
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
     FTE_SHT_STATUS_PTR  pStatus = (FTE_SHT_STATUS_PTR)pObj->pStatus;
@@ -730,13 +748,18 @@ FTE_RET   FTE_SHT_startConvert(FTE_OBJECT_PTR pObj)
     }
 }
 
-uint_8 FTE_SHT_crc8(uint_8 ubCRC, uint_8_ptr pBuff, FTE_UINT32 nLen)
+FTE_UINT8 FTE_SHT_crc8
+(
+    FTE_UINT8       ubCRC, 
+    FTE_UINT8_PTR   pBuff, 
+    FTE_UINT32      nLen
+)
 {
-    for(uint_8 i = 0 ; i < nLen ; i++)
+    for(FTE_UINT8 i = 0 ; i < nLen ; i++)
     {
-        uint_8  ubData = pBuff[i];
+        FTE_UINT8  ubData = pBuff[i];
         
-        for (uint_8 j = 0; j < 8; ++j) 
+        for (FTE_UINT8 j = 0; j < 8; ++j) 
         {
             if ((ubCRC ^ ubData) & 0x80) 
             {
@@ -754,9 +777,13 @@ uint_8 FTE_SHT_crc8(uint_8 ubCRC, uint_8_ptr pBuff, FTE_UINT32 nLen)
     return  ubCRC;
 }
 
-FTE_RET   FTE_SHT_getTemperature(FTE_OBJECT_PTR pObj, FTE_INT32 *pTemperature)
+FTE_RET   FTE_SHT_getTemperature
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_INT32_PTR   pTemperature
+)
 {
-    uint_8  pBuff[4];
+    FTE_UINT8  pBuff[4];
     FTE_INT32 nTemperature;
     ASSERT(pObj != NULL);
     
@@ -773,14 +800,18 @@ FTE_RET   FTE_SHT_getTemperature(FTE_OBJECT_PTR pObj, FTE_INT32 *pTemperature)
         }
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
-FTE_RET   FTE_SHT_getHumidity(FTE_OBJECT_PTR pObj, FTE_UINT32 *pHumidity)
+FTE_RET   FTE_SHT_getHumidity
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32_PTR  pHumidity
+)
 {
-    uint_8  pBuff[4];
+    FTE_UINT8  pBuff[4];
     FTE_INT32  nHumidity;
-    uint_8  ubCRC = 0;
+    FTE_UINT8  ubCRC = 0;
     
     ASSERT(pObj != NULL);
     
@@ -807,7 +838,7 @@ FTE_RET   FTE_SHT_getHumidity(FTE_OBJECT_PTR pObj, FTE_UINT32 *pHumidity)
         return  FTE_RET_OK;
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_UINT32      FTE_SHT_getUpdateInterval
@@ -823,7 +854,11 @@ FTE_UINT32      FTE_SHT_getUpdateInterval
     return  FTE_RET_OK;
 }
 
-FTE_RET    FTE_SHT_setUpdateInterval(FTE_OBJECT_PTR pObj, FTE_UINT32 nInterval)
+FTE_RET    FTE_SHT_setUpdateInterval
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nInterval
+)
 {
     FTE_SHT_CONFIG_PTR  pConfig = (FTE_SHT_CONFIG_PTR)pObj->pConfig;
     
@@ -834,7 +869,11 @@ FTE_RET    FTE_SHT_setUpdateInterval(FTE_OBJECT_PTR pObj, FTE_UINT32 nInterval)
     return  FTE_RET_OK;
 }
 
-FTE_RET   FTE_SHT_statistic(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTICS_PTR pStatistics)
+FTE_RET   FTE_SHT_statistic
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_OBJECT_STATISTICS_PTR pStatistics
+)
 {
     ASSERT((pObj != NULL) && (pStatistics != NULL));
     

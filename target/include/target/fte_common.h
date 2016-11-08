@@ -295,4 +295,6 @@
 #define FTE_GAI_CURRENT_SUPPORTED           1
 #endif
 
+FTE_PRODUCT_DESC const *FTE_getProductDescription(void);
+
 #endif

@@ -14,13 +14,13 @@ static
 FTE_RET FTE_SRF_stop(FTE_OBJECT_PTR pObj);
 
 static  
-void    FTE_SRF_done(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
+void    FTE_SRF_done(_timer_id id, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 
 static 
 FTE_RET FTE_SRF_get(FTE_OBJECT_PTR pObj, FTE_UINT32_ptr pValue, TIME_STRUCT *xTimeStamp);
 
 static 
-void    FTE_SRF_restartConvert(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
+void    FTE_SRF_restartConvert(_timer_id id, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 
 static 
 FTE_UINT32 FTE_SRF_getUpdateInterval(FTE_OBJECT_PTR pObj);
@@ -71,7 +71,7 @@ FTE_RET   fte_srf_attach
     return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
     
 }
 
@@ -118,7 +118,7 @@ FTE_RET fte_srf_detach
     return  FTE_RET_OK;
     
 error:    
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_SRF_init
@@ -192,7 +192,7 @@ FTE_RET   FTE_SRF_stop
 void FTE_SRF_done
 (
     _timer_id   id, 
-    pointer     pData, 
+    FTE_VOID_PTR     pData, 
     MQX_TICK_STRUCT_PTR pTick
 )
 {
@@ -215,7 +215,7 @@ void FTE_SRF_done
 void FTE_SRF_restartConvert
 (
     _timer_id   id, 
-    pointer     pData, 
+    FTE_VOID_PTR     pData, 
     MQX_TICK_STRUCT_PTR pTick
 )
 {
@@ -257,7 +257,7 @@ FTE_RET    FTE_SRF_get
         return  FTE_RET_OK;
     }
 
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 

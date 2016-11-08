@@ -561,15 +561,7 @@ FTE_RET FTE_DOTECH_FX3D_run
         return  FTE_RET_OK;
     }
     
-    pDevice->xTaskID = _task_create(0, FTE_TASK_DOTECH, (FTE_UINT32)pObj->pConfig->xCommon.nID);
-    if (pDevice->xTaskID <= 0)
-    {
-        return  FTE_RET_TASK_CREATION_FAILED;
-    }             
-                
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, pDevice->xTaskID);
-                
-    return  FTE_RET_OK;
+    return  FTE_TASK_create(FTE_TASK_DOTECH, (FTE_UINT32)pObj->pConfig->xCommon.nID, &pDevice->xTaskID);
 }
 
 FTE_RET FTE_DOTECH_FX3D_stop

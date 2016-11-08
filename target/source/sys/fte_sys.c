@@ -91,7 +91,7 @@ void    FTE_SYS_STATE_setAlert(void)
     }
 }
 
-FTE_RET fte_sys_lock_create
+FTE_RET FTE_SYS_LOCK_create
 (
     FTE_SYS_LOCK_PTR _PTR_ ppKey
 )
@@ -99,44 +99,18 @@ FTE_RET fte_sys_lock_create
     *ppKey = (FTE_SYS_LOCK_PTR)FTE_MEM_alloc(sizeof(FTE_SYS_LOCK));
     if (*ppKey == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
-    if (_lwsem_create(&(*ppKey)->xSemaphore, 1) != MQX_OK)
+    if (_lwsem_create(&(*ppKey)->xSemaphore, 1) != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-FTE_RET   fte_sys_lock_enable
-(
-    FTE_SYS_LOCK_PTR pKey
-)
-{
-    ASSERT(pKey != NULL);
-    
-  //  _int_disable();
-    _lwsem_wait(&pKey->xSemaphore);
-    
-    return  MQX_OK;
-}
-
-FTE_RET   fte_sys_lock_disable
-(
-    FTE_SYS_LOCK_PTR    pKey
-)
-{
-    ASSERT(pKey != NULL);
-    
-    _lwsem_post(&pKey->xSemaphore);
- //   _int_enable();
-    
-    return  MQX_OK;
-}
-
-FTE_RET   fte_sys_lock_destroy
+FTE_RET   FTE_SYS_LOCK_destroy
 (
     FTE_SYS_LOCK_PTR pKey
 )
@@ -150,12 +124,74 @@ FTE_RET   fte_sys_lock_destroy
     
     FTE_MEM_free(pKey);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-FTE_UINT32 FTE_SYS_STATE_get(void)
+FTE_RET FTE_SYS_LOCK_init
+(
+    FTE_SYS_LOCK_PTR    pKey,
+    FTE_UINT32          ulInit
+)
 {
-    return  _nState;
+    ASSERT(pKey != NULL);
+    
+    if (_lwsem_create(&pKey->xSemaphore, ulInit) != FTE_RET_OK)
+    {
+        return  FTE_RET_ERROR;
+    }
+    
+    return  FTE_RET_OK;
+}
+
+FTE_RET   FTE_SYS_LOCK_final
+(
+    FTE_SYS_LOCK_PTR pKey
+)
+{
+    if (pKey == NULL)
+    {
+        return  MQX_INVALID_LWSEM;
+    }
+    
+    _lwsem_destroy(&pKey->xSemaphore);
+    
+    return  FTE_RET_OK;
+}
+
+FTE_RET   FTE_SYS_LOCK_enable
+(
+    FTE_SYS_LOCK_PTR pKey
+)
+{
+    ASSERT(pKey != NULL);
+    
+  //  _int_disable();
+    _lwsem_wait(&pKey->xSemaphore);
+    
+    return  FTE_RET_OK;
+}
+
+FTE_RET   FTE_SYS_LOCK_disable
+(
+    FTE_SYS_LOCK_PTR    pKey
+)
+{
+    ASSERT(pKey != NULL);
+    
+    _lwsem_post(&pKey->xSemaphore);
+ //   _int_enable();
+    
+    return  FTE_RET_OK;
+}
+
+
+FTE_RET FTE_SYS_STATE_get(FTE_UINT32_PTR pState)
+{
+    ASSERT(pState != NULL);
+    
+    *pState = _nState;
+    
+    return  FTE_RET_OK;
 }
 
 void    FTE_SYS_STATE_setChangeCB
@@ -171,12 +207,12 @@ FTE_RET FTE_SYS_DEVICE_resetInit(void)
     FTE_GPIO_PTR    pResetGPIO = FTE_GPIO_get(FTE_DEV_GPIO_RESET);
     if (pResetGPIO == NULL)
     {
-        return MQX_ERROR;
+        return FTE_RET_ERROR;
     }
     
-    if (FTE_GPIO_attach(pResetGPIO, FTE_DEV_TYPE_ROOT) != MQX_OK)
+    if (FTE_GPIO_attach(pResetGPIO, FTE_DEV_TYPE_ROOT) != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     return  FTE_SYS_DEVICE_reset();    
@@ -189,7 +225,7 @@ FTE_RET   FTE_SYS_liveCheckStart(void)
 
     _bLiveCheck = TRUE;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SYS_liveCheckStop(void)
@@ -199,7 +235,7 @@ FTE_RET   FTE_SYS_liveCheckStop(void)
     
     _bLiveCheck = FALSE;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_BOOL    FTE_SYS_isLiveChecking(void)
@@ -213,13 +249,13 @@ FTE_RET  FTE_SYS_DEVICE_reset(void)
     FTE_GPIO_PTR    pResetGPIO = FTE_GPIO_get(FTE_DEV_GPIO_RESET);
     if (pResetGPIO == NULL)
     {
-        return MQX_ERROR;
+        return FTE_RET_ERROR;
     }
     
     FTE_GPIO_setValue(pResetGPIO, FALSE);
     FTE_GPIO_setValue(pResetGPIO, TRUE);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_SYS_powerHoldInit(void)
@@ -227,26 +263,26 @@ FTE_RET FTE_SYS_powerHoldInit(void)
     FTE_GPIO_PTR    pPowerHoldGPIO = FTE_GPIO_get(FTE_DEV_GPIO_POWER_HOLD);
     if (pPowerHoldGPIO == NULL)
     {
-        return MQX_ERROR;
+        return FTE_RET_ERROR;
     }
     
 #if !FTE_V2
     FTE_GPIO_PTR    pPowerCtrlGPIO = FTE_GPIO_get(FTE_DEV_GPIO_POWER_CTRL);
     if (pPowerCtrlGPIO == NULL)
     {
-        return MQX_ERROR;
+        return FTE_RET_ERROR;
     }
 #endif
     
-    if (FTE_GPIO_attach(pPowerHoldGPIO,    FTE_DEV_TYPE_ROOT) != MQX_OK)
+    if (FTE_GPIO_attach(pPowerHoldGPIO,    FTE_DEV_TYPE_ROOT) != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
 #if !FTE_V2
-    if (FTE_GPIO_attach(pPowerCtrlGPIO,    FTE_DEV_TYPE_ROOT) != MQX_OK)
+    if (FTE_GPIO_attach(pPowerCtrlGPIO,    FTE_DEV_TYPE_ROOT) != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 #endif
     return  FTE_SYS_powerHold(TRUE);    
@@ -260,7 +296,7 @@ FTE_RET  FTE_SYS_powerHold
     FTE_GPIO_PTR    pPowerHoldGPIO = FTE_GPIO_get(FTE_DEV_GPIO_POWER_HOLD);
     if (pPowerHoldGPIO == NULL)
     {
-        return MQX_ERROR;
+        return FTE_RET_ERROR;
     }
     
 #if FTE_V2    
@@ -269,7 +305,7 @@ FTE_RET  FTE_SYS_powerHold
     FTE_GPIO_PTR    pPowerCtrlGPIO = FTE_GPIO_get(FTE_DEV_GPIO_POWER_CTRL);
     if (pPowerCtrlGPIO == NULL)
     {
-        return MQX_ERROR;
+        return FTE_RET_ERROR;
     }
     
     FTE_GPIO_setValue(pPowerCtrlGPIO, FALSE);
@@ -279,7 +315,7 @@ FTE_RET  FTE_SYS_powerHold
     FTE_GPIO_setValue(pPowerHoldGPIO, FALSE);
 #endif
     printf("Power Hold ON\n");
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 void FTE_SYS_powerStateInit(void)
@@ -420,9 +456,13 @@ void    FTE_SYS_factoryResetInit(void)
     }
 }
 
-FTE_BOOL FTE_SYS_isfactoryResetPushed(void)
+FTE_RET FTE_SYS_isfactoryResetPushed(FTE_BOOL_PTR pPushed)
 {
-    return  _bFactoryResetPushed;
+    ASSERT(pPushed != NULL);
+    
+    *pPushed = _bFactoryResetPushed;
+    
+    return  FTE_RET_OK;
 }
 
 void _FTE_SYS_INT_CB_factoryReset
@@ -706,7 +746,8 @@ FTE_UINT32     FTE_SYS_getTime(void)
     return  xTime.SECONDS;
 }
 
-static FTE_BOOL  bSystemIsStable = TRUE;
+static 
+FTE_BOOL  bSystemIsStable = TRUE;
 
 void FTE_SYS_setUnstable(void)
 {

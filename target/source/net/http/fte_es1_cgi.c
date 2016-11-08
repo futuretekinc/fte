@@ -86,7 +86,7 @@ _mqx_int cgi_request(HTTPSRV_CGI_REQ_STRUCT* param)
         {
             uint_32 nOID;
             
-            if (fte_cgi_query_search_hexnum(cgi_query, "oid", &nOID) == MQX_OK)
+            if (fte_cgi_query_search_hexnum(cgi_query, "oid", &nOID) == FTE_RET_OK)
             {
             }
             else
@@ -97,7 +97,7 @@ _mqx_int cgi_request(HTTPSRV_CGI_REQ_STRUCT* param)
     else if (strcmp(cmd, "ctrl") == 0)
     {
         uint_32 nOID;
-        if (fte_cgi_query_search_hexnum(cgi_query, "oid", &nOID) != MQX_OK)
+        if (fte_cgi_query_search_hexnum(cgi_query, "oid", &nOID) != FTE_RET_OK)
         {
             goto error;
         }

@@ -1726,7 +1726,8 @@ const FTE_DO_CONFIG fte_ioex_reset_config =
 };
 #endif
 
-FTE_PRODUCT_DESC _product_desc =
+const 
+FTE_PRODUCT_DESC FTE_productDescription =
 {
     .pModel         = FTE_MODEL,
     .pManufacturer  = FTE_MANUFACTURER,
@@ -1860,7 +1861,8 @@ HTTPSRV_AUTH_REALM_STRUCT auth_realms[] =
     { NULL,                NULL,            HTTPSRV_AUTH_INVALID, NULL} /* Array terminator */
 };
 
-const FTE_SYS_CONFIG fte_default_system_config =
+const 
+FTE_SYS_CONFIG FTE_defaultSystemConfig =
 {
     .xFlags = 
     {
@@ -1871,7 +1873,8 @@ const FTE_SYS_CONFIG fte_default_system_config =
     .ulAutoSaveInterval     = FTE_SYS_AUTO_SAVE_INTERVAL                /* milliseconds */
 };
 
-const FTE_NET_CFG fte_default_net_config =
+const 
+FTE_NET_CFG FTE_defaultNetConfig =
 {
 //    .nType      = FTE_NET_TYPE_STATIC,
     .nType      = FTE_NET_TYPE_DHCP,
@@ -1943,14 +1946,16 @@ const FTE_NET_CFG fte_default_net_config =
 #endif
 };
 
-static const FTE_SHELL_CONFIG    fte_default_shell_config =
+static const 
+FTE_SHELL_CONFIG    FTE_defaultShellConfig =
 {
     .pUserID    = "admin",
     .pPasswd    = "admin",
     .ulTimeout  = FTE_SHELL_TIMEOUT
 };
 
-const FTE_CFG_DESC  FTE_CFG_desc =
+const 
+FTE_CFG_DESC  FTE_CFG_desc =
 {
     .pMTDs  =
     {
@@ -1963,69 +1968,69 @@ const FTE_CFG_DESC  FTE_CFG_desc =
         "flashx:data6",
         "flashx:data7"
     },
-    .pSystem    = &fte_default_system_config,
-    .pShell     = &fte_default_shell_config,
-    .pNetwork   = &fte_default_net_config,
+    .pSystem    = &FTE_defaultSystemConfig,
+    .pShell     = &FTE_defaultShellConfig,
+    .pNetwork   = &FTE_defaultNetConfig,
     .nObjects   = sizeof(pInitObjConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR),
     .pObjects   = pInitObjConfigs,
     .nEvents    = sizeof(pInitEventConfigs) / sizeof(FTE_CFG_EVENT_PTR),
     .pEvents    = pInitEventConfigs
 };
 
-FTE_PRODUCT_DESC const *fte_get_product_desc(void)
+FTE_PRODUCT_DESC const *FTE_getProductDescription(void)
 {
-    return  &_product_desc;
+    return  &FTE_productDescription;
 }
 
 FTE_RET FTE_PLATFORM_init(void)
 {
     
     /* Init device drivers */
-    for(int i = 0 ; i < sizeof(_pDriverDescripts) / sizeof(FTE_DRIVER_DESCRIPT) ; i++)
+    for(FTE_INT32 i = 0 ; i < sizeof(_pDriverDescripts) / sizeof(FTE_DRIVER_DESCRIPT) ; i++)
     {
         FTE_DRV_init(&_pDriverDescripts[i]);
     }
 
-    for(int i = 0 ; i < sizeof(pLWGPIOConfigs) / sizeof(FTE_LWGPIO_CONFIG) ; i++)
+    for(FTE_INT32 i = 0 ; i < sizeof(pLWGPIOConfigs) / sizeof(FTE_LWGPIO_CONFIG) ; i++)
     {
         FTE_LWGPIO_create(&pLWGPIOConfigs[i]);
     }
 
-    for(int i = 0 ; i < sizeof(pGPIOConfigs) / sizeof(FTE_GPIO_CONFIG) ; i++)
+    for(FTE_INT32 i = 0 ; i < sizeof(pGPIOConfigs) / sizeof(FTE_GPIO_CONFIG) ; i++)
     {
         FTE_GPIO_create(&pGPIOConfigs[i]);
     }
 
 #if FTE_I2C_SUPPORTED
-    for(int i = 0 ; i < sizeof(pI2CConfigs) / sizeof(FTE_I2C_CONFIG) ; i++)
+    for(FTE_INT32 i = 0 ; i < sizeof(pI2CConfigs) / sizeof(FTE_I2C_CONFIG) ; i++)
     {
         FTE_I2C_create(&pI2CConfigs[i]);
     }
 #endif
 
 #if FTE_SSD1305_SUPPORTED
-    for(int i = 0 ; i < sizeof(pSSD1305Configs) / sizeof(FTE_SSD1305_CONFIG) ; i++)
+    for(FTE_INT32 i = 0 ; i < sizeof(pSSD1305Configs) / sizeof(FTE_SSD1305_CONFIG) ; i++)
     {
         FTE_SSD1305_create(&pSSD1305Configs[i]);
     }
 #endif
 
 #if FTE_SPI_SUPPORTED
-    for(int i = 0 ; i < sizeof(pSPIConfigs) / sizeof(FTE_SPI_CONFIG) ; i++)
+    for(FTE_INT32 i = 0 ; i < sizeof(pSPIConfigs) / sizeof(FTE_SPI_CONFIG) ; i++)
     {
         FTE_SPI_create(&pSPIConfigs[i]);
     }
 #endif
 
 #if FTE_AD7785_SUPPORTED
-    for(int i = 0 ; i < sizeof(pAD7785Configs) / sizeof(FTE_AD7785_CONFIG) ; i++)
+    for(FTE_INT32 i = 0 ; i < sizeof(pAD7785Configs) / sizeof(FTE_AD7785_CONFIG) ; i++)
     {
         FTE_AD7785_create(&pAD7785Configs[i]);
     }
 #endif
 
 #if FTE_MCP23S08_SUPPORTED
-    for(int i = 0 ; i < sizeof(pMCP23S08Configs) / sizeof(FTE_MCP23S08_CONFIG) ; i++)
+    for(FTE_INT32 i = 0 ; i < sizeof(pMCP23S08Configs) / sizeof(FTE_MCP23S08_CONFIG) ; i++)
     {
         FTE_MCP23S08_create(&pMCP23S08Configs[i]);
     }
@@ -2037,28 +2042,28 @@ FTE_RET FTE_PLATFORM_init(void)
 #endif
 
 #if FTE_1WIRE_SUPPORTED
-    for(int i = 0 ; i < sizeof(p1WireConfigs) / sizeof(FTE_1WIRE_CONFIG) ; i++)
+    for(FTE_INT32 i = 0 ; i < sizeof(p1WireConfigs) / sizeof(FTE_1WIRE_CONFIG) ; i++)
     {
         FTE_1WIRE_create(&p1WireConfigs[i]);
     }
 #endif
 
 #if FTE_UCS_SUPPORTED
-    for(int i = 0 ; i < sizeof(pUCSConfigs) / sizeof(FTE_UCS_CONFIG) ; i++)
+    for(FTE_INT32 i = 0 ; i < sizeof(pUCSConfigs) / sizeof(FTE_UCS_CONFIG) ; i++)
     {
         FTE_UCS_create(&pUCSConfigs[i]);
     }
 #endif
 
 #if FTE_UCM_SUPPORTED
-    for(int i = 0 ; i < sizeof(pUCMConfigs) / sizeof(FTE_UCM_CONFIG) ; i++)
+    for(FTE_INT32 i = 0 ; i < sizeof(pUCMConfigs) / sizeof(FTE_UCM_CONFIG) ; i++)
     {
         FTE_UCM_create(&pUCMConfigs[i]);
     }
 #endif
 
 #if FTE_M25P16_SUPPORTED
-    for(int i = 0 ; i < sizeof(pM25P16Configs) / sizeof(FTE_M25P16_CONFIG) ; i++)
+    for(FTE_INT32 i = 0 ; i < sizeof(pM25P16Configs) / sizeof(FTE_M25P16_CONFIG) ; i++)
     {
         FTE_M25P16_create(&pM25P16Configs[i]);
     }
@@ -2079,7 +2084,7 @@ FTE_RET FTE_PLATFORM_init(void)
     FTE_LCD_init();
 #endif
     
-    for(int i = 0 ; i < sizeof(pSystemObjectConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR) ; i++)
+    for(FTE_INT32 i = 0 ; i < sizeof(pSystemObjectConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR) ; i++)
     {
         FTE_OBJECT_PTR pObj = FTE_OBJ_create(pSystemObjectConfigs[i]);
         if (pObj != NULL)
@@ -2100,7 +2105,7 @@ FTE_RET FTE_PLATFORM_init(void)
     FTE_EVENT_init();
 
     /* Create Object */
-    for(int i = 0 ; i < FTE_CFG_OBJ_count(0, 0) ; i++)
+    for(FTE_INT32 i = 0 ; i < FTE_CFG_OBJ_count(0, 0) ; i++)
     {
         pConfig = FTE_CFG_OBJ_getAt(0, 0, i); 
         if (pConfig != NULL)
@@ -2112,14 +2117,14 @@ FTE_RET FTE_PLATFORM_init(void)
         }
     }
    
-    for(int i = 0 ; i < FTE_CFG_EVENT_count() ; i++)
+    for(FTE_INT32 i = 0 ; i < FTE_CFG_EVENT_count() ; i++)
     {
         FTE_CFG_EVENT_PTR pConfig;
         FTE_EVENT_PTR     pEvent;
 
-        if (FTE_CFG_EVENT_getAt(i, &pConfig) == MQX_OK)
+        if (FTE_CFG_EVENT_getAt(i, &pConfig) == FTE_RET_OK)
         {
-            if (FTE_EVENT_create(pConfig, &pEvent) == MQX_OK)
+            if (FTE_EVENT_create(pConfig, &pEvent) == FTE_RET_OK)
             {
                 if ((pConfig->ulEPID & 0x0000FFFF) != 0)
                 {
@@ -2132,10 +2137,10 @@ FTE_RET FTE_PLATFORM_init(void)
                 }
                 else
                 {
-                    uint_32 ulCount;
+                    FTE_UINT32 ulCount;
                     
                     ulCount = FTE_OBJ_count(pConfig->ulEPID, FTE_OBJ_CLASS_MASK, FALSE);
-                    for(uint_32 i = 0 ; i < ulCount ; i++)
+                    for(FTE_UINT32 i = 0 ; i < ulCount ; i++)
                     {
                         FTE_OBJECT_PTR  pObj = FTE_OBJ_getAt(pConfig->ulEPID, FTE_OBJ_CLASS_MASK, i, FALSE);
                         if (pObj != NULL)
@@ -2149,8 +2154,8 @@ FTE_RET FTE_PLATFORM_init(void)
     }
 
  
-    uint_32 ulCount = FTE_OBJ_count(FTE_OBJ_TYPE_UNKNOWN, 0, FALSE);
-    for(uint_32 i = 0 ; i < ulCount ; i++)
+    FTE_UINT32 ulCount = FTE_OBJ_count(FTE_OBJ_TYPE_UNKNOWN, 0, FALSE);
+    for(FTE_INT32 i = 0 ; i < ulCount ; i++)
     {
         FTE_OBJECT_PTR  pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_UNKNOWN, 0, i, FALSE);
         if (pObj != NULL)
@@ -2161,13 +2166,13 @@ FTE_RET FTE_PLATFORM_init(void)
     
     FTE_SYS_STATE_initialized();
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_PLATFORM_run(void)
 {
-    uint_32 ulCount = FTE_OBJ_count(FTE_OBJ_TYPE_UNKNOWN, 0, FALSE);
-    for(uint_32 i = 0 ; i < ulCount ; i++)
+    FTE_UINT32 ulCount = FTE_OBJ_count(FTE_OBJ_TYPE_UNKNOWN, 0, FALSE);
+    for(FTE_UINT32 i = 0 ; i < ulCount ; i++)
     {
         FTE_OBJECT_PTR  pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_UNKNOWN, 0, i, FALSE);
         if (pObj != NULL)
@@ -2179,7 +2184,7 @@ FTE_RET FTE_PLATFORM_run(void)
         }                
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 void    FTE_SYS_STATE_changed( void )
@@ -2187,11 +2192,14 @@ void    FTE_SYS_STATE_changed( void )
     FTE_SYS_STATE_CB_changed( 0 );
 }
 
-void    FTE_SYS_STATE_CB_changed( pointer pParams )
+void    FTE_SYS_STATE_CB_changed
+(   FTE_VOID_PTR     pParams 
+)
 {
-    static uint_32 ulState = 0;
-    uint_32 ulNewState = FTE_SYS_STATE_get();
+    static FTE_UINT32 ulState = 0;
+    FTE_UINT32  ulNewState = 0;
     
+    FTE_SYS_STATE_get(&ulNewState);    
     if (ulState != ulNewState)
     {
         ulState = ulNewState;

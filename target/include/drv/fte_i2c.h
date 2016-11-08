@@ -16,10 +16,10 @@ typedef FTE_I2C_CONFIG const _PTR_ FTE_I2C_CONFIG_CONST_PTR;
 typedef struct _FTE_I2C_CHANNEL_STRUCT
 {
     MQX_FILE_PTR    xFD;
-    LWSEM_STRUCT    xLWSEM;
-    FTE_UINT32         nBaudrate;
-    FTE_UINT32         xFlags;
-    FTE_UINT32         nCount;
+    FTE_SYS_LOCK    xLock;
+    FTE_UINT32      nBaudrate;
+    FTE_UINT32      xFlags;
+    FTE_UINT32      nCount;
 }   FTE_I2C_CHANNEL, _PTR_ FTE_I2C_CHANNEL_PTR;
 
 typedef struct _FTE_I2C_STRUCT
@@ -35,9 +35,9 @@ FTE_RET   FTE_I2C_create(FTE_I2C_CONFIG_PTR pConfig);
 FTE_RET   FTE_I2C_attach(FTE_I2C_PTR pI2C, FTE_UINT32 nParent);
 FTE_RET   FTE_I2C_detach(FTE_I2C_PTR pI2C);
 
-FTE_UINT32     FTE_I2C_count(void);
+FTE_UINT32  FTE_I2C_count(void);
 FTE_I2C_PTR FTE_I2C_get(FTE_UINT32 xID);
-FTE_UINT32     FTE_I2C_parent_get(FTE_I2C_PTR pI2C);
+FTE_UINT32  FTE_I2C_parent_get(FTE_I2C_PTR pI2C);
 FTE_I2C_PTR FTE_I2C_get_first(void);
 FTE_I2C_PTR FTE_I2C_get_next(FTE_I2C_PTR pI2C);
 

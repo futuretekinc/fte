@@ -4,7 +4,7 @@
 #include "fte_time.h"
 #include "nxjson.h"
 
-FTE_RET   FTE_FTLM_switchCtrl(FTE_OBJECT_PTR pObj, boolean bSwitchON);
+FTE_RET   FTE_FTLM_switchCtrl(FTE_OBJECT_PTR pObj, FTE_BOOL bSwitchON);
 FTE_RET   FTE_FTLM_countReset(FTE_OBJECT_PTR pObj);
 
 static const 
@@ -210,7 +210,7 @@ FTE_RET   FTE_FTLM_requestData
     FTE_UCS_clear(pStatus->pUCS);    
     FTE_UCS_send(pStatus->pUCS, pCMD, sizeof(pCMD), TRUE);    
 */
-    return  MQX_OK; 
+    return  FTE_RET_OK; 
 }
  
 FTE_RET   FTE_FTLM_receiveData
@@ -227,18 +227,18 @@ FTE_RET   FTE_FTLM_receiveData
     nLen = FTE_UCS_recv(pStatus->pUCS, pBuff, sizeof(pBuff));
     if ((nLen < 4) || (pBuff[0] != 0x3a))// || (pBuff[nLen - 2] != 0x0d) || (pBuff[nLen - 1] != 0x0a) || (nLen != 4 + pBuff[3] + 4))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     if ((pBuff[1] < 1) || (pBuff[1] > 9))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     uiCRC = FTE_CRC16(&pBuff[1], 3 + pBuff[3]);
     if (uiCRC != (pBuff[4 + pBuff[3]] | ((FTE_UINT16)pBuff[4 + pBuff[3] + 1] << 8)))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     } 
   
     FTE_UINT32 ulValue = 0;
@@ -247,7 +247,7 @@ FTE_RET   FTE_FTLM_receiveData
     
     FTE_VALUE_setULONG(&pStatus->xCommon.pValue[pBuff[1]], ulValue);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_FTLM_set
@@ -266,7 +266,7 @@ FTE_RET   FTE_FTLM_set
     FTE_UINT32     ulTry = 0;
     if (pStatus->xCommon.nValueCount <= nIndex)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     memset(pBuff, 0, sizeof(pBuff));
@@ -298,12 +298,12 @@ FTE_RET   FTE_FTLM_set
     if (ulTry >= 3)
     {
         DEBUG("Request Timeout[Retry = %d]\n", ulTry);
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     FTE_VALUE_setULONG(&pStatus->xCommon.pValue[nIndex], ulValue);
     pStatus->xCommon.pValue[nIndex].bChanged = TRUE;
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 

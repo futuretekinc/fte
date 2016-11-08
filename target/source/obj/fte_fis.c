@@ -77,12 +77,12 @@ FTE_RET   FTE_FIS_attach
         goto error;
     }
     
-    if (FTE_UCS_attach(pUCS, pObj->pConfig->xCommon.nID) != MQX_OK)
+    if (FTE_UCS_attach(pUCS, pObj->pConfig->xCommon.nID) != FTE_RET_OK)
     {
         goto error;
     }
     
-    if (FTE_LWGPIO_attach(pLWGPIO, pObj->pConfig->xCommon.nID) != MQX_OK)
+    if (FTE_LWGPIO_attach(pLWGPIO, pObj->pConfig->xCommon.nID) != FTE_RET_OK)
     {
         goto error;
     }
@@ -99,7 +99,7 @@ FTE_RET   FTE_FIS_attach
     pObj->pAction = NULL;
     pObj->pStatus = (FTE_OBJECT_STATUS_PTR)pStatus;
    
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
     if (pUCS != NULL)
@@ -112,7 +112,7 @@ error:
         FTE_LWGPIO_detach(pLWGPIO);
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
     
 }
 
@@ -144,10 +144,10 @@ FTE_RET FTE_FIS_detach
     pObj->pAction = NULL;
     pObj->pStatus = NULL;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:    
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_FIS_request
@@ -161,7 +161,7 @@ FTE_RET   FTE_FIS_request
     
     FTE_LWGPIO_setValue(pStatus->pREQ, TRUE);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_FIS_received
@@ -181,7 +181,7 @@ FTE_RET   FTE_FIS_received
     nLen = FTE_UCS_recv(pStatus->pUCS, pBuff, sizeof(pBuff));
     if (nLen == 0)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pHead = (FTE_CHAR_PTR)pBuff;
@@ -211,7 +211,7 @@ FTE_RET   FTE_FIS_received
 
     if (nCount != 5)
     {    
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     for(FTE_INT32 i = 0 ; i < sizeof(_pFIS3061ValuePairs) / sizeof(FTE_FIS_VALUE_PAIR) ; i++)
@@ -224,5 +224,5 @@ FTE_RET   FTE_FIS_received
     
     FTE_VALUE_setPPM(pStatus->xCommon.pValue, nPPM);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }

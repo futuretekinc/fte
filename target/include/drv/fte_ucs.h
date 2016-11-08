@@ -30,18 +30,18 @@ typedef struct FTE_UCS_UART_CONFIG_STRUCT
 
 typedef struct _FTE_UCS_CONFIG_STRUCT
 {
-    FTE_UINT32         nID;
-    char_ptr        pName;
-    char_ptr        pUART;
-    FTE_UINT32         nFlowCtrlID;
-    FTE_UINT32         nFlowCtrl2ID;
-    FTE_BOOL         bFullDuplex;
-    FTE_UINT32         nBaudrate;
-    FTE_UINT32         nDataBits;
-    FTE_UINT32         nParity;
-    FTE_UINT32         nStopBits;
-    FTE_UINT32         nRecvBufLen;
-    FTE_UINT32         nSendBufLen;
+    FTE_UINT32      nID;
+    FTE_CHAR_PTR    pName;
+    FTE_CHAR_PTR    pUART;
+    FTE_UINT32      nFlowCtrlID;
+    FTE_UINT32      nFlowCtrl2ID;
+    FTE_BOOL        bFullDuplex;
+    FTE_UINT32      nBaudrate;
+    FTE_UINT32      nDataBits;
+    FTE_UINT32      nParity;
+    FTE_UINT32      nStopBits;
+    FTE_UINT32      nRecvBufLen;
+    FTE_UINT32      nSendBufLen;
 }   FTE_UCS_CONFIG, _PTR_ FTE_UCS_CONFIG_PTR;
 
 typedef FTE_UCS_CONFIG const _PTR_ FTE_UCS_CONFIG_CONST_PTR;
@@ -50,14 +50,14 @@ typedef struct _FTE_UART_CMD_SERVER_STRUCT
 {
     FTE_UCS_CONFIG_CONST_PTR    pConfig;
     FTE_LIST        xParents;
-    FTE_BOOL         bRootAttached;
+    FTE_BOOL        bRootAttached;
     pointer         pIter;
 
-    FTE_BOOL         bFullDuplex;
-    FTE_UINT32         nBaudrate;
-    FTE_UINT32         nDataBits;
-    FTE_UINT32         nParity;
-    FTE_UINT32         nStopBits;
+    FTE_BOOL        bFullDuplex;
+    FTE_UINT32      nBaudrate;
+    FTE_UINT32      nDataBits;
+    FTE_UINT32      nParity;
+    FTE_UINT32      nStopBits;
 
     _task_id        hTaskRX;
     _task_id        hTaskTX;
@@ -66,10 +66,10 @@ typedef struct _FTE_UART_CMD_SERVER_STRUCT
     FTE_LWGPIO_PTR  pFlowCtrl;
     FTE_LWGPIO_PTR  pFlowCtrl2;
 
-    LWSEM_STRUCT    xSEMLock;
-    LWSEM_STRUCT    xSEMSend;
-    LWSEM_STRUCT    xSEMRecv;
-    LWSEM_STRUCT    xSEMSendNotEmtry;
+    FTE_SYS_LOCK    xSEMLock;
+    FTE_SYS_LOCK    xSEMSend;
+    FTE_SYS_LOCK    xSEMRecv;
+    FTE_SYS_LOCK    xSEMSendNotEmtry;
     FTE_UINT32      nRecvHead;
     FTE_UINT32      nRecvTail;
     FTE_UINT32      nRecvCount;
@@ -126,10 +126,10 @@ FTE_UINT32  FTE_UCS_send(FTE_UCS_PTR pUCS, FTE_UINT8_PTR pData, FTE_UINT32 nData
 FTE_BOOL    FTE_UCS_waitForSendCompletion(FTE_UCS_PTR pUCS, FTE_UINT32 nTimeout);
 FTE_UINT32  FTE_UCS_sendAndRecv(FTE_UCS_PTR pUCS, FTE_UINT8_PTR pData, FTE_UINT32 nDataLen, FTE_UINT8_PTR pBuff, FTE_UINT32 nBuffLen, FTE_UINT32 nDelay, FTE_UINT32 nTimeout);
 
-FTE_UINT32  FTE_UCS_MODBUS_getRegs(FTE_UCS_PTR pUCS, uint_8 ucDeviceID, uint_16 usAddr, uint_16_ptr pRegs, uint_8 nCount, FTE_UINT32 nTimeout);
-FTE_UINT32  FTE_UCS_MODBUS_setReg(FTE_UCS_PTR pUCS, uint_8 ucDeviceID, uint_16 usAddr, uint_16 usValue, FTE_UINT32 nTimeout);
+FTE_UINT32  FTE_UCS_MODBUS_getRegs(FTE_UCS_PTR pUCS, FTE_UINT8 ucDeviceID, FTE_UINT16 usAddr, FTE_UINT16_PTR pRegs, FTE_UINT8 nCount, FTE_UINT32 nTimeout);
+FTE_UINT32  FTE_UCS_MODBUS_setReg(FTE_UCS_PTR pUCS, FTE_UINT8 ucDeviceID, FTE_UINT16 usAddr, FTE_UINT16 usValue, FTE_UINT32 nTimeout);
 
-int_32      FTE_UCS_SHELL_cmd(int_32 argc, char_ptr argv[] );
+int_32      FTE_UCS_SHELL_cmd(int_32 argc, FTE_CHAR_PTR argv[] );
 
 void        FTE_UCS_TASK_send(FTE_UINT32 nParams);
 void        FTE_UCS_TASK_recv(FTE_UINT32 nParams);

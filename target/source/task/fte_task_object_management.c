@@ -9,18 +9,19 @@
 * Comments       : 
 *
 *END------------------------------------------------------------------*/
-void FTE_TASK_objectManagement(uint_32 params)
+void FTE_TASK_objectManagement
+(
+    FTE_UINT32  params
+)
 {
     MQX_TICK_STRUCT     xTicks;            
     MQX_TICK_STRUCT     xNextTicks;            
-    boolean             bOverflow;
-    uint_32             ulLoopCount = 0;
-    _task_id            xTaskID = _task_get_id();
+    FTE_BOOL            bOverflow;
+    FTE_UINT32          ulLoopCount = 0;
+    FTE_TASK_ID         xTaskID = _task_get_id();
         
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, xTaskID);
-    
 #if FTE_1WIRE_SUPPORTED
-    uint_32 ulNewObject = FTE_OBJ_1WIRE_discovery(TRUE);
+    FTE_UINT32 ulNewObject = FTE_OBJ_1WIRE_discovery(TRUE);
     if (ulNewObject != 0)
     {
         TRACE(DEBUG_OBJECT, "New object found![%d]\n", ulNewObject);
@@ -28,14 +29,14 @@ void FTE_TASK_objectManagement(uint_32 params)
 #endif
    _time_get_elapsed_ticks(&xNextTicks);
     
-    while(1)
+    while(TRUE)
     {
         int_32  nDiffTime; 
-        uint_32 ulObjCount = FTE_OBJ_count(0, 0, FALSE);
+        FTE_UINT32 ulObjCount = FTE_OBJ_count(0, 0, FALSE);
         
         FTE_DI_update();
         
-        for(uint_32 i = 0 ; i < ulObjCount ; i++)
+        for(FTE_UINT32 i = 0 ; i < ulObjCount ; i++)
         {
             FTE_OBJECT_PTR  pObj = FTE_OBJ_getAt(0, 0, i, FALSE);
             
@@ -62,7 +63,7 @@ void FTE_TASK_objectManagement(uint_32 params)
         if (++ulLoopCount > (FTE_OBJ_LIVE_CHECK_INTERVAL * 1000) / FTE_OBJ_EVENT_CHECK_INTERVAL)
         {
             
-           for(uint_32 i = 0 ; i < ulObjCount ; i++)
+           for(FTE_UINT32 i = 0 ; i < ulObjCount ; i++)
             {
                 FTE_OBJECT_PTR  pObj = FTE_OBJ_getAt(0, 0, i, FALSE);
                 

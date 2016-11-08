@@ -29,12 +29,14 @@ FTE_RET   FTE_SPI_create
     FTE_SPI_CONFIG_PTR  pConfig
 )
 {
+    ASSERT(pConfig != NULL);
+    
     FTE_SPI_PTR pSPI;
     
     pSPI = (FTE_SPI_PTR)FTE_MEM_allocZero(sizeof(FTE_SPI));
     if (pSPI == NULL)
     {
-        return  MQX_OUT_OF_MEMORY;
+        return  FTE_RET_NOT_ENOUGH_MEMORY;
     }
     
     _pChannels[pConfig->xPort].nBaudrate    = pConfig->nBaudrate;
@@ -49,7 +51,7 @@ FTE_RET   FTE_SPI_create
     _pHead = pSPI;
     _nSPI++;
         
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SPI_attach
@@ -60,11 +62,7 @@ FTE_RET   FTE_SPI_attach
 {
     FTE_UINT32     nValue;
 
-    assert(pSPI != NULL);
-    if (pSPI == NULL)
-    {
-        return  MQX_INVALID_DEVICE;
-    }
+    ASSERT(pSPI != NULL);
         
     if (pSPI->pChannel->xFD == NULL)
     {
@@ -75,7 +73,7 @@ FTE_RET   FTE_SPI_attach
             goto error;
         }
         
-        if (_lwsem_create(&pSPI->pChannel->xLWSEM, 1) != MQX_OK)
+        if (FTE_SYS_LOCK_init(&pSPI->pChannel->xLock, 1) != FTE_RET_OK)
         {
             goto error;
         }
@@ -121,14 +119,14 @@ FTE_RET   FTE_SPI_attach
         goto error;
     }
     
-    if (FTE_LWGPIO_attach(pSPI->pCSPort, pSPI->pConfig->nID) != MQX_OK)
+    if (FTE_LWGPIO_attach(pSPI->pCSPort, pSPI->pConfig->nID) != FTE_RET_OK)
     {
         goto error;
     }
     
     pSPI->nParent = nParent;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
     
@@ -143,7 +141,7 @@ error:
         FTE_LWGPIO_detach(pSPI->pCSPort);    
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_SPI_detach
@@ -151,18 +149,14 @@ FTE_RET   FTE_SPI_detach
     FTE_SPI_PTR     pSPI
 )
 {
-    assert(pSPI != NULL);
-    if (pSPI == NULL)
-    {
-        return  MQX_INVALID_DEVICE;
-    }
+    ASSERT(pSPI != NULL);
             
     if (pSPI->pChannel->nCount == 1)
     {
         /* Open the SPI driver */
         fclose(pSPI->pChannel->xFD);        
         pSPI->pChannel->xFD = NULL;
-        _lwsem_destroy(&pSPI->pChannel->xLWSEM);        
+        FTE_SYS_LOCK_final(&pSPI->pChannel->xLock);        
         pSPI->pChannel->nCount = 0;
     }  
     else
@@ -173,7 +167,7 @@ FTE_RET   FTE_SPI_detach
     FTE_LWGPIO_detach(pSPI->pCSPort);
     pSPI->nParent = 0;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_UINT32     FTE_SPI_count(void)
@@ -225,7 +219,7 @@ FTE_UINT32     FTE_SPI_getParent
     FTE_SPI_PTR     pSPI
 )
 {
-    assert(pSPI != NULL);
+    ASSERT(pSPI != NULL);
     
     return  pSPI->nParent;
 }
@@ -240,11 +234,7 @@ FTE_RET   FTE_SPI_read
     FTE_UINT32      buff_len
 )
 {
-    assert(pSPI != NULL);
-    if (pSPI == NULL)
-    {
-        return  MQX_INVALID_DEVICE;
-    }
+    ASSERT(pSPI != NULL);
             
     _FTE_SPI_lock(pSPI);
 
@@ -276,12 +266,12 @@ FTE_RET   FTE_SPI_read
 #endif
     
     _FTE_SPI_unlock(pSPI);
-    return MQX_OK;
+    return FTE_RET_OK;
     
 error:  
     _FTE_SPI_unlock(pSPI);
     
-    return MQX_ERROR;
+    return FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_SPI_write
@@ -293,11 +283,7 @@ FTE_RET   FTE_SPI_write
     FTE_UINT32      buff_len
 )
 {
-    assert(pSPI != NULL);
-    if (pSPI == NULL)
-    {
-        return  MQX_INVALID_DEVICE;
-    }
+    ASSERT(pSPI != NULL);
             
     _FTE_SPI_lock(pSPI);
 #if 1
@@ -349,13 +335,13 @@ FTE_RET   FTE_SPI_write
     _FTE_SPI_unlock(pSPI);
     
     
-    return MQX_OK;
+    return FTE_RET_OK;
     
 error:  
 
     _FTE_SPI_unlock(pSPI);
     
-    return MQX_ERROR;
+    return FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_SPI_setBaudrate
@@ -364,7 +350,7 @@ FTE_RET   FTE_SPI_setBaudrate
     FTE_UINT32      baudrate
 )
 {
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SPI_getBaudrate
@@ -373,15 +359,11 @@ FTE_RET   FTE_SPI_getBaudrate
     FTE_UINT32_PTR  baudrate
 )
 {
-    assert(pSPI != NULL);
-    if (pSPI == NULL)
-    {
-        return  MQX_INVALID_DEVICE;
-    }
+    ASSERT(pSPI != NULL);
             
     *baudrate = pSPI->pConfig->nBaudrate;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SPI_setFlags
@@ -390,7 +372,7 @@ FTE_RET   FTE_SPI_setFlags
     FTE_UINT32      flags
 )
 {
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SPI_getFlags
@@ -399,15 +381,11 @@ FTE_RET   FTE_SPI_getFlags
     FTE_UINT32_PTR  flags
 )
 {
-    assert(pSPI != NULL);
-    if (pSPI == NULL)
-    {
-        return  MQX_INVALID_DEVICE;
-    }
+    ASSERT(pSPI != NULL);
             
     *flags = pSPI->pConfig->xFlags;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_INT32  FTE_SPI_SHELL_cmd
@@ -497,7 +475,7 @@ FTE_INT32  FTE_SPI_SHELL_cmd
                        goto error;
                     }
                     
-                    if (MQX_OK != FTE_SPI_read(pSPI, (uint_8 *)&pSendBuff, nCmdLen, pRecvBuff, nRecvLen))
+                    if (FTE_RET_OK != FTE_SPI_read(pSPI, (uint_8 *)&pSendBuff, nCmdLen, pRecvBuff, nRecvLen))
                     {
                        xRet = SHELL_EXIT_ERROR;
                        goto error;
@@ -546,7 +524,7 @@ FTE_INT32  FTE_SPI_SHELL_cmd
                         pSendBuff[i] = nValue;
                     }
                     
-                    if (MQX_OK != FTE_SPI_write(pSPI, pSendBuff, nSendLen, NULL, 0))
+                    if (FTE_RET_OK != FTE_SPI_write(pSPI, pSendBuff, nSendLen, NULL, 0))
                     {
                        xRet = SHELL_EXIT_ERROR;
                        goto error;
@@ -611,13 +589,13 @@ FTE_RET   _FTE_SPI_lock
     FTE_SPI_PTR     pSPI
 )
 {
-    assert(pSPI != NULL);
+    ASSERT(pSPI != NULL);
 
     //_int_enable();    
     
-    if (_lwsem_wait(&pSPI->pChannel->xLWSEM) != MQX_OK)
+    if (FTE_SYS_LOCK_enable(&pSPI->pChannel->xLock) != FTE_RET_OK)
     {  
-//        DEBUG("\n_lwsem_wait failed");
+//        DEBUG("\nFTE_SYS_LOCK_enable failed");
         goto error;
     }
     
@@ -626,11 +604,11 @@ FTE_RET   _FTE_SPI_lock
         goto error;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 error:
     
     //_int_disable();    
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   _FTE_SPI_unlock
@@ -638,22 +616,22 @@ FTE_RET   _FTE_SPI_unlock
     FTE_SPI_PTR     pSPI
 )
 {   
-    assert(pSPI != NULL);
+    ASSERT(pSPI != NULL);
     
     fflush(pSPI->pChannel->xFD);
     
     ioctl (pSPI->pChannel->xFD, IO_IOCTL_SPI_SET_CS_CALLBACK, NULL);
     
-    if (_lwsem_post(&pSPI->pChannel->xLWSEM) != MQX_OK)
+    if (FTE_SYS_LOCK_disable(&pSPI->pChannel->xLock) != FTE_RET_OK)
     {
-        DEBUG("\n_lwsem_post failed");
+        DEBUG("\nFTE_SYS_LOCK_disable failed");
     //_int_disable();    
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     //_int_disable();    
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 static 
@@ -676,5 +654,5 @@ _mqx_int _FTE_SPI_setCS
             FTE_LWGPIO_setValue(pSPI->pCSPort, FALSE);
         }
     }
-    return MQX_OK;
+    return FTE_RET_OK;
 }

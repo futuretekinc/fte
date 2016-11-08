@@ -212,7 +212,7 @@ FTE_RET   FTE_GS_DPC_HL_request
     FTE_UCS_clear(pStatus->pUCS);    
     FTE_UCS_send(pStatus->pUCS, pCMD, sizeof(pCMD), FALSE);    
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_GS_DPC_HL_received
@@ -260,7 +260,7 @@ FTE_RET   FTE_GS_DPC_HL_received
     FTE_VALUE_setTemperature(&pStatus->xCommon.pValue[FTE_GS_DPC_HL_INDEX_HP_TEMP], (short)ntohs(&pFrame->sHPTemp) * 10);
     FTE_VALUE_setTemperature(&pStatus->xCommon.pValue[FTE_GS_DPC_HL_INDEX_LP_TEMP], (short)ntohs(&pFrame->sLPTemp) * 10);    
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_GS_DPC_HL_set

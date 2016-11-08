@@ -128,6 +128,7 @@ FTE_RET   FTE_DS18B20_attach
 {
     ASSERT( pObj != NULL);
     
+    FTE_RET xRet;
     FTE_DS18B20_CONFIG_PTR   pConfig = (FTE_DS18B20_CONFIG_PTR)pObj->pConfig;
     FTE_DS18B20_STATUS_PTR   pStatus = (FTE_DS18B20_STATUS_PTR)pObj->pStatus;
 
@@ -138,8 +139,8 @@ FTE_RET   FTE_DS18B20_attach
         goto error;
     }
     
-    pStatus->p1Wire = FTE_1WIRE_get(pConfig->nBUSID);
-    if (pStatus->p1Wire == NULL)
+    xRet = FTE_1WIRE_get(pConfig->nBUSID, &pStatus->p1Wire);
+    if (xRet != FTE_RET_OK)
     {
         goto error;
     }
@@ -167,7 +168,7 @@ error:
         pStatus->xCommon.nValueCount = 0;
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
     
 }
 
@@ -189,7 +190,7 @@ FTE_RET FTE_DS18B20_detach
     return  FTE_RET_OK;
     
 error:    
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET FTE_DS18B20_setROMCode
@@ -264,7 +265,7 @@ FTE_RET   _FTE_DS18B20_run
 
     if (!FTE_DS18B20_isValid(pObj))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     _time_get_elapsed_ticks(&pStatus->xCommon.xStartTicks);
@@ -447,7 +448,10 @@ FTE_INT32  FTE_DS18B20_SHELL_cmd
                         while(p1Wire != NULL)
                         {
                             xParams.nBUSID = p1Wire->pConfig->nID;
-                            for(nIndex = 0 ; nIndex < FTE_1WIRE_DEV_count(p1Wire) ; nIndex++)
+                            
+                            FTE_UINT32  ulDevCount = 0;
+                            FTE_1WIRE_DEV_count(p1Wire, &ulDevCount);
+                            for(nIndex = 0 ; nIndex < ulDevCount ; nIndex++)
                             {
                                 if (FTE_1WIRE_DEV_getROMCode(p1Wire, nIndex, xParams.pROMCode) != FTE_RET_OK)
                                 {
@@ -490,14 +494,18 @@ FTE_INT32  FTE_DS18B20_SHELL_cmd
                            goto error;
                         }
 
-                        FTE_1WIRE_PTR   p1Wire = FTE_1WIRE_get(xParams.nBUSID);
-                        if (p1Wire == NULL)
+                        FTE_1WIRE_PTR   p1Wire;
+                       
+                        xRet = FTE_1WIRE_get(xParams.nBUSID, &p1Wire);
+                        if (xRet != FTE_RET_OK)
                         {
                             xRet = SHELL_EXIT_ERROR;
                             goto error; 
                         }
                         
-                        for(nIndex = 0 ; nIndex < FTE_1WIRE_DEV_count(p1Wire) ; nIndex++)
+                        FTE_UINT32  ulDevCount = 0;
+                        FTE_1WIRE_DEV_count(p1Wire, &ulDevCount);
+                        for(nIndex = 0 ; nIndex < ulDevCount ; nIndex++)
                         {
                             if (FTE_1WIRE_DEV_getROMCode(p1Wire, nIndex, xParams.pROMCode) != FTE_RET_OK)
                             {
@@ -543,8 +551,10 @@ FTE_INT32  FTE_DS18B20_SHELL_cmd
                        goto error;
                     }
                     
-                    FTE_1WIRE_PTR   p1Wire = FTE_1WIRE_get(xParams.nBUSID);
-                    if (p1Wire == NULL)
+                    FTE_1WIRE_PTR   p1Wire;
+                   
+                    xRet = FTE_1WIRE_get(xParams.nBUSID, &p1Wire);
+                    if (xRet != FTE_RET_OK)
                     {
                         xRet = SHELL_EXIT_ERROR;
                         goto error; 
@@ -664,7 +674,7 @@ FTE_RET   _FTE_DS18B20_get_temperature
 
     if ((pValues[7] == 0xFF) || (_FTE_DS18B20_crc(pValues, 9, 0) != 0))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     nValue = (*(int_16_ptr)pValues) * 625 / 100;

@@ -9,11 +9,9 @@
 * Comments       :
 *
 *END------------------------------------------------------------------*/
-void FTE_TASK_shell(uint_32 datas)
+void FTE_TASK_shell(FTE_UINT32 datas)
 {
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
-    
-    while(1)
+    while(TRUE)
     {
         FTE_SHELL_proc();
     }

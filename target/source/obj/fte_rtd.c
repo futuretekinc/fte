@@ -4,14 +4,29 @@
 
 #if FTE_RTD_SUPPORTED
 
-static  FTE_RET   FTE_RTD_init(FTE_OBJECT_PTR pObj);
-static  FTE_RET   FTE_RTD_run(FTE_OBJECT_PTR pObj);
-static  FTE_RET   FTE_RTD_stop(FTE_OBJECT_PTR pObj);
-static  void        _rtd_done(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
-static void         _rtd_restart_convert(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
-static FTE_RET    FTE_RTD_get(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR value, TIME_STRUCT_PTR pTimeStamp);
-static FTE_UINT32      FTE_RTD_getUpdateInterval(FTE_OBJECT_PTR pObj);
-static FTE_RET    FTE_RTD_setUpdateInterval(FTE_OBJECT_PTR pObj, FTE_UINT32 nInterval);
+static  
+FTE_RET     FTE_RTD_init(FTE_OBJECT_PTR pObj);
+
+static  
+FTE_RET     FTE_RTD_run(FTE_OBJECT_PTR pObj);
+
+static  
+FTE_RET     FTE_RTD_stop(FTE_OBJECT_PTR pObj);
+
+static  
+void        _rtd_done(_timer_id id, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
+
+static  
+void        _rtd_restart_convert(_timer_id id, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
+
+static 
+FTE_RET     FTE_RTD_get(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR value, TIME_STRUCT_PTR pTimeStamp);
+
+static 
+FTE_UINT32  FTE_RTD_getUpdateInterval(FTE_OBJECT_PTR pObj);
+
+static 
+FTE_RET     FTE_RTD_setUpdateInterval(FTE_OBJECT_PTR pObj, FTE_UINT32 nInterval);
 
 
 FTE_RTD_CONFIG FTE_RTD_defaultConfig =
@@ -26,7 +41,7 @@ FTE_RTD_CONFIG FTE_RTD_defaultConfig =
     .nInterval  = FTE_RTD_INTERVAL
 };
 
-static  FTE_OBJECT_ACTION _rtd_action =  
+static  FTE_OBJECT_ACTION FTE_RTD_action =  
 {
     .f_init         = FTE_RTD_init,
     .f_run          = FTE_RTD_run,
@@ -36,7 +51,7 @@ static  FTE_OBJECT_ACTION _rtd_action =
 };
 
 static const 
-FTE_INT32 PT100Table[] = 
+FTE_INT32 FTE_RTD_PT100[] = 
 {   
     -24688, -22295, -19886, -17461, -15020, -12561, -10085, -7591, -5080, -2549,
     0, 2569, 5157, 7766, 10395, 13046, 15718, 18413, 21131, 23872, 26637 
@@ -63,7 +78,7 @@ FTE_RET   FTE_RTD_attach
         goto error;
     }
     
-    if (FTE_AD7785_attach(pADC, pConfig->xCommon.nID) != MQX_OK)
+    if (FTE_AD7785_attach(pADC, pConfig->xCommon.nID) != FTE_RET_OK)
     {
         goto error;
     }
@@ -77,9 +92,9 @@ FTE_RET   FTE_RTD_attach
     
     pStatus->pADC = pADC;
     
-    pObj->pAction = (FTE_OBJECT_ACTION_PTR)&_rtd_action;
+    pObj->pAction = (FTE_OBJECT_ACTION_PTR)&FTE_RTD_action;
     
-    if (FTE_RTD_init(pObj) != MQX_OK)
+    if (FTE_RTD_init(pObj) != FTE_RET_OK)
     {
         FTE_AD7785_detach(pADC);
         pStatus->pADC = NULL;
@@ -89,7 +104,7 @@ FTE_RET   FTE_RTD_attach
 
     FTE_LIST_pushBack(&_xObjList, pObj);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
     
@@ -99,7 +114,7 @@ error:
         pObj->pStatus = NULL;
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
     
 }
 
@@ -116,10 +131,10 @@ FTE_RET FTE_RTD_detach
     FTE_LIST_remove(&_xObjList, pObj);
     pObj->pAction = NULL;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:    
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 /*
 FTE_UINT32 FTE_RTD_printValue(FTE_OBJECT_PTR pObj, char_ptr pBuff, FTE_UINT32 nLen)
@@ -176,10 +191,10 @@ FTE_RET   FTE_RTD_init
         goto error;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:    
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_RTD_run
@@ -214,7 +229,7 @@ FTE_RET   FTE_RTD_run
     pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(_rtd_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
 
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
  
 FTE_RET   FTE_RTD_stop
@@ -240,14 +255,14 @@ FTE_RET   FTE_RTD_stop
     
     FTE_AD7785_setOPMode(pStatus->pADC, FTE_AD7785_OP_MODE_PWR_DOWN);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 }
 
 void _rtd_done
 (
     _timer_id   id, 
-    pointer     pData, 
+    FTE_VOID_PTR     pData, 
     MQX_TICK_STRUCT_PTR pTick
 )
 {
@@ -255,7 +270,7 @@ void _rtd_done
     FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)pData;
     FTE_RTD_STATUS_PTR  pStatus = (FTE_RTD_STATUS_PTR)pObj->pStatus;
 
-    if (FTE_AD7785_getRawData(pStatus->pADC, &data) == MQX_OK)
+    if (FTE_AD7785_getRawData(pStatus->pADC, &data) == FTE_RET_OK)
     {
         FTE_UINT32 index, value;
         FTE_INT32  temp;
@@ -266,11 +281,11 @@ void _rtd_done
     
         if (index < 20)
         {
-            temp = PT100Table[index] + (PT100Table[index+1] - PT100Table[index]) * (value - index * 1000) / 1000;        
+            temp = FTE_RTD_PT100[index] + (FTE_RTD_PT100[index+1] - FTE_RTD_PT100[index]) * (value - index * 1000) / 1000;        
         }
         else
         {
-            temp = PT100Table[20];
+            temp = FTE_RTD_PT100[20];
         }
         
         if (FTE_RTD_LOW_BOUND <= temp && temp <= FTE_RTD_HIGH_BOUND)
@@ -296,7 +311,7 @@ void _rtd_done
 void _rtd_restart_convert
 (
     _timer_id   id, 
-    pointer     pData, 
+    FTE_VOID_PTR     pData, 
     MQX_TICK_STRUCT_PTR     pTick
 )
 {
@@ -338,10 +353,10 @@ FTE_RET    FTE_RTD_get
             *pTimeStamp = pStatus->xTimeStamp;
         }
         
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
 
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 #endif
 FTE_UINT32      FTE_RTD_getUpdateInterval
@@ -367,7 +382,7 @@ FTE_RET    FTE_RTD_setUpdateInterval
     FTE_CFG_OBJ_save(pObj);
 
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 #endif

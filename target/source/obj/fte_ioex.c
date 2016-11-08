@@ -357,7 +357,7 @@ FTE_RET   FTE_IOEX_attach
         goto error;
     }
         
-    if (FTE_UCS_attach(pUCS, pObj->pConfig->xCommon.nID) != MQX_OK)
+    if (FTE_UCS_attach(pUCS, pObj->pConfig->xCommon.nID) != FTE_RET_OK)
     {
         goto error;
     }
@@ -366,10 +366,10 @@ FTE_RET   FTE_IOEX_attach
     
     FTE_IOEX_init(pObj);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_IOEX_detach
@@ -389,7 +389,7 @@ FTE_RET   FTE_IOEX_detach
         pStatus->xGUS.pUCS = NULL;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_UINT32     FTE_IOEX_get
@@ -406,7 +406,7 @@ FTE_UINT32     FTE_IOEX_get
         return  FTE_VALUE_setDIO(pValue, ((FTE_IOEX_STATUS_PTR)pObject->pStatus)->pDI[ulIndex].bValue);
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET FTE_IOEX_init
@@ -416,9 +416,9 @@ FTE_RET FTE_IOEX_init
 {
     FTE_IOEX_loadExtConfig(pObj);
     
-    _task_create(0, FTE_TASK_IOEX, (FTE_UINT32)pObj);
+    FTE_TASK_create(FTE_TASK_IOEX, (FTE_UINT32)pObj, NULL);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_IOEX_reset(void)
@@ -430,7 +430,7 @@ FTE_RET FTE_IOEX_reset(void)
         FTE_DO_setValue(FTE_OBJ_TYPE_IOEX_RESET, FALSE);
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_IOEX_initDefaultExtConfig
@@ -444,7 +444,7 @@ FTE_RET FTE_IOEX_initDefaultExtConfig
     pConfig->ulUpdatePeriod = FTE_IOEX_DEFAULT_UPDATE_PERIOD;
     pConfig->ulRequestTimeout= FTE_IOEX_DEFAULT_REQUEST_TIMEOUT;
     pConfig->ulRetryCount = FTE_IOEX_DEFUALT_RETRY_COUNT;
-    return  MQX_OK;    
+    return  FTE_RET_OK;    
 }
  
 FTE_RET FTE_IOEX_loadExtConfig
@@ -454,16 +454,16 @@ FTE_RET FTE_IOEX_loadExtConfig
 {
     FTE_IOEX_EXT_CONFIG    xConfig;
         
-    if (FTE_CFG_IOEX_getExtConfig(&xConfig, sizeof(xConfig)) != MQX_OK)
+    if (FTE_CFG_IOEX_getExtConfig(&xConfig, sizeof(xConfig)) != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     xGlobalConfig.ulLoopPeriod = xConfig.ulLoopPeriod;
     xGlobalConfig.ulUpdatePeriod = xConfig.ulUpdatePeriod;
     xGlobalConfig.ulRequestTimeout = xConfig.ulRequestTimeout;
     xGlobalConfig.ulRetryCount = xConfig.ulRetryCount;
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 
@@ -499,7 +499,7 @@ FTE_RET   FTE_IOEX_sendRequest
     FTE_IOEX_DUMP_SEND_PKT(pSendBuff, ulSendLen);
     _time_get(&((FTE_IOEX_STATUS_PTR)pObj->pStatus)->xLastRequestTime);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 void FTE_IOEX_task
@@ -518,8 +518,6 @@ void FTE_IOEX_task
     pStatus->xTaskID = _task_get_id();
     pStatus->ulRetryCount = 0;
     _time_get(&pStatus->xLastUpdateTime);
-    
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, pStatus->xTaskID);
     
     FTE_TIME_DELAY      xDelay;
     FTE_TIME_DELAY_init(&xDelay, FTE_IOEX_DEFAULT_LOOP_PERIOD);

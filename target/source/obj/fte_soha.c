@@ -218,7 +218,7 @@ FTE_RET FTE_SOHA_final
 {
     ASSERT((pObj != NULL) && (pObj->pConfig != NULL));
     
-    int i;
+    FTE_INT32 i;
     FTE_SOHA_DEVICE_PTR   pDevice = NULL;
     
     for(i = 0 ; i < FTE_SOHA_DEVICE_MAX ; i++)
@@ -275,15 +275,7 @@ FTE_RET   FTE_SOHA_run
         return  FTE_RET_RUNNING;
     }
     
-    pDevice->xTaskID = _task_create(0, FTE_TASK_SOHA, (FTE_UINT32)pObj->pConfig->xCommon.nID);
-    if (pDevice->xTaskID <= 0)
-    {
-        return  FTE_RET_TASK_CREATION_FAILED;
-    }             
-                
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, pDevice->xTaskID);
-                
-    return  FTE_RET_OK;
+     return FTE_TASK_create(FTE_TASK_SOHA, (FTE_UINT32)pObj->pConfig->xCommon.nID, &pDevice->xTaskID);
 }
  
 FTE_RET FTE_SOHA_stop
@@ -293,7 +285,7 @@ FTE_RET FTE_SOHA_stop
 {
     ASSERT((pObj != NULL) && (pObj->pConfig != NULL));
     
-    int i;
+    FTE_INT32 i;
     FTE_SOHA_DEVICE_PTR   pDevice = NULL;
     
     for(i = 0 ; i < FTE_SOHA_DEVICE_MAX ; i++)
@@ -523,7 +515,7 @@ FTE_INT32 FTE_SOHA_SHELL_cmd
     {
     case    1:
         {
-            int i;
+            FTE_INT32 i;
             
             printf("%8s %4s %8s %8s %8s\n", "ID", "SID", "CO2", "Temp.", "Humi.");
             
@@ -578,7 +570,7 @@ FTE_RET FTE_SOHA_MV250HT_create
     FTE_OBJECT_PTR _PTR_ ppObj
 )
 {
-    int i;
+    FTE_INT32 i;
     FTE_RET xRet;
     FTE_OBJECT_CONFIG_PTR   pConfig;
     FTE_OBJECT_CONFIG_PTR   pChildConfig[FTE_SOHA_MV250_REG_VALUE_MAX];

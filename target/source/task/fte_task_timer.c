@@ -10,28 +10,34 @@
 *
 *END------------------------------------------------------------------*/
  
-extern  void _FTE_DI_ISR(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
+extern  void _FTE_DI_ISR(_timer_id id, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 
-void FTE_TASK_timer(uint_32 params)
+void FTE_TASK_timer
+(
+    FTE_UINT32  xParams
+)
 {
 #if FTE_FACTORY_RESET_SUPPORTED
-    static  uint_32 ulFactoryResetPushedTime = 0;
+    static  FTE_UINT32 ulFactoryResetPushedTime = 0;
 #endif
     MQX_TICK_STRUCT xBaseTick;
     MQX_TICK_STRUCT xCurrentTick;
-    int_32          nDiffTime;
-    boolean         bOverflow;
+    FTE_INT32       nDiffTime;
+    FTE_BOOL        bOverflow;
+    
+    FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
     
     _time_get_elapsed_ticks(&xBaseTick);
     
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id()); 
-    
-    while(1)
+    while(TRUE)
     {
+        FTE_BOOL    bPushed = FALSE;
+        
         _FTE_DI_ISR(0, 0, 0);
       
 #if FTE_FACTORY_RESET_SUPPORTED
-        if (FTE_SYS_isfactoryResetPushed())
+        FTE_SYS_isfactoryResetPushed(&bPushed);
+        if (bPushed)
         {
             if (++ulFactoryResetPushedTime > FTE_FACTORY_RESET_DETECT_TIME * 10)
             {

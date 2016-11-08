@@ -8,12 +8,12 @@
 static FTE_RET  FTE_IFCE_init(FTE_OBJECT_PTR pObj);
 static FTE_RET  FTE_IFCE_run(FTE_OBJECT_PTR pObj);
 static FTE_RET  FTE_IFCE_stop(FTE_OBJECT_PTR pObj);
-static void     FTE_IFCE_restartConvert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
+static void     FTE_IFCE_restartConvert(_timer_id id, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 static FTE_RET  FTE_IFCE_set(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue);
 static FTE_RET  FTE_IFCE_getInterval(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pulInterval);
-static FTE_RET  FTE_IFCE_setInterval(FTE_OBJECT_PTR pObj, uint_32 nInterval);
-static FTE_RET  FTE_IFCE_setConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff);
-static FTE_RET  FTE_IFCE_getConfig(FTE_OBJECT_PTR pObj, char_ptr pBuff, uint_32 ulBuffLen);
+static FTE_RET  FTE_IFCE_setInterval(FTE_OBJECT_PTR pObj, FTE_UINT32 nInterval);
+static FTE_RET  FTE_IFCE_setConfig(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pBuff);
+static FTE_RET  FTE_IFCE_getConfig(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pBuff, FTE_UINT32 ulBuffLen);
 
 static  
 FTE_OBJECT_ACTION FTE_IFCE_action = 
@@ -29,7 +29,11 @@ FTE_OBJECT_ACTION FTE_IFCE_action =
 
 };
 
-FTE_RET   FTE_IFCE_attach(FTE_OBJECT_PTR pObj, FTE_VOID_PTR pOpts)
+FTE_RET   FTE_IFCE_attach
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_VOID_PTR    pOpts
+)
 {
     FTE_RET xRet;
     FTE_OBJECT_PTR      pParent = NULL;
@@ -105,7 +109,7 @@ error:
         pObj->pStatus = NULL;
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
     
 }
 
@@ -116,7 +120,7 @@ FTE_RET FTE_IFCE_detach
 {
     if (pObj == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
    if (pObj->pStatus != NULL)
@@ -137,7 +141,10 @@ FTE_RET FTE_IFCE_detach
     return  FTE_RET_OK;
 }
 
-FTE_RET   FTE_IFCE_init(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_IFCE_init
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
 
@@ -149,7 +156,10 @@ FTE_RET   FTE_IFCE_init(FTE_OBJECT_PTR pObj)
     return  FTE_RET_OK;
 }
 
-FTE_RET   FTE_IFCE_run(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_IFCE_run
+(
+    FTE_OBJECT_PTR  pObj
+)
 {
     ASSERT(pObj != NULL);
 
@@ -174,7 +184,10 @@ FTE_RET   FTE_IFCE_run(FTE_OBJECT_PTR pObj)
     return  FTE_RET_OK;
 }
  
-FTE_RET   FTE_IFCE_stop(FTE_OBJECT_PTR pObj)
+FTE_RET   FTE_IFCE_stop
+(
+    FTE_OBJECT_PTR  pObj
+)
 { 
     ASSERT(pObj != NULL);
     
@@ -186,9 +199,14 @@ FTE_RET   FTE_IFCE_stop(FTE_OBJECT_PTR pObj)
     return  FTE_RET_OK;
 }
 
-static void FTE_IFCE_restartConvert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
+void FTE_IFCE_restartConvert
+(
+    _timer_id       id, 
+    FTE_VOID_PTR    pData, 
+    MQX_TICK_STRUCT_PTR pTick
+)
 {
-    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)data_ptr;
+    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)pData;
     FTE_IFCE_CONFIG_PTR  pConfig = (FTE_IFCE_CONFIG_PTR)pObj->pConfig;
     FTE_IFCE_STATUS_PTR  pStatus = (FTE_IFCE_STATUS_PTR)pObj->pStatus;
         
@@ -216,9 +234,13 @@ static void FTE_IFCE_restartConvert(_timer_id id, pointer data_ptr, MQX_TICK_STR
     }
 }
 
-FTE_RET    FTE_IFCE_set(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue)
+FTE_RET    FTE_IFCE_set
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_VALUE_PTR   pValue
+)
 {
-    ASSERT(pObj != NULL);
+    ASSERT((pObj != NULL) && (pValue != NULL));
     
     FTE_IFCE_STATUS_PTR  pStatus = (FTE_IFCE_STATUS_PTR)pObj->pStatus;
     FTE_IFCE_CONFIG_PTR  pConfig = (FTE_IFCE_CONFIG_PTR)pObj->pConfig;
@@ -246,7 +268,7 @@ FTE_RET    FTE_IFCE_set(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue)
         }
     }
 
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET FTE_IFCE_getInterval
@@ -262,7 +284,11 @@ FTE_RET FTE_IFCE_getInterval
     return  FTE_RET_OK;
 }
 
-FTE_RET    FTE_IFCE_setInterval(FTE_OBJECT_PTR pObj, uint_32 nInterval)
+FTE_RET    FTE_IFCE_setInterval
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      nInterval
+)
 {
     ASSERT(pObj != NULL);
 
@@ -276,7 +302,7 @@ FTE_RET    FTE_IFCE_setInterval(FTE_OBJECT_PTR pObj, uint_32 nInterval)
 FTE_RET   FTE_IFCE_setConfig
 (
     FTE_OBJECT_PTR  pObj, 
-    char_ptr        pBuff
+    FTE_CHAR_PTR        pBuff
 )
 {
     ASSERT(pObj != NULL && pBuff != NULL);
@@ -284,7 +310,7 @@ FTE_RET   FTE_IFCE_setConfig
     
     if ((pParent == NULL) || (pParent->pAction->fSetChildConfig == NULL))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     return  pParent->pAction->fSetChildConfig(pParent, pObj, pBuff);
@@ -293,8 +319,8 @@ FTE_RET   FTE_IFCE_setConfig
 FTE_RET   FTE_IFCE_getConfig
 (
     FTE_OBJECT_PTR  pObj, 
-    char_ptr        pBuff, 
-    uint_32         ulBuffLen
+    FTE_CHAR_PTR    pBuff, 
+    FTE_UINT32      ulBuffLen
 )
 {
     ASSERT(pObj != NULL && pBuff != NULL);
@@ -302,7 +328,7 @@ FTE_RET   FTE_IFCE_getConfig
     
     if ((pParent == NULL) || (pParent->pAction->fGetChildConfig == NULL))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     return  pParent->pAction->fGetChildConfig(pParent, pObj, pBuff, ulBuffLen);

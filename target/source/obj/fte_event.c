@@ -19,16 +19,16 @@ static FTE_SYS_LOCK_PTR    pListLockKey = NULL;
 FTE_RET   FTE_EVENT_init(void)
 {
     FTE_LIST_init(&_eventList);
-    fte_sys_lock_create(&pListLockKey);
+    FTE_SYS_LOCK_create(&pListLockKey);
 
-    _task_create(0, FTE_TASK_EVENT, 0);
+    FTE_TASK_create(FTE_TASK_EVENT, 0, NULL);
     
     return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_EVENT_final(void)
 {
-    fte_sys_lock_destroy(pListLockKey);
+    FTE_SYS_LOCK_destroy(pListLockKey);
 
     return  FTE_RET_OK;
 }
@@ -46,7 +46,7 @@ FTE_RET   FTE_EVENT_create
     pEvent = (FTE_EVENT_PTR)FTE_MEM_allocZero(sizeof(FTE_EVENT));
     if (pEvent == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
      
     pEvent->pConfig         = pConfig;
@@ -54,11 +54,11 @@ FTE_RET   FTE_EVENT_create
 
     FTE_LIST_init(&pEvent->xState.xObjectList);
 
-    fte_sys_lock_enable(pListLockKey);
+    FTE_SYS_LOCK_enable(pListLockKey);
     
     FTE_LIST_pushBack(&_eventList, pEvent);
 
-    fte_sys_lock_disable(pListLockKey);
+    FTE_SYS_LOCK_disable(pListLockKey);
     
     if (ppEvent != NULL)
     {
@@ -73,11 +73,11 @@ FTE_RET   FTE_EVENT_destroy
     FTE_EVENT_PTR   pEvent
 )
 {
-    fte_sys_lock_enable(pListLockKey);
+    FTE_SYS_LOCK_enable(pListLockKey);
     
     FTE_LIST_remove(&_eventList, pEvent);
 
-    fte_sys_lock_disable(pListLockKey);
+    FTE_SYS_LOCK_disable(pListLockKey);
 
     FTE_LIST_final(&pEvent->xState.xObjectList);
     
@@ -199,7 +199,7 @@ FTE_RET   FTE_EVENT_isSatisfied
         break;
         
     default:
-        return  MQX_INVALID_PARAMETER;
+        return  FTE_RET_INVALID_PARAMETER;
     }
     
     return  FTE_RET_OK;
@@ -213,7 +213,7 @@ FTE_RET    FTE_EVENT_check
 )
 {
     FTE_VALUE           xValue;
-    boolean             bChanged = FALSE;
+    FTE_BOOL             bChanged = FALSE;
     TIME_STRUCT         xCurrentTime;
     FTE_INT32           nDiffTime;
     
@@ -467,7 +467,7 @@ FTE_INT32 FTE_EVENT_shell_cmd
     FTE_CHAR_PTR pArgv[]
 )
 {
-    boolean              bPrintUsage, bShortHelp = FALSE;
+    FTE_BOOL              bPrintUsage, bShortHelp = FALSE;
     FTE_INT32               nReturnCode = SHELL_EXIT_SUCCESS;
     
     bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
@@ -952,8 +952,6 @@ void FTE_EVENT_task
     TIME_STRUCT     xTime;
     FTE_UINT32         ulTime, ulNextTime;
 
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
-    
     _time_get(&xTime);
     ulNextTime = xTime.SECONDS * 1000 + xTime.MILLISECONDS;
     

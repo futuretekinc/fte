@@ -408,7 +408,7 @@ portCHAR MAC_15_4_init(void)
 	mac_timer_event = MAC_TIMER_NONE;
     mac_events = xQueueCreate(20, sizeof( mac_event_t ) );
     
-    FTE_TASK_create(0, FTE_TASK_15_4_STACK, 0);
+    FTE_TASK_create(FTE_TASK_15_4_STACK, 0);
 
 	//rf_init();
 	return pdTRUE;

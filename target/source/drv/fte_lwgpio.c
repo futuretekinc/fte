@@ -1,10 +1,11 @@
 #include <mqx.h>
 #include <bsp.h>
 #include <shell.h>
-#include <assert.h>
 #include <lwgpio_kgpio.h>
 #include <lwgpio.h>
 #include "fte_type.h"
+#include "fte_sys.h"
+#include "fte_assert.h"
 #include "fte_mem.h"
 #include "fte_drv.h"
   
@@ -18,12 +19,12 @@ FTE_RET FTE_LWGPIO_create
 {   
     FTE_LWGPIO_PTR  pLWGPIO;
     
-    assert(pConfig != NULL);
+    ASSERT(pConfig != NULL);
     
     pLWGPIO = (FTE_LWGPIO_PTR)FTE_MEM_allocZero(sizeof(FTE_LWGPIO));
     if (pLWGPIO == NULL)
     {
-        return  MQX_OUT_OF_MEMORY;
+        return  FTE_RET_NOT_ENOUGH_MEMORY;
     }
 
     pLWGPIO->pNext  = _pHead;
@@ -32,7 +33,7 @@ FTE_RET FTE_LWGPIO_create
     _pHead = pLWGPIO;
     _nGPIOs++;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_LWGPIO_attach
@@ -41,16 +42,11 @@ FTE_RET   FTE_LWGPIO_attach
     FTE_UINT32      nParent
 )
 {
-    assert(pLWGPIO != NULL);
-    
-    if (pLWGPIO == NULL)
-    {
-        return  MQX_INVALID_COMPONENT_HANDLE;
-    }
-    
+    ASSERT(pLWGPIO != NULL);
+        
     if (!lwgpio_init(&pLWGPIO->xLWGPIO, pLWGPIO->pConfig->nLWGPIO, pLWGPIO->pConfig->nDIR, pLWGPIO->pConfig->nInit))
     {
-        return  MQX_INVALID_DEVICE;
+        return  FTE_RET_INITIALIZE_FAILED;
     }
         
     lwgpio_set_functionality(&pLWGPIO->xLWGPIO, pLWGPIO->pConfig->nMUX);
@@ -59,7 +55,7 @@ FTE_RET   FTE_LWGPIO_attach
     
     pLWGPIO->nParent = nParent;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
     
 FTE_RET   FTE_LWGPIO_detach
@@ -72,10 +68,10 @@ FTE_RET   FTE_LWGPIO_detach
         memset(pLWGPIO, 0, sizeof(FTE_LWGPIO));
         _nGPIOs--;
             
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_UINT32 FTE_LWGPIO_count(void)
@@ -108,11 +104,7 @@ FTE_RET   FTE_LWGPIO_setValue
     FTE_BOOL        value
 )
 {
-    assert(pLWGPIO != NULL);
-    if (pLWGPIO == NULL)
-    {
-        return  MQX_INVALID_COMPONENT_HANDLE;
-    }
+    ASSERT(pLWGPIO != NULL);
     
     if (value)
     {
@@ -123,7 +115,7 @@ FTE_RET   FTE_LWGPIO_setValue
         lwgpio_set_value(&pLWGPIO->xLWGPIO, pLWGPIO->pConfig->nInactive);
     }
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_LWGPIO_getValue
@@ -132,11 +124,7 @@ FTE_RET   FTE_LWGPIO_getValue
     FTE_BOOL_PTR    value
 )
 {
-    assert(pLWGPIO != NULL);
-    if (pLWGPIO == NULL)
-    {
-        return  MQX_INVALID_COMPONENT_HANDLE;
-    }
+    ASSERT(pLWGPIO != NULL);
     
     if (lwgpio_get_value(&pLWGPIO->xLWGPIO) == pLWGPIO->pConfig->nActive)
     {
@@ -147,7 +135,7 @@ FTE_RET   FTE_LWGPIO_getValue
         *value = FALSE;
     }
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_LWGPIO_setDirection
@@ -156,15 +144,11 @@ FTE_RET   FTE_LWGPIO_setDirection
     LWGPIO_DIR      nValue
 )
 {
-    assert(pLWGPIO != NULL);
-    if (pLWGPIO == NULL)
-    {
-        return  MQX_INVALID_COMPONENT_HANDLE;
-    }
+    ASSERT(pLWGPIO != NULL);
     
     lwgpio_set_direction(&pLWGPIO->xLWGPIO, nValue);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_LWGPIO_setPullUp
@@ -173,11 +157,7 @@ FTE_RET   FTE_LWGPIO_setPullUp
     FTE_BOOL        bEnable
 )
 {
-    assert(pLWGPIO != NULL);
-    if (pLWGPIO == NULL)
-    {
-        return  MQX_INVALID_COMPONENT_HANDLE;
-    }
+    ASSERT(pLWGPIO != NULL);
     
     if (bEnable)
     {
@@ -188,7 +168,7 @@ FTE_RET   FTE_LWGPIO_setPullUp
         lwgpio_set_attribute(&pLWGPIO->xLWGPIO, LWGPIO_ATTR_PULL_UP, LWGPIO_AVAL_DISABLE);
     }
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_LWGPIO_setPullDown
@@ -197,11 +177,7 @@ FTE_RET   FTE_LWGPIO_setPullDown
     FTE_BOOL        bEnable
 )
 {
-    assert(pLWGPIO != NULL);
-    if (pLWGPIO == NULL)
-    {
-        return  MQX_INVALID_COMPONENT_HANDLE;
-    }
+    ASSERT(pLWGPIO != NULL);
     
     if (bEnable)
     {
@@ -212,7 +188,7 @@ FTE_RET   FTE_LWGPIO_setPullDown
         lwgpio_set_attribute(&pLWGPIO->xLWGPIO, LWGPIO_ATTR_PULL_DOWN, LWGPIO_AVAL_DISABLE);
     }
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_LWGPIO_setISR
@@ -222,15 +198,11 @@ FTE_RET   FTE_LWGPIO_setISR
     FTE_VOID_PTR params
 )
 {
-    assert(pLWGPIO != NULL);
-    if (pLWGPIO == NULL)
-    {
-        return  MQX_INVALID_COMPONENT_HANDLE;
-    }
+    ASSERT(pLWGPIO != NULL);
     
     _int_install_isr(lwgpio_int_get_vector(&pLWGPIO->xLWGPIO), func, params);
         
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_LWGPIO_INT_init
@@ -241,15 +213,11 @@ FTE_RET   FTE_LWGPIO_INT_init
     FTE_BOOL        enable
 )
 {
-    assert(pLWGPIO != NULL);
-    if (pLWGPIO == NULL)
-    {
-        return  MQX_INVALID_COMPONENT_HANDLE;
-    }
+    ASSERT(pLWGPIO != NULL);
     
     _bsp_int_init(lwgpio_int_get_vector(&pLWGPIO->xLWGPIO), priority, subpriority, enable);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_LWGPIO_INT_setPolarity
@@ -258,11 +226,7 @@ FTE_RET   FTE_LWGPIO_INT_setPolarity
     FTE_UINT32      polarity
 )
 {
-    assert(pLWGPIO != NULL);
-    if (pLWGPIO == NULL)
-    {
-        return  MQX_INVALID_COMPONENT_HANDLE;
-    }
+    ASSERT(pLWGPIO != NULL);
     
    switch(polarity)
     {
@@ -318,10 +282,10 @@ FTE_RET   FTE_LWGPIO_INT_setPolarity
         }
         break;
     default:
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET    FTE_LWGPIO_INT_setEnable
@@ -330,15 +294,11 @@ FTE_RET    FTE_LWGPIO_INT_setEnable
     FTE_BOOL        enable
 )
 {
-    assert(pLWGPIO != NULL);
-    if (pLWGPIO == NULL)
-    {
-        return  MQX_INVALID_COMPONENT_HANDLE;
-    }
+    ASSERT(pLWGPIO != NULL);
 
     lwgpio_int_enable(&pLWGPIO->xLWGPIO, enable);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET    FTE_LWGPIO_INT_getFlag
@@ -347,15 +307,11 @@ FTE_RET    FTE_LWGPIO_INT_getFlag
     FTE_BOOL_PTR    flag
 )
 {
-    assert(pLWGPIO != NULL);
-    if (pLWGPIO == NULL)
-    {
-        return  MQX_INVALID_COMPONENT_HANDLE;
-    }
+    ASSERT(pLWGPIO != NULL);
     
     *flag = lwgpio_int_get_flag(&pLWGPIO->xLWGPIO);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET    FTE_LWGPIO_INT_clrFlag
@@ -363,15 +319,11 @@ FTE_RET    FTE_LWGPIO_INT_clrFlag
     FTE_LWGPIO_PTR  pLWGPIO
 )
 {
-    assert(pLWGPIO != NULL);
-    if (pLWGPIO == NULL)
-    {
-        return  MQX_INVALID_COMPONENT_HANDLE;
-    }
+    ASSERT(pLWGPIO != NULL);
     
     lwgpio_int_clear_flag(&pLWGPIO->xLWGPIO);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_INT32      FTE_LWGPIO_SHELL_cmd

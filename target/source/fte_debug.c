@@ -18,7 +18,7 @@ FTE_RET    FTE_DEBUG_setHandle(void)
         _debugOut = hStdout;
     }
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 void    FTE_DEBUG_init(void)
@@ -133,7 +133,7 @@ FTE_RET    FTE_DEBUG_dump
     
     for(i = 0 ; i < ulSize ; i++)
     {
-        fprintf(_debugOut, "%02x ", ((uint_8_ptr)pBuff)[i]);
+        fprintf(_debugOut, "%02x ", ((FTE_UINT8_PTR)pBuff)[i]);
         if ((ulWrapLen != 0) && ((i+1) % ulWrapLen == 0))
         {
             fprintf(_debugOut, "\n");
@@ -149,7 +149,7 @@ FTE_RET    FTE_DEBUG_dump
         fprintf(_debugOut, "\n");
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 typedef struct

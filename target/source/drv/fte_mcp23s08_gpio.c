@@ -18,7 +18,7 @@ FTE_RET   FTE_MCP23S08_GPIO_create
     pGPIO = (FTE_MCP23S08_GPIO_PTR)FTE_MEM_allocZero(sizeof(FTE_MCP23S08_GPIO));
     if (pGPIO == NULL)
     {
-        return  MQX_OUT_OF_MEMORY;
+        return  FTE_RET_NOT_ENOUGH_MEMORY;
     }
 
     pGPIO->pNext        = _pHead;
@@ -28,7 +28,7 @@ FTE_RET   FTE_MCP23S08_GPIO_create
     _pHead = pGPIO;
     _nObjects++;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MCP23S08_GPIO_attach
@@ -37,10 +37,7 @@ FTE_RET   FTE_MCP23S08_GPIO_attach
     FTE_UINT32              nParent
 )
 {
-    if (pGPIO == NULL)
-    {
-        goto error;
-    }
+    ASSERT(pGPIO != NULL);
     
     pGPIO->pMCP23S08 = FTE_MCP23S08_get(pGPIO->pConfig->nDrvID);
     if (pGPIO->pMCP23S08 == NULL)
@@ -48,7 +45,7 @@ FTE_RET   FTE_MCP23S08_GPIO_attach
         goto error;
     }
     
-    if (FTE_MCP23S08_attach(pGPIO->pMCP23S08, pGPIO->pConfig->nID) != MQX_OK)
+    if (FTE_MCP23S08_attach(pGPIO->pMCP23S08, pGPIO->pConfig->nID) != FTE_RET_OK)
     {
         goto error;
     }
@@ -66,10 +63,10 @@ FTE_RET   FTE_MCP23S08_GPIO_attach
     
     pGPIO->nParent = nParent;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:    
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_MCP23S08_GPIO_detach
@@ -77,10 +74,7 @@ FTE_RET   FTE_MCP23S08_GPIO_detach
     FTE_MCP23S08_GPIO_PTR   pGPIO
 )
 {
-    if (pGPIO == NULL)
-    {
-        goto error;
-    }
+    ASSERT(pGPIO != NULL);
 
     if (pGPIO->pConfig->nDir == FTE_GPIO_DIR_INPUT)
     {
@@ -91,10 +85,10 @@ FTE_RET   FTE_MCP23S08_GPIO_detach
     
     pGPIO->nParent = 0;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_BOOL    FTE_MCP23S08_GPIO_exist
@@ -134,14 +128,14 @@ FTE_RET   FTE_MCP23S08_GPIO_setValue
 {
     ASSERT(pGPIO != NULL);
     
-    if (FTE_MCP23S08_setRegBit(pGPIO->pMCP23S08, FTE_MCP23S08_REG_GPIO, pGPIO->pConfig->nBit, nValue) != MQX_OK)
+    if (FTE_MCP23S08_setRegBit(pGPIO->pMCP23S08, FTE_MCP23S08_REG_GPIO, pGPIO->pConfig->nBit, nValue) != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pGPIO->nValue = nValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MCP23S08_GPIO_getValue
@@ -154,7 +148,7 @@ FTE_RET   FTE_MCP23S08_GPIO_getValue
 
     *pValue = pGPIO->nValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MCP23S08_GPIO_setDIR
@@ -163,10 +157,7 @@ FTE_RET   FTE_MCP23S08_GPIO_setDIR
     FTE_GPIO_DIR            nValue
 )
 {
-    if (pGPIO == NULL)
-    {
-        goto error;
-    }
+    ASSERT(pGPIO != NULL);
     
     switch(nValue)
     {
@@ -184,10 +175,10 @@ FTE_RET   FTE_MCP23S08_GPIO_setDIR
         goto error;
     }
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 
 error:    
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_MCP23S08_GPIO_getDIR
@@ -198,12 +189,9 @@ FTE_RET   FTE_MCP23S08_GPIO_getDIR
 {
     FTE_UINT32 nValue;
     
-    if (pGPIO == NULL)
-    {
-        goto error;
-    }
+    ASSERT(pGPIO != NULL);
 
-    if (FTE_MCP23S08_getRegBit(pGPIO->pMCP23S08, FTE_MCP23S08_REG_IODIR, pGPIO->pConfig->nBit, &nValue) != MQX_OK)
+    if (FTE_MCP23S08_getRegBit(pGPIO->pMCP23S08, FTE_MCP23S08_REG_IODIR, pGPIO->pConfig->nBit, &nValue) != FTE_RET_OK)
     {
         goto error;
     }
@@ -217,10 +205,10 @@ FTE_RET   FTE_MCP23S08_GPIO_getDIR
         *pValue = FTE_GPIO_DIR_OUTPUT;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
  
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_MCP23S08_GPIO_INT_setPolarity
@@ -229,15 +217,12 @@ FTE_RET   FTE_MCP23S08_GPIO_INT_setPolarity
     FTE_UINT32              nPolarity
 )
 {
-    if (pGPIO == NULL)
-    {
-        return  MQX_ERROR;
-    }
+    ASSERT(pGPIO != NULL);
 
     pGPIO->nPolarity = nPolarity;    
     FTE_MCP23S08_INT_setPolarityRegBit(pGPIO->pMCP23S08, pGPIO->pConfig->nBit, nPolarity);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 
@@ -253,12 +238,12 @@ FTE_RET   FTE_MCP23S08_GPIO_ISR_set
     pGPIO->fISR     = fISR;
     pGPIO->pParams  = pParams;    
     
-    if (FTE_MCP23S08_INT_initRegBit(pGPIO->pMCP23S08, pGPIO->pConfig->nBit, _FTE_MCP23S08_GPIO_isr, pGPIO) != MQX_OK)
+    if (FTE_MCP23S08_INT_initRegBit(pGPIO->pMCP23S08, pGPIO->pConfig->nBit, _FTE_MCP23S08_GPIO_isr, pGPIO) != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MCP23S08_GPIO_INT_enable
@@ -269,12 +254,12 @@ FTE_RET   FTE_MCP23S08_GPIO_INT_enable
 {
     ASSERT(pGPIO != NULL);
 
-    if (FTE_MCP23S08_INT_enableRegBit(pGPIO->pMCP23S08, pGPIO->pConfig->nBit, bEnable) != MQX_OK)
+    if (FTE_MCP23S08_INT_enableRegBit(pGPIO->pMCP23S08, pGPIO->pConfig->nBit, bEnable) != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MCP23S08_GPIO_INT_getFlag
@@ -287,7 +272,7 @@ FTE_RET   FTE_MCP23S08_GPIO_INT_getFlag
     
     *pFlag = pGPIO->bINTFlag;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MCP23S08_GPIO_INT_clrFlag
@@ -299,7 +284,7 @@ FTE_RET   FTE_MCP23S08_GPIO_INT_clrFlag
     
     pGPIO->bINTFlag = FALSE;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 void    _FTE_MCP23S08_GPIO_isr
@@ -314,7 +299,7 @@ void    _FTE_MCP23S08_GPIO_isr
     ASSERT(pGPIO != NULL);
 
     nValue = (pGPIO->pMCP23S08->pRegs[FTE_MCP23S08_REG_GPIO] >> pGPIO->pConfig->nBit) & 0x01;
-    //if (FTE_MCP23S08_reg_bit_get(pGPIO->pMCP23S08, FTE_MCP23S08_REG_GPIO, pGPIO->pConfig->nBit, &nValue) == MQX_OK)
+    //if (FTE_MCP23S08_reg_bit_get(pGPIO->pMCP23S08, FTE_MCP23S08_REG_GPIO, pGPIO->pConfig->nBit, &nValue) == FTE_RET_OK)
     {
         pGPIO->nValue = nValue;
         pGPIO->bINTFlag = TRUE;    

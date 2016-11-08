@@ -72,8 +72,8 @@ FTE_RET     FTE_NET_lastLiveCheckTime(MQX_TICK_STRUCT_PTR pTime);
 FTE_RET     FTE_NET_liveTouch(FTE_VOID);
 FTE_BOOL    FTE_NET_isStable(FTE_VOID);
 
-FTE_INT32   FTE_PHY_SHELL_cmd(FTE_INT32 argc, char_ptr argv[] );
-FTE_INT32   FTE_NET_SHELL_cmd(FTE_INT32 argc, char_ptr argv[] );
+FTE_INT32   FTE_PHY_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[] );
+FTE_INT32   FTE_NET_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[] );
 
 #include "fte_mqtt.h"
 #include "fte_telnetd.h"

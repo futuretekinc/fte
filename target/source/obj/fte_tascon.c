@@ -200,7 +200,7 @@ FTE_RET FTE_TASCON_HEM12_init
 {
     ASSERT((pObj != NULL) && (pObj->pConfig != NULL));
     
-    int i;
+    FTE_INT32 i;
     FTE_TASCON_DEVICE_PTR   pDevice = NULL;
     
     for(i = 0 ; i < FTE_TASCON_MAX ; i++)
@@ -217,14 +217,13 @@ FTE_RET FTE_TASCON_HEM12_init
         return  FTE_RET_OBJECT_FULL;
     }
     
-//    pDevice->xTaskID = _task_create(0, FTE_TASK_TASCON, (FTE_UINT32)pObj->pConfig->xCommon.nID);
-    //if (pDevice->xTaskID <= 0)
+//    xRet =  FTE_TASK_create(FTE_TASK_TASCON, (FTE_UINT32)pObj->pConfig->xCommon.nID, &pDevice->xTaskID);
+    //if (xRet != FTE_RET_OK)
 //    {
-//        return  FTE_RET_TASK_CREATION_FAILED;
+//        return  xRet;
 //    }             
                 
     pDevice->pObj = pObj;    
-//    FTE_TASK_append(FTE_TASK_TYPE_MQX, pDevice->xTaskID);
     ulDeviceCount++;
                 
     return  FTE_RET_OK;
@@ -311,7 +310,7 @@ FTE_UINT8  FTE_TASCON_HEM12_CRC(FTE_UINT8_PTR pData, FTE_UINT32 ulDataLen)
 {
     FTE_UINT8  uiCS = 0;
     
-    for(int i = 0 ; i < ulDataLen ; i++)
+    for(FTE_INT32 i = 0 ; i < ulDataLen ; i++)
     {
         uiCS += pData[i];
     }
@@ -347,13 +346,13 @@ FTE_RET  FTE_TASCON_HEM12_06M_setAddress
     FTE_UINT32      ulLen
 )
 {
-    int     i;
+    FTE_INT32  i;
     FTE_UINT8  pSensorID[6];
     FTE_TASCON_HEM12_CONFIG_PTR  pConfig;
 
     if ((pObj == NULL) || (ulLen != 12))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pConfig = (FTE_TASCON_HEM12_CONFIG_PTR)pObj->pConfig;    
@@ -378,7 +377,7 @@ FTE_RET  FTE_TASCON_HEM12_06M_setAddress
         }
         else
         {
-            return  MQX_ERROR;
+            return  FTE_RET_ERROR;
         }
         
         if (i & 0x01)
@@ -393,7 +392,7 @@ FTE_RET  FTE_TASCON_HEM12_06M_setAddress
     
     memcpy(pConfig->pSensorID, pSensorID, 6);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_VALUE_TYPE  FTE_TASCON_HEM12_valueTypes[] =
@@ -451,10 +450,10 @@ FTE_RET   FTE_TASCON_HEM12_FRAME_create
         }
         break;
     default:
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 } 
 
 
@@ -475,7 +474,7 @@ FTE_RET   FTE_TASCON_HEM12_request
 
     FTE_UCS_setBaudrate(pStatus->xGUS.pUCS, FTE_TASCON_HEM12_DEFAULT_BAUDRATE);
         
-    pStatus->xGUS.xRet = MQX_OK;
+    pStatus->xGUS.xRet = FTE_RET_OK;
     
     FTE_TASCON_HEM12_FRAME_create(pConfig->pSensorID, 0, pReqBuff, sizeof(pReqBuff), &ulReqLen);    
         
@@ -485,13 +484,13 @@ FTE_RET   FTE_TASCON_HEM12_request
     if (ulRcvdLen == 0)
     {
         FTE_VALUE_setValid(&pStatus->xGUS.xCommon.pValue[0], FALSE);
-        pStatus->xGUS.xRet = MQX_ERROR;
+        pStatus->xGUS.xRet = FTE_RET_ERROR;
 
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pHead = (FTE_CHAR_PTR)pRcvdBuff;
-    for(int i = 0 ; i < ulRcvdLen ; i++)
+    for(FTE_INT32 i = 0 ; i < ulRcvdLen ; i++)
     {
         if (pHead[i] == 0xFE)
         {
@@ -512,14 +511,14 @@ FTE_RET   FTE_TASCON_HEM12_request
         (ulRcvdLen < (12 + pHead[9])))
     {
         FTE_VALUE_setValid(&pStatus->xGUS.xCommon.pValue[0], FALSE);
-        pStatus->xGUS.xRet = MQX_ERROR;
+        pStatus->xGUS.xRet = FTE_RET_ERROR;
         
-        return  MQX_INVALID_CHECKSUM;
+        return  FTE_RET_INVALID_CHECKSUM;
     }
     
     ulRcvdLen = 12 + pHead[9];
 
-    for(int i = 0 ; i < ulRcvdLen - 2 ; i++)
+    for(FTE_INT32 i = 0 ; i < ulRcvdLen - 2 ; i++)
     {
         nCS += pHead[i];
     }
@@ -528,20 +527,20 @@ FTE_RET   FTE_TASCON_HEM12_request
         (pHead[ulRcvdLen - 1] != FTE_HEM12_STOP_CODE))
     {
         FTE_VALUE_setValid(&pStatus->xGUS.xCommon.pValue[0], FALSE);
-        pStatus->xGUS.xRet = MQX_ERROR;
+        pStatus->xGUS.xRet = FTE_RET_ERROR;
 
-        return  MQX_INVALID_CHECKSUM;
+        return  FTE_RET_INVALID_CHECKSUM;
     }
     
 #if 0
-    for(int i = 0 ; i < 6 ; i++)
+    for(FTE_INT32 i = 0 ; i < 6 ; i++)
     {
         if (pConfig->pAddress[i] != pHead[6 - i])
         {
             FTE_VALUE_setValid(&pStatus->xGUS.xCommon.pValue[0], FALSE);
-            pStatus->xGUS.xRet = MQX_ERROR;
+            pStatus->xGUS.xRet = FTE_RET_ERROR;
 
-            return  MQX_INVALID_PARAMETER;
+            return  FTE_RET_INVALID_PARAMETER;
         }
     }
 #endif
@@ -557,7 +556,7 @@ FTE_RET   FTE_TASCON_HEM12_request
    
     FTE_VALUE_setULONG(&pStatus->xGUS.xCommon.pValue[0], nPower * 10);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET     FTE_TASCON_HEM12_received
@@ -576,13 +575,13 @@ FTE_RET     FTE_TASCON_HEM12_received
     nLen = FTE_UCS_recv(pStatus->xGUS.pUCS, pBuff, sizeof(pBuff));
     if (nLen == 0)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pHead = (FTE_CHAR_PTR)pBuff;
     
     
-    for(int i = 0 ; i < nLen ; i++)
+    for(FTE_INT32 i = 0 ; i < nLen ; i++)
     {
         if (pHead[i] == 0xFE)
         {
@@ -602,12 +601,12 @@ FTE_RET     FTE_TASCON_HEM12_received
         (pHead[7] != FTE_HEM12_START_CODE) || 
         (nLen < (12 + pHead[9])))
     {
-        return  MQX_INVALID_CHECKSUM;
+        return  FTE_RET_INVALID_CHECKSUM;
     }
     
     nLen = 12 + pHead[9];
 
-    for(int i = 0 ; i < nLen - 2 ; i++)
+    for(FTE_INT32 i = 0 ; i < nLen - 2 ; i++)
     {
         nCS += pHead[i];
     }
@@ -615,15 +614,15 @@ FTE_RET     FTE_TASCON_HEM12_received
     if ((pHead[nLen - 2] != nCS) ||
         (pHead[nLen - 1] != FTE_HEM12_STOP_CODE))
     {
-        return  MQX_INVALID_CHECKSUM;
+        return  FTE_RET_INVALID_CHECKSUM;
     }
     
 #if 0
-    for(int i = 0 ; i < 6 ; i++)
+    for(FTE_INT32 i = 0 ; i < 6 ; i++)
     {
         if (pConfig->pAddress[i] != pHead[6 - i])
         {
-            return  MQX_INVALID_PARAMETER;
+            return  FTE_RET_INVALID_PARAMETER;
         }
     }
 #endif
@@ -667,7 +666,7 @@ FTE_RET     FTE_TASCON_HEM12_06M_FRAME_responsePower
     
     if ( !FTE_TASCON_HEM12_06M_isValidFrame(pFrame, ulLen) )
     {
-        return  MQX_INVALID_CHECKSUM;
+        return  FTE_RET_INVALID_CHECKSUM;
     }
     
     ulValue = (pFrame[25] - 0x66);
@@ -690,7 +689,7 @@ FTE_RET     FTE_TASCON_HEM12_06M_FRAME_responsePower
    
     *pulPower = ulPower / 10;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET     FTE_TASCON_HEM12_06M_FRAME_responseVoltage
@@ -705,7 +704,7 @@ FTE_RET     FTE_TASCON_HEM12_06M_FRAME_responseVoltage
 
     if ( !FTE_TASCON_HEM12_06M_isValidFrame(pFrame, ulLen) )
     {
-        return  MQX_INVALID_CHECKSUM;
+        return  FTE_RET_INVALID_CHECKSUM;
     }
     
     ulValue = (pFrame[23] - 0x66);
@@ -715,7 +714,7 @@ FTE_RET     FTE_TASCON_HEM12_06M_FRAME_responseVoltage
   
     *pulVoltage = ulVoltage * 100;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET     FTE_TASCON_HEM12_06M_FRAME_responseCurrent
@@ -730,7 +729,7 @@ FTE_RET     FTE_TASCON_HEM12_06M_FRAME_responseCurrent
      
     if ( !FTE_TASCON_HEM12_06M_isValidFrame(pFrame, ulLen) )
     {
-        return  MQX_INVALID_CHECKSUM;
+        return  FTE_RET_INVALID_CHECKSUM;
     }
 
     ulValue = (pFrame[24] - 0x66);
@@ -742,7 +741,7 @@ FTE_RET     FTE_TASCON_HEM12_06M_FRAME_responseCurrent
   
     *pulCurrent = ulCurrent;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_TASCON_HEM12_06M_FRAME_create
@@ -802,7 +801,7 @@ FTE_RET   FTE_TASCON_HEM12_06M_FRAME_create
     ucCRC = FTE_TASCON_HEM12_CRC(pBuff, 24);
     pBuff[24] = ucCRC;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 } 
 
 static    const FTE_CHAR_PTR    pStringCmd = "cmd";
@@ -818,14 +817,14 @@ FTE_RET   FTE_TASCON_HEM12_06M_setConfig
 
     if (pObj == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pConfig = (FTE_TASCON_HEM12_CONFIG_PTR)pObj->pConfig;
     const nx_json* pxJSON = nx_json_parse_utf8(pString);
     if (pxJSON == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     } 
     
     const nx_json* pxCmd = nx_json_get(pxJSON, pStringCmd);
@@ -838,7 +837,7 @@ FTE_RET   FTE_TASCON_HEM12_06M_setConfig
     
     if (strcmp(pxCmd->text_value, "set_addr") == 0)
     {
-        int     i;
+        FTE_INT32     i;
         FTE_UINT8  pValues[12];
         
         if ((pxAddress->type != NX_JSON_STRING) || (strlen(pxAddress->text_value) != 12))
@@ -880,13 +879,13 @@ FTE_RET   FTE_TASCON_HEM12_06M_setConfig
     
     nx_json_free(pxJSON);
    
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
     
     nx_json_free(pxJSON);
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_TASCON_HEM12_06M_getConfig
@@ -903,7 +902,7 @@ FTE_RET   FTE_TASCON_HEM12_06M_getConfig
     
     if (pObj == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pConfig = (FTE_TASCON_HEM12_CONFIG_PTR)pObj->pConfig;
@@ -911,7 +910,7 @@ FTE_RET   FTE_TASCON_HEM12_06M_getConfig
     pJOSNObject = FTE_JSON_VALUE_createObject(1);
     if (pJOSNObject == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     sprintf(pIDString, "%02x%02x%02x%02x%02x%02x", 
@@ -927,13 +926,13 @@ FTE_RET   FTE_TASCON_HEM12_06M_getConfig
     if (FTE_JSON_VALUE_buffSize(pJOSNObject) >= ulBuffLen)
     {
         FTE_JSON_VALUE_destroy(pJOSNObject);
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     FTE_JSON_VALUE_snprint(pBuff, ulBuffLen, pJOSNObject);    
     FTE_JSON_VALUE_destroy(pJOSNObject);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_TASCON_HEM12_06M_request
@@ -951,7 +950,7 @@ FTE_RET   FTE_TASCON_HEM12_06M_request
     FTE_UINT8_PTR                  pRespBuff = NULL;
     FTE_UINT32                     ulRespLen;
     FTE_UINT32                     ulVoltage, ulCurrent, ulAmountOfPower, ulPower;
-    pStatus->xGUS.xRet = MQX_OK;
+    pStatus->xGUS.xRet = FTE_RET_OK;
     for(nFieldType = FTE_HEM12_FIELD_POWER ; nFieldType <=  FTE_HEM12_FIELD_CURRENT; nFieldType++)
     {
  #if FTE_TASCON_PACKET_DEBUG
@@ -984,7 +983,7 @@ FTE_RET   FTE_TASCON_HEM12_06M_request
         {
         case    FTE_HEM12_FIELD_VOLTAGE:
             {
-                if (FTE_TASCON_HEM12_06M_FRAME_responseVoltage(pRespBuff, ulRespLen, &ulVoltage) == MQX_OK)
+                if (FTE_TASCON_HEM12_06M_FRAME_responseVoltage(pRespBuff, ulRespLen, &ulVoltage) == FTE_RET_OK)
                 {
                     FTE_VALUE_setULONG(&pStatus->xGUS.xCommon.pValue[2], ulVoltage);
                 }
@@ -994,14 +993,14 @@ FTE_RET   FTE_TASCON_HEM12_06M_request
                     bPacketDump = TRUE;
 #endif
                     FTE_VALUE_setValid(&pStatus->xGUS.xCommon.pValue[2], FALSE);
-                    pStatus->xGUS.xRet = MQX_ERROR;
+                    pStatus->xGUS.xRet = FTE_RET_ERROR;
                 }
             }
             break;
 
         case    FTE_HEM12_FIELD_CURRENT:
             {
-                if (FTE_TASCON_HEM12_06M_FRAME_responseCurrent(pRespBuff, ulRespLen, &ulCurrent) == MQX_OK)
+                if (FTE_TASCON_HEM12_06M_FRAME_responseCurrent(pRespBuff, ulRespLen, &ulCurrent) == FTE_RET_OK)
                 {
                     FTE_VALUE_setULONG(&pStatus->xGUS.xCommon.pValue[3], ulCurrent);
                 }
@@ -1011,14 +1010,14 @@ FTE_RET   FTE_TASCON_HEM12_06M_request
                     bPacketDump = TRUE;
 #endif
                     FTE_VALUE_setValid(&pStatus->xGUS.xCommon.pValue[3], FALSE);
-                    pStatus->xGUS.xRet = MQX_ERROR;
+                    pStatus->xGUS.xRet = FTE_RET_ERROR;
                 }
             }
             break;
             
         case    FTE_HEM12_FIELD_POWER:
             {
-                if (FTE_TASCON_HEM12_06M_FRAME_responsePower(pRespBuff, ulRespLen, &ulAmountOfPower, &ulPower) == MQX_OK)
+                if (FTE_TASCON_HEM12_06M_FRAME_responsePower(pRespBuff, ulRespLen, &ulAmountOfPower, &ulPower) == FTE_RET_OK)
                 {
                     FTE_VALUE_setULONG(&pStatus->xGUS.xCommon.pValue[0], ulAmountOfPower);
                     FTE_VALUE_setULONG(&pStatus->xGUS.xCommon.pValue[1], ulPower);
@@ -1030,19 +1029,19 @@ FTE_RET   FTE_TASCON_HEM12_06M_request
 #endif
                     FTE_VALUE_setValid(&pStatus->xGUS.xCommon.pValue[0], FALSE);
                     FTE_VALUE_setValid(&pStatus->xGUS.xCommon.pValue[1], FALSE);
-                    pStatus->xGUS.xRet = MQX_ERROR;
+                    pStatus->xGUS.xRet = FTE_RET_ERROR;
                 }
             }
             break;
             
         default:
-            pStatus->xGUS.xRet = MQX_ERROR;
+            pStatus->xGUS.xRet = FTE_RET_ERROR;
         }    
     
 #if FTE_TASCON_PACKET_DEBUG
         if (bDebugON && bPacketDump)
         {
-            int i;
+            FTE_INT32 i;
 
             printf("SEND[%d] : ", pStatus->nField);
             for(i = 0 ; i < ulReqLen ; i++)
@@ -1054,7 +1053,7 @@ FTE_RET   FTE_TASCON_HEM12_06M_request
             printf("RECV[%8d] : ", pStatus->nField);
             if (ulRcvdLen == 0)
             {
-                static int nError = 0;
+                static FTE_INT32 nError = 0;
                 printf("Error! [%5d]\n", ++nError);
             }
             else
@@ -1091,35 +1090,35 @@ FTE_RET     FTE_TASCON_HEM12_06M_received
     {
     case    FTE_HEM12_FIELD_VOLTAGE:
         {
-            if (FTE_TASCON_HEM12_06M_FRAME_responseVoltage(pBuff, ulLen, &ulVoltage) == MQX_OK)
+            if (FTE_TASCON_HEM12_06M_FRAME_responseVoltage(pBuff, ulLen, &ulVoltage) == FTE_RET_OK)
             {
                 FTE_VALUE_setULONG(&pStatus->xGUS.xCommon.pValue[2], ulVoltage);
             }
             else
             {
                 FTE_VALUE_setValid(&pStatus->xGUS.xCommon.pValue[2], FALSE);
-                pStatus->xGUS.xRet = MQX_ERROR;
+                pStatus->xGUS.xRet = FTE_RET_ERROR;
             }
         }
         break;
 
     case    FTE_HEM12_FIELD_CURRENT:
         {
-            if (FTE_TASCON_HEM12_06M_FRAME_responseCurrent(pBuff, ulLen, &ulCurrent) == MQX_OK)
+            if (FTE_TASCON_HEM12_06M_FRAME_responseCurrent(pBuff, ulLen, &ulCurrent) == FTE_RET_OK)
             {
                 FTE_VALUE_setULONG(&pStatus->xGUS.xCommon.pValue[3], ulCurrent);
             }
             else
             {
                 FTE_VALUE_setValid(&pStatus->xGUS.xCommon.pValue[3], FALSE);
-                pStatus->xGUS.xRet = MQX_ERROR;
+                pStatus->xGUS.xRet = FTE_RET_ERROR;
             }
         }
         break;
         
     case    FTE_HEM12_FIELD_POWER:
         {
-            if (FTE_TASCON_HEM12_06M_FRAME_responsePower(pBuff, ulLen, &ulAmountOfPower, &ulPower) == MQX_OK)
+            if (FTE_TASCON_HEM12_06M_FRAME_responsePower(pBuff, ulLen, &ulAmountOfPower, &ulPower) == FTE_RET_OK)
             {
                 FTE_VALUE_setULONG(&pStatus->xGUS.xCommon.pValue[0], ulAmountOfPower);
                 FTE_VALUE_setULONG(&pStatus->xGUS.xCommon.pValue[1], ulPower);
@@ -1128,13 +1127,13 @@ FTE_RET     FTE_TASCON_HEM12_06M_received
             {
                 FTE_VALUE_setValid(&pStatus->xGUS.xCommon.pValue[0], FALSE);
                 FTE_VALUE_setValid(&pStatus->xGUS.xCommon.pValue[1], FALSE);
-                pStatus->xGUS.xRet = MQX_ERROR;
+                pStatus->xGUS.xRet = FTE_RET_ERROR;
             }
         }
         break;
         
     default:
-        pStatus->xGUS.xRet = MQX_ERROR;
+        pStatus->xGUS.xRet = FTE_RET_ERROR;
     }
     */
     return  pStatus->xGUS.xRet;
@@ -1147,7 +1146,7 @@ FTE_RET FTE_TASCON_create
     FTE_OBJECT_PTR _PTR_ ppObj
 )
 {
-    int i;
+    FTE_INT32 i;
     FTE_RET                 xRet;
     FTE_OBJECT_CONFIG_PTR   pBaseConfig = NULL;
     FTE_OBJECT_CONFIG_PTR   pConfig = NULL;
@@ -1365,7 +1364,7 @@ FTE_INT32  FTE_TASCON_HEM12_SHELL_cmd
                         if (ulRcvdLen >= 20)
                         {
                             pHead = (FTE_CHAR_PTR)pRcvdBuff;
-                            for(int i = 0 ; i < ulRcvdLen ; i++)
+                            for(FTE_INT32 i = 0 ; i < ulRcvdLen ; i++)
                             {
                                 if (pHead[i] == 0xFE)
                                 {
@@ -1389,7 +1388,7 @@ FTE_INT32  FTE_TASCON_HEM12_SHELL_cmd
                             }
                             else
                             {
-                                for(int i = 0 ; i < 6 ; i++)
+                                for(FTE_INT32 i = 0 ; i < 6 ; i++)
                                 {
                                     printf("%02x ", pHead[12+i]);
                                 }
@@ -1415,7 +1414,7 @@ FTE_INT32  FTE_TASCON_HEM12_SHELL_cmd
                 if (strcmp(pArgv[2], "set_addr") == 0)
                 {
  
-                    if (FTE_TASCON_HEM12_06M_setAddress(pObj, pArgv[3], strlen(pArgv[3])) == MQX_OK)
+                    if (FTE_TASCON_HEM12_06M_setAddress(pObj, pArgv[3], strlen(pArgv[3])) == FTE_RET_OK)
                     {
                         FTE_CFG_OBJ_save(pObj);
                     }

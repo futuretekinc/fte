@@ -30,7 +30,7 @@ static  void        FTE_LORAWAN_onTxNextPacketTimerEvent( void *obj);
 static  void        FTE_LORAWAN_onMacEvent( LoRaMacEventFlags_t *flags, LoRaMacEventInfo_t *info, void *pParams);
 static  void        FTE_LORAWAN_OnJoinReqTimerEvent( void * pParams);
 
-static  uint_32     FTE_LORAWAN_getNextTxDutyCycleTime(void);
+static  FTE_UINT32     FTE_LORAWAN_getNextTxDutyCycleTime(void);
 
 extern FTE_LORAWAN_CONFIG   xDefaultConfig;
 static FTE_LORAWAN_PTR      pLoRaWan = NULL;
@@ -52,7 +52,7 @@ _mqx_uint FTE_LORAWAN_init( void *pConfig)
         pLoRaWan = (FTE_LORAWAN_PTR)FTE_MEM_allocZero(sizeof(FTE_LORAWAN));
         if (pLoRaWan == NULL)
         {
-            return  MQX_NOT_ENOUGH_MEMORY;
+            return  FTE_RET_NOT_ENOUGH_MEMORY;
         }
     }
     
@@ -61,12 +61,12 @@ _mqx_uint FTE_LORAWAN_init( void *pConfig)
     
     FTE_LIST_init(&pLoRaWan->xTxPktList);
 
-    _task_create(0, FTE_TASK_LORAWAN, (uint_32)pLoRaWan);
+    FTE_TASK_create(FTE_TASK_LORAWAN, (FTE_UINT32)pLoRaWan, NULL);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_uint FTE_LORAWAN_send(void *pBuff, uint_32 ulLen)
+_mqx_uint FTE_LORAWAN_send(void *pBuff, FTE_UINT32 ulLen)
 {
     FTE_LORAWAN_FRAME_PTR   pFrame = NULL;
     
@@ -74,33 +74,33 @@ _mqx_uint FTE_LORAWAN_send(void *pBuff, uint_32 ulLen)
     
     if ((ulLen == 0) || (ulLen > FTE_LORAWAN_BUFFER_SIZE))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     if (FTE_LIST_count(&pLoRaWan->xTxPktList) >= 10)
     {
-        return  MQX_NOT_ENOUGH_MEMORY;
+        return  FTE_RET_NOT_ENOUGH_MEMORY;
     }
     
     pFrame = FTE_MEM_allocZero(sizeof(FTE_LORAWAN_FRAME));
     if (pFrame == NULL)
     {
-        return  MQX_NOT_ENOUGH_MEMORY;
+        return  FTE_RET_NOT_ENOUGH_MEMORY;
     }
     
     memcpy(pFrame->pBuffer, pBuff, ulLen);
     pFrame->bSize = ulLen;
     
-    if (FTE_LIST_pushBack(&pLoRaWan->xTxPktList, pFrame) != MQX_OK)
+    if (FTE_LIST_pushBack(&pLoRaWan->xTxPktList, pFrame) != FTE_RET_OK)
     {
         FTE_MEM_free(pFrame);
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-uint_32     FTE_LORAWAN_recv(void *pBuff, uint_32 ulBuffSize)
+FTE_UINT32     FTE_LORAWAN_recv(void *pBuff, FTE_UINT32 ulBuffSize)
 {
     return  0;
 }
@@ -133,9 +133,9 @@ _mqx_uint FTE_LORAWAN_sendFrame( FTE_LORAWAN_PTR pLoRaWan, FTE_LORAWAN_FRAME_PTR
     {
     case 5: // NO_FREE_CHANNEL
         // Try again later
-        return MQX_ERROR;
+        return FTE_RET_ERROR;
     default:
-        return MQX_OK;
+        return FTE_RET_OK;
     }
 }
 
@@ -192,7 +192,7 @@ void FTE_LORAWAN_onMacEvent( LoRaMacEventFlags_t *flags, LoRaMacEventInfo_t *inf
     pLoRaWan->bTxDone = true;    
 }
 
-void FTE_LORAWAN_process(uint_32 ulParams)
+void FTE_LORAWAN_process(FTE_UINT32 ulParams)
 {
     FTE_LORAWAN_PTR         pLoRaWan = (FTE_LORAWAN_PTR)ulParams;
     TimerEvent_t            bTxNextPacketTimer;
@@ -201,8 +201,6 @@ void FTE_LORAWAN_process(uint_32 ulParams)
 
     LoRaMacEvent_t   LoRaMacEvent;
     
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
-        
     LoRaMacEvent.MacEvent = FTE_LORAWAN_onMacEvent;
     LoRaMacEvent.pParams = (void *)pLoRaWan;
     
@@ -234,7 +232,7 @@ void FTE_LORAWAN_process(uint_32 ulParams)
     
     LoRaMacSetAdrOn( pLoRaWan->pMac, true );
     
-    _task_create(0, FTE_TASK_LORA_CTRL, (uint_32)pLoRaWan->pMac);
+    FTE_TASK_create(FTE_TASK_LORA_CTRL, (FTE_UINT32)pLoRaWan->pMac, NULL);
     
     while(TRUE)
     {
@@ -289,10 +287,10 @@ void FTE_LORAWAN_process(uint_32 ulParams)
         {
             if (FTE_LIST_count(&pLoRaWan->xTxPktList) != 0)
             {
-                if (FTE_LIST_popFront(&pLoRaWan->xTxPktList, (void **)&pLoRaWan->pSendFrame) == MQX_OK)
+                if (FTE_LIST_popFront(&pLoRaWan->xTxPktList, (void **)&pLoRaWan->pSendFrame) == FTE_RET_OK)
                 {
                     pLoRaWan->bTxNextPacket = false;
-                    while (FTE_LORAWAN_sendFrame(pLoRaWan, pLoRaWan->pSendFrame) != MQX_OK)
+                    while (FTE_LORAWAN_sendFrame(pLoRaWan, pLoRaWan->pSendFrame) != FTE_RET_OK)
                     {
                         TimerLowPowerHandler( );
                     }
@@ -305,9 +303,9 @@ void FTE_LORAWAN_process(uint_32 ulParams)
 
 }
 
-uint_32 FTE_LORAWAN_getNextTxDutyCycleTime(void)
+FTE_UINT32 FTE_LORAWAN_getNextTxDutyCycleTime(void)
 {
-    uint_32 ulTxDutyCycleTime = FTE_LORAWAN_TX_DUTYCYCLE;
+    FTE_UINT32 ulTxDutyCycleTime = FTE_LORAWAN_TX_DUTYCYCLE;
     
     if (pLoRaWan != NULL)
     {
@@ -332,16 +330,20 @@ void FTE_LORAWAN_OnJoinReqTimerEvent( void * pParams)
 #endif
 }
 
-int_32  FTE_LORAWAN_SHELL_cmd(int_32 argc, char_ptr argv[])
+FTE_INT32  FTE_LORAWAN_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[]
+)
 {
-    boolean     print_usage, shorthelp = FALSE;
-    int_32      return_code = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   xRet = SHELL_EXIT_SUCCESS;
    
-    print_usage = Shell_check_help_request (argc, argv, &shorthelp);
+    bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
-    if (!print_usage)
+    if (!bPrintUsage)
     {
-        switch(argc)
+        switch(nArgc)
         {
         case    1:
             {  
@@ -361,10 +363,10 @@ int_32  FTE_LORAWAN_SHELL_cmd(int_32 argc, char_ptr argv[])
             break;
         case    2:
             {
-                if (strcasecmp(argv[1], "regs") == 0)
+                if (strcasecmp(pArgv[1], "regs") == 0)
                 {
-                    uint_8  pRegs[64];
-                    uint_32 i;
+                    FTE_UINT8  pRegs[64];
+                    FTE_UINT32 i;
                     const   char *pBandwidths[10] = { "7.8", "10.4", "15.6", "20.8", "31.25", "41.7", "62.5", "125", "250", "500"};
                     
                     SX1276ReadBuffer( 0, pRegs, sizeof(pRegs));
@@ -377,8 +379,8 @@ int_32  FTE_LORAWAN_SHELL_cmd(int_32 argc, char_ptr argv[])
                             printf("\n");
                         }
                     }
-                    uint_32 ulReg = ((uint_32)pRegs[6] << 16) | ((uint_32)pRegs[7] << 8) | ((uint_32)pRegs[8]);
-                    uint_32 ulFrequency = ( uint32_t )( ( double )ulReg * ( double )FREQ_STEP );
+                    FTE_UINT32 ulReg = ((FTE_UINT32)pRegs[6] << 16) | ((FTE_UINT32)pRegs[7] << 8) | ((FTE_UINT32)pRegs[8]);
+                    FTE_UINT32 ulFrequency = ( uint32_t )( ( double )ulReg * ( double )FREQ_STEP );
                     
                     printf("%20s : %d MHz\n", "Frequency", ulFrequency / 1000000);
                     printf("%20s : %s\n", "Long Range Mode", (pRegs[1] >> 7)?"LoRa":"FSK");
@@ -386,23 +388,23 @@ int_32  FTE_LORAWAN_SHELL_cmd(int_32 argc, char_ptr argv[])
                     printf("%20s : %d\n", "Mode", (pRegs[0x01] & 0x7));
                     
                     printf("%20s : %s\n", "PA Select", (pRegs[0x09] >> 7)?"PA_BOOST":"RFO");
-                    uint_32 ulMaxPower = 108 + 6*((pRegs[0x09] >> 4) & 0x07);
+                    FTE_UINT32 ulMaxPower = 108 + 6*((pRegs[0x09] >> 4) & 0x07);
                     printf("%20s : %d.%d dBm\n", "Max Power", ulMaxPower/10, ulMaxPower%10);
-                    uint_32 ulPower = ulMaxPower - (15 - ((pRegs[0x09]) & 0x0F))*10;
+                    FTE_UINT32 ulPower = ulMaxPower - (15 - ((pRegs[0x09]) & 0x0F))*10;
                     printf("%20s : %d.%d dBm\n", "Output Power", ulPower / 10, ulPower % 10);
                     printf("%20s : %s kHz\n", "Bandwidth",  pBandwidths[((pRegs[0x1d] >> 4) & 0x0F)] );
                     printf("%20s : 4/%d\n", "Coding Rate", ((pRegs[0x1d] >> 1) & 0x07) + 4);
                     printf("%20s : %s\n", "Implicit Header", (pRegs[0x1d] & 0x01)?"ON":"OFF");
                     printf("%20s : SF%d\n", "Spreading Factor", ((pRegs[0x1E] >> 4) & 0x0F));
                     printf("%20s : %s\n", "Rx Payload CRC On", ((pRegs[0x1E] >> 2) & 0x01)?"Enable":"Disable");
-                    printf("%20s : %d\n", "Preamble Length", ((uint_16)pRegs[0x20] << 8) | pRegs[0x21]);
+                    printf("%20s : %d\n", "Preamble Length", ((FTE_UINT16)pRegs[0x20] << 8) | pRegs[0x21]);
                     printf("%20s : %d\n", "Payload Length", pRegs[0x13]);
                     printf("%20s : %d\n", "Payload Max Length", pRegs[0x23]);
                     printf("%20s : %s\n", "Data Rate Optimize", ((pRegs[0x26] >> 3) & 0x01)?"ON":"OFF");
                     printf("%20s : %s\n", "Invert IQ", ((pRegs[0x33] >> 6) & 0x01)?"Inverted":"Normal");
                     printf("%20s : %s\n", "Detection Threshold", ((pRegs[0x37] == 0x0A)?"SF7 to SF12":"SF6"));
                 }
-                else if (strcasecmp(argv[1], "config") == 0)
+                else if (strcasecmp(pArgv[1], "config") == 0)
                 {
                     printf("%20s : ", "Device EUI");
                     FTE_SHELL_printHexString(pLoRaWan->xConfig.pDevEui, sizeof(pLoRaWan->xConfig.pDevEui), 0);
@@ -517,30 +519,30 @@ int_32  FTE_LORAWAN_SHELL_cmd(int_32 argc, char_ptr argv[])
             
         case    3:
             {
-                if (strcmp(argv[1], "send") == 0)
+                if (strcmp(pArgv[1], "send") == 0)
                 {
-                    FTE_LORAWAN_send(argv[2], strlen(argv[2]));
+                    FTE_LORAWAN_send(pArgv[2], strlen(pArgv[2]));
                 }
-                else if (strcasecmp(argv[1], "trace") == 0)
+                else if (strcasecmp(pArgv[1], "trace") == 0)
                 {
-                    if (strcasecmp(argv[2], "on") == 0)
+                    if (strcasecmp(pArgv[2], "on") == 0)
                     {
                         FTE_DEBUG_traceOn(DEBUG_NET_LORA);
                     }
-                    else if (strcasecmp(argv[2], "off") == 0)
+                    else if (strcasecmp(pArgv[2], "off") == 0)
                     {
                         FTE_DEBUG_traceOff(DEBUG_NET_LORA);
                     }
                 }
-                else if (strcasecmp(argv[1], "pktdump") == 0)
+                else if (strcasecmp(pArgv[1], "pktdump") == 0)
                 {
                     if (FTE_DEBUG_isTraceOn(DEBUG_NET_LORA))
                     {
-                        if (strcasecmp(argv[2], "on") == 0)
+                        if (strcasecmp(pArgv[2], "on") == 0)
                         {
                             LoRaMacTrafficMonitor( pLoRaWan->pMac, true, true, 16);
                         }
-                        else if (strcasecmp(argv[2], "off") == 0)
+                        else if (strcasecmp(pArgv[2], "off") == 0)
                         {
                             LoRaMacTrafficMonitor( pLoRaWan->pMac, false, false, 16);
                         }
@@ -550,11 +552,11 @@ int_32  FTE_LORAWAN_SHELL_cmd(int_32 argc, char_ptr argv[])
                         printf("Not configured LoRaWan Trace\n");
                     }
                 }
-                else if (strcmp(argv[1], "send_test") == 0)
+                else if (strcmp(pArgv[1], "send_test") == 0)
                 {
                     char pBuff[16];
-                    uint_32 ulCount;
-                    Shell_parse_number(argv[2], &ulCount);
+                    FTE_UINT32 ulCount;
+                    Shell_parse_number(pArgv[2], &ulCount);
                     
                     for(int i = 0; i < ulCount ; i++)
                     {
@@ -564,56 +566,56 @@ int_32  FTE_LORAWAN_SHELL_cmd(int_32 argc, char_ptr argv[])
                         _time_delay(1000);
                     }
                 }
-                else if (strcasecmp(argv[1], "rr") == 0)
+                else if (strcasecmp(pArgv[1], "rr") == 0)
                 {
-                    uint_32 ulReg;
-                    Shell_parse_hexnum(argv[2], &ulReg);
+                    FTE_UINT32 ulReg;
+                    Shell_parse_hexnum(pArgv[2], &ulReg);
                     
-                    uint_8  bReg = SX1276Read( ulReg);
+                    FTE_UINT8  bReg = SX1276Read( ulReg);
                     printf("Read : %02x - %02x\n", ulReg, bReg);
                 }
-                else if (strcasecmp(argv[1], "sf") == 0)
+                else if (strcasecmp(pArgv[1], "sf") == 0)
                 {
-                    uint_32 ulSF;
-                    Shell_parse_number(argv[2], &ulSF);
+                    FTE_UINT32 ulSF;
+                    Shell_parse_number(pArgv[2], &ulSF);
                     printf("Change SF : SF%d -> ", pLoRaWan->pMac->Config.SpreadingFactor);
                     printf("SF%d\n", ulSF);
                     pLoRaWan->pMac->Config.SpreadingFactor = ulSF;
                 }
-                else if (strcasecmp(argv[1], "bw") == 0)
+                else if (strcasecmp(pArgv[1], "bw") == 0)
                 {
-                    uint_32 ulBandwidth;
-                    Shell_parse_number(argv[2], &ulBandwidth);
+                    FTE_UINT32 ulBandwidth;
+                    Shell_parse_number(pArgv[2], &ulBandwidth);
                     printf("Change BW : BW%d -> ", pLoRaWan->pMac->Config.Bandwidth);
                     printf("BW%d\n", ulBandwidth);
                     pLoRaWan->pMac->Config.Bandwidth = ulBandwidth;
                 }
-                else if (strcasecmp(argv[1], "crc") == 0)
+                else if (strcasecmp(pArgv[1], "crc") == 0)
                 {
-                    if (strcasecmp(argv[2], "on") == 0)
+                    if (strcasecmp(pArgv[2], "on") == 0)
                     {
                         pLoRaWan->pMac->Config.PayloadCRC = true;
                     }
-                    else if (strcasecmp(argv[2], "off") == 0)
+                    else if (strcasecmp(pArgv[2], "off") == 0)
                     {
                         pLoRaWan->pMac->Config.PayloadCRC = false;
                     }                    
                 }
-                else if (strcasecmp(argv[1], "deveui") == 0)
+                else if (strcasecmp(pArgv[1], "deveui") == 0)
                 {
-                    if (strlen(argv[2]) != 16)
+                    if (strlen(pArgv[2]) != 16)
                     {
                         printf("Invalid parameters\n");
-                        print_usage = TRUE;
+                        bPrintUsage = TRUE;
                     }
                     else
                     {
-                        uint_8  pDevEUI[8];
+                        FTE_UINT8  pDevEUI[8];
                         
-                        if (fte_parse_hex_string(argv[2], pDevEUI, 8) != 8)
+                        if (fte_parse_hex_string(pArgv[2], pDevEUI, 8) != 8)
                         {
                             printf("Invalid parameters\n");
-                            print_usage = TRUE;
+                            bPrintUsage = TRUE;
                         }
                         else
                         {
@@ -621,21 +623,21 @@ int_32  FTE_LORAWAN_SHELL_cmd(int_32 argc, char_ptr argv[])
                         }
                     }
                 }
-                else if (strcasecmp(argv[1], "appeui") == 0)
+                else if (strcasecmp(pArgv[1], "appeui") == 0)
                 {
-                    if (strlen(argv[2]) != LORAWAN_APP_EUI_LENGTH * 2)
+                    if (strlen(pArgv[2]) != LORAWAN_APP_EUI_LENGTH * 2)
                     {
                         printf("Invalid parameters\n");
-                        print_usage = TRUE;
+                        bPrintUsage = TRUE;
                     }
                     else
                     {
-                        uint_8  pAppEUI[LORAWAN_APP_EUI_LENGTH];
+                        FTE_UINT8  pAppEUI[LORAWAN_APP_EUI_LENGTH];
                         
-                        if (fte_parse_hex_string(argv[2], pAppEUI, LORAWAN_APP_EUI_LENGTH) != LORAWAN_APP_EUI_LENGTH)
+                        if (fte_parse_hex_string(pArgv[2], pAppEUI, LORAWAN_APP_EUI_LENGTH) != LORAWAN_APP_EUI_LENGTH)
                         {
                             printf("Invalid parameters\n");
-                            print_usage = TRUE;
+                            bPrintUsage = TRUE;
                         }
                         else
                         {
@@ -643,21 +645,21 @@ int_32  FTE_LORAWAN_SHELL_cmd(int_32 argc, char_ptr argv[])
                         }
                     }
                 }
-                else if (strcasecmp(argv[1], "appkey") == 0)
+                else if (strcasecmp(pArgv[1], "appkey") == 0)
                 {
-                    if (strlen(argv[2]) != LORAWAN_APP_KEY_LENGTH * 2)
+                    if (strlen(pArgv[2]) != LORAWAN_APP_KEY_LENGTH * 2)
                     {
                         printf("Invalid parameters\n");
-                        print_usage = TRUE;
+                        bPrintUsage = TRUE;
                     }
                     else
                     {
-                        uint_8  pAppKey[LORAWAN_APP_KEY_LENGTH];
+                        FTE_UINT8  pAppKey[LORAWAN_APP_KEY_LENGTH];
                         
-                        if (fte_parse_hex_string(argv[2], pAppKey, LORAWAN_APP_KEY_LENGTH) != LORAWAN_APP_KEY_LENGTH)
+                        if (fte_parse_hex_string(pArgv[2], pAppKey, LORAWAN_APP_KEY_LENGTH) != LORAWAN_APP_KEY_LENGTH)
                         {
                             printf("Invalid parameters\n");
-                            print_usage = TRUE;
+                            bPrintUsage = TRUE;
                         }
                         else
                         {
@@ -670,18 +672,18 @@ int_32  FTE_LORAWAN_SHELL_cmd(int_32 argc, char_ptr argv[])
            
         case    4:
             {
-                if (strcasecmp(argv[1], "wr") == 0)
+                if (strcasecmp(pArgv[1], "wr") == 0)
                 {
-                    uint_32 ulReg, ulValue;
-                    Shell_parse_hexnum(argv[2], &ulReg);
-                    Shell_parse_hexnum(argv[3], &ulValue);
+                    FTE_UINT32 ulReg, ulValue;
+                    Shell_parse_hexnum(pArgv[2], &ulReg);
+                    Shell_parse_hexnum(pArgv[3], &ulValue);
                     
-                    uint_8 bTemp = SX1276Read( REG_OPMODE ) ;
+                    FTE_UINT8 bTemp = SX1276Read( REG_OPMODE ) ;
                     
                     SX1276Write( REG_OPMODE, ( bTemp & RF_OPMODE_MASK ) | RF_OPMODE_SLEEP);
                     
-                    SX1276Write( ulReg, (uint_8)ulValue);
-                    uint_8  bReg = SX1276Read( ulReg);
+                    SX1276Write( ulReg, (FTE_UINT8)ulValue);
+                    FTE_UINT8  bReg = SX1276Read( ulReg);
 
                     SX1276Write( REG_OPMODE, bTemp);
                     
@@ -691,26 +693,26 @@ int_32  FTE_LORAWAN_SHELL_cmd(int_32 argc, char_ptr argv[])
             break;
             
         default:
-            print_usage = TRUE;
+            bPrintUsage = TRUE;
         }
        
     }
    
   
-    if (print_usage || (return_code !=SHELL_EXIT_SUCCESS))
+    if (bPrintUsage || (xRet !=SHELL_EXIT_SUCCESS))
     {
-        if (shorthelp)
+        if (bShortHelp)
         {
-            printf ("%s [<command>]\n", argv[0]);
+            printf ("%s [<command>]\n", pArgv[0]);
         }
         else
         {
-            printf("Usage : %s [<command>]\n", argv[0]);
+            printf("Usage : %s [<command>]\n", pArgv[0]);
             printf("  Commands:\n");
             printf("  Parameters:\n");
         }
     }
-    return   return_code;
+    return   xRet;
 }
 
 #endif

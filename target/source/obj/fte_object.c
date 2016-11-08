@@ -26,8 +26,15 @@ const FTE_CHAR_PTR FTE_JSON_OBJ_METHOD_STRING = "method";
 const FTE_CHAR_PTR FTE_JSON_OBJ_PARAM_STRING  = "param";
 const FTE_CHAR_PTR FTE_JSON_OBJ_PARAMS_STRING  = "params";
 
-static  FTE_LIST            _xObjList    = { 0, NULL, NULL };
-static  int FTE_OBJ_comaratorID(pointer pObj1, pointer pObj2)
+static  
+FTE_LIST    _xObjList    = { 0, NULL, NULL };
+
+static  
+FTE_INT32   FTE_OBJ_comaratorID
+(
+    FTE_VOID_PTR    pObj1, 
+    FTE_VOID_PTR    pObj2
+)
 {
     FTE_UINT32 ulID1 = ((FTE_OBJECT_PTR)pObj1)->pConfig->xCommon.nID & (FTE_OBJ_CLASS_MASK | FTE_OBJ_CLASS_INDEX);
     FTE_UINT32 ulID2 = ((FTE_OBJECT_PTR)pObj2)->pConfig->xCommon.nID & (FTE_OBJ_CLASS_MASK | FTE_OBJ_CLASS_INDEX);
@@ -80,12 +87,12 @@ FTE_OBJECT_PTR  FTE_OBJ_create
         goto error;
     }        
     
-    if (pDesc->f_attach(pObj, pDesc->pOpts) != MQX_OK)
+    if (pDesc->f_attach(pObj, pDesc->pOpts) != FTE_RET_OK)
     {
         goto error;
     }
 
-    if (FTE_LIST_pushSort(&_xObjList, pObj, FTE_OBJ_comaratorID) != MQX_OK)
+    if (FTE_LIST_pushSort(&_xObjList, pObj, FTE_OBJ_comaratorID) != FTE_RET_OK)
     {
         goto error;
     }
@@ -141,10 +148,10 @@ FTE_RET FTE_OBJ_destroy
     FTE_MEM_free(pObj->pConfig);
     FTE_MEM_free(pObj);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:    
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET FTE_OBJ_init
@@ -170,7 +177,7 @@ FTE_OBJECT_PTR  FTE_OBJ_get
     FTE_OBJECT_PTR      pObj;
     FTE_LIST_ITERATOR   xIter;
     
-    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == MQX_OK)
+    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == FTE_RET_OK)
     {
         while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
         {
@@ -195,7 +202,7 @@ FTE_OBJECT_PTR  FTE_OBJ_getAt
     FTE_OBJECT_PTR      pObj;
     FTE_LIST_ITERATOR   xIter;
     
-    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == MQX_OK)
+    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == FTE_RET_OK)
     {
         while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
         {
@@ -227,7 +234,7 @@ FTE_UINT32  FTE_OBJ_count
     FTE_LIST_ITERATOR   xIter;
     FTE_UINT32             ulCount = 0;
     
-    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == MQX_OK)
+    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == FTE_RET_OK)
     {
         while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
         {
@@ -258,7 +265,7 @@ FTE_UINT32 FTE_OBJ_getList
 
     ASSERT(pObjectList != NULL);
     
-    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == MQX_OK)
+    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == FTE_RET_OK)
     {
         while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
         {
@@ -295,7 +302,7 @@ FTE_RET FTE_OBJ_getIDList
 
     ASSERT(pObjIDs != NULL);
     
-    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == MQX_OK)
+    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == FTE_RET_OK)
     {
         while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
         {
@@ -329,7 +336,7 @@ FTE_RET   FTE_OBJ_getValue
         
     FTE_VALUE_copy(pValue, pObj->pStatus->pValue);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_OBJ_setValue
@@ -345,7 +352,7 @@ FTE_RET   FTE_OBJ_setValue
         return  pObj->pAction->fSet(pObj, pValue);
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_OBJ_setValueAt
@@ -362,7 +369,7 @@ FTE_RET   FTE_OBJ_setValueAt
         return  pObj->pAction->fSetMulti(pObj, ulIndex, pValue);
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET       FTE_OBJ_getValueAt
@@ -382,11 +389,11 @@ FTE_RET       FTE_OBJ_getValueAt
         {
             FTE_VALUE_copy(pValue, &pObj->pStatus->pValue[ulIdx]);
             
-            return  MQX_OK;
+            return  FTE_RET_OK;
         }
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_OBJ_setValueString
@@ -400,12 +407,12 @@ FTE_RET   FTE_OBJ_setValueString
     ASSERT(pObj != NULL);
     
     FTE_VALUE_copy(&xValue, pObj->pStatus->pValue);
-    if (FTE_VALUE_set(&xValue, pString) == MQX_OK)
+    if (FTE_VALUE_set(&xValue, pString) == FTE_RET_OK)
     {
         return  FTE_OBJ_setValue(pObj, &xValue);
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_VALUE_TYPE  FTE_OBJ_getValueType
@@ -449,7 +456,7 @@ FTE_RET   FTE_OBJ_getConfig
         return  pObj->pAction->fGetConfig(pObj, pBuff, ulBuffLen);
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_OBJ_setConfig
@@ -465,7 +472,7 @@ FTE_RET   FTE_OBJ_setConfig
         return  pObj->pAction->fSetConfig(pObj, pJSON);
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 
@@ -482,7 +489,7 @@ FTE_RET    FTE_OBJ_getSN
     {
         pObj->pAction->fGetSN(pObj, pBuff, nLen);
         
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
     else
     {
@@ -496,7 +503,7 @@ FTE_RET    FTE_OBJ_getSN
                         pObj->pConfig->xCommon.nID);
     } 
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_OBJ_getInterval
@@ -543,7 +550,7 @@ FTE_RET    FTE_OBJ_getStatistics
     {
         pObj->pAction->fGetStatistics(pObj, pStatistics);
         
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
     
     return  FTE_RET_NOT_SUPPORTED_FUNCTION;
@@ -561,7 +568,7 @@ FTE_RET       FTE_OBJ_activate
     {
         if (!FTE_OBJ_IS_ENABLED(pObj))
         {
-            if (FTE_OBJ_start(pObj) == MQX_OK)
+            if (FTE_OBJ_start(pObj) == FTE_RET_OK)
             {
                 if (pObj->pAction->fGetChildCount != NULL)
                 {
@@ -576,7 +583,7 @@ FTE_RET       FTE_OBJ_activate
                         {
                             FTE_OBJECT_ID   xChildID = 0;
                             
-                            if (pObj->pAction->fGetChild(pObj, i, &xChildID) == MQX_OK)
+                            if (pObj->pAction->fGetChild(pObj, i, &xChildID) == FTE_RET_OK)
                             {
                                 FTE_OBJECT_PTR  pChild = FTE_OBJ_get(xChildID);
                                 if (pChild != NULL)
@@ -594,7 +601,7 @@ FTE_RET       FTE_OBJ_activate
     {
         if (FTE_OBJ_IS_ENABLED(pObj))
         {
-            if (FTE_OBJ_stop(pObj) == MQX_OK)
+            if (FTE_OBJ_stop(pObj) == FTE_RET_OK)
             {
                 if (pObj->pAction->fGetChildCount != NULL)
                 {
@@ -609,7 +616,7 @@ FTE_RET       FTE_OBJ_activate
                         {
                             FTE_OBJECT_ID   xChildID = 0;
                             
-                            if (pObj->pAction->fGetChild(pObj, i, &xChildID) == MQX_OK)
+                            if (pObj->pAction->fGetChild(pObj, i, &xChildID) == FTE_RET_OK)
                             {
                                 FTE_OBJECT_PTR  pChild = FTE_OBJ_get(xChildID);
                                 if (pChild != NULL)
@@ -626,7 +633,7 @@ FTE_RET       FTE_OBJ_activate
     
     FTE_OBJ_save(pObj);
      
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET       FTE_OBJ_start
@@ -640,7 +647,7 @@ FTE_RET       FTE_OBJ_start
     
     if (pObj->pAction->fRun == NULL)
     {
-        return  MQX_NOT_SUPPORTED_FUNCTION;
+        return  FTE_RET_NOT_SUPPORTED_FUNCTION;
     }
     
     if (FTE_OBJ_IS_CHILD(pObj) == TRUE)
@@ -658,7 +665,7 @@ FTE_RET       FTE_OBJ_start
     }
     
     ulRet = pObj->pAction->fRun(pObj);
-    if (ulRet == MQX_OK)
+    if (ulRet == FTE_RET_OK)
     {
         FTE_OBJ_FLAG_set(pObj, FTE_OBJ_CONFIG_FLAG_ENABLE);        
         if (pObj->pAction->fGetChildCount != NULL)
@@ -674,7 +681,7 @@ FTE_RET       FTE_OBJ_start
                 {
                     FTE_OBJECT_ID   xChildID = 0;
                     
-                    if (pObj->pAction->fGetChild(pObj, i, &xChildID) == MQX_OK)
+                    if (pObj->pAction->fGetChild(pObj, i, &xChildID) == FTE_RET_OK)
                     {
                         FTE_OBJECT_PTR  pChild = FTE_OBJ_get(xChildID);
                         if (pChild != NULL)
@@ -704,7 +711,7 @@ FTE_RET       FTE_OBJ_stop
     }
     
     ulRet = pObj->pAction->fStop(pObj);
-    if (ulRet == MQX_OK)
+    if (ulRet == FTE_RET_OK)
     {
         FTE_OBJ_FLAG_clear(pObj, FTE_OBJ_CONFIG_FLAG_ENABLE);
         if (pObj->pAction->fGetChildCount != NULL)
@@ -720,7 +727,7 @@ FTE_RET       FTE_OBJ_stop
                 {
                     FTE_OBJECT_ID   xChildID = 0;
                     
-                    if (pObj->pAction->fGetChild(pObj, i, &xChildID) == MQX_OK)
+                    if (pObj->pAction->fGetChild(pObj, i, &xChildID) == FTE_RET_OK)
                     {
                         FTE_OBJECT_PTR  pChild = FTE_OBJ_get(xChildID);
                         if (pChild != NULL)
@@ -745,7 +752,7 @@ FTE_RET       FTE_OBJ_wasUpdated
     
     FTE_OBJ_STATE_set(pObj, FTE_OBJ_STATUS_FLAG_UPDATED);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET       FTE_OBJ_wasChanged
@@ -757,7 +764,7 @@ FTE_RET       FTE_OBJ_wasChanged
     
     FTE_OBJ_STATE_set(pObj, FTE_OBJ_STATUS_FLAG_UPDATED | FTE_OBJ_STATUS_FLAG_CHANGED);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET       FTE_OBJ_EVENT_attach
@@ -771,7 +778,7 @@ FTE_RET       FTE_OBJ_EVENT_attach
     FTE_LIST_pushBack(&pObj->xEventList, pEvent);
     FTE_EVENT_attachObject(pEvent, pObj);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET       FTE_OBJ_EVENT_detach
@@ -785,7 +792,7 @@ FTE_RET       FTE_OBJ_EVENT_detach
     FTE_EVENT_detachObject(pEvent, pObj);
     FTE_LIST_remove(&pObj->xEventList, pEvent);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
  
 FTE_RET   FTE_OBJ_getName
@@ -806,7 +813,7 @@ FTE_RET   FTE_OBJ_getName
         strcpy(pName, pObj->pConfig->xCommon.pName);
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_OBJ_setName
@@ -825,10 +832,10 @@ FTE_RET   FTE_OBJ_setName
         
     FTE_OBJ_save(pObj);
         
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_BOOL FTE_OBJ_FLAG_isSet
@@ -853,7 +860,7 @@ FTE_RET   FTE_OBJ_FLAG_set
     pObj->pConfig->xCommon.xFlags = FTE_FLAG_SET(pObj->pConfig->xCommon.xFlags, flag);
     FTE_OBJ_save(pObj);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_OBJ_FLAG_clear
@@ -867,7 +874,7 @@ FTE_RET   FTE_OBJ_FLAG_clear
     pObj->pConfig->xCommon.xFlags = FTE_FLAG_CLR(pObj->pConfig->xCommon.xFlags, flag);
     FTE_OBJ_save(pObj);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET       FTE_OBJ_save
@@ -879,7 +886,7 @@ FTE_RET       FTE_OBJ_save
     
     FTE_CFG_OBJ_save(pObj);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_UINT32  FTE_OBJ_runLoop
@@ -1461,17 +1468,25 @@ FTE_UINT32    FTE_OBJ_1WIRE_discovery(FTE_BOOL bSave)
     p1Wire = FTE_1WIRE_getFirst();
     while(p1Wire != 0)
     {
+        FTE_CHAR    pFamilyName[32];
+        
+        memset(pFamilyName, 0, sizeof(pFamilyName));
+        
         FTE_1WIRE_discovery(p1Wire);                
 
         xParams.nBUSID = p1Wire->pConfig->nID;
-        for(nIndex = 0 ; nIndex < FTE_1WIRE_DEV_count(p1Wire) ; nIndex++)
+        
+        FTE_UINT32  ulDevCount = 0;
+        FTE_1WIRE_DEV_count(p1Wire, &ulDevCount);
+        for(nIndex = 0 ; nIndex < ulDevCount ; nIndex++)
         {
-            if (FTE_1WIRE_DEV_getROMCode(p1Wire, nIndex, xParams.pROMCode) != MQX_OK)
+            if (FTE_1WIRE_DEV_getROMCode(p1Wire, nIndex, xParams.pROMCode) != FTE_RET_OK)
             {
                 break;
             }
          
-            if (strcasecmp(FTE_1WIRE_getFailmyName(xParams.pROMCode[0]), "18B20") == 0)
+            FTE_1WIRE_getFamilyName(xParams.pROMCode[0], pFamilyName, sizeof(pFamilyName) - 1);
+            if (strcasecmp(pFamilyName, "18B20") == 0)
             {
                 if (!FTE_DS18B20_isExistROMCode(xParams.pROMCode) )
                 {
@@ -1538,7 +1553,7 @@ FTE_RET FT_OBJ_STAT_incSucceed
     
     pStatistics->pStatBits[0] = pStatistics->pStatBits[0] << 1;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FT_OBJ_STAT_incFailed
@@ -1573,7 +1588,7 @@ FTE_RET FT_OBJ_STAT_incFailed
         FTE_SYS_setUnstable();
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_OBJ_CMD_showInfo
@@ -2075,7 +2090,7 @@ FTE_RET FTE_OBJ_CMD_set
     if (strcasecmp(pArgv[1], "value") == 0)
     {
         FTE_VALUE_init(&xValue, FTE_OBJ_getValueType(pObj));
-        if (FTE_VALUE_set(&xValue, pArgv[2]) == MQX_OK)
+        if (FTE_VALUE_set(&xValue, pArgv[2]) == FTE_RET_OK)
         {
             xRet = FTE_OBJ_setValue(pObj, &xValue);
         }        
@@ -2101,7 +2116,7 @@ FTE_RET FTE_OBJ_CMD_set
             return  FTE_RET_ERROR;
         }
         
-        if (pObj->pAction->fSetInterval(pObj, ulValue) != MQX_OK)
+        if (pObj->pAction->fSetInterval(pObj, ulValue) != FTE_RET_OK)
         {
             printf("Object failed to change the update interval\n"); 
             return  FTE_RET_ERROR;

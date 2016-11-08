@@ -11,16 +11,17 @@
 *
 *END------------------------------------------------------------------*/
 
-void FTE_TASK_net(uint_32 params)
+void FTE_TASK_net
+(
+    FTE_UINT32  params
+)
 {
     FTE_TIME_DELAY      xTimeDelay;
-    boolean             bLinkActive = FALSE;
+    FTE_BOOL            bLinkActive = FALSE;
     FTE_NET_CFG_PTR     pCfgNet = FTE_CFG_NET_get();
 
     ASSERT(pCfgNet != NULL);
 
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
-    
     printf("Starting netd\n");
     if (FTE_NET_init(pCfgNet) == RTCS_ERROR)
     {
@@ -34,19 +35,19 @@ void FTE_TASK_net(uint_32 params)
     }
     
 #if FTE_HTTPD_SUPPORTED
-    printf("Starting httpd ... [%s]\n",(FTE_HTTPD_init(&pCfgNet->xHTTP) == MQX_OK)?"OK":"FAILED");
+    printf("Starting httpd ... [%s]\n",(FTE_HTTPD_init(&pCfgNet->xHTTP) == FTE_RET_OK)?"OK":"FAILED");
 #endif
 #if FTE_SNMPD_SUPPORTED
-    printf("Starting snmpd ... [%s]\n",(FTE_SNMPD_init(&pCfgNet->xSNMP) == MQX_OK)?"OK":"FAILED");
+    printf("Starting snmpd ... [%s]\n",(FTE_SNMPD_init(&pCfgNet->xSNMP) == FTE_RET_OK)?"OK":"FAILED");
 #endif
 #if FTE_SMNGD_SUPPORTED
-    printf("Starting smngd ... [%s]\n",(FTE_SMNGD_init(NULL) == MQX_OK)?"OK":"FAILED");
+    printf("Starting smngd ... [%s]\n",(FTE_SMNGD_init(NULL) == FTE_RET_OK)?"OK":"FAILED");
 #endif
 #if FTE_MQTT_SUPPORTED
-    printf("Starting mqtt ... [%s]\n",(FTE_MQTT_init(&pCfgNet->xMQTT) == MQX_OK)?"OK":"FAILED");
+    printf("Starting mqtt ... [%s]\n",(FTE_MQTT_init(&pCfgNet->xMQTT) == FTE_RET_OK)?"OK":"FAILED");
 #endif
 #if FTE_TELNETD_SUPPORTED
-    printf("Starting telnet ... [%s]\n", (FTE_TELNETD_init(NULL) == MQX_OK)?"OK":"FAILED");
+    printf("Starting telnet ... [%s]\n", (FTE_TELNETD_init(NULL) == FTE_RET_OK)?"OK":"FAILED");
 #endif
     
     // tcp/ip initialization waiting
@@ -58,7 +59,7 @@ void FTE_TASK_net(uint_32 params)
     while(TRUE)
     {
         IPCFG_STATE xState;
-        boolean bNewLinkActive;
+        FTE_BOOL bNewLinkActive;
         
         FTE_NET_isActive(&bNewLinkActive);
         if (bLinkActive != bNewLinkActive)
@@ -73,7 +74,7 @@ void FTE_TASK_net(uint_32 params)
             if ((IPCFG_STATE_BUSY == xState) || (IPCFG_STATE_UNBOUND == xState))
             {
                 static int nRetry = 0;
-                if (FTE_NET_bind() != MQX_OK)
+                if (FTE_NET_bind() != FTE_RET_OK)
                 {
                     if (++nRetry > 2)
                     {

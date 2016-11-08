@@ -10,7 +10,7 @@ FTE_RET FTE_DEVICE_attach
 {
     FTE_LIST_pushBack(&_xDeviceList, pDevice);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_UINT32      FTE_DEVICE_count(void)
@@ -39,7 +39,7 @@ FTE_RET FTE_DEVICE_set
         return  pDevice->f_set(pDevice, pJSON);
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_DEVICE_get
@@ -56,6 +56,6 @@ FTE_RET FTE_DEVICE_get
         return  pDevice->f_get(pDevice, pBuff, ulBuffLen);
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 

@@ -27,10 +27,10 @@ FTE_RET   FTE_LORA_init(void)
     
     SX1276LoRaInit( );
    
-    _task_create(0, FTE_TASK_LORAWAN_CTRL, 0);
-    _task_create(0, FTE_TASK_LORA, 0);
+    FTE_TASK_create(FTE_TASK_LORAWAN_CTRL, 0, NULL);
+    FTE_TASK_create(FTE_TASK_LORA, 0, NULL);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 void FTE_LORA_ctrl(FTE_UINT32 params)
@@ -38,13 +38,11 @@ void FTE_LORA_ctrl(FTE_UINT32 params)
     FTE_UINT8      pInternalBuffer[RF_BUFFER_SIZE_MAX];
     FTE_UINT16     usBufferSize = RF_BUFFER_SIZE_MAX;
     
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
-    
     SX1276LoRaStartRx();   
-    while(1)
+    while(TRUE)
     {
-        FTE_UINT32     ulState;
-        boolean     bTxON = FALSE;
+        FTE_UINT32  ulState;
+        FTE_BOOL    bTxON = FALSE;
          
         ulState = SX1276LoRaProcess();
        
@@ -140,7 +138,7 @@ void FTE_LORA_ctrl(FTE_UINT32 params)
         if (bTxON && (FTE_LIST_count(&xSendList) != 0))
         {
             FTE_FBM_BUFF_PTR pBlock;
-            if (FTE_LIST_popFront(&xSendList, (pointer *)&pBlock) == MQX_OK)
+            if (FTE_LIST_popFront(&xSendList, (pointer *)&pBlock) == FTE_RET_OK)
             {
                 SX1276LoRaSetTxPacket(pBlock->pBuff, pBlock->ulSize);
                 FTE_FBM_free(pFBM, pBlock);
@@ -153,14 +151,12 @@ void FTE_LORA_ctrl(FTE_UINT32 params)
 
 void FTE_LORA_process(FTE_UINT32 params)
 {
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
-    
-    while(1)
+    while(TRUE)
     {
         if (FTE_LIST_count(&xRcvdList) != 0)
         {
             FTE_FBM_BUFF_PTR pBlock;
-            if (FTE_LIST_popFront(&xRcvdList, (pointer *)&pBlock) == MQX_OK)
+            if (FTE_LIST_popFront(&xRcvdList, (pointer *)&pBlock) == FTE_RET_OK)
             {
                 pBlock->pBuff[pBlock->ulSize] = 0;
                 DEBUG("Packet Received : %s\n", pBlock->pBuff);
@@ -185,19 +181,23 @@ FTE_RET FTE_LORA_send(FTE_UINT8_ptr pData, FTE_UINT32 ulDataSize)
     pBlock->ulSize = ulDataSize;
     FTE_LIST_pushBack(&xSendList, pBlock);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-int_32  FTE_LORA_SHELL_cmd(int_32 argc, char_ptr argv[])
+FTE_INT32  FTE_LORA_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[]
+)
 {
-    boolean     print_usage, shorthelp = FALSE;
-    int_32      return_code = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   xRet = SHELL_EXIT_SUCCESS;
     
-    print_usage = Shell_check_help_request (argc, argv, &shorthelp);
+    bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
-    if (!print_usage)
+    if (!bPrintUsage)
     {
-        switch(argc)
+        switch(nArgc)
         {
         case    1:
             {                
@@ -208,7 +208,7 @@ int_32  FTE_LORA_SHELL_cmd(int_32 argc, char_ptr argv[])
                 printf("%16s : %d\n", "Error Coding", SX1276LoRaGetErrorCoding( ));
                 printf("%16s : %d\n", "Packet CRC ON", SX1276LoRaGetPacketCrcOn( ));
                 printf("%16s : %d\n", "Bandwidth", SX1276LoRaGetSignalBandwidth( ));
-                printf("%16s : %d dBm\n", "RSSI", (int_32)SX1276LoRaGetPacketRssi( ));
+                printf("%16s : %d dBm\n", "RSSI", (FTE_INT32)SX1276LoRaGetPacketRssi( ));
                 printf("%16s : %d\n", "Rx Packets", SX1276LoRaGetRxPacketCount());
                 printf("%16s : %d\n", "Tx Packets", SX1276LoRaGetTxPacketCount());
 #else
@@ -229,32 +229,32 @@ int_32  FTE_LORA_SHELL_cmd(int_32 argc, char_ptr argv[])
             
         case    3:
             {
-                if (strcmp(argv[1], "send") == 0)
+                if (strcmp(pArgv[1], "send") == 0)
                 {
-                    FTE_LORA_send((FTE_UINT8_ptr)argv[2], strlen(argv[2]));
+                    FTE_LORA_send((FTE_UINT8_ptr)pArgv[2], strlen(pArgv[2]));
                 }
             }
             break;
             
         default:
-            print_usage = TRUE;
+            bPrintUsage = TRUE;
         }
         
     }
     
    
-    if (print_usage || (return_code !=SHELL_EXIT_SUCCESS))
+    if (bPrintUsage || (xRet !=SHELL_EXIT_SUCCESS))
     {
-        if (shorthelp)
+        if (bShortHelp)
         {
-            printf ("%s [<command>]\n", argv[0]);
+            printf ("%s [<command>]\n", pArgv[0]);
         }
         else
         {
-            printf("Usage : %s [<command>]\n", argv[0]);
+            printf("Usage : %s [<command>]\n", pArgv[0]);
             printf("  Commands:\n");
             printf("  Parameters:\n");
         }
     }
-    return   return_code;
+    return   xRet;
 }

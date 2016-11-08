@@ -153,7 +153,7 @@ FTE_RET   FTE_BOTEM_PN1500_request
     FTE_UCS_clear(pStatus->pUCS);    
     FTE_UCS_send(pStatus->pUCS, pCMD, sizeof(pCMD), TRUE);    
 
-    return  MQX_OK; 
+    return  FTE_RET_OK; 
 }
 
 FTE_RET   FTE_BOTEM_PN1500_received
@@ -177,12 +177,12 @@ FTE_RET   FTE_BOTEM_PN1500_received
     {
         if (nLen != 23)
         {
-            return  MQX_ERROR;
+            return  FTE_RET_INVALID_MSG_FRAME;
         }
 
         if ((pBuff[0] != '[') || (pBuff[nLen-1] != ']'))
         {
-            return  MQX_ERROR;
+            return  FTE_RET_INVALID_MSG_FRAME;
         }
         
         pBuff[14] = 0;
@@ -207,12 +207,12 @@ FTE_RET   FTE_BOTEM_PN1500_received
     {
         if (nLen != 54)
         {
-            return  MQX_ERROR;
+            return  FTE_RET_INVALID_MSG_FRAME;
         }
 
         if ((pBuff[0] != '[') || (pBuff[nLen-1] != ']'))
         {
-            return  MQX_ERROR;
+            return  FTE_RET_INVALID_MSG_FRAME;
         }
         
         pBuff[20] = 0;
@@ -238,7 +238,7 @@ FTE_RET   FTE_BOTEM_PN1500_received
     FTE_VALUE_setULONG(&pStatus->xCommon.pValue[1], nAccum);
     FTE_VALUE_setDIO(&pStatus->xCommon.pValue[2], bSwitch);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_BOTEM_PN1500_set
@@ -292,7 +292,7 @@ FTE_RET   FTE_BOTEM_PN1500_set
             }
             else
             {
-                return  MQX_ERROR;
+                return  FTE_RET_INVALID_MSG_FRAME;
             }
         }
     }
@@ -302,7 +302,7 @@ FTE_RET   FTE_BOTEM_PN1500_set
     FTE_UCS_clear(pStatus->pUCS);    
     FTE_UCS_send(pStatus->pUCS, pCMD, nCmdLen, TRUE);    
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_BOTEM_PN1500_setConfig
@@ -311,15 +311,12 @@ FTE_RET   FTE_BOTEM_PN1500_setConfig
     FTE_CHAR_PTR        pString
 )
 {
-    if (pObj == NULL)
-    {
-        return  MQX_ERROR;
-    }
+    ASSERT(pObj != NULL);
     
     const nx_json* pxJSON = nx_json_parse_utf8(pString);
     if (pxJSON == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     } 
     
     const nx_json* pxCmd = nx_json_get(pxJSON, "cmd");
@@ -356,13 +353,13 @@ FTE_RET   FTE_BOTEM_PN1500_setConfig
     
     nx_json_free(pxJSON);
    
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
     
     nx_json_free(pxJSON);
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_BOTEM_PN1500_getConfig
@@ -378,17 +375,14 @@ FTE_RET   FTE_BOTEM_PN1500_getConfig
     FTE_UINT32                 ulValue;
     FTE_BOOL                 bValue;
     
-    if (pObj == NULL)
-    {
-        return  MQX_ERROR;
-    }
+    ASSERT(pObj != NULL);
     
     pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
     
     pJSONObject = FTE_JSON_VALUE_createObject(3);
     if (pJSONObject == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     FTE_VALUE_getULONG(&pStatus->xCommon.pValue[0], &ulValue);
@@ -407,13 +401,13 @@ FTE_RET   FTE_BOTEM_PN1500_getConfig
     if (FTE_JSON_VALUE_buffSize(pJSONObject) >= ulBuffLen)
     {
         FTE_JSON_VALUE_destroy(pJSONObject);
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     FTE_JSON_VALUE_snprint(pBuff, ulBuffLen, pJSONObject);    
     FTE_JSON_VALUE_destroy(pJSONObject);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_BOTEM_PN1500_switchCtrl
@@ -445,7 +439,7 @@ FTE_RET   FTE_BOTEM_PN1500_switchCtrl
     FTE_UCS_clear(pStatus->pUCS);    
     FTE_UCS_send(pStatus->pUCS, pCMD, nCmdLen, FALSE);    
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_BOTEM_PN1500_countReset
@@ -467,7 +461,7 @@ FTE_RET   FTE_BOTEM_PN1500_countReset
     FTE_UCS_clear(pStatus->pUCS);    
     FTE_UCS_send(pStatus->pUCS, pCMD, nCmdLen, FALSE);    
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_BOTEM_PN1500_accumCountReset
@@ -481,7 +475,7 @@ FTE_RET   FTE_BOTEM_PN1500_accumCountReset
     FTE_UCS_clear(pStatus->pUCS);    
     FTE_UCS_send(pStatus->pUCS, pCMD, nCmdLen, FALSE);    
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_BOTEM_PN1500_reset
@@ -496,6 +490,6 @@ FTE_RET   FTE_BOTEM_PN1500_reset
     FTE_UCS_clear(pStatus->pUCS);    
     FTE_UCS_send(pStatus->pUCS, pCMD, nCmdLen, FALSE);    
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 

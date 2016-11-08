@@ -2,7 +2,10 @@
 #include "fte_list.h"
 #include "fte_assert.h"
 
-_mqx_int    FTE_LIST_init(FTE_LIST_PTR pList)
+FTE_RET FTE_LIST_init
+(
+    FTE_LIST_PTR    pList
+)
 {
     ASSERT(pList != NULL);
  
@@ -17,12 +20,15 @@ _mqx_int    FTE_LIST_init(FTE_LIST_PTR pList)
     pList->pHead  = pNode;
     pList->nCount = 0;
 
-    fte_sys_lock_create(&pList->pLockKey);
+    FTE_SYS_LOCK_create(&pList->pLockKey);
     
     return  FTE_RET_OK;
 }
 
-_mqx_int    FTE_LIST_final(FTE_LIST_PTR pList)
+FTE_RET    FTE_LIST_final
+(
+    FTE_LIST_PTR    pList
+)
 {
     FTE_LIST_NODE_PTR pNode, pNextNode ;
     
@@ -35,15 +41,18 @@ _mqx_int    FTE_LIST_final(FTE_LIST_PTR pList)
         pNode = pNextNode;
     }
 
-    fte_sys_lock_destroy(pList->pLockKey);
+    FTE_SYS_LOCK_destroy(pList->pLockKey);
     FTE_MEM_free(pList->pHead);
     pList->pHead = NULL;
     pList->nCount= 0;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-boolean FTE_LIST_isInitialized(FTE_LIST_PTR pList)
+FTE_BOOL FTE_LIST_isInitialized
+(
+    FTE_LIST_PTR    pList
+)
 {
     if ((pList == NULL) || (pList->pHead == NULL))
     {
@@ -53,7 +62,11 @@ boolean FTE_LIST_isInitialized(FTE_LIST_PTR pList)
     return  TRUE;
 }
 
-boolean     FTE_LIST_isExist(FTE_LIST_PTR pList, pointer pItem)
+FTE_BOOL    FTE_LIST_isExist
+(
+    FTE_LIST_PTR    pList, 
+    FTE_VOID_PTR    pItem
+)
 {
     FTE_LIST_NODE_PTR    pNode = pList->pHead;
     if (pNode != NULL)
@@ -74,14 +87,21 @@ boolean     FTE_LIST_isExist(FTE_LIST_PTR pList, pointer pItem)
     return  FALSE;
 }
 
-uint_32     FTE_LIST_count(FTE_LIST_PTR pList)
+FTE_UINT32  FTE_LIST_count
+(
+    FTE_LIST_PTR    pList
+)
 {
     ASSERT(pList != NULL);
     
     return  pList->nCount;
 }
 
-_mqx_int    FTE_LIST_pushFront(FTE_LIST_PTR pList, pointer pItem)
+FTE_RET    FTE_LIST_pushFront
+(
+    FTE_LIST_PTR    pList, 
+    FTE_VOID_PTR    pItem
+)
 {
     FTE_LIST_NODE_PTR   pNode;
     ASSERT((pList != NULL) && (pItem != NULL));
@@ -96,10 +116,10 @@ _mqx_int    FTE_LIST_pushFront(FTE_LIST_PTR pList, pointer pItem)
     {
         ERROR("Not enough memory!\n");
         FTE_SYS_setUnstable();
-        return  MQX_OUT_OF_MEMORY;
+        return  FTE_RET_NOT_ENOUGH_MEMORY;
     }
 
-    fte_sys_lock_enable(pList->pLockKey);
+    FTE_SYS_LOCK_enable(pList->pLockKey);
     
     pNode->pItem = pItem;
     
@@ -110,12 +130,16 @@ _mqx_int    FTE_LIST_pushFront(FTE_LIST_PTR pList, pointer pItem)
     pList->pHead->pNext = pNode;     
     pList->nCount++;
     
-    fte_sys_lock_disable(pList->pLockKey);
+    FTE_SYS_LOCK_disable(pList->pLockKey);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_int    FTE_LIST_pushBack(FTE_LIST_PTR pList, pointer pItem)
+FTE_RET    FTE_LIST_pushBack
+(
+    FTE_LIST_PTR    pList, 
+    FTE_VOID_PTR    pItem
+)
 {
     FTE_LIST_NODE_PTR   pNode;
 
@@ -131,10 +155,10 @@ _mqx_int    FTE_LIST_pushBack(FTE_LIST_PTR pList, pointer pItem)
     {
         ERROR("Not enough memory!\n");
         FTE_SYS_setUnstable();
-        return  MQX_OUT_OF_MEMORY;
+        return  FTE_RET_NOT_ENOUGH_MEMORY;
     }
 
-    fte_sys_lock_enable(pList->pLockKey);
+    FTE_SYS_LOCK_enable(pList->pLockKey);
 
     pNode->pItem = pItem;
     
@@ -145,12 +169,17 @@ _mqx_int    FTE_LIST_pushBack(FTE_LIST_PTR pList, pointer pItem)
     pList->pHead->pPrev = pNode;    
     pList->nCount++;
     
-    fte_sys_lock_disable(pList->pLockKey);
+    FTE_SYS_LOCK_disable(pList->pLockKey);
   
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_int    FTE_LIST_pushSort(FTE_LIST_PTR pList, pointer pItem, int (*comparator)(pointer a, pointer b))
+FTE_RET    FTE_LIST_pushSort
+(
+    FTE_LIST_PTR    pList, 
+    FTE_VOID_PTR    pItem, 
+    FTE_INT32 (*comparator)(FTE_VOID_PTR a, FTE_VOID_PTR b)
+)
 {
     FTE_LIST_NODE_PTR   pNode;
     FTE_LIST_NODE_PTR   pNextNode;
@@ -167,10 +196,10 @@ _mqx_int    FTE_LIST_pushSort(FTE_LIST_PTR pList, pointer pItem, int (*comparato
     {
         ERROR("Not enough memory!\n");
         FTE_SYS_setUnstable();
-        return  MQX_OUT_OF_MEMORY;
+        return  FTE_RET_NOT_ENOUGH_MEMORY;
     }
 
-    fte_sys_lock_enable(pList->pLockKey);
+    FTE_SYS_LOCK_enable(pList->pLockKey);
 
     pNode->pItem = pItem;
     
@@ -192,12 +221,16 @@ _mqx_int    FTE_LIST_pushSort(FTE_LIST_PTR pList, pointer pItem, int (*comparato
     
     pList->nCount++;
     
-    fte_sys_lock_disable(pList->pLockKey);
+    FTE_SYS_LOCK_disable(pList->pLockKey);
    
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_int    FTE_LIST_popFront(FTE_LIST_PTR pList, pointer _PTR_ ppItem)
+FTE_RET    FTE_LIST_popFront
+(
+    FTE_LIST_PTR    pList, 
+    FTE_VOID_PTR _PTR_ ppItem
+)
 {
     ASSERT(pList != NULL);
     
@@ -208,10 +241,10 @@ _mqx_int    FTE_LIST_popFront(FTE_LIST_PTR pList, pointer _PTR_ ppItem)
     
     if (pList->nCount == 0)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
-    fte_sys_lock_enable(pList->pLockKey);
+    FTE_SYS_LOCK_enable(pList->pLockKey);
     
     FTE_LIST_NODE_PTR   pNode = pList->pHead->pNext;
     
@@ -224,14 +257,18 @@ _mqx_int    FTE_LIST_popFront(FTE_LIST_PTR pList, pointer _PTR_ ppItem)
         *ppItem = pNode->pItem;
     }
     
-    fte_sys_lock_disable(pList->pLockKey);
+    FTE_SYS_LOCK_disable(pList->pLockKey);
     
     FTE_MEM_free(pNode);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-_mqx_int    FTE_LIST_popBack(FTE_LIST_PTR pList, pointer _PTR_ ppItem)
+FTE_RET    FTE_LIST_popBack
+(
+    FTE_LIST_PTR    pList, 
+    FTE_VOID_PTR _PTR_ ppItem
+)
 {
     ASSERT(pList != NULL);
     
@@ -242,18 +279,18 @@ _mqx_int    FTE_LIST_popBack(FTE_LIST_PTR pList, pointer _PTR_ ppItem)
     
     if (pList->nCount == 0)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
-    fte_sys_lock_enable(pList->pLockKey);
+    FTE_SYS_LOCK_enable(pList->pLockKey);
 
     FTE_LIST_NODE_PTR   pNode = pList->pHead->pPrev;
     
-    fte_sys_lock_enable(pList->pLockKey);
+    FTE_SYS_LOCK_enable(pList->pLockKey);
     pList->pHead->pPrev = pNode->pPrev;
     pNode->pPrev->pNext = pNode->pNext;
     pList->nCount--;
 
-    fte_sys_lock_disable(pList->pLockKey);
+    FTE_SYS_LOCK_disable(pList->pLockKey);
     
     if (ppItem != NULL)
     {
@@ -262,10 +299,14 @@ _mqx_int    FTE_LIST_popBack(FTE_LIST_PTR pList, pointer _PTR_ ppItem)
 
     FTE_MEM_free(pNode);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-pointer FTE_LIST_getAt(FTE_LIST_PTR pList, uint_32 ulIndex)
+FTE_VOID_PTR FTE_LIST_getAt
+(
+    FTE_LIST_PTR    pList, 
+    FTE_UINT32      ulIndex
+)
 {
     ASSERT(pList != NULL);
     
@@ -295,7 +336,11 @@ pointer FTE_LIST_getAt(FTE_LIST_PTR pList, uint_32 ulIndex)
 }
 
 
-_mqx_int    FTE_LIST_remove(FTE_LIST_PTR pList, pointer pItem)
+FTE_RET    FTE_LIST_remove
+(
+    FTE_LIST_PTR    pList, 
+    FTE_VOID_PTR    pItem
+)
 {
     FTE_LIST_NODE_PTR   pNode;
 
@@ -306,7 +351,7 @@ _mqx_int    FTE_LIST_remove(FTE_LIST_PTR pList, pointer pItem)
         FTE_LIST_init(pList);
     }
         
-    fte_sys_lock_enable(pList->pLockKey);
+    FTE_SYS_LOCK_enable(pList->pLockKey);
     
     pNode = pList->pHead->pNext;
     
@@ -318,22 +363,26 @@ _mqx_int    FTE_LIST_remove(FTE_LIST_PTR pList, pointer pItem)
             pNode->pNext->pPrev = pNode->pPrev;            
             pList->nCount--;
              
-            fte_sys_lock_disable(pList->pLockKey);
+            FTE_SYS_LOCK_disable(pList->pLockKey);
             
             FTE_MEM_free(pNode);
             
-            return  MQX_OK;
+            return  FTE_RET_OK;
         }
         
         pNode = pNode->pNext;
     }
     
-    fte_sys_lock_disable(pList->pLockKey);
+    FTE_SYS_LOCK_disable(pList->pLockKey);
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
-_mqx_int    FTE_LIST_ITER_init(FTE_LIST_PTR pList, FTE_LIST_ITERATOR_PTR pIter)
+FTE_RET    FTE_LIST_ITER_init
+(
+    FTE_LIST_PTR    pList, 
+    FTE_LIST_ITERATOR_PTR   pIter
+)
 {
     ASSERT((pList != NULL) && (pIter != NULL));
   
@@ -345,10 +394,13 @@ _mqx_int    FTE_LIST_ITER_init(FTE_LIST_PTR pList, FTE_LIST_ITERATOR_PTR pIter)
     pIter->pList = pList;
     pIter->pNode = pList->pHead;
     
-    return  MQX_OK;    
+    return  FTE_RET_OK;    
 }
 
-pointer     FTE_LIST_ITER_getNext(FTE_LIST_ITERATOR_PTR pIter)
+FTE_VOID_PTR     FTE_LIST_ITER_getNext
+(
+    FTE_LIST_ITERATOR_PTR   pIter
+)
 {
     ASSERT(pIter != NULL);
     

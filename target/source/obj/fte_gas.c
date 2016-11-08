@@ -3,21 +3,25 @@
 #include "fte_log.h"
 
 
-int_32  fte_gas_shell_cmd(int_32 argc, char_ptr argv[] )
+FTE_INT32  fte_gas_shell_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[] 
+)
 { 
-    boolean              print_usage, shorthelp = FALSE;
-    int_32               return_code = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   xRet = SHELL_EXIT_SUCCESS;
     
-    print_usage = Shell_check_help_request (argc, argv, &shorthelp);
+    bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
-    if (!print_usage)
+    if (!bPrintUsage)
     { 
-        switch(argc)
+        switch(nArgc)
         {
         case    1:
             { 
-                int count = FTE_OBJ_count(FTE_OBJ_TYPE_GAS, FTE_OBJ_CLASS_MASK, FALSE);
-                for(int i = 0 ; i < count ; i++)
+                FTE_INT32 count = FTE_OBJ_count(FTE_OBJ_TYPE_GAS, FTE_OBJ_CLASS_MASK, FALSE);
+                for(FTE_INT32 i = 0 ; i < count ; i++)
                 {
                     FTE_OBJECT_PTR pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_GAS, FTE_OBJ_CLASS_MASK, i, FALSE);
                     if (pObj != NULL)
@@ -33,34 +37,34 @@ int_32  fte_gas_shell_cmd(int_32 argc, char_ptr argv[] )
             
         case    4:
             {
-                uint_32 nValue;
+                FTE_UINT32 nValue;
                 
-                if (! Shell_parse_number( argv[2], &nValue))  
+                if (! Shell_parse_number( pArgv[2], &nValue))  
                 {
-                   return_code = SHELL_EXIT_ERROR;
+                   xRet = SHELL_EXIT_ERROR;
                    goto error;
                 }
                 
                 FTE_OBJECT_PTR          pObj = FTE_OBJ_get(nValue);
                 if (pObj == NULL)
                 {
-                   return_code = SHELL_EXIT_ERROR;
+                   xRet = SHELL_EXIT_ERROR;
                    goto error;
                 }
                 
                 
-                if (strcmp(argv[1], "mode") == 0)
+                if (strcmp(pArgv[1], "mode") == 0)
                 {
                     char    pBuff[32];
                     
-                    if (!Shell_parse_number(argv[3], &nValue))
+                    if (!Shell_parse_number(pArgv[3], &nValue))
                     {
-                       return_code = SHELL_EXIT_ERROR;
+                       xRet = SHELL_EXIT_ERROR;
                        goto error;
                     }
                     
                     sprintf(pBuff, "K %d\r\n", nValue);
-                    fte_ucs_write(((FTE_COZIR_STATUS_PTR)pObj->pStatus)->pUCS, (uint_8_ptr)pBuff, strlen(pBuff));
+                    fte_ucs_write(((FTE_COZIR_STATUS_PTR)pObj->pStatus)->pUCS, (FTE_UINT8_PTR)pBuff, strlen(pBuff));
                     
                 }
             }
@@ -69,19 +73,19 @@ int_32  fte_gas_shell_cmd(int_32 argc, char_ptr argv[] )
     }
     
 error:    
-    if (print_usage || (return_code !=SHELL_EXIT_SUCCESS))
+    if (bPrintUsage || (xRet !=SHELL_EXIT_SUCCESS))
     {
-        if (shorthelp)
+        if (bShortHelp)
         {
-            printf ("%s [<id>]\n", argv[0]);
+            printf ("%s [<id>]\n", pArgv[0]);
         }
         else
         {
-            printf("Usage : %s [<id>]\n", argv[0]);
+            printf("Usage : %s [<id>]\n", pArgv[0]);
             printf("        id - COZIR Index \n");
         }
     }
 
-    return   return_code;
+    return   xRet;
 }
             

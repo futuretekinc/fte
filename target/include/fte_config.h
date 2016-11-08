@@ -7,13 +7,13 @@
 
 typedef struct _FTE_CFG_desc_struct
 {
-    char_ptr                            pMTDs[FTE_MTD_MAX_COUNT];
+    FTE_CHAR_PTR                        pMTDs[FTE_MTD_MAX_COUNT];
     FTE_SYS_CONFIG const _PTR_          pSystem;
     FTE_SHELL_CONFIG const _PTR_        pShell;
     FTE_NET_CFG const _PTR_             pNetwork;
-    FTE_UINT32                             nObjects;
+    FTE_UINT32                          nObjects;
     FTE_OBJECT_CONFIG_PTR const _PTR_   pObjects;
-    FTE_UINT32                             nEvents;
+    FTE_UINT32                          nEvents;
     FTE_CFG_EVENT_PTR const _PTR_       pEvents;
 }   FTE_CFG_DESC, _PTR_ FTE_CFG_DESC_PTR;
 
@@ -24,12 +24,12 @@ FTE_RET         FTE_CFG_clearObject(void);
 
 FTE_BOOL        FTE_CFG_isChanged(void);
 
-FTE_RET         FTE_CFG_setOID(uint_8_ptr pOID, FTE_UINT32 nLen);
+FTE_RET         FTE_CFG_setOID(FTE_UINT8_PTR pOID, FTE_UINT32 nLen);
 FTE_RET         FTE_CFG_getMAC(_enet_address pMAC);
 FTE_RET         FTE_CFG_setMAC(_enet_address pMAC);
 
-FTE_RET         FTE_CFG_getLocation(char_ptr pLocation, FTE_UINT32 nLen);
-FTE_RET         FTE_CFG_setLocation(char_ptr pLocation, FTE_UINT32 nLen);
+FTE_RET         FTE_CFG_getLocation(FTE_CHAR_PTR pLocation, FTE_UINT32 nLen);
+FTE_RET         FTE_CFG_setLocation(FTE_CHAR_PTR pLocation, FTE_UINT32 nLen);
 
 FTE_NET_CFG_PTR FTE_CFG_NET_get(void);
 FTE_RET         FTE_CFG_NET_set(FTE_NET_CFG const * pCfgNet);
@@ -76,8 +76,8 @@ FTE_RET         FTE_CFG_EVENT_free(FTE_CFG_EVENT_PTR pConfig);
 FTE_UINT32      FTE_CFG_EVENT_count(void);
 FTE_RET         FTE_CFG_EVENT_getAt(FTE_UINT32 ulIndex, FTE_CFG_EVENT_PTR _PTR_ ppConfig);
 
-pointer         FTE_CFG_EVENT_getFirst(void);
-pointer         FTE_CFG_EVENT_getNext(void);
+FTE_VOID_PTR    FTE_CFG_EVENT_getFirst(void);
+FTE_VOID_PTR    FTE_CFG_EVENT_getNext(void);
 
 FTE_RET         FTE_CFG_EXT_init(void);
 
@@ -95,7 +95,7 @@ FTE_UINT32      FTE_CFG_CERT_size(void);
 FTE_UINT32      FTE_CFG_CERT_get(FTE_VOID_PTR pBuff, FTE_UINT32 ulBuffLen);
 FTE_RET         FTE_CFG_CERT_set(FTE_VOID_PTR pCert, FTE_UINT32 ulCertLen);
 
-FTE_INT32       FTE_CFG_CERT_SHELL_cmd(FTE_INT32 argc, char_ptr argv[]);
+FTE_INT32       FTE_CFG_CERT_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
                                          
 FTE_SYS_CONFIG_PTR  FTE_CFG_SYS_get(void);
 FTE_RET         FTE_CFG_SYS_set(FTE_SYS_CONFIG const *pConfig);
@@ -114,7 +114,7 @@ FTE_RET         FTE_CFG_SHELL_set(FTE_SHELL_CONFIG const *pConfig);
 
 FTE_RET         FTE_CFG_DBG_getBootTime(FTE_UINT32 nIndex, TIME_STRUCT_PTR pTime);
 
-FTE_INT32       FTE_CFG_SHELL_cmd(FTE_INT32 argc, char_ptr argv[]);
-FTE_INT32       FTE_CFG_SHELL_cmdSave(FTE_INT32 argc, char_ptr argv[]);
+FTE_INT32       FTE_CFG_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
+FTE_INT32       FTE_CFG_SHELL_cmdSave(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
 
 #endif

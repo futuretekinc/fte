@@ -29,7 +29,7 @@
 
 #define FTE_DEV_FLAG_SYSTEM_DEVICE  0x0001
 
-typedef FTE_UINT32 fte_dev_type, _PTR_ fte_dev_type_ptr;
+typedef FTE_UINT32 FTE_DEV_TYPE, _PTR_ FTE_DEV_TYPE_PTR;
 
 typedef FTE_RET   (*DRIVER_CREATE_FUNC)(void *);
 typedef FTE_RET   (*DRIVER_ATTACH_FUNC)(FTE_UINT32, FTE_UINT32);
@@ -37,7 +37,7 @@ typedef FTE_RET   (*DRIVER_DETACH_FUNC)(FTE_UINT32, FTE_UINT32);
 
 typedef struct  _FTE_DRIVER_DESCRIPT_STRUCT
 {
-    fte_dev_type        nType;
+    FTE_DEV_TYPE        nType;
     FTE_CHAR_PTR        pName;
     DRIVER_CREATE_FUNC  f_create;
     DRIVER_ATTACH_FUNC  f_attach;
@@ -58,7 +58,7 @@ typedef struct _FTE_DRIVER_STRUCT
 } FTE_DRIVER, _PTR_ FTE_DRIVER_PTR;
 
 FTE_RET   FTE_DRV_init(FTE_DRIVER_DESCRIPT_CONST_PTR pDriverDescript);
-FTE_RET   FTE_DRV_create(fte_dev_type xType, void *pParams);
+FTE_RET   FTE_DRV_create(FTE_DEV_TYPE xType, FTE_VOID_PTR pParams);
 
 #include "drv/fte_lwgpio.h"
 #include "drv/fte_gpio.h"

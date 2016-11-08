@@ -48,25 +48,25 @@ typedef enum  _fte_snmp_trap_alert_level
 
 typedef struct  FTE_SNMP_CFG_STRUCT
 {
-    boolean         bEnable;
+    FTE_BOOL    bEnable;
     struct
     {
-        uint_32     ulCount;
+        FTE_UINT32  ulCount;
         _ip_address pList[FTE_NET_SNMP_TRAP_COUNT];    
-        char        pCommunity[FTE_NET_SNMP_COMMUNITY_LENGTH + 1];
+        FTE_CHAR    pCommunity[FTE_NET_SNMP_COMMUNITY_LENGTH + 1];
     }   xTrap;
 }   FTE_SNMP_CFG, _PTR_ FTE_SNMP_CFG_PTR;
 
-_mqx_uint   FTE_SNMPD_init(FTE_SNMP_CFG_PTR pConfig);
+FTE_RET   FTE_SNMPD_init(FTE_SNMP_CFG_PTR pConfig);
 
-_mqx_uint   FTE_SNMPD_TRAP_add(_ip_address target, boolean bStatic);
-_mqx_uint   FTE_SNMPD_TRAP_del(_ip_address target);
-void        FTE_SNMPD_TRAP_processing(void);
-_mqx_uint   FTE_SNMPD_TRAP_sendAlert(uint_32 nOID, boolean bOccurred);
-_mqx_uint   FTE_SNMPD_TRAP_discovery(_ip_address xHostIP);
-_mqx_uint   FTE_SNMPD_TRAP_addServer(_ip_address xServerIP);
-_mqx_uint   FTE_SNMPD_TRAP_delServer(_ip_address xServerIP);
+FTE_RET   FTE_SNMPD_TRAP_add(_ip_address target, FTE_BOOL bStatic);
+FTE_RET   FTE_SNMPD_TRAP_del(_ip_address target);
+void      FTE_SNMPD_TRAP_processing(void);
+FTE_RET   FTE_SNMPD_TRAP_sendAlert(uint_32 nOID, FTE_BOOL bOccurred);
+FTE_RET   FTE_SNMPD_TRAP_discovery(_ip_address xHostIP);
+FTE_RET   FTE_SNMPD_TRAP_addServer(_ip_address xServerIP);
+FTE_RET   FTE_SNMPD_TRAP_delServer(_ip_address xServerIP);
 
-int_32      FTE_SNMPD_SHELL_cmd(int_32 argc, char_ptr argv[] );
+FTE_INT32   FTE_SNMPD_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[] );
 
 #endif

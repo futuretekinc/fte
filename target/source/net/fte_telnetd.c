@@ -27,13 +27,13 @@ FTE_RET   FTE_TELNETD_init
     if (uiRet !=  0)  
     {
         printf("Unable to start Telnet Server, error = 0x%x\n",uiRet);
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     FTE_TASK_append(FTE_TASK_TYPE_RTCS, _task_get_id_from_name(FTE_NET_TELNETD_NAME));
     
     printf("Telnet Server Started.\n");
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 void FTE_TELNETD_proc

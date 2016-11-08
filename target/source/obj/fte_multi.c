@@ -88,7 +88,7 @@ FTE_RET   FTE_MULTI_attach
     
     if (pStatus->pModelInfo->f_attach != NULL)
     {
-        if (pStatus->pModelInfo->f_attach(pObj) != MQX_OK)
+        if (pStatus->pModelInfo->f_attach(pObj) != FTE_RET_OK)
         {
             goto error;
         }
@@ -106,7 +106,7 @@ FTE_RET   FTE_MULTI_attach
             goto error;
         }
         
-        if (fte_ucs_attach(pUCS, pObj->pConfig->nID) != MQX_OK)
+        if (fte_ucs_attach(pUCS, pObj->pConfig->nID) != FTE_RET_OK)
         {
             goto error;
         }
@@ -116,7 +116,7 @@ FTE_RET   FTE_MULTI_attach
 
     pObj->pAction = &_Action;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
     if (pUCS != NULL)
@@ -124,7 +124,7 @@ error:
         fte_ucs_detach(pUCS, 0);
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
     
 }
 
@@ -153,7 +153,7 @@ FTE_RET FTE_MULTI_detach
     pObj->pAction = NULL;
     pObj->pStatus = NULL;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_MULTI_MODEL_INFO_CONST_PTR FTE_MULTI_getModelInfo
@@ -187,7 +187,7 @@ FTE_RET   FTE_MULTI_run
     
     pStatus->hRepeatTimer   = FTE_OBJ_runLoop(pObj, FTE_MULTI_restartConvert, pConfig->nInterval);    
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MULTI_stop
@@ -211,7 +211,7 @@ FTE_RET   FTE_MULTI_stop
         pStatus->hRepeatTimer = 0;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 }
 
@@ -232,7 +232,7 @@ FTE_RET FTE_MULTI_startMeasurement
 #endif    
     }
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 }
 
@@ -246,9 +246,9 @@ void FTE_MULTI_done
     FTE_OBJECT_PTR          pObj = (FTE_OBJECT_PTR)pData;
 //    FTE_MULTI_CONFIG_PTR    pConfig = (FTE_MULTI_CONFIG_PTR)pObj->pConfig;
     FTE_MULTI_STATUS_PTR    pStatus = (FTE_MULTI_STATUS_PTR)pObj->pStatus;
-    //boolean                 bOccurred = FALSE;
+    //FTE_BOOL                 bOccurred = FALSE;
     
-    if (pStatus->pModelInfo->f_receive_data(pObj) != MQX_OK)
+    if (pStatus->pModelInfo->f_receive_data(pObj) != FTE_RET_OK)
     {
 #if FTE_DEBUG
         pStatus->xStatistic.nTotalFail++;
@@ -306,10 +306,10 @@ FTE_RET    FTE_MULTI_get
             *xTimeStamp = pStatus->xTimeStamp;
         }
         
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
 
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET    FTE_MULTI_set
@@ -324,10 +324,10 @@ FTE_RET    FTE_MULTI_set
     
     if (FTE_OBJ_IS_ENABLED(pObj))
     {
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
 
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET    FTE_MULTI_setMulti
@@ -347,11 +347,11 @@ FTE_RET    FTE_MULTI_setMulti
         {
             pStatus->pModelInfo->f_set(pObj, nIndex, nValue);
            
-            return  MQX_OK;
+            return  FTE_RET_OK;
         }
     }
 
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_UINT32  FTE_MULTI_getUpdateInterval
@@ -376,7 +376,7 @@ FTE_RET    FTE_MULTI_setUpdateInterval
     
     FTE_CFG_OBJ_save(pObj);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 
@@ -395,7 +395,7 @@ FTE_RET   FTE_MULTI_getEventType
     
     *pEventType = pConfig->nEventType;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MULTI_setEventType
@@ -412,7 +412,7 @@ FTE_RET   FTE_MULTI_setEventType
 
     pConfig->nEventType = nEventType;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MULTI_getUpperLimit
@@ -429,7 +429,7 @@ FTE_RET   FTE_MULTI_getUpperLimit
 
     *pValue = pConfig->nUpperLimit;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MULTI_setUpperLimit
@@ -446,7 +446,7 @@ FTE_RET   FTE_MULTI_setUpperLimit
 
     pConfig->nUpperLimit = nValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MULTI_getLowerLimit
@@ -463,7 +463,7 @@ FTE_RET   FTE_MULTI_getLowerLimit
 
     *pValue = pConfig->nLowerLimit;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MULTI_setLowerLimit
@@ -480,7 +480,7 @@ FTE_RET   FTE_MULTI_setLowerLimit
 
    pConfig->nLowerLimit = nValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MULTI_getThreshold
@@ -497,7 +497,7 @@ FTE_RET   FTE_MULTI_getThreshold
 
     *pValue = pConfig->nThreshold;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MULTI_setThreshold
@@ -514,7 +514,7 @@ FTE_RET   FTE_MULTI_setThreshold
 
     pConfig->nThreshold = nValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MULTI_getEventDelay
@@ -531,7 +531,7 @@ FTE_RET   FTE_MULTI_getEventDelay
 
     *pValue = pConfig->nEventDelay;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MULTI_setEventDelay
@@ -548,7 +548,7 @@ FTE_RET   FTE_MULTI_setEventDelay
 
     pConfig->nEventDelay = nValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MULTI_eventCondition
@@ -601,7 +601,7 @@ FTE_RET   FTE_MULTI_eventCondition
         }
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 #endif
 
@@ -617,7 +617,7 @@ FTE_RET   FTE_MULTI_get_statistic
         
     memcpy(pStatistic, &pStatus->xStatistic, sizeof(FTE_OBJECT_STATISTIC));
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 

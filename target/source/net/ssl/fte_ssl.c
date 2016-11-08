@@ -19,7 +19,7 @@ FTE_SSL_CONTEXT_PTR FTE_SSL_create
     FTE_SSL_CONTEXT_PTR     pxCTX   = NULL;
     CYASSL_METHOD*          pxMETHOD= NULL;
     uchar_ptr               pCACert;
-    uint_32                 ulCACertLen = 0;
+    FTE_UINT32                 ulCACertLen = 0;
     ASSERT(pConfig != NULL);
     
     pxCTX = (FTE_SSL_CONTEXT_PTR)FTE_MEM_allocZero(sizeof(FTE_SSL_CONTEXT));
@@ -166,7 +166,7 @@ FTE_RET   FTE_SSL_connect
     while (nRet != SSL_SUCCESS && 
            (nError == SSL_ERROR_WANT_READ || nError == SSL_ERROR_WANT_WRITE)) 
     {
-        uint_32 ulSelectRet;
+        FTE_UINT32 ulSelectRet;
 
         ulSelectRet = RTCS_selectset(&nSocketID, 1, 2000);
         if (ulSelectRet == RTCS_SOCKET_ERROR) 

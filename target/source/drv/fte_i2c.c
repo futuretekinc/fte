@@ -45,7 +45,7 @@ FTE_RET   FTE_I2C_create
     pI2C = (FTE_I2C_PTR)FTE_MEM_allocZero(sizeof(FTE_I2C));
     if (pI2C == NULL)
     {
-        return  MQX_OUT_OF_MEMORY;
+        return  FTE_RET_NOT_ENOUGH_MEMORY;
     }
     
     _pChannels[pConfig->xPort].xFlags       = pConfig->xFlags;
@@ -59,7 +59,7 @@ FTE_RET   FTE_I2C_create
     _pHead = pI2C;
     _nI2C++;
         
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_I2C_attach
@@ -68,11 +68,7 @@ FTE_RET   FTE_I2C_attach
     FTE_UINT32      nParent
 )
 {
-    assert(pI2C != NULL);
-    if (pI2C == NULL)
-    {
-        return  MQX_INVALID_DEVICE;
-    }
+    ASSERT(pI2C != NULL);
         
     if (pI2C->pChannel->xFD == NULL)
     {
@@ -83,7 +79,7 @@ FTE_RET   FTE_I2C_attach
             goto error;
         }
         
-        if (_lwsem_create(&pI2C->pChannel->xLWSEM, 1) != MQX_OK)
+        if (FTE_SYS_LOCK_init(&pI2C->pChannel->xLWSEM, 1) != FTE_RET_OK)
         {
             goto error;
         }
@@ -103,7 +99,7 @@ FTE_RET   FTE_I2C_attach
 
     pI2C->nParent = nParent;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
     
@@ -114,7 +110,7 @@ error:
     }
     
    
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_I2C_detach
@@ -122,18 +118,14 @@ FTE_RET   FTE_I2C_detach
     FTE_I2C_PTR     pI2C
 )
 {
-    assert(pI2C != NULL);
-    if (pI2C == NULL)
-    {
-        return  MQX_INVALID_DEVICE;
-    }
+    ASSERT(pI2C != NULL);
             
     if (pI2C->pChannel->nCount == 1)
     {
         /* Open the I2C driver */
         fclose(pI2C->pChannel->xFD);        
         pI2C->pChannel->xFD = NULL;
-        _lwsem_destroy(&pI2C->pChannel->xLWSEM);        
+        FTE_SYS_LOCK_final(&pI2C->pChannel->xLWSEM);        
         pI2C->pChannel->nCount = 0;
     }  
     else
@@ -143,7 +135,7 @@ FTE_RET   FTE_I2C_detach
 
     pI2C->nParent = 0;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_UINT32     FTE_I2C_count(void)
@@ -195,7 +187,7 @@ FTE_UINT32     FTE_I2C_parent_get
     FTE_I2C_PTR     pI2C
 )
 {
-    assert(pI2C != NULL);
+    ASSERT(pI2C != NULL);
     
     return  pI2C->nParent;
 }
@@ -209,13 +201,8 @@ FTE_RET   FTE_I2C_read
     FTE_UINT32      ulLen
 )
 {
-    assert(pI2C != NULL);
+    ASSERT(pI2C != NULL);
     
-    if (pI2C == NULL)
-    {
-        return  MQX_INVALID_DEVICE;
-    }
-            
     _FTE_I2C_lock(pI2C);
 
     if (I2C_OK != ioctl (pI2C->pChannel->xFD, IO_IOCTL_I2C_SET_DESTINATION_ADDRESS, &nID))
@@ -230,12 +217,12 @@ FTE_RET   FTE_I2C_read
   
     _FTE_I2C_unlock(pI2C);
     
-    return MQX_OK;
+    return FTE_RET_OK;
     
 error:  
     _FTE_I2C_unlock(pI2C);
     
-    return MQX_ERROR;
+    return FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_I2C_write
@@ -246,13 +233,8 @@ FTE_RET   FTE_I2C_write
     FTE_UINT32      ulLen
 )
 {
-    assert(pI2C != NULL);
+    ASSERT(pI2C != NULL);
     
-    if (pI2C == NULL)
-    {
-        return  MQX_INVALID_DEVICE;
-    }
-
     _FTE_I2C_lock(pI2C);
 
     if (I2C_OK != ioctl (pI2C->pChannel->xFD, IO_IOCTL_I2C_SET_DESTINATION_ADDRESS, &nID))
@@ -267,12 +249,12 @@ FTE_RET   FTE_I2C_write
 
     _FTE_I2C_unlock(pI2C);
     
-    return MQX_OK;
+    return FTE_RET_OK;
     
 error:  
     _FTE_I2C_unlock(pI2C);
     
-    return MQX_ERROR;
+    return FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_I2C_write_byte
@@ -282,13 +264,8 @@ FTE_RET   FTE_I2C_write_byte
     FTE_UINT8       uiData
 )
 {
-    assert(pI2C != NULL);
+    ASSERT(pI2C != NULL);
     
-    if (pI2C == NULL)
-    {
-        return  MQX_INVALID_DEVICE;
-    }
-
     _FTE_I2C_lock(pI2C);
 
     if (I2C_OK != ioctl (pI2C->pChannel->xFD, IO_IOCTL_I2C_SET_DESTINATION_ADDRESS, &nID))
@@ -303,12 +280,12 @@ FTE_RET   FTE_I2C_write_byte
 
     _FTE_I2C_unlock(pI2C);
     
-    return MQX_OK;
+    return FTE_RET_OK;
     
 error:  
     _FTE_I2C_unlock(pI2C);
     
-    return MQX_ERROR;
+    return FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_I2C_set_baudrate
@@ -317,7 +294,7 @@ FTE_RET   FTE_I2C_set_baudrate
     FTE_UINT32  ulBaudrate
 )
 {
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_I2C_get_baudrate
@@ -326,16 +303,11 @@ FTE_RET   FTE_I2C_get_baudrate
     FTE_UINT32_PTR  pulBaudrate
 )
 {
-    assert(pI2C != NULL);
+    ASSERT(pI2C != NULL);
     
-    if (pI2C == NULL)
-    {
-        return  MQX_INVALID_DEVICE;
-    }
-            
     *pulBaudrate = pI2C->pConfig->nBaudrate;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_I2C_set_flags
@@ -344,7 +316,7 @@ FTE_RET   FTE_I2C_set_flags
     FTE_UINT32  xFlags
 )
 {
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_I2C_get_flags
@@ -353,15 +325,11 @@ FTE_RET   FTE_I2C_get_flags
     FTE_UINT32_PTR  pxFlags
 )
 {
-    assert(pI2C != NULL);
-    if (pI2C == NULL)
-    {
-        return  MQX_INVALID_DEVICE;
-    }
+    ASSERT(pI2C != NULL);
             
     *pxFlags = pI2C->pConfig->xFlags;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 /******************************************************************************
@@ -372,18 +340,18 @@ FTE_RET   _FTE_I2C_lock
     FTE_I2C_PTR     pI2C
 )
 {
-    assert(pI2C != NULL);
+    ASSERT(pI2C != NULL);
     
-    if (_lwsem_wait(&pI2C->pChannel->xLWSEM) != MQX_OK)
+    if (FTE_SYS_LOCK_enable(&pI2C->pChannel->xLWSEM) != FTE_RET_OK)
     {  
-        DEBUG("\n_lwsem_wait failed");
+        DEBUG("\nFTE_SYS_LOCK_enable failed");
         goto error;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 error:
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   _FTE_I2C_unlock
@@ -391,17 +359,17 @@ FTE_RET   _FTE_I2C_unlock
     FTE_I2C_PTR     pI2C
 )
 {   
-    assert(pI2C != NULL);
+    ASSERT(pI2C != NULL);
     
 //    fflush(pI2C->pChannel->xFD);
     
-    if (_lwsem_post(&pI2C->pChannel->xLWSEM) != MQX_OK)
+    if (FTE_SYS_LOCK_disable(&pI2C->pChannel->xLWSEM) != FTE_RET_OK)
     {
-        DEBUG("\n_lwsem_post failed");
-        return  MQX_ERROR;
+        DEBUG("\nFTE_SYS_LOCK_disable failed");
+        return  FTE_RET_ERROR;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 } 
 
 #define I2C_DEVICE_INTERRUPT "ii2c0:"
@@ -480,7 +448,7 @@ FTE_INT32  FTE_I2C_SHELL_cmd
                        goto error;
                     }
                     
-                    if (MQX_OK != FTE_I2C_read(pI2C, (FTE_UINT8 *)&pSendBuff, nCmdLen, pRecvBuff, nRecvLen))
+                    if (FTE_RET_OK != FTE_I2C_read(pI2C, (FTE_UINT8 *)&pSendBuff, nCmdLen, pRecvBuff, nRecvLen))
                     {
                        xRet = SHELL_EXIT_ERROR;
                        goto error;
@@ -529,7 +497,7 @@ FTE_INT32  FTE_I2C_SHELL_cmd
                         pSendBuff[i] = nValue;
                     }
                     
-                    if (MQX_OK != FTE_I2C_write(pI2C, pSendBuff, nSendLen, NULL, 0))
+                    if (FTE_RET_OK != FTE_I2C_write(pI2C, pSendBuff, nSendLen, NULL, 0))
                     {
                        xRet = SHELL_EXIT_ERROR;
                        goto error;
@@ -601,7 +569,7 @@ void _FTE_I2C_write
    FTE_UINT8        mem[128];
 
    /* Protect I2C transaction in multitask environment */
-//   _lwsem_wait (&lock);
+//   FTE_SYS_LOCK_enable (&lock);
 
    printf ("Writing %d bytes to address 0x%08x ...\n", n, addr);
    do
@@ -675,7 +643,7 @@ void _FTE_I2C_write
       /* Wait for completion */
       printf ("  Flush ... ");
       result = fflush (fd);
-      if (MQX_OK == result)
+      if (FTE_RET_OK == result)
       {
          printf ("OK\n");
       } else {
@@ -719,7 +687,7 @@ void _FTE_I2C_write
    } while (n);
 
    /* Release the transaction lock */
-//   _lwsem_post (&lock);
+//   FTE_SYS_LOCK_disable (&lock);
 } /* Endbody */
 
    
@@ -759,7 +727,7 @@ void i2c_read_interrupt
    }
 
    /* Protect I2C transaction in multitask environment */
-//   _lwsem_wait (&lock);
+//   FTE_SYS_LOCK_enable (&lock);
    
    /* I2C bus address also contains memory block index */
    param = I2C_EEPROM_BUS_ADDRESS;
@@ -791,7 +759,7 @@ void i2c_read_interrupt
          }
          
          /* Release the transaction lock */
-//         _lwsem_post (&lock);
+//         FTE_SYS_LOCK_disable (&lock);
          
          return;
       }
@@ -822,7 +790,7 @@ void i2c_read_interrupt
    /* Wait for completion */
    printf ("  Flush ... ");
    result = fflush (fd);
-   if (MQX_OK == result)
+   if (FTE_RET_OK == result)
    {
       printf ("OK\n");
    } else {
@@ -867,6 +835,6 @@ void i2c_read_interrupt
    }
    
    /* Release the transaction lock */
-//   _lwsem_post (&lock);
+//   FTE_SYS_LOCK_disable (&lock);
 } /* Endbody */
 #endif

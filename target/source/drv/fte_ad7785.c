@@ -45,7 +45,7 @@ FTE_RET   FTE_AD7785_create
     pAD7785 = (FTE_AD7785_PTR)FTE_MEM_allocZero(sizeof(FTE_AD7785));
     if (pAD7785 == NULL)
     {
-        return  MQX_OUT_OF_MEMORY;
+        return  FTE_RET_NOT_ENOUGH_MEMORY;
     }
     
     pAD7785->pNext  = _pHead;
@@ -55,7 +55,7 @@ FTE_RET   FTE_AD7785_create
     _nAD7785s++;
     
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_AD7785_attach
@@ -72,7 +72,7 @@ FTE_RET   FTE_AD7785_attach
         goto error;
     }
     
-    if (FTE_SPI_attach(pAD7785->pSPI, pAD7785->pConfig->nID) != MQX_OK)
+    if (FTE_SPI_attach(pAD7785->pSPI, pAD7785->pConfig->nID) != FTE_RET_OK)
     {
         goto error;
     }
@@ -81,10 +81,10 @@ FTE_RET   FTE_AD7785_attach
     
     _FTE_AD7785_init(pAD7785);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:    
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_AD7785_detach
@@ -97,16 +97,16 @@ FTE_RET   FTE_AD7785_detach
         goto error;
     }
     
-    if (FTE_SPI_detach(pAD7785->pSPI) != MQX_OK)
+    if (FTE_SPI_detach(pAD7785->pSPI) != FTE_RET_OK)
     {
         goto error;
     }
     
     pAD7785->nParent = 0;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_BOOL     FTE_AD7785_exist
@@ -130,7 +130,7 @@ FTE_RET   FTE_AD7785_getReady
 
     ASSERT(pAD7785 != NULL);
 
-    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&ubBuf, 1) != MQX_OK)
+    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&ubBuf, 1) != FTE_RET_OK)
     {
          goto error;
     }
@@ -144,10 +144,10 @@ FTE_RET   FTE_AD7785_getReady
         *pError = (((ntohs(&ubBuf) & FTE_AD7785_STATUS_ERR_MASK) >> FTE_AD7785_STATUS_ERR_SHIFT) == FTE_AD7785_STATUS_ERR);
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_AD7785_runSingle
@@ -170,16 +170,16 @@ FTE_RET   FTE_AD7785_getOPMode
 
     ASSERT(pAD7785 != NULL);
 
-    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&buf, 2) != MQX_OK)
+    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&buf, 2) != FTE_RET_OK)
     {
          goto error;
     }
     *pMode = (ntohs(&buf) & FTE_AD7785_OP_MODE_MASK) >> FTE_AD7785_OP_MODE_SHIFT;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_AD7785_setOPMode
@@ -192,7 +192,7 @@ FTE_RET   FTE_AD7785_setOPMode
     
     ASSERT(pAD7785 != NULL);
     
-    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&usBuf1, 2) != MQX_OK)
+    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&usBuf1, 2) != FTE_RET_OK)
     {
          goto error;
     }
@@ -201,17 +201,17 @@ FTE_RET   FTE_AD7785_setOPMode
     usBuf2 = (usBuf2 & ~FTE_AD7785_OP_MODE_MASK) | ((ulMode << FTE_AD7785_OP_MODE_SHIFT) & FTE_AD7785_OP_MODE_MASK);
         
     htons(&usBuf1, usBuf2);
-    if (_FTE_AD7785_setReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&usBuf1, 2) != MQX_OK)
+    if (_FTE_AD7785_setReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&usBuf1, 2) != FTE_RET_OK)
     {
          goto error;
     }
     
     pAD7785->nLastValue = 0xFFFFFFFF;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_AD7785_getClock
@@ -224,16 +224,16 @@ FTE_RET   FTE_AD7785_getClock
     
     ASSERT(pAD7785 != NULL);
     
-    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&usBuf, 2) != MQX_OK)
+    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&usBuf, 2) != FTE_RET_OK)
     {
          goto error;
     }
     *pClk = (ntohs(&usBuf) & FTE_AD7785_CLK_MASK) >> FTE_AD7785_CLK_SHIFT;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_AD7785_setClock
@@ -246,7 +246,7 @@ FTE_RET   FTE_AD7785_setClock
     
     ASSERT(pAD7785 != NULL);
 
-    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&usBuf1, 2) != MQX_OK)
+    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&usBuf1, 2) != FTE_RET_OK)
     {
          goto error;
     }
@@ -255,15 +255,15 @@ FTE_RET   FTE_AD7785_setClock
     usBuf2 = (usBuf2 & ~FTE_AD7785_CLK_MASK) | ((clk << FTE_AD7785_CLK_SHIFT) & FTE_AD7785_CLK_MASK);
         
     htons(&usBuf1, usBuf2);
-    if (_FTE_AD7785_setReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&usBuf1, 2) != MQX_OK)
+    if (_FTE_AD7785_setReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&usBuf1, 2) != FTE_RET_OK)
     {
          goto error;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_AD7785_getFreq
@@ -276,16 +276,16 @@ FTE_RET   FTE_AD7785_getFreq
     
     ASSERT(pAD7785 != NULL);
 
-    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&usBuf, 2) != MQX_OK)
+    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&usBuf, 2) != FTE_RET_OK)
     {
          goto error;
     }
     *pFreq = (ntohs(&usBuf) & FTE_AD7785_FREQ_MASK) >> FTE_AD7785_FREQ_SHIFT;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_AD7785_setFreq
@@ -298,7 +298,7 @@ FTE_RET   FTE_AD7785_setFreq
     
     ASSERT(pAD7785 != NULL);
 
-    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&usBuf1, 2) != MQX_OK)
+    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&usBuf1, 2) != FTE_RET_OK)
     {
          goto error;
     }
@@ -307,15 +307,15 @@ FTE_RET   FTE_AD7785_setFreq
     usBuf2 = (usBuf2 & ~FTE_AD7785_FREQ_MASK) | ((ulFreq << FTE_AD7785_FREQ_SHIFT) & FTE_AD7785_FREQ_MASK);
         
     htons(&usBuf1, usBuf2);
-    if (_FTE_AD7785_setReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&usBuf1, 2) != MQX_OK)
+    if (_FTE_AD7785_setReg(pAD7785, FTE_AD7785_REG_MODE, (FTE_UINT8_PTR)&usBuf1, 2) != FTE_RET_OK)
     {
          goto error;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_UINT32     FTE_AD7785_measurementTime
@@ -356,16 +356,16 @@ FTE_RET   FTE_AD7785_getConfig
     
     ASSERT(pAD7785 != NULL);
 
-    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf, 2) != MQX_OK)
+    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf, 2) != FTE_RET_OK)
     {
          goto error;
     }
     *config = ntohs(&usBuf);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_AD7785_setConfig
@@ -379,15 +379,15 @@ FTE_RET   FTE_AD7785_setConfig
     ASSERT(pAD7785 != NULL);
 
     htons(&usBuf, config);
-    if (_FTE_AD7785_setReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf, 2) != MQX_OK)
+    if (_FTE_AD7785_setReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf, 2) != FTE_RET_OK)
     {
          goto error;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_AD7785_getVBias
@@ -400,16 +400,16 @@ FTE_RET   FTE_AD7785_getVBias
     
     ASSERT(pAD7785 != NULL);
 
-    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf, 2) != MQX_OK)
+    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf, 2) != FTE_RET_OK)
     {
          goto error;
     }
     *vbios = (ntohs(&usBuf) & FTE_AD7785_CONFIG_VBIOS_MASK) >> FTE_AD7785_CONFIG_VBIOS_SHIFT;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_AD7785_setVBias
@@ -422,7 +422,7 @@ FTE_RET   FTE_AD7785_setVBias
     
     ASSERT(pAD7785 != NULL);
 
-    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf1, 2) != MQX_OK)
+    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf1, 2) != FTE_RET_OK)
     {
          goto error;
     }
@@ -431,15 +431,15 @@ FTE_RET   FTE_AD7785_setVBias
     usBuf2 = (usBuf2 & ~FTE_AD7785_CONFIG_VBIOS_MASK) | ((vbios << FTE_AD7785_CONFIG_VBIOS_SHIFT) & FTE_AD7785_CONFIG_VBIOS_MASK);
         
     htons(&usBuf1, usBuf2);
-    if (_FTE_AD7785_setReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf1, 2) != MQX_OK)
+    if (_FTE_AD7785_setReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf1, 2) != FTE_RET_OK)
     {
          goto error;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_AD7785_getGain
@@ -452,16 +452,16 @@ FTE_RET   FTE_AD7785_getGain
     
     ASSERT(pAD7785 != NULL);
 
-    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf, 2) != MQX_OK)
+    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf, 2) != FTE_RET_OK)
     {
          goto error;
     }
     *gain = (ntohs(&usBuf) & FTE_AD7785_CONFIG_GAIN_MASK) >> FTE_AD7785_CONFIG_GAIN_SHIFT;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_AD7785_setGain
@@ -474,7 +474,7 @@ FTE_RET   FTE_AD7785_setGain
     
     ASSERT(pAD7785 != NULL);
 
-    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf1, 2) != MQX_OK)
+    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf1, 2) != FTE_RET_OK)
     {
          goto error;
     }
@@ -483,15 +483,15 @@ FTE_RET   FTE_AD7785_setGain
     usBuf2 = (usBuf2 & ~FTE_AD7785_CONFIG_GAIN_MASK) | ((gain << FTE_AD7785_CONFIG_GAIN_SHIFT) & FTE_AD7785_CONFIG_GAIN_MASK);
         
     htons(&usBuf1, usBuf2);
-    if (_FTE_AD7785_setReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf1, 2) != MQX_OK)
+    if (_FTE_AD7785_setReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf1, 2) != FTE_RET_OK)
     {
          goto error;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_AD7785_getChannel
@@ -504,16 +504,16 @@ FTE_RET   FTE_AD7785_getChannel
     
     ASSERT(pAD7785 != NULL);
 
-    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf, 2) != MQX_OK)
+    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf, 2) != FTE_RET_OK)
     {
          goto error;
     }
     *channel = (ntohs(&usBuf) & FTE_AD7785_CONFIG_CHANNEL_MASK) >> FTE_AD7785_CONFIG_CHANNEL_SHIFT;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_AD7785_setChannel
@@ -526,7 +526,7 @@ FTE_RET   FTE_AD7785_setChannel
     
     ASSERT(pAD7785 != NULL);
 
-    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf1, 2) != MQX_OK)
+    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf1, 2) != FTE_RET_OK)
     {
          goto error;
     }
@@ -535,15 +535,15 @@ FTE_RET   FTE_AD7785_setChannel
     usBuf2 = (usBuf2 & ~FTE_AD7785_CONFIG_CHANNEL_MASK) | ((channel << FTE_AD7785_CONFIG_CHANNEL_SHIFT) & FTE_AD7785_CONFIG_CHANNEL_MASK);
         
     htons(&usBuf1, usBuf2);
-    if (_FTE_AD7785_setReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf1, 2) != MQX_OK)
+    if (_FTE_AD7785_setReg(pAD7785, FTE_AD7785_REG_CONFIG, (FTE_UINT8_PTR)&usBuf1, 2) != FTE_RET_OK)
     {
          goto error;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_AD7785_getIOut
@@ -556,16 +556,16 @@ FTE_RET   FTE_AD7785_getIOut
     
     ASSERT(pAD7785 != NULL);
 
-    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_IOUT, (FTE_UINT8_PTR)&bBuf, 1) != MQX_OK)
+    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_IOUT, (FTE_UINT8_PTR)&bBuf, 1) != FTE_RET_OK)
     {
          goto error;
     }
     *iout = (bBuf & FTE_AD7785_IOUT_DIR_MASK) >> FTE_AD7785_IOUT_DIR_SHIFT;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_AD7785_setIOut
@@ -578,22 +578,22 @@ FTE_RET   FTE_AD7785_setIOut
     
     ASSERT(pAD7785 != NULL);
 
-    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_IOUT, (FTE_UINT8_PTR)&bBuf, 1) != MQX_OK)
+    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_IOUT, (FTE_UINT8_PTR)&bBuf, 1) != FTE_RET_OK)
     {
          goto error;
     }
     
     bBuf = (bBuf & ~FTE_AD7785_IOUT_DIR_MASK) | ((iout << FTE_AD7785_IOUT_DIR_SHIFT) & FTE_AD7785_IOUT_DIR_MASK);
         
-    if (_FTE_AD7785_setReg(pAD7785, FTE_AD7785_REG_IOUT, (FTE_UINT8_PTR)&bBuf, 1) != MQX_OK)
+    if (_FTE_AD7785_setReg(pAD7785, FTE_AD7785_REG_IOUT, (FTE_UINT8_PTR)&bBuf, 1) != FTE_RET_OK)
     {
          goto error;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_AD7785_getCurrent
@@ -606,16 +606,16 @@ FTE_RET   FTE_AD7785_getCurrent
     
     ASSERT(pAD7785 != NULL);
 
-    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_IOUT, (FTE_UINT8_PTR)&bBuf, 1) != MQX_OK)
+    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_IOUT, (FTE_UINT8_PTR)&bBuf, 1) != FTE_RET_OK)
     {
          goto error;
     }
     *current = (bBuf & FTE_AD7785_IOUT_CURRENT_MASK) >> FTE_AD7785_IOUT_CURRENT_SHIFT;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_AD7785_setCurrent
@@ -628,22 +628,22 @@ FTE_RET   FTE_AD7785_setCurrent
     
     ASSERT(pAD7785 != NULL);
 
-    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_IOUT, (FTE_UINT8_PTR)&bBuf, 1) != MQX_OK)
+    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_IOUT, (FTE_UINT8_PTR)&bBuf, 1) != FTE_RET_OK)
     {
          goto error;
     }
     
     bBuf = (bBuf & ~FTE_AD7785_IOUT_CURRENT_MASK) | ((current << FTE_AD7785_IOUT_CURRENT_SHIFT) & FTE_AD7785_IOUT_CURRENT_MASK);
         
-    if (_FTE_AD7785_setReg(pAD7785, FTE_AD7785_REG_IOUT, (FTE_UINT8_PTR)&bBuf, 1) != MQX_OK)
+    if (_FTE_AD7785_setReg(pAD7785, FTE_AD7785_REG_IOUT, (FTE_UINT8_PTR)&bBuf, 1) != FTE_RET_OK)
     {
          goto error;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_AD7785_getRawData
@@ -657,9 +657,9 @@ FTE_RET   FTE_AD7785_getRawData
     
     ASSERT(pAD7785 != NULL);
 
-    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_DATA, pBuf, 3) != MQX_OK)
+    if (_FTE_AD7785_getReg(pAD7785, FTE_AD7785_REG_DATA, pBuf, 3) != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     ((FTE_UINT8_PTR)&nValue)[0] = pBuf[2];
@@ -671,7 +671,7 @@ FTE_RET   FTE_AD7785_getRawData
     
     *pValue = nValue;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_AD7785_getScaleData
@@ -687,7 +687,7 @@ FTE_RET   FTE_AD7785_getScaleData
         FTE_UINT32     nValue = 0;
         
         nRet = FTE_AD7785_getRawData(pAD7785, &nValue);
-        if (nRet != MQX_OK)
+        if (nRet != FTE_RET_OK)
         {
             return  nRet;
         }
@@ -697,7 +697,7 @@ FTE_RET   FTE_AD7785_getScaleData
     
     *pValue = (FTE_UINT32)((float)pAD7785->nLastValue / 0x000FFFFF * 1170000) ;        
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 /******************************************************************************
@@ -727,7 +727,7 @@ FTE_RET _FTE_AD7785_init
     FTE_AD7785_setCurrent(pAD7785, FTE_AD7785_IOUT_CURRENT_0);    
     
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 
@@ -745,14 +745,14 @@ FTE_RET   _FTE_AD7785_getReg
     assert((pAD7785 != NULL) && (pData != NULL) && (ulLen < 4));
     
     ubCmd = FTE_AD7785_CMD_BIT_READ | ((ulReg << FTE_AD7785_CMD_BIT_RS_SHIFT) & FTE_AD7785_CMD_BIT_RS_MASK);
-    if (MQX_OK != FTE_SPI_read(pAD7785->pSPI, &ubCmd, 1, pData, ulLen))
+    if (FTE_RET_OK != FTE_SPI_read(pAD7785->pSPI, &ubCmd, 1, pData, ulLen))
     {
         goto error;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 
 }
 
@@ -770,14 +770,14 @@ FTE_RET   _FTE_AD7785_setReg
     assert((pAD7785 != NULL) && (pData != NULL) && (ulLen < 4));
     
     ubCmd = FTE_AD7785_CMD_BIT_WRITE | ((ulReg << FTE_AD7785_CMD_BIT_RS_SHIFT) & FTE_AD7785_CMD_BIT_RS_MASK);
-    if (MQX_OK != FTE_SPI_write(pAD7785->pSPI, &ubCmd, 1, pData, ulLen))
+    if (FTE_RET_OK != FTE_SPI_write(pAD7785->pSPI, &ubCmd, 1, pData, ulLen))
     {
         goto error;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 
@@ -835,7 +835,7 @@ FTE_INT32  FTE_AD7785_SHELL_cmd
                 {
                     FTE_UINT8 pRegValue[4] = {0,};
                     
-                    if (_FTE_AD7785_getReg(pAD7785, i, pRegValue, nFieldSize[i]) != MQX_OK)
+                    if (_FTE_AD7785_getReg(pAD7785, i, pRegValue, nFieldSize[i]) != FTE_RET_OK)
                     {
                         printf("%d : Invalid\n", i);
                     }

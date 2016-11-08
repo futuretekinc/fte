@@ -74,13 +74,13 @@ FTE_RET FTE_DI_attach
         goto error;
     }
     
-    if (FTE_GPIO_attach(pStatus->pGPIO, pConfig->xCommon.nID) != MQX_OK)
+    if (FTE_GPIO_attach(pStatus->pGPIO, pConfig->xCommon.nID) != FTE_RET_OK)
     {
         goto error;
     }
 
     
-    if (_FTE_DI_init(pObj) != MQX_OK)
+    if (_FTE_DI_init(pObj) != FTE_RET_OK)
     {
         FTE_GPIO_detach(pStatus->pGPIO);
         goto error;
@@ -88,7 +88,7 @@ FTE_RET FTE_DI_attach
 
     FTE_LIST_pushBack(&_xObjList, pObj);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
    
@@ -98,7 +98,7 @@ error:
         pStatus->xCommon.pValue = NULL;
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET FTE_DI_detach
@@ -114,10 +114,10 @@ FTE_RET FTE_DI_detach
     FTE_LIST_remove(&_xObjList, pObj);
     pObj->pAction = NULL;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:    
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_OBJECT_PTR _di_get_object
@@ -128,7 +128,7 @@ FTE_OBJECT_PTR _di_get_object
     FTE_OBJECT_PTR      pObj;
     FTE_LIST_ITERATOR   xIter;
     
-    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == MQX_OK)
+    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == FTE_RET_OK)
     {
         while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
         {
@@ -158,12 +158,12 @@ FTE_RET   FTE_DI_getValue
     FTE_OBJECT_PTR pObj = _di_get_object(nID);
     if (pObj == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     *pValue = pObj->pStatus->pValue->xData.bValue;
         
-    return  MQX_OK;    
+    return  FTE_RET_OK;    
 }
 
 FTE_BOOL     FTE_DI_isActive
@@ -185,7 +185,7 @@ FTE_RET       FTE_DI_update(void)
     FTE_OBJECT_PTR      pObj;
     FTE_LIST_ITERATOR   xIter;
     
-    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == MQX_OK)
+    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == FTE_RET_OK)
     {
         while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
         {
@@ -223,7 +223,7 @@ FTE_RET       FTE_DI_update(void)
         }
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 
 }
 
@@ -240,7 +240,7 @@ FTE_RET   FTE_DI_INT_lock
     {
         FTE_LIST_ITERATOR   xIter;
         
-        if (FTE_LIST_ITER_init(&_xObjList, &xIter) == MQX_OK)
+        if (FTE_LIST_ITER_init(&_xObjList, &xIter) == FTE_RET_OK)
         {
             while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
             {
@@ -248,7 +248,7 @@ FTE_RET   FTE_DI_INT_lock
             }
         }
         
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
 }
 
@@ -312,7 +312,7 @@ FTE_RET   FTE_DI_INT_unlock
     {
         FTE_LIST_ITERATOR   xIter;
         
-        if (FTE_LIST_ITER_init(&_xObjList, &xIter) == MQX_OK)
+        if (FTE_LIST_ITER_init(&_xObjList, &xIter) == FTE_RET_OK)
         {
             while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
             {
@@ -320,7 +320,7 @@ FTE_RET   FTE_DI_INT_unlock
             }
         }
         
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
 }
 
@@ -336,9 +336,9 @@ FTE_RET   _FTE_DI_init
     FTE_DI_CONFIG_PTR   pConfig = (FTE_DI_CONFIG_PTR)pObj->pConfig;
     FTE_DI_STATUS_PTR   pStatus = (FTE_DI_STATUS_PTR)pObj->pStatus;
     
-    if (FTE_GPIO_getValue(pStatus->pGPIO, &nValue) != MQX_OK)
+    if (FTE_GPIO_getValue(pStatus->pGPIO, &nValue) != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     if (FTE_OBJ_FLAG_isSet(pObj, FTE_OBJ_CONFIG_FLAG_REVERSE))
@@ -354,7 +354,7 @@ FTE_RET   _FTE_DI_init
         FTE_LED_setValue(pConfig->nLED, pStatus->xCommon.pValue->xData.bValue);
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   _FTE_DI_run
@@ -371,7 +371,7 @@ FTE_RET   _FTE_DI_run
 
     FTE_DI_INT_unlock(pObj);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET    _FTE_DI_stop
@@ -384,7 +384,7 @@ FTE_RET    _FTE_DI_stop
     FTE_GPIO_INT_init(pStatus->pGPIO, 3, 0, FALSE);
     FTE_GPIO_setISR(pStatus->pGPIO, 0, 0);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
  
 FTE_RET   FTE_DI_setPolarity(FTE_OBJECT_PTR pObj, FTE_BOOL bActiveHI)
@@ -400,7 +400,7 @@ FTE_RET   FTE_DI_setPolarity(FTE_OBJECT_PTR pObj, FTE_BOOL bActiveHI)
         FTE_OBJ_FLAG_clear(pObj, FTE_DI_CONFIG_FLAG_POLARITY_HI);
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 /*ISR*-----------------------------------------------------
@@ -467,7 +467,7 @@ void FTE_DI_ISR
         FTE_OBJECT_PTR      pObj;
         FTE_LIST_ITERATOR   xIter;
         
-        if (FTE_LIST_ITER_init(&_xObjList, &xIter) == MQX_OK)
+        if (FTE_LIST_ITER_init(&_xObjList, &xIter) == FTE_RET_OK)
         {
             while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
             {
@@ -559,7 +559,7 @@ FTE_INT32      FTE_DI_SHELL_cmd
                 
                 printf("    %08s %16s %6s\n", "ID", "NAME", "STATUS");
                 
-                if (FTE_LIST_ITER_init(&_xObjList, &xIter) == MQX_OK)
+                if (FTE_LIST_ITER_init(&_xObjList, &xIter) == FTE_RET_OK)
                 {
                     while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
                     {

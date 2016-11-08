@@ -110,7 +110,7 @@ FTE_RET   FTE_SNMPD_init
     ret = SNMP_init(FTE_NET_SNMP_NAME, FTE_NET_SNMP_PRIO, FTE_NET_SNMP_STACK);
     if (ret != RTCS_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     FTE_TASK_append(FTE_TASK_TYPE_RTCS, _task_get_id_from_name(FTE_NET_SNMP_NAME));
@@ -131,7 +131,7 @@ FTE_RET   FTE_SNMPD_init
     SNMPv2_trap_coldStart();
 #endif
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SNMPD_TRAP_add
@@ -148,23 +148,23 @@ FTE_RET   FTE_SNMPD_TRAP_add
     {
         if (pServer->xIP == target)
         {
-            return  MQX_OK;
+            return  FTE_RET_OK;
         }
     }    
 
     pServer = FTE_MEM_allocZero(sizeof(FTE_TRAP_SERVER));
     if (pServer == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pServer->xIP = target;
     pServer->bStatic = bStatic;    
     
-    if (FTE_LIST_pushBack(&_trapServerList, pServer) != MQX_OK)
+    if (FTE_LIST_pushBack(&_trapServerList, pServer) != FTE_RET_OK)
     {
         FTE_MEM_free(pServer);
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
     
     RTCS_trap_target_add(target);
@@ -174,7 +174,7 @@ FTE_RET   FTE_SNMPD_TRAP_add
         return  FTE_CFG_NET_TRAP_addIP(target);
     }
     
-   return   MQX_OK;
+   return   FTE_RET_OK;
 }
 
 FTE_RET   FTE_SNMPD_TRAP_del
@@ -199,11 +199,11 @@ FTE_RET   FTE_SNMPD_TRAP_del
             FTE_LIST_remove(&_trapServerList, pServer);
             FTE_MEM_free(pServer);
             
-            return  MQX_OK;
+            return  FTE_RET_OK;
         }
     }    
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 static FTE_TRAP_MSG_PTR pCurrentTrapMsg = NULL;
@@ -217,7 +217,7 @@ void FTE_SNMPD_TRAP_processing(void)
     
     if (FTE_LIST_count(&_trapList) != 0)
     {
-        if (FTE_LIST_popFront(&_trapList, (FTE_VOID_PTR _PTR_)&pCurrentTrapMsg) != MQX_OK)
+        if (FTE_LIST_popFront(&_trapList, (FTE_VOID_PTR _PTR_)&pCurrentTrapMsg) != FTE_RET_OK)
         {
             ERROR("Trap list broken!\n");
             FTE_LIST_init(&_trapList);
@@ -320,9 +320,9 @@ FTE_RET   FTE_SNMPD_TRAP_sendAlert
     {
         FTE_TRAP_MSG_PTR pTempTrapMsg = NULL;
 
-        if (FTE_LIST_popFront(&_trapList, (FTE_VOID_PTR _PTR_)&pTempTrapMsg) != MQX_OK)
+        if (FTE_LIST_popFront(&_trapList, (FTE_VOID_PTR _PTR_)&pTempTrapMsg) != FTE_RET_OK)
         {
-            return  MQX_ERROR;
+            return  FTE_RET_ERROR;
         }
         
         if (pTempTrapMsg->pBuff != NULL)
@@ -338,21 +338,21 @@ FTE_RET   FTE_SNMPD_TRAP_sendAlert
     pMsg = (FTE_TRAP_MSG_PTR)FTE_MEM_allocZero(sizeof(FTE_TRAP_MSG));
     if (pMsg == NULL)
     {
-        return   MQX_ERROR;
+        return   FTE_RET_ERROR;
     }
     pMsg->xType                     = FTE_NET_SNMP_TRAP_TYPE_ALERT;
     pMsg->xParams.xAlert.nOID      = nOID;
     pMsg->xParams.xAlert.bOccurred = bOccurred;
 
-    if (FTE_LIST_pushBack(&_trapList, pMsg) != MQX_OK)
+    if (FTE_LIST_pushBack(&_trapList, pMsg) != FTE_RET_OK)
     {
         DEBUG("Not enough memory!\n");
         FTE_SYS_setUnstable();
         FTE_MEM_free(pMsg);
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
-   return   MQX_OK;
+   return   FTE_RET_OK;
 }
 
 FTE_RET   FTE_SNMPD_TRAP_discovery
@@ -372,28 +372,28 @@ FTE_RET   FTE_SNMPD_TRAP_discovery
     {
         if ((pMsg->xType == FTE_NET_SNMP_TRAP_TYPE_DISCOVERY) && (pMsg->xParams.xDiscovery.xHostIP == xHostIP))
         {
-            return  MQX_OK;
+            return  FTE_RET_OK;
         }
     }    
 #endif
     pMsg = (FTE_TRAP_MSG_PTR)FTE_MEM_allocZero(sizeof(FTE_TRAP_MSG));
     if (pMsg == NULL)
     {
-        return   MQX_ERROR;
+        return   FTE_RET_ERROR;
     }
 
     pMsg->xType     = FTE_NET_SNMP_TRAP_TYPE_DISCOVERY;
     pMsg->xParams.xDiscovery.xHostIP = xHostIP;
     
-    if (FTE_LIST_pushBack(&_trapList, pMsg) != MQX_OK)
+    if (FTE_LIST_pushBack(&_trapList, pMsg) != FTE_RET_OK)
     {
         ERROR("Not enough memory!\n");
         FTE_SYS_setUnstable();
         FTE_MEM_free(pMsg);
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }        
 
 FTE_RET   FTE_SNMPD_TRAP_addServer
@@ -404,21 +404,21 @@ FTE_RET   FTE_SNMPD_TRAP_addServer
     FTE_TRAP_MSG_PTR    pMsg = (FTE_TRAP_MSG_PTR)FTE_MEM_allocZero(sizeof(FTE_TRAP_MSG));
     if (pMsg == NULL)
     {
-        return   MQX_ERROR;
+        return   FTE_RET_ERROR;
     }
         
     pMsg->xType                         = FTE_NET_SNMP_TRAP_TYPE_ADD;
     pMsg->xParams.xManagement.xServerIP = xServerIP;
 
-    if (FTE_LIST_pushBack(&_trapList, pMsg) != MQX_OK)
+    if (FTE_LIST_pushBack(&_trapList, pMsg) != FTE_RET_OK)
     {
         DEBUG("Not enough memory!\n");
         FTE_SYS_setUnstable();
         FTE_MEM_free(pMsg);
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
-   return   MQX_OK;
+   return   FTE_RET_OK;
 }
 
 FTE_RET   FTE_SNMPD_TRAP_delServer
@@ -429,21 +429,21 @@ FTE_RET   FTE_SNMPD_TRAP_delServer
     FTE_TRAP_MSG_PTR    pMsg = (FTE_TRAP_MSG_PTR)FTE_MEM_allocZero(sizeof(FTE_TRAP_MSG));
     if (pMsg == NULL)
     {
-        return   MQX_ERROR;
+        return   FTE_RET_ERROR;
     }
         
     pMsg->xType                         = FTE_NET_SNMP_TRAP_TYPE_DEL;
     pMsg->xParams.xManagement.xServerIP = xServerIP;
 
-    if (FTE_LIST_pushBack(&_trapList, pMsg) != MQX_OK)
+    if (FTE_LIST_pushBack(&_trapList, pMsg) != FTE_RET_OK)
     {
         DEBUG("Not enough memory!\n");
         FTE_SYS_setUnstable();
         FTE_MEM_free(pMsg);
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
-   return   MQX_OK;
+   return   FTE_RET_OK;
 }
 
 
@@ -455,7 +455,7 @@ FTE_CHAR const _PTR_ MIB_get_productID
     FTE_VOID_PTR     dummy
 )
 {
-    FTE_PRODUCT_DESC const *dev_desc = fte_get_product_desc();
+    FTE_PRODUCT_DESC const *dev_desc = FTE_getProductDescription();
     if (dev_desc == NULL)
     {
         return  _unknown;
@@ -469,7 +469,7 @@ FTE_CHAR const _PTR_ MIB_get_productModel
     FTE_VOID_PTR dummy
 )
 {
-    FTE_PRODUCT_DESC const *dev_desc = fte_get_product_desc();
+    FTE_PRODUCT_DESC const *dev_desc = FTE_getProductDescription();
     if (dev_desc == NULL)
     {
         return  _unknown;
@@ -483,7 +483,7 @@ FTE_CHAR const _PTR_ MIB_get_vendorID
     FTE_VOID_PTR     dummy
 )
 {
-    FTE_PRODUCT_DESC const *dev_desc = fte_get_product_desc();
+    FTE_PRODUCT_DESC const *dev_desc = FTE_getProductDescription();
     if (dev_desc == NULL)
     {
         return  _unknown;
@@ -497,7 +497,7 @@ FTE_CHAR const _PTR_ MIB_get_HWVersion
     FTE_VOID_PTR     dummy
 )
 {
-    FTE_PRODUCT_DESC const *desc = fte_get_product_desc();
+    FTE_PRODUCT_DESC const *desc = FTE_getProductDescription();
     if (desc == NULL)
     {
         return  _unknown;
@@ -517,7 +517,7 @@ FTE_CHAR const _PTR_ MIB_get_SWVersion
     FTE_VOID_PTR     dummy
 )
 {
-    FTE_PRODUCT_DESC const *desc = fte_get_product_desc();
+    FTE_PRODUCT_DESC const *desc = FTE_getProductDescription();
     if (desc == NULL)
     {
         return  _unknown;
@@ -780,12 +780,12 @@ FTE_UINT32 MIB_set_objValue
     else
     {       
         FTE_VALUE_copy(&xValue, pObj->pStatus->pValue);
-        if (FTE_VALUE_set(&xValue, _buff) != MQX_OK)
+        if (FTE_VALUE_set(&xValue, _buff) != FTE_RET_OK)
         { 
             return SNMP_ERROR_wrongValue;
         }
         
-        if (FTE_OBJ_setValue(pObj, &xValue) != MQX_OK)
+        if (FTE_OBJ_setValue(pObj, &xValue) != FTE_RET_OK)
         {
             return SNMP_ERROR_wrongValue;
         }
@@ -1006,27 +1006,34 @@ FTE_UINT32 MIB_set_smDiscovery
     FTE_UINT32      ulVarLen
 )
 {
-    FTE_INT32 nKey= (FTE_UINT32)RTCSMIB_int_read(pVar, ulVarLen);
-
+    FTE_INT32   nKey= (FTE_UINT32)RTCSMIB_int_read(pVar, ulVarLen);
+    
 #if FTE_1WIRE_SUPPORTED
     if ((_nDiscoveryKey != 0) && (_nDiscoveryKey == nKey))
     {
         FTE_1WIRE_PTR   p1Wire;
         FTE_DS18B20_CREATE_PARAMS xParams;
-        FTE_UINT32 nIndex;
+        FTE_UINT32  nIndex;
+        FTE_CHAR    pFamilyName[32];
+        
+        memset(pFamilyName, 0, sizeof(pFamilyName));
         
         p1Wire = FTE_1WIRE_getFirst();
         while(p1Wire != 0)
         {
             xParams.nBUSID = p1Wire->pConfig->nID;
-            for(nIndex = 0 ; nIndex < FTE_1WIRE_DEV_count(p1Wire) ; nIndex++)
+            
+            FTE_UINT32  ulDevCount = 0;
+            FTE_1WIRE_DEV_count(p1Wire, &ulDevCount);            
+            for(nIndex = 0 ; nIndex < ulDevCount ; nIndex++)
             {
-                if (FTE_1WIRE_DEV_getROMCode(p1Wire, nIndex, xParams.pROMCode) != MQX_OK)
+                if (FTE_1WIRE_DEV_getROMCode(p1Wire, nIndex, xParams.pROMCode) != FTE_RET_OK)
                 {
                     return  SNMP_ERROR_resourceUnavailable;
                 }
              
-                if (strcmp(FTE_1WIRE_getFailmyName(xParams.pROMCode[0]), "18B20") == 0)
+                FTE_1WIRE_getFamilyName(xParams.pROMCode[0], pFamilyName, sizeof(pFamilyName) -1 );
+                if (strcmp(pFamilyName, "18B20") == 0)
                 {
 #if FTE_DS18B20_SUPPORTED 
                     if (!FTE_DS18B20_isExistROMCode(xParams.pROMCode) )
@@ -2451,7 +2458,7 @@ FTE_UINT32 MIB_set_tsDel(FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVa
          return  SNMP_ERROR_badValue;
     }
 
-    if (FTE_SNMPD_TRAP_delServer(nIP) != MQX_OK)
+    if (FTE_SNMPD_TRAP_delServer(nIP) != FTE_RET_OK)
     {
         return  SNMP_ERROR_badValue;
     }
@@ -2518,7 +2525,7 @@ FTE_CHAR const _PTR_ MIB_get_adminMAC(FTE_VOID_PTR dummy)
 {
     _enet_address   pMAC;
     
-    if (FTE_SYS_getMAC(pMAC) != MQX_OK)
+    if (FTE_SYS_getMAC(pMAC) != FTE_RET_OK)
     {
         return  _unknown;
     }
@@ -2587,7 +2594,7 @@ FTE_UINT32 MIB_set_adminSystemTime(FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_U
 
     _time_set(&xTime);
     _rtc_init(RTC_INIT_FLAG_CLEAR | RTC_INIT_FLAG_ENABLE);
-    if( _rtc_sync_with_mqx(FALSE) != MQX_OK )
+    if( _rtc_sync_with_mqx(FALSE) != FTE_RET_OK )
     {
         printf("\nError synchronize time!\n");
     }
@@ -2620,8 +2627,8 @@ FTE_UINT32 MIB_set_adminReset(FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32
         return  SNMP_ERROR_wrongValue;
     }
     
-    fte_timer_add(1, 1, (LWTIMER_ISR_FPTR)_config_save, NULL);
-    fte_timer_add(3, 1, (LWTIMER_ISR_FPTR)FTE_SYS_reset, NULL);
+    FTE_SYS_TIMER_add(1, 1, (LWTIMER_ISR_FPTR)_config_save, NULL);
+    FTE_SYS_TIMER_add(3, 1, (LWTIMER_ISR_FPTR)FTE_SYS_reset, NULL);
 
     return   SNMP_ERROR_noError;
 }
@@ -4328,7 +4335,7 @@ FTE_INT32  FTE_SNMPD_SHELL_cmd(FTE_INT32 argc, FTE_CHAR_PTR argv[] )
                         goto error;
                     }
                     
-                    if (FTE_SNMPD_TRAP_add(ip, TRUE) != MQX_OK)
+                    if (FTE_SNMPD_TRAP_add(ip, TRUE) != FTE_RET_OK)
                     {
                         return_code = SHELL_EXIT_ERROR;
                         goto error;
@@ -4347,7 +4354,7 @@ FTE_INT32  FTE_SNMPD_SHELL_cmd(FTE_INT32 argc, FTE_CHAR_PTR argv[] )
                         goto error;
                     }
                     
-                    if (FTE_SNMPD_TRAP_del(ip) != MQX_OK)
+                    if (FTE_SNMPD_TRAP_del(ip) != FTE_RET_OK)
                     {
                         return_code = SHELL_EXIT_ERROR;
                         goto error;

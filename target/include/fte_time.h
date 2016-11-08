@@ -3,18 +3,18 @@
 
 typedef struct FTE_TIMER_EVENT_STRUCT
 {
-    uint_32 ulTimestamp;                //! Current timer value
-    uint_32 ulReloadValue;              //! Timer delay value
-    boolean bIsRunning;                 //! Is the timer currently running
+    FTE_UINT32 ulTimestamp;                //! Current timer value
+    FTE_UINT32 ulReloadValue;              //! Timer delay value
+    FTE_BOOL bIsRunning;                 //! Is the timer currently running
     void    ( *fCallback )( void );     //! Timer IRQ callback function
-    struct FTE_TIMER_EVENT_STRUCT *Next;//! Pointer to the next Timer object.
-    uint_32 xID;
+    struct FTE_TIMER_EVENT_STRUCT _PTR_ Next;//! Pointer to the next Timer object.
+    FTE_UINT32 xID;
 }   FTE_TIMER_EVENT, _PTR_ FTE_TIMER_EVENT_PTR;
 
 typedef struct  FTE_TIME_DELAY_STRUCT
 {
     MQX_TICK_STRUCT xNextTicks;
-    uint_32         ulDelayMS;          //! milliseconds
+    FTE_UINT32         ulDelayMS;          //! milliseconds
 }   FTE_TIME_DELAY, _PTR_ FTE_TIME_DELAY_PTR;
 
 typedef TIME_STRUCT FTE_TIME, _PTR_ FTE_TIME_PTR;
@@ -102,14 +102,14 @@ typedef uint_64 FTE_TIMER_TIME;
  *
  * \param [IN] enable [true]RTC timer used, [false]Normal timer used
  */
-void FTE_TIMER_setLowPowerEnable( boolean enable );
+void FTE_TIMER_setLowPowerEnable( FTE_BOOL enable );
 
 /*!
  * \brief Initializes the timer object
  *
  * \retval enable [true]RTC timer used, [false]Normal timer used
  */
-boolean FTE_TIMER_getLowPowerEnable( void );
+FTE_BOOL FTE_TIMER_getLowPowerEnable( void );
 
 /*!
  * \brief Initializes the timer object
@@ -154,7 +154,7 @@ void FTE_TIMER_reset( FTE_TIMER_EVENT_PTR pObj );
  * \param [IN] obj   Structure containing the timer object parameters
  * \param [IN] value New timer timeout value
  */
-void FTE_TIMER_setValue( FTE_TIMER_EVENT_PTR pObj, uint_32 value );
+void FTE_TIMER_setValue( FTE_TIMER_EVENT_PTR pObj, FTE_UINT32 value );
 
 /*!
  * \brief Read the current time

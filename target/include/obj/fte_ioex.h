@@ -22,15 +22,15 @@ typedef struct  FTE_IOEX_EXT_CONFIG_STRUCT
 
 typedef struct FTE_IOEX_DI_STRUCT
 {
-    boolean     bValue;
+    FTE_BOOL    bValue;
     TIME_STRUCT xVOT;           // valid operation time
 }   FTE_IOEX_DI, _PTR_ FTE_IOEX_DI_PTR;
 
 typedef struct  FTE_IOEX_STATUS_STRUCT
 {
     FTE_GUS_STATUS  xGUS;
-    _task_id        xTaskID;
-    FTE_UINT32         ulRetryCount;
+    FTE_TASK_ID     xTaskID;
+    FTE_UINT32      ulRetryCount;
     TIME_STRUCT     xLastRequestTime;
     TIME_STRUCT     xLastUpdateTime;
     FTE_IOEX_DI     pDI[FTE_IOEX_DI_MAX];

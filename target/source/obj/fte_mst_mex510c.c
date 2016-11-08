@@ -434,7 +434,7 @@ FTE_RET   FTE_MST_MEX510C_setConfig
 
     if (pObj == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
@@ -442,7 +442,7 @@ FTE_RET   FTE_MST_MEX510C_setConfig
     const nx_json* pxJSON = nx_json_parse_utf8(pString);
     if (pxJSON == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     } 
     
     const nx_json* pxTemperature    = nx_json_get(pxJSON, pStringTargetTemperature);
@@ -470,7 +470,7 @@ FTE_RET   FTE_MST_MEX510C_setConfig
         }
         else
         {
-            return  MQX_ERROR;
+            return  FTE_RET_ERROR;
         }        
         
         pCMD[4] = (nValue >> 8) & 0xFF;
@@ -511,7 +511,7 @@ FTE_RET   FTE_MST_MEX510C_setConfig
         }
         else
         {
-            return  MQX_ERROR;
+            return  FTE_RET_ERROR;
         }        
 
         pCMD[4] = (nValue >> 8) & 0xFF;
@@ -552,7 +552,7 @@ FTE_RET   FTE_MST_MEX510C_setConfig
         }
         else
         {
-            return  MQX_ERROR;
+            return  FTE_RET_ERROR;
         }        
 
         pCMD[4] = (nValue >> 8) & 0xFF;
@@ -574,7 +574,7 @@ FTE_RET   FTE_MST_MEX510C_setConfig
     
     nx_json_free(pxJSON);
    
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MST_MEX510C_getConfig
@@ -591,7 +591,7 @@ FTE_RET   FTE_MST_MEX510C_getConfig
     
     if (pObj == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
@@ -599,7 +599,7 @@ FTE_RET   FTE_MST_MEX510C_getConfig
     pJOSNObject = FTE_JSON_VALUE_createObject(3);
     if (pJOSNObject == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     FTE_VALUE_toString(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_SET_TEMPERATURE], pValueString, sizeof(pValueString));
@@ -617,14 +617,14 @@ FTE_RET   FTE_MST_MEX510C_getConfig
     if (FTE_JSON_VALUE_buffSize(pJOSNObject) >= ulBuffLen)
     {
         FTE_JSON_VALUE_destroy(pJOSNObject);
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     FTE_JSON_VALUE_snprint(pBuff, ulBuffLen, pJOSNObject);
     
     FTE_JSON_VALUE_destroy(pJOSNObject);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MST_MEX510C_requestData
@@ -641,7 +641,7 @@ FTE_RET   FTE_MST_MEX510C_requestData
     FTE_UCS_clear(pStatus->pUCS);    
     FTE_UCS_send(pStatus->pUCS, pCMD, sizeof(pCMD), FALSE);    
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MST_MEX510C_receiveData
@@ -659,18 +659,18 @@ FTE_RET   FTE_MST_MEX510C_receiveData
     nLen = FTE_UCS_recv(pStatus->pUCS, pBuff, sizeof(pBuff));
     if (nLen != 71)
     {
-        return  MQX_ERROR; 
+        return  FTE_RET_ERROR; 
     }
 
     if ((pBuff[0] != 0x01))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     uiCRC = FTE_CRC16(pBuff, 69);
     if (uiCRC != (pBuff[69] | ((FTE_UINT16)pBuff[70] << 8)))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     // Temperature
@@ -703,7 +703,7 @@ FTE_RET   FTE_MST_MEX510C_receiveData
     FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_DIRECT_CTRL_G], (nDirectCtrl >> 6) & 0x01);
     FTE_VALUE_setULONG(&pStatus->xCommon.pValue[FTE_MST_MEX510C_INDEX_DIRECT_CTRL_H], (nDirectCtrl >> 7) & 0x01);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MST_MEX510C_set
@@ -751,10 +751,10 @@ FTE_RET   FTE_MST_MEX510C_set
         
         FTE_UCS_send(pStatus->pUCS, pCMD, sizeof(pCMD), FALSE);               
 
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 #endif

@@ -100,7 +100,7 @@ typedef struct _FTE_CFG_CERT_POOL_STRUCT
     FTE_UINT32             ulTag;
     FTE_INT32              nID;
     FTE_UINT32             ulCertLen;
-    uint_8              pCert[4096 - sizeof(FTE_UINT32)*4];
+    FTE_UINT8              pCert[4096 - sizeof(FTE_UINT32)*4];
 }   FTE_CFG_CERT_POOL, _PTR_ FTE_CFG_CERT_POOL_PTR;
 
 typedef struct  _FTE_CFG_struct
@@ -117,8 +117,11 @@ typedef struct  _FTE_CFG_struct
     FTE_UINT32                 ulIndex;
 }   FTE_CONFIG, _PTR_ FTE_CFG_PTR;
 
-static FTE_CONFIG   _config = { .pDESC = NULL, };
-static LWSEM_STRUCT _xLWSEM; 
+static 
+FTE_CONFIG   _config = { .pDESC = NULL, };
+
+static  
+FTE_SYS_LOCK    _xLock;
 
 FTE_RET   FTE_CFG_init(FTE_CFG_DESC const *desc)
 {
@@ -134,15 +137,15 @@ FTE_RET   FTE_CFG_init(FTE_CFG_DESC const *desc)
     
     assert(_config.pDESC == NULL && desc != NULL);
     
-    if (_lwsem_create(&_xLWSEM, 1) != MQX_OK)
+    if (FTE_SYS_LOCK_init(&_xLock, 1) != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pBuff = (FTE_VOID_PTR)FTE_MEM_allocZero(4096);
     if (pBuff == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pPool = (FTE_CFG_POOL_PTR)FTE_MEM_allocZero(sizeof(FTE_CFG_POOL));
@@ -184,7 +187,7 @@ FTE_RET   FTE_CFG_init(FTE_CFG_DESC const *desc)
         }
 
         ioctl(fp, FLASH_IOCTL_ENABLE_SECTOR_CACHE, NULL);
-        read(fp, (char_ptr)pPool, sizeof(FTE_CFG_POOL));
+        read(fp, (FTE_CHAR_PTR)pPool, sizeof(FTE_CFG_POOL));
         fclose(fp);
         
         if ((pPool->ulCRC != FTE_CRC32(0, &pPool->ulTag, sizeof(FTE_CFG_POOL) - sizeof(FTE_UINT32))) ||
@@ -216,7 +219,7 @@ FTE_RET   FTE_CFG_init(FTE_CFG_DESC const *desc)
             }
 
             ioctl(fp, FLASH_IOCTL_ENABLE_SECTOR_CACHE, NULL);
-            nLen = read(fp, (char_ptr)pObjectPool, sizeof(FTE_CFG_OBJECT_POOL));
+            nLen = read(fp, (FTE_CHAR_PTR)pObjectPool, sizeof(FTE_CFG_OBJECT_POOL));
             fclose(fp);
             
             if ((nLen != sizeof(FTE_CFG_OBJECT_POOL)) ||
@@ -245,7 +248,7 @@ FTE_RET   FTE_CFG_init(FTE_CFG_DESC const *desc)
             }
 
             ioctl(fp, FLASH_IOCTL_ENABLE_SECTOR_CACHE, NULL);
-            read(fp, (char_ptr)pEventPool, sizeof(FTE_CFG_EVENT_POOL));
+            read(fp, (FTE_CHAR_PTR)pEventPool, sizeof(FTE_CFG_EVENT_POOL));
             fclose(fp);
 
             if ((pEventPool->ulCRC != FTE_CRC32(0, &pEventPool->ulTag, sizeof(FTE_CFG_EVENT_POOL) - sizeof(FTE_UINT32))) ||
@@ -273,7 +276,7 @@ FTE_RET   FTE_CFG_init(FTE_CFG_DESC const *desc)
             }
 
             ioctl(fp, FLASH_IOCTL_ENABLE_SECTOR_CACHE, NULL);
-            read(fp, (char_ptr)pExtPool, sizeof(FTE_CFG_EXT_POOL));
+            read(fp, (FTE_CHAR_PTR)pExtPool, sizeof(FTE_CFG_EXT_POOL));
             fclose(fp);
 
             if ((pExtPool->ulCRC != FTE_CRC32(0, &pExtPool->ulTag, sizeof(FTE_CFG_EXT_POOL) - sizeof(FTE_UINT32))) ||
@@ -345,7 +348,7 @@ FTE_RET   FTE_CFG_init(FTE_CFG_DESC const *desc)
     
     _timer_start_periodic_at_ticks(_FTE_CFG_auto_save, NULL, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
 
@@ -379,7 +382,7 @@ error:
         FTE_MEM_free(pBuff);
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 
@@ -528,12 +531,12 @@ FTE_RET FTE_CFG_save(FTE_BOOL force)
 error:
     FTE_CFG_unlock();
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 
 success:
     FTE_CFG_unlock();
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_CFG_clear(void) 
@@ -578,7 +581,7 @@ FTE_RET FTE_CFG_clear(void)
     
     FTE_CFG_save(TRUE);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_CFG_clearObject(void) 
@@ -622,18 +625,18 @@ FTE_RET FTE_CFG_clearObject(void)
     
     FTE_CFG_save(TRUE);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 void    FTE_CFG_lock(void)
 {
     _int_disable();
-    _lwsem_wait(&_xLWSEM);
+    FTE_SYS_LOCK_enable(&_xLock);
 }
 
 void    FTE_CFG_unlock(void)
 {
-    _lwsem_post(&_xLWSEM);
+    FTE_SYS_LOCK_disable(&_xLock);
     _int_enable();
 }
 
@@ -647,7 +650,7 @@ FTE_RET   FTE_CFG_OBJ_save(FTE_OBJECT_PTR pObj)
     FTE_OBJECT_CONFIG_PTR pConfig = FTE_CFG_OBJ_get(pObj->pConfig->xCommon.nID);
     if (pConfig == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     FTE_CFG_lock();
@@ -655,26 +658,26 @@ FTE_RET   FTE_CFG_OBJ_save(FTE_OBJECT_PTR pObj)
     _config.bObjectPoolModified  = TRUE;
     FTE_CFG_unlock();
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-FTE_RET   FTE_CFG_getLocation(char_ptr pLocation, FTE_UINT32 nLen)
+FTE_RET   FTE_CFG_getLocation(FTE_CHAR_PTR pLocation, FTE_UINT32 nLen)
 {
     if (nLen < strlen(_config.xPool.pLocation))
     {
-        return  MQX_INVALID_SIZE;
+        return  FTE_RET_INVALID_SIZE;
     }
     
     strncpy(pLocation, _config.xPool.pLocation, nLen);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
  
-FTE_RET   FTE_CFG_setLocation(char_ptr pLocation, FTE_UINT32 nLen)
+FTE_RET   FTE_CFG_setLocation(FTE_CHAR_PTR pLocation, FTE_UINT32 nLen)
 {
     if (nLen > FTE_LOCATION_MAX_LEN)
     {
-        return  MQX_INVALID_SIZE;
+        return  FTE_RET_INVALID_SIZE;
     }
     
     FTE_CFG_lock();
@@ -682,7 +685,7 @@ FTE_RET   FTE_CFG_setLocation(char_ptr pLocation, FTE_UINT32 nLen)
     _config.bPoolModified = TRUE;
     FTE_CFG_unlock();
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_UINT32 FTE_CFG_objects_count(void)
@@ -772,12 +775,12 @@ FTE_RET   FTE_CFG_OBJ_free(FTE_UINT32 oid)
                 memset(&_config.xObjectPool.pObjects[i], 0, sizeof(FTE_OBJECT_CONFIG));
                 _config.xObjectPool.uiObjectCount--;
 
-                return  MQX_OK;
+                return  FTE_RET_OK;
             }
         }
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET FTE_CFG_OBJ_create
@@ -823,7 +826,7 @@ FTE_RET FTE_CFG_OBJ_create
             
             memcpy(pChild, pConfig->xCommon.pChild[i], sizeof(FTE_OBJECT_CONFIG));
             memset(pChild->xCommon.pName, 0, sizeof(pChild->xCommon.pName));
-            snprintf(pChild->xCommon.pName, MAX_OBJECT_NAME_LEN, "%s-%04x",  pConfig->xCommon.pChild[i]->xCommon.pName, (uint_16)pConfig->xCommon.nID);                
+            snprintf(pChild->xCommon.pName, MAX_OBJECT_NAME_LEN, "%s-%04x",  pConfig->xCommon.pChild[i]->xCommon.pName, (FTE_UINT16)pConfig->xCommon.nID);                
             ((FTE_IFCE_CONFIG_PTR)pChild)->nDevID = pConfig->xCommon.nID;
             pChild->xCommon.nID = (pConfig->xCommon.pChild[i]->xCommon.nID & FTE_OBJ_TYPE_MASK) | (ulGroupID << 8) | (ulCount + 1);
             
@@ -935,12 +938,12 @@ FTE_RET   FTE_CFG_EVENT_free(FTE_CFG_EVENT_PTR pConfig)
                 memset(&_config.xEventPool.pEvents[i], 0, sizeof(FTE_EVENT_CONFIG));
                 _config.xEventPool.uiEventCount--;
 
-                return  MQX_OK;
+                return  FTE_RET_OK;
             }
         }
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_CFG_EVENT_PTR FTE_CFG_EVENT_create(FTE_CFG_EVENT_PTR pConfig)
@@ -977,7 +980,7 @@ FTE_UINT32 FTE_CFG_EVENT_getAt(FTE_UINT32 ulIndex, FTE_CFG_EVENT_PTR _PTR_ ppCon
                 if (ulIndex == 0)
                 {
                     *ppConfig = &_config.xEventPool.pEvents[i];
-                    return  MQX_OK;
+                    return  FTE_RET_OK;
                 }
                 
                 ulIndex --;
@@ -985,7 +988,7 @@ FTE_UINT32 FTE_CFG_EVENT_getAt(FTE_UINT32 ulIndex, FTE_CFG_EVENT_PTR _PTR_ ppCon
         }
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 pointer FTE_CFG_EVENT_getFirst(void)
@@ -1025,7 +1028,7 @@ FTE_RET   FTE_CFG_EXT_init(void)
 #endif
     _config.bExtPoolModified = TRUE;
      
-    return  MQX_OK;
+    return  FTE_RET_OK;
 } 
 
 #if FTE_CIAS_SIOUX_CU_SUPPORTED
@@ -1033,25 +1036,25 @@ FTE_RET   FTE_CFG_CIAS_getExtConfig(FTE_VOID_PTR pBuff, FTE_UINT32 ulBuffLen)
 {
     if ((_config.pDESC == NULL) || (ulBuffLen != sizeof(_config.xExtPool.xCU)))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     memcpy(pBuff, &_config.xExtPool.xCU, sizeof(_config.xExtPool.xCU));
     
-    return  MQX_OK;    
+    return  FTE_RET_OK;    
 }
 
 FTE_RET   FTE_CFG_CIAS_setExtConfig(FTE_VOID_PTR pCIAS, FTE_UINT32 ulCIASLen)
 {
     if ((_config.pDESC == NULL) || (ulCIASLen != sizeof(_config.xExtPool.xCU)))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     memcpy(&_config.xExtPool.xCU, pCIAS, sizeof(_config.xExtPool.xCU));
     _config.bExtPoolModified = TRUE;
     
-    return  MQX_OK;    
+    return  FTE_RET_OK;    
 }
 #endif
 
@@ -1060,25 +1063,25 @@ FTE_RET   FTE_CFG_IOEX_getExtConfig(FTE_VOID_PTR pBuff, FTE_UINT32 ulBuffLen)
 {
     if ((_config.pDESC == NULL) || (ulBuffLen != sizeof(_config.xExtPool.xIOEX)))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     memcpy(pBuff, &_config.xExtPool.xIOEX, sizeof(_config.xExtPool.xIOEX));
     
-    return  MQX_OK;    
+    return  FTE_RET_OK;    
 }
 
 FTE_RET   FTE_CFG_IOEX_setExtConfig(FTE_VOID_PTR pIOEX, FTE_UINT32 ulIOEXLen)
 {
     if ((_config.pDESC == NULL) || (ulIOEXLen != sizeof(_config.xExtPool.xIOEX)))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     memcpy(&_config.xExtPool.xIOEX, pIOEX, sizeof(_config.xExtPool.xIOEX));
     _config.bExtPoolModified = TRUE;
     
-    return  MQX_OK;    
+    return  FTE_RET_OK;    
 }
 #endif
 
@@ -1087,25 +1090,25 @@ FTE_RET   FTE_CFG_DOTECH_getExtConfig(FTE_VOID_PTR pBuff, FTE_UINT32 ulBuffLen)
 {
     if ((_config.pDESC == NULL) || (ulBuffLen != sizeof(_config.xExtPool.xDOTECH)))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     memcpy(pBuff, &_config.xExtPool.xDOTECH, sizeof(_config.xExtPool.xDOTECH));
     
-    return  MQX_OK;    
+    return  FTE_RET_OK;    
 }
 
 FTE_RET   FTE_CFG_DOTECH_setExtConfig(FTE_VOID_PTR pDOTECH, FTE_UINT32 ulLen)
 {
     if ((_config.pDESC == NULL) || (ulLen != sizeof(_config.xExtPool.xDOTECH)))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     memcpy(&_config.xExtPool.xDOTECH, pDOTECH, sizeof(_config.xExtPool.xDOTECH));
     _config.bExtPoolModified = TRUE;
     
-    return  MQX_OK;    
+    return  FTE_RET_OK;    
 }
 #endif
 
@@ -1119,7 +1122,7 @@ FTE_BOOL FTE_CFG_CERT_valid(void)
 {
     if (pCertPool == NULL)
     {
-        if (FTE_CFG_CERT_load() != MQX_OK)
+        if (FTE_CFG_CERT_load() != FTE_RET_OK)
         {
             return  FALSE;
         }
@@ -1132,7 +1135,7 @@ FTE_UINT32 FTE_CFG_CERT_size(void)
 {
     if (pCertPool == NULL)
     {
-        if (FTE_CFG_CERT_load() != MQX_OK)
+        if (FTE_CFG_CERT_load() != FTE_RET_OK)
         {
             return  0;
         }
@@ -1145,7 +1148,7 @@ FTE_UINT32 FTE_CFG_CERT_get(FTE_VOID_PTR pBuff, FTE_UINT32 ulBuffLen)
 {
     if (pCertPool == NULL)
     {
-        if (FTE_CFG_CERT_load() != MQX_OK)
+        if (FTE_CFG_CERT_load() != FTE_RET_OK)
         {
             return  0;
         }
@@ -1167,12 +1170,12 @@ FTE_RET   FTE_CFG_CERT_load(void)
     
     if (_config.pDESC == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     if (pCertPool != NULL)
     {
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
     
     for(int i = 0 ; i < 1 ; i++)
@@ -1193,10 +1196,10 @@ FTE_RET   FTE_CFG_CERT_load(void)
     
     if (pCertPool == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 
@@ -1243,22 +1246,26 @@ FTE_RET   FTE_CFG_CERT_set(FTE_VOID_PTR pCert, FTE_UINT32 ulCertLen)
         fclose(fp);
     }       
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 /******************************************************************************
  * CERT command
  ******************************************************************************/
-FTE_INT32  FTE_CFG_CERT_SHELL_cmd(FTE_INT32 argc, char_ptr argv[])
+FTE_INT32  FTE_CFG_CERT_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[]
+)
 {
     FTE_BOOL     print_usage, shorthelp = FALSE;
     FTE_INT32      return_code = SHELL_EXIT_SUCCESS;
     FTE_UINT32     ulBuffLen = 4096;
-    uint_8_ptr  pBuff = NULL;
+    FTE_UINT8_PTR  pBuff = NULL;
     
-    print_usage = Shell_check_help_request (argc, argv, &shorthelp);
+    print_usage = Shell_check_help_request (nArgc, pArgv, &shorthelp);
 
-    pBuff = (uint_8_ptr)FTE_MEM_alloc(ulBuffLen);
+    pBuff = (FTE_UINT8_PTR)FTE_MEM_alloc(ulBuffLen);
     if (pBuff == NULL)
     {
         printf("Not enough memory!\n");
@@ -1267,13 +1274,13 @@ FTE_INT32  FTE_CFG_CERT_SHELL_cmd(FTE_INT32 argc, char_ptr argv[])
     
     if (!print_usage)
     {
-        switch(argc)
+        switch(nArgc)
         {
         case    2:
             {
                 FTE_UINT32 ulLen;
                
-                if (strcmp(argv[1], "show") == 0)
+                if (strcmp(pArgv[1], "show") == 0)
                 {
                    ulLen = FTE_CFG_CERT_get(pBuff, ulBuffLen);
                    if (ulLen == 0)
@@ -1290,15 +1297,15 @@ FTE_INT32  FTE_CFG_CERT_SHELL_cmd(FTE_INT32 argc, char_ptr argv[])
             
         case    4:
             {
-                uchar_ptr           pData;
-                FTE_UINT32             ulDataLen = 0;
-                FTE_UINT32             ulLen;
-                _ip_address         xServerIP = 0;
+                FTE_UINT8_PTR   pData;
+                FTE_UINT32      ulDataLen = 0;
+                FTE_UINT32      ulLen;
+                _ip_address     xServerIP = 0;
                 TFTP_DATA_STRUCT    xTFTPData;
 
-                if (strcmp(argv[1], "load") == 0)
+                if (strcmp(pArgv[1], "load") == 0)
                 {
-                    if (! Shell_parse_ip_address (argv[2], &xServerIP))
+                    if (! Shell_parse_ip_address (pArgv[2], &xServerIP))
                     {
                         printf ("Error in parameter, invalid ip address!\n");
                         return_code = SHELL_EXIT_ERROR;
@@ -1306,7 +1313,7 @@ FTE_INT32  FTE_CFG_CERT_SHELL_cmd(FTE_INT32 argc, char_ptr argv[])
                     }
                     
                     xTFTPData.SERVER   = xServerIP;
-                    xTFTPData.FILENAME = argv[3];
+                    xTFTPData.FILENAME = pArgv[3];
                     xTFTPData.FILEMODE = "octet";
 
                     if ((*FT_TFTP->OPEN)(&xTFTPData) != 0) 
@@ -1374,11 +1381,11 @@ FTE_INT32  FTE_CFG_CERT_SHELL_cmd(FTE_INT32 argc, char_ptr argv[])
     {
         if (shorthelp)
         {
-            printf ("%s [<command>]\n", argv[0]);
+            printf ("%s [<command>]\n", pArgv[0]);
         }
         else
         {
-            printf("Usage : %s [<command>]\n", argv[0]);
+            printf("Usage : %s [<command>]\n", pArgv[0]);
             printf("  Commands:\n");
             printf("    show\n");
             printf("        show certificate.\n");
@@ -1403,15 +1410,15 @@ FTE_NET_CFG_PTR FTE_CFG_NET_get(void)
 
 FTE_RET   FTE_CFG_NET_copy(FTE_NET_CFG_PTR pCfgNet)
 {
-    FTE_PRODUCT_DESC const *desc = fte_get_product_desc();
+    FTE_PRODUCT_DESC const *desc = FTE_getProductDescription();
 
     memcpy(pCfgNet, &_config.xPool.xNetwork, sizeof(FTE_NET_CFG));
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_CFG_NET_set(FTE_NET_CFG const *pCfgNet)
 {
-    FTE_PRODUCT_DESC const *desc = fte_get_product_desc();
+    FTE_PRODUCT_DESC const *desc = FTE_getProductDescription();
 
     FTE_CFG_lock();
     memcpy(&_config.xPool.xNetwork, pCfgNet, sizeof(FTE_NET_CFG));
@@ -1419,7 +1426,7 @@ FTE_RET   FTE_CFG_NET_set(FTE_NET_CFG const *pCfgNet)
     _config.bPoolModified = TRUE;
     FTE_CFG_unlock();
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_CFG_NET_setIP(_ip_address xIP)
@@ -1429,7 +1436,7 @@ FTE_RET   FTE_CFG_NET_setIP(_ip_address xIP)
     _config.bPoolModified = TRUE;
     FTE_CFG_unlock();
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_CFG_NET_setNetmask(_ip_address xNetmask)
@@ -1439,7 +1446,7 @@ FTE_RET   FTE_CFG_NET_setNetmask(_ip_address xNetmask)
     _config.bPoolModified = TRUE;
     FTE_CFG_unlock();
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_CFG_NET_setGatewayIP(_ip_address xIP)
@@ -1449,7 +1456,7 @@ FTE_RET   FTE_CFG_NET_setGatewayIP(_ip_address xIP)
     _config.bPoolModified = TRUE;
     FTE_CFG_unlock();
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 #if FTE_SNMPD_SUPPORTED
@@ -1466,7 +1473,7 @@ FTE_RET   FTE_CFG_NET_TRAP_clear(void)
     _config.bPoolModified = TRUE;
     FTE_CFG_unlock();
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 _ip_address FTE_CFG_NET_TRAP_getAt(FTE_UINT32 ulIndex)
@@ -1492,7 +1499,7 @@ FTE_RET   FTE_CFG_NET_TRAP_addIP(_ip_address xIP)
 {
     if (FTE_CFG_NET_TRAP_isExist(xIP))
     {
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
     
     if (_config.xPool.xNetwork.xSNMP.xTrap.ulCount < FTE_NET_SNMP_TRAP_COUNT)
@@ -1502,10 +1509,10 @@ FTE_RET   FTE_CFG_NET_TRAP_addIP(_ip_address xIP)
         _config.bPoolModified = TRUE;
         FTE_CFG_unlock();
         
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
     
 FTE_RET   FTE_CFG_NET_TRAP_delIP(_ip_address xIP)
@@ -1536,7 +1543,7 @@ FTE_RET   FTE_CFG_NET_TRAP_delIP(_ip_address xIP)
         FTE_CFG_unlock();
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
     
 FTE_BOOL FTE_CFG_NET_TRAP_isExist(_ip_address nTrapIP)
@@ -1575,7 +1582,7 @@ FTE_RET   FTE_CFG_SYS_set(FTE_SYS_CONFIG const *pConfig)
     _config.bPoolModified = TRUE;
     FTE_CFG_unlock();
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 
@@ -1591,7 +1598,7 @@ FTE_RET   FTE_CFG_SYS_setSystemMonitor(FTE_BOOL bStart)
     _config.bPoolModified = TRUE;
     FTE_CFG_unlock();
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_UINT32     FTE_CFG_SYS_getAllowedFailureCount(void)
@@ -1608,7 +1615,7 @@ FTE_RET   FTE_CFG_SYS_setKeepAliveTime(FTE_UINT32 ulTime)
 {
     if (ulTime > FTE_SYS_KEEP_ALIVE_TIME_MAX)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
   
     FTE_CFG_lock();
@@ -1616,7 +1623,7 @@ FTE_RET   FTE_CFG_SYS_setKeepAliveTime(FTE_UINT32 ulTime)
     _config.bPoolModified = TRUE;
     FTE_CFG_unlock();
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 /******************************************************************************
@@ -1636,7 +1643,7 @@ FTE_RET   FTE_CFG_SHELL_set(FTE_SHELL_CONFIG const *pConfig)
     _config.bPoolModified = TRUE;
     FTE_CFG_unlock();
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 static void _FTE_CFG_auto_save(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
@@ -1659,20 +1666,20 @@ void    FTE_CFG_DBG_setBootTime(void)
 /******************************************************************************
  * Shell command
  ******************************************************************************/
-FTE_INT32  FTE_CFG_SHELL_cmd(FTE_INT32 argc, char_ptr argv[])
+FTE_INT32  FTE_CFG_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[])
 {
     FTE_BOOL              print_usage, shorthelp = FALSE;
     FTE_INT32               return_code = SHELL_EXIT_SUCCESS;
     
-    print_usage = Shell_check_help_request (argc, argv, &shorthelp);
+    print_usage = Shell_check_help_request (nArgc, pArgv, &shorthelp);
 
     if (!print_usage)
     {
-        switch(argc)
+        switch(nArgc)
         {
         case    1:
             {
-                uint_8  pMAC[FTE_MAC_SIZE];
+                FTE_UINT8  pMAC[FTE_MAC_SIZE];
                 
                 FTE_SYS_getMAC(pMAC);
                 printf("<Device Informations>\n");
@@ -1685,13 +1692,13 @@ FTE_INT32  FTE_CFG_SHELL_cmd(FTE_INT32 argc, char_ptr argv[])
             
         case    2:
             { 
-                if (strcmp(argv[1], "oid") == 0)
+                if (strcmp(pArgv[1], "oid") == 0)
                 {
                     printf("%s\n", FTE_SYS_getOIDString());
                 }
-                else if (strcmp(argv[1], "mac") == 0)
+                else if (strcmp(pArgv[1], "mac") == 0)
                 {
-                    uint_8  pMAC[FTE_MAC_SIZE];
+                    FTE_UINT8  pMAC[FTE_MAC_SIZE];
                     
                     FTE_SYS_getMAC(pMAC);
                     
@@ -1699,7 +1706,7 @@ FTE_INT32  FTE_CFG_SHELL_cmd(FTE_INT32 argc, char_ptr argv[])
                            pMAC[0], pMAC[1], pMAC[2],
                            pMAC[3], pMAC[4], pMAC[5]);
                 }
-                else if (strcmp(argv[1], "save") == 0)
+                else if (strcmp(pArgv[1], "save") == 0)
                 {
                     IPCFG_IP_ADDRESS_DATA   ip_data ;
                     FTE_NET_CFG_PTR         pConfig;
@@ -1724,7 +1731,7 @@ FTE_INT32  FTE_CFG_SHELL_cmd(FTE_INT32 argc, char_ptr argv[])
                     }
                     FTE_CFG_save(FALSE);
                 }
-                else if (strcmp(argv[1], "reset") == 0)
+                else if (strcmp(pArgv[1], "reset") == 0)
                 {
                     FTE_CFG_clear();
                 }
@@ -1743,11 +1750,11 @@ FTE_INT32  FTE_CFG_SHELL_cmd(FTE_INT32 argc, char_ptr argv[])
     {
         if (shorthelp)
         {
-            printf ("%s [<commands>]\n", argv[0]);
+            printf ("%s [<commands>]\n", pArgv[0]);
         }
         else
         {
-            printf("Usage : %s [<commands>]\n", argv[0]);
+            printf("Usage : %s [<commands>]\n", pArgv[0]);
             printf("  Commands : \n");
             printf("    auto_reset [ enable | disable ]\n");
             printf("        The processes is restarted when unstable state.\n"); 
@@ -1759,16 +1766,16 @@ FTE_INT32  FTE_CFG_SHELL_cmd(FTE_INT32 argc, char_ptr argv[])
 /******************************************************************************
  * Shell command
  ******************************************************************************/
-FTE_INT32  FTE_CFG_SHELL_cmdSave(FTE_INT32 argc, char_ptr argv[])
+FTE_INT32  FTE_CFG_SHELL_cmdSave(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[])
 {
     FTE_BOOL              print_usage, shorthelp = FALSE;
     FTE_INT32               return_code = SHELL_EXIT_SUCCESS;
     
-    print_usage = Shell_check_help_request (argc, argv, &shorthelp);
+    print_usage = Shell_check_help_request (nArgc, pArgv, &shorthelp);
 
     if (!print_usage)
     {
-        switch(argc)
+        switch(nArgc)
         {
         case    1:
             {
@@ -1804,11 +1811,11 @@ FTE_INT32  FTE_CFG_SHELL_cmdSave(FTE_INT32 argc, char_ptr argv[])
     {
         if (shorthelp)
         {
-            printf ("%s\n", argv[0]);
+            printf ("%s\n", pArgv[0]);
         }
         else
         {
-            printf("Usage : %s\n", argv[0]);
+            printf("Usage : %s\n", pArgv[0]);
         }
     }
     return   return_code;

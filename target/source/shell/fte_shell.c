@@ -20,14 +20,15 @@
 #include "fte_lorawan.h"
 
 FTE_UINT32  FTE_SHELL_getPasswd(MQX_FILE_PTR pFile, FTE_CHAR_PTR pPasswd, FTE_UINT32 ulMaxLen, FTE_UINT32 ulTimeout);
-int_32      FTE_SHELL_cmdPasswd(int_32 nArgc, FTE_CHAR_PTR pArgv[]);
-int_32      FTE_SHELL_cmdGet(int_32 nArgc, FTE_CHAR_PTR pArgv[]);
-int_32      FTE_SHELL_cmdSet(int_32 nArgc, FTE_CHAR_PTR pArgv[]);
-int_32      FTE_SHELL_main(const SHELL_COMMAND_STRUCT   pShellCmds[], FTE_SHELL_CONFIG_PTR pConfig);
-_mqx_int    FTE_SHELL_fgetc(MQX_FILE_PTR pFile, _mqx_int_ptr pChar, FTE_UINT32 ulTimeout);
-_mqx_int    FTE_SHELL_fgets(MQX_FILE_PTR pFile, FTE_CHAR_PTR pTTYLine, _mqx_int nSize, FTE_UINT32 ulTimeout);
+FTE_INT32  FTE_SHELL_cmdPasswd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
+FTE_INT32  FTE_SHELL_cmdGet(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
+FTE_INT32  FTE_SHELL_cmdSet(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
+FTE_INT32  FTE_SHELL_main(const SHELL_COMMAND_STRUCT   pShellCmds[], FTE_SHELL_CONFIG_PTR pConfig);
+FTE_RET    FTE_SHELL_fgetc(MQX_FILE_PTR pFile, FTE_CHAR_PTR pChar, FTE_UINT32 ulTimeout);
+FTE_RET    FTE_SHELL_fgets(MQX_FILE_PTR pFile, FTE_CHAR_PTR pTTYLine, FTE_RET nSize, FTE_UINT32 ulTimeout);
 
-const SHELL_COMMAND_STRUCT pSHELLCommands[] = 
+const 
+SHELL_COMMAND_STRUCT pSHELLCommands[] = 
 {
    /* RTCS commands */ 
 
@@ -129,16 +130,16 @@ const SHELL_COMMAND_STRUCT pSHELLCommands[] =
 
 FTE_RET     FTE_SHELL_proc(void)
 {
-    _mqx_int    nResult;
-    _mqx_int    nCh;
+    FTE_RET     nResult;
+    FTE_CHAR    nCh;
     FTE_SHELL_CONFIG_PTR    pShellConfig = FTE_CFG_SHELL_get();
     char    pUserID[FTE_SHELL_USER_ID_LENGTH+1];
     char    pPasswd[FTE_SHELL_PASSWD_LENGTH+1];
     /* Run the shell */
  
-    if (FTE_SHELL_fgetc(stdin, &nCh, pShellConfig->ulTimeout) != MQX_OK)
+    if (FTE_SHELL_fgetc(stdin, &nCh, pShellConfig->ulTimeout) != FTE_RET_OK)
     {
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
 
     fprintf(stdout, "\n\nWalcome to %s!\n", FTE_MODEL);
@@ -151,14 +152,14 @@ FTE_RET     FTE_SHELL_proc(void)
         fprintf(stdout, "ID : ");    
         fflush(stdout);
         nResult = FTE_SHELL_fgets(stdin, pUserID, FTE_SHELL_USER_ID_LENGTH, pShellConfig->ulTimeout);
-        if (nResult != MQX_OK)
+        if (nResult != FTE_RET_OK)
         {
             break;
         }
         fprintf(stdout, "passwd : ");    
         fflush(stdout);
         nResult = FTE_SHELL_getPasswd(stdin, pPasswd, FTE_SHELL_PASSWD_LENGTH, pShellConfig->ulTimeout);
-        if (nResult != MQX_OK)
+        if (nResult != FTE_RET_OK)
         {
             break;
         }
@@ -179,7 +180,7 @@ FTE_RET     FTE_SHELL_proc(void)
     fprintf(stdout, "Bye!\n");
     fflush(stdout);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_UINT32  FTE_SHELL_getPasswd
@@ -190,8 +191,8 @@ FTE_UINT32  FTE_SHELL_getPasswd
     FTE_UINT32  ulTimeout
 )
 {
-    boolean     bExit = FALSE;
-    FTE_INT32   ch;
+    FTE_BOOL     bExit = FALSE;
+    FTE_CHAR    ch;
     FTE_UINT32  ulLen = 0;
     FTE_UINT32  ulFlags;
     
@@ -234,13 +235,17 @@ FTE_UINT32  FTE_SHELL_getPasswd
     ulFlags  |= IO_SERIAL_ECHO;
     ioctl(pFile, IO_IOCTL_SERIAL_SET_FLAGS, &ulFlags);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-int_32  FTE_SHELL_cmdPasswd(int_32 nArgc, FTE_CHAR_PTR pArgv[])
+FTE_INT32  FTE_SHELL_cmdPasswd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[]
+)
 {
-    boolean              bPrintUsage, bShortHelp = FALSE;
-    int_32               nReturnCode = SHELL_EXIT_SUCCESS;
+    FTE_BOOL              bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32               nReturnCode = SHELL_EXIT_SUCCESS;
     
     bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
@@ -307,10 +312,14 @@ error:
     return  0;
 }
 
-int_32  FTE_SHELL_cmdGet(int_32 nArgc, FTE_CHAR_PTR pArgv[])
+FTE_INT32  FTE_SHELL_cmdGet
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[]
+)
 {
-    boolean              bPrintUsage, bShortHelp = FALSE;
-    int_32               nReturnCode = SHELL_EXIT_SUCCESS;
+    FTE_BOOL              bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32               nReturnCode = SHELL_EXIT_SUCCESS;
     
     bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
@@ -348,10 +357,14 @@ print_usage:
     return   nReturnCode;
 }
 
-int_32  FTE_SHELL_cmdSet(int_32 nArgc, FTE_CHAR_PTR pArgv[])
+FTE_INT32  FTE_SHELL_cmdSet
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[]
+)
 {
-    boolean              bPrintUsage, bShortHelp = FALSE;
-    int_32               nReturnCode = SHELL_EXIT_SUCCESS;
+    FTE_BOOL              bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32               nReturnCode = SHELL_EXIT_SUCCESS;
     
     bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
@@ -403,14 +416,14 @@ print_usage:
     return   nReturnCode;
 }
 
-int_32 FTE_SHELL_main
+FTE_INT32 FTE_SHELL_main
 (
     const SHELL_COMMAND_STRUCT  pShellCmds[],
     FTE_SHELL_CONFIG_PTR        pConfig
 )
 { /* Body */
     SHELL_CONTEXT_PTR    pShell;
-    int_32               return_code = SHELL_EXIT_SUCCESS;
+    FTE_INT32               return_code = SHELL_EXIT_SUCCESS;
     FTE_UINT32              i;
 
     fprintf(stdout, "\nShell (build: %s)\n", __DATE__);
@@ -498,10 +511,10 @@ int_32 FTE_SHELL_main
             
             do 
             {
-                _mqx_int    nResult;
+                FTE_RET    nResult;
                 nResult = FTE_SHELL_fgets(pShell->COMMAND_FP, pShell->CMD_LINE, sizeof(pShell->CMD_LINE), pConfig->ulTimeout);
                
-               if (nResult != MQX_OK) 
+               if (nResult != FTE_RET_OK) 
                 {
                     if (pShell->COMMAND_FP != stdin)  
                     {
@@ -531,8 +544,15 @@ int_32 FTE_SHELL_main
 } /* Endbody */
 
 
-_mqx_int    FTE_SHELL_fgetc(MQX_FILE_PTR pFile, _mqx_int_ptr pChar, FTE_UINT32 ulTimeout)
+FTE_RET    FTE_SHELL_fgetc
+(
+    MQX_FILE_PTR    pFile, 
+    FTE_CHAR_PTR    pChar, 
+    FTE_UINT32      ulTimeout
+)
 {
+    FTE_INT32   nValue;
+    
     if (_io_fstatus(pFile) != TRUE)
     {        
         MQX_TICK_STRUCT xStartTick;
@@ -541,7 +561,7 @@ _mqx_int    FTE_SHELL_fgetc(MQX_FILE_PTR pFile, _mqx_int_ptr pChar, FTE_UINT32 u
         while(_io_fstatus(pFile) != TRUE)
         {
             MQX_TICK_STRUCT xCurrentTick;
-            boolean     bOverflow = FALSE;
+            FTE_BOOL     bOverflow = FALSE;
             
             _time_get_elapsed_ticks(&xCurrentTick);
             
@@ -554,14 +574,16 @@ _mqx_int    FTE_SHELL_fgetc(MQX_FILE_PTR pFile, _mqx_int_ptr pChar, FTE_UINT32 u
         }
     }
 
-    *pChar = _io_fgetc(pFile);
+    nValue = _io_fgetc(pFile);
     
-    if (*pChar == IO_EOF)
+    if (nValue == IO_EOF)
     {
         return  FS_EOF;
     }
     
-    return  MQX_OK;
+    *pChar = (FTE_CHAR)nValue;
+    
+    return  FTE_RET_OK;
 }
 
 /*!
@@ -576,17 +598,17 @@ _mqx_int    FTE_SHELL_fgetc(MQX_FILE_PTR pFile, _mqx_int_ptr pChar, FTE_UINT32 u
  * \return Number of characters read.
  * \return IO_EOF    
  */ 
-_mqx_int FTE_SHELL_fgets
+FTE_RET FTE_SHELL_fgets
 (
-    MQX_FILE_PTR pFile,
-    char _PTR_   pBuff,
-    _mqx_int     nMaxLen,
+    MQX_FILE_PTR    pFile,
+    FTE_CHAR_PTR    pBuff,
+    FTE_RET         nMaxLen,
     FTE_UINT32     ulTimeout
 ) 
 { /* Body */
-    _mqx_int    nResult;
-    _mqx_int    c;
-    _mqx_int    i;
+    FTE_RET     nResult;
+    FTE_CHAR    c;
+    FTE_INT32   i;
 //    _mqx_uint flags;
 
 #if MQX_CHECK_ERRORS
@@ -607,7 +629,7 @@ _mqx_int FTE_SHELL_fgets
     } /* Endif */
 
     nResult = FTE_SHELL_fgetc(pFile, &c, ulTimeout);
-    if (nResult != MQX_OK)
+    if (nResult != FTE_RET_OK)
     {
         *pBuff = '\0';
         return  nResult;
@@ -632,7 +654,7 @@ _mqx_int FTE_SHELL_fgets
         } /* Endif */
         
         nResult = FTE_SHELL_fgetc(pFile, &c, ulTimeout);
-        if (nResult != MQX_OK) 
+        if (nResult != FTE_RET_OK) 
         {
             *pBuff = '\0'; /* null terminate the string before returning */
             return nResult;
@@ -641,12 +663,12 @@ _mqx_int FTE_SHELL_fgets
 
     if (i >= nMaxLen) 
     {
-        _io_fungetc((_mqx_int)c, pFile);
+        _io_fungetc((FTE_RET)c, pFile);
     } /* Endif */
 
     *pBuff = '\0';
 
-    return MQX_OK;
+    return FTE_RET_OK;
 } /* Endbody */
 
 
@@ -658,7 +680,7 @@ FTE_UINT32  FTE_SHELL_printHexString
 )
 {
     FTE_UINT32    ulLen = 0;
-    for(int i = 0 ; i < ulSize ; i++)
+    for(FTE_INT32 i = 0 ; i < ulSize ; i++)
     {
         ulLen += fprintf(stdout, "%02x ", pData[i]);
         if ((ulColumn != 0) && ((i+1) % ulColumn == 0))
@@ -678,7 +700,7 @@ FTE_UINT32  FTE_SHELL_printNumString
 )
 {
     FTE_UINT32    ulLen = 0;
-    for(int i = 0 ; i < ulSize ; i++)
+    for(FTE_INT32 i = 0 ; i < ulSize ; i++)
     {
         ulLen += fprintf(stdout, "%3d ", pData[i]);
         if ((ulColumn != 0) && ((i+1) % ulColumn == 0))

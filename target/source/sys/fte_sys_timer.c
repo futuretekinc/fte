@@ -18,44 +18,7 @@ void FTE_TIMER_ISR(FTE_VOID_PTR pParams);
 
 LWTIMER_PERIOD_STRUCT _hPeriodicTimer;
 
-void print_time(void)
-{ 
-    TIME_STRUCT     xTime;
-    DATE_STRUCT     xDate;
-   
-    _time_get(&xTime);
-    _time_to_date (&xTime, &xDate);
-    printf("%04d-%02d-%02d %02d:%02d:%02d:%03d", xDate.YEAR, xDate.MONTH, xDate.DAY, xDate.HOUR, xDate.MINUTE, xDate.SECOND, xDate.MILLISEC);
-}
-
-void check_tick
-(
-    FTE_VOID_PTR    a
-)
-{
-    print_time();
-    printf(" - TICK\n");
-}
-
-void light_on
-(
-    FTE_VOID_PTR    a
-)
-{
-    print_time();
-    printf(" - ON\n");
-}
-
-void light_off
-(
-    FTE_VOID_PTR    a
-)
-{
-    print_time();
-    printf(" - OFF\n");
-}
-
-FTE_RET   fte_timer_init
+FTE_RET   FTE_SYS_TIMER_init
 (
     FTE_UINT32  nBaseInterval
 )
@@ -64,10 +27,10 @@ FTE_RET   fte_timer_init
 }
 
 
-FTE_UINT32 fte_timer_add
+FTE_UINT32 FTE_SYS_TIMER_add
 (
-    FTE_UINT32  nInterval, 
-    FTE_UINT32  nStartDelay, 
+    FTE_UINT32      nInterval, 
+    FTE_UINT32      nStartDelay, 
     LWTIMER_ISR_FPTR    fCallback, 
     FTE_VOID_PTR    pParams
 )
@@ -89,7 +52,7 @@ FTE_UINT32 fte_timer_add
     return  (FTE_UINT32)pTimer;
 }
 
-FTE_RET   fte_timer_cancel
+FTE_RET   FTE_SYS_TIMER_cancel
 (
     FTE_UINT32  hTimer
 )
@@ -98,14 +61,14 @@ FTE_RET   fte_timer_cancel
     
     if (pTimer == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     _lwtimer_cancel_timer(&pTimer->xLWTimer);
     
     FTE_MEM_free(pTimer);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 void FTE_TIMER_ISR

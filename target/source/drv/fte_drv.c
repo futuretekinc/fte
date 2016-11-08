@@ -23,7 +23,7 @@ FTE_RET   FTE_DRV_init
     pContent = (FTE_DRIVER_DESCRIPT_CONTENT_PTR)FTE_MEM_allocZero(sizeof(FTE_DRIVER_DESCRIPT_CONTENT));
     if (pContent == NULL)
     {
-        return  MQX_OUT_OF_MEMORY;
+        return  FTE_RET_NOT_ENOUGH_MEMORY;
     }
     
     pContent->pNext      = _pHead;
@@ -32,12 +32,12 @@ FTE_RET   FTE_DRV_init
     _pHead = pContent;
     _nCount++;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_DRV_create
 (
-    fte_dev_type    xType, 
+    FTE_DEV_TYPE    xType, 
     FTE_VOID_PTR    pParams
 )
 {
@@ -48,11 +48,11 @@ FTE_RET   FTE_DRV_create
     {
         if (pContent->pDescript->nType == xType)
         {
-            return  MQX_OK;
+            return  FTE_RET_OK;
         }
         
         pContent = pContent->pNext;
     }
     
-    return  MQX_INVALID_DEVICE;
+    return  FTE_RET_INVALID_OBJECT;
 }

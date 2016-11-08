@@ -7,7 +7,8 @@ typedef struct
     FTE_CHAR_PTR        pName;
 } FTE_CLASS_DESC;
 
-static const FTE_CLASS_DESC _pClassDescs[] =
+static const 
+FTE_CLASS_DESC _pClassDescs[] =
 {
     {
         .xClass = FTE_OBJ_CLASS_TEMPERATURE,
@@ -991,12 +992,12 @@ FTE_RET FTE_OBJ_CLASS_getName
             if (_pClassDescs[i].xClass == (nID & FTE_OBJ_CLASS_MASK))
             {
                 strncpy(pName, _pClassDescs[i].pName, nBuffLen - 1);
-                return   MQX_OK;
+                return   FTE_RET_OK;
             }
         }
     }
     
     strcpy(pName, "Unknown");
     
-    return   MQX_ERROR;
+    return   FTE_RET_ERROR;
 }

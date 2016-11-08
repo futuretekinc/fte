@@ -112,7 +112,7 @@ error:
         pStatus->xCommon.pValue = NULL;
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
     
 }
 
@@ -170,7 +170,7 @@ FTE_RET FTE_GUS_getChild
     FTE_OBJECT_ID xID = (FTE_OBJECT_ID)FTE_LIST_getAt(&pStatus->xChildList, ulIndex);
     if (xID == 0)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     *pxID = xID;
@@ -372,7 +372,7 @@ FTE_RET    FTE_GUS_setMulti
         }
     }
 
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET FTE_GUS_getMulti
@@ -403,7 +403,7 @@ FTE_RET FTE_GUS_getMulti
         }
     }
 
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET FTE_GUS_setConfig
@@ -482,7 +482,7 @@ FTE_RET FTE_GUS_getChildConfig
         }
     }
 
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET FTE_GUS_getUpdateInterval

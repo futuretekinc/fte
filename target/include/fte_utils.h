@@ -10,10 +10,10 @@
 #define isspace(c)           (c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\v')
 #endif		
 
-void    fte_udelay(uint_32 usec);
-boolean fte_parse_ip_address( char_ptr pIPString, uint_32 _PTR_ pIP);
-boolean fte_parse_enet_address( char_ptr pMACString, _enet_address enet_address);
-uint_32 fte_parse_hex_string(char_ptr pString, uint_8 *pBuff, uint_32 ulBuffLen);
+void    fte_udelay(FTE_UINT32 usec);
+FTE_BOOL fte_parse_ip_address( FTE_CHAR_PTR pIPString, FTE_UINT32_PTR pIP);
+FTE_BOOL fte_parse_enet_address( FTE_CHAR_PTR pMACString, _enet_address enet_address);
+FTE_UINT32 fte_parse_hex_string(FTE_CHAR_PTR pString, FTE_UINT8_PTR pBuff, FTE_UINT32 ulBuffLen);
 
 void    fte_system_reset(void);
 

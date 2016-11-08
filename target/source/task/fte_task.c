@@ -10,17 +10,18 @@
 #include "fte_lora.h"
 #include <rtcs.h>
  
-void MAC_15_4_process(uint_32 params);
-void NS_STACK_main(uint_32 params);
-void FTE_LORA_ctrl(uint_32 params);
-void FTE_LORAWAN_process(uint_32 params);
-void FTE_S2LORA_process(uint_32 ulParams);
+void MAC_15_4_process(FTE_UINT32 params);
+void NS_STACK_main(FTE_UINT32 params);
+void FTE_LORA_ctrl(FTE_UINT32 params);
+void FTE_LORAWAN_process(FTE_UINT32 params);
+void FTE_S2LORA_process(FTE_UINT32 ulParams);
 
 /*
 ** MQX initialization information
 */
 
-const TASK_TEMPLATE_STRUCT  MQX_template_list[] = 
+const 
+TASK_TEMPLATE_STRUCT  MQX_template_list[] = 
 {
     { 
         .TASK_TEMPLATE_INDEX    =   FTE_TASK_MAIN,      /* Task Index */
@@ -29,17 +30,17 @@ const TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .TASK_PRIORITY          =   FTE_TASK_MAIN_PRIO, /* Priority */
         .TASK_NAME              =   "main",             /* Name */
         .TASK_ATTRIBUTES        =   MQX_AUTO_START_TASK,/* Attributes */
-        .CREATION_PARAMETER     =   (uint_32)0,         /* Param */
+        .CREATION_PARAMETER     =   0,                  /* Param */
         .DEFAULT_TIME_SLICE     =   0                   /* Time Slice */
     },
     { 
-        .TASK_TEMPLATE_INDEX    =   FTE_TASK_OBJECT_MNGT,       /* Task Index */
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_OBJECT_MNGT,   /* Task Index */
         .TASK_ADDRESS           =   FTE_TASK_objectManagement,  /* Function */
         .TASK_STACKSIZE         =   FTE_TASK_OBJECT_MNGT_STACK, /* Stack */
         .TASK_PRIORITY          =   FTE_TASK_OBJECT_MNGT_PRIO,  /* Priority */
-        .TASK_NAME              =   "object management",        /* Name */
-        .TASK_ATTRIBUTES        =   0,                          /* Attributes */
-        .CREATION_PARAMETER     =   (uint_32)0,                 /* Param */
+        .TASK_NAME              =   "object",               /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   (FTE_UINT32)0,          /* Param */
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
     },
     { 
@@ -49,7 +50,7 @@ const TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .TASK_PRIORITY          =   FTE_TASK_WATCHDOG_PRIO, /* Priority */
         .TASK_NAME              =   "watchdog",             /* Name */
         .TASK_ATTRIBUTES        =   MQX_AUTO_START_TASK,    /* Attributes */
-        .CREATION_PARAMETER     =   (uint_32)0,             /* Param */
+        .CREATION_PARAMETER     =   0,                      /* Param */
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
     },
     { 
@@ -59,7 +60,7 @@ const TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .TASK_PRIORITY          =   FTE_TASK_TIMER_PRIO,    /* Priority */
         .TASK_NAME              =   "timer",                /* Name */
         .TASK_ATTRIBUTES        =   MQX_AUTO_START_TASK,    /* Attributes */
-        .CREATION_PARAMETER     =   (uint_32)0,             /* Param */
+        .CREATION_PARAMETER     =   0,                      /* Param */
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
     },
 #if FTE_TASK_SHELL
@@ -68,9 +69,9 @@ const TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .TASK_ADDRESS           =   FTE_TASK_shell,         /* Function */
         .TASK_STACKSIZE         =   FTE_TASK_SHELL_STACK,   /* Stack */
         .TASK_PRIORITY          =   FTE_TASK_SHELL_PRIO,    /* Priority */
-        .TASK_NAME              =   "SHELL",                /* Name */
+        .TASK_NAME              =   "shell",                /* Name */
         .TASK_ATTRIBUTES        =   0,                      /* Attributes */
-        .CREATION_PARAMETER     =   (uint_32)0,             /* Param */
+        .CREATION_PARAMETER     =   0,                      /* Param */
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
     },
 #endif
@@ -82,7 +83,7 @@ const TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .TASK_PRIORITY          =   FTE_TASK_NET_PRIO,  /* Priority */
         .TASK_NAME              =   "net",              /* Name */
         .TASK_ATTRIBUTES        =   0,                  /* Attributes */
-        .CREATION_PARAMETER     =   (uint_32)0,         /* Param */
+        .CREATION_PARAMETER     =   0,                  /* Param */
         .DEFAULT_TIME_SLICE     =   0                   /* Time Slice */
     },
 #endif
@@ -94,7 +95,7 @@ const TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .TASK_PRIORITY          =   FTE_TASK_UCS_RX_PRIO,/* Priority */
         .TASK_NAME              =   "ucs_rx",           /* Name */
         .TASK_ATTRIBUTES        =   0,                  /* Attributes */
-        .CREATION_PARAMETER     =   (uint_32)0,         /* Param */
+        .CREATION_PARAMETER     =   0,                  /* Param */
         .DEFAULT_TIME_SLICE     =   0                   /* Time Slice */
     },
     { 
@@ -104,7 +105,7 @@ const TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .TASK_PRIORITY          =   FTE_TASK_UCS_TX_PRIO,/* Priority */
         .TASK_NAME              =   "ucs_tx",           /* Name */
         .TASK_ATTRIBUTES        =   0,                  /* Attributes */
-        .CREATION_PARAMETER     =   (uint_32)0,         /* Param */
+        .CREATION_PARAMETER     =   0,                  /* Param */
         .DEFAULT_TIME_SLICE     =   0                   /* Time Slice */
     },
 #endif
@@ -150,7 +151,7 @@ const TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .TASK_PRIORITY          =   FTE_TASK_LORA_PRIO,     /* Priority */
         .TASK_NAME              =   "LoRaWAN COMM",         /* Name */
         .TASK_ATTRIBUTES        =   0,                      /* Attributes */
-        .CREATION_PARAMETER     =   (uint_32)0,             /* Param */
+        .CREATION_PARAMETER     =   0,                      /* Param */
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
     },
     { 
@@ -158,9 +159,9 @@ const TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .TASK_ADDRESS           =   FTE_LORAWAN_process,    /* Function */
         .TASK_STACKSIZE         =   FTE_TASK_LORAWAN_STACK, /* Stack */
         .TASK_PRIORITY          =   FTE_TASK_LORAWAN_PRIO,  /* Priority */
-        .TASK_NAME              =   "LoRaWAN Process",      /* Name */
+        .TASK_NAME              =   "LoRaWAN",              /* Name */
         .TASK_ATTRIBUTES        =   0,                      /* Attributes */
-        .CREATION_PARAMETER     =   (uint_32)0,             /* Param */
+        .CREATION_PARAMETER     =   0,                      /* Param */
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
     },
 #endif
@@ -170,9 +171,9 @@ const TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .TASK_ADDRESS           =   FTE_S2LORA_process,     /* Function */
         .TASK_STACKSIZE         =   FTE_TASK_S2LORA_STACK,  /* Stack */
         .TASK_PRIORITY          =   FTE_TASK_S2LORA_PRIO,   /* Priority */
-        .TASK_NAME              =   "LoRaWAN Process",      /* Name */
+        .TASK_NAME              =   "LoRaWAN",              /* Name */
         .TASK_ATTRIBUTES        =   0,                      /* Attributes */
-        .CREATION_PARAMETER     =   (uint_32)0,             /* Param */
+        .CREATION_PARAMETER     =   (FTE_UINT32)0,             /* Param */
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
     },
 #endif
@@ -182,7 +183,7 @@ const TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .TASK_ADDRESS           =   FTE_SOHA_task,          /* Function */
         .TASK_STACKSIZE         =   FTE_TASK_SOHA_STACK,    /* Stack */
         .TASK_PRIORITY          =   FTE_TASK_SOHA_PRIO,     /* Priority */
-        .TASK_NAME              =   "SOHA",                 /* Name */
+        .TASK_NAME              =   "soha",                 /* Name */
         .TASK_ATTRIBUTES        =   0,                      /* Attributes */
         .CREATION_PARAMETER     =   0,                      /* Param */
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
@@ -194,7 +195,7 @@ const TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .TASK_ADDRESS           =   FTE_ELT_task,          /* Function */
         .TASK_STACKSIZE         =   FTE_TASK_ELT_STACK,    /* Stack */
         .TASK_PRIORITY          =   FTE_TASK_ELT_PRIO,     /* Priority */
-        .TASK_NAME              =   "ELT",                 /* Name */
+        .TASK_NAME              =   "elt",                 /* Name */
         .TASK_ATTRIBUTES        =   0,                      /* Attributes */
         .CREATION_PARAMETER     =   0,                      /* Param */
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
@@ -206,7 +207,7 @@ const TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .TASK_ADDRESS           =   FTE_DOTECH_task,        /* Function */
         .TASK_STACKSIZE         =   FTE_TASK_DOTECH_STACK,  /* Stack */
         .TASK_PRIORITY          =   FTE_TASK_DOTECH_PRIO,   /* Priority */
-        .TASK_NAME              =   "DOTECH",               /* Name */
+        .TASK_NAME              =   "dotech",               /* Name */
         .TASK_ATTRIBUTES        =   0,                      /* Attributes */
         .CREATION_PARAMETER     =   0,                      /* Param */
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
@@ -222,44 +223,45 @@ FTE_LIST    _taskList =
     .pLockKey   = NULL
 };
 
-FTE_RET   FTE_TASK_create(_processor_number xProcessorID, FTE_RET nTemplateIndex, uint_32 ulParameter)
+FTE_RET   FTE_TASK_create
+(
+    FTE_INT32           nTemplateIndex, 
+    FTE_UINT32          ulParameter,
+    FTE_TASK_ID_PTR     pTaskID
+)
 {
-    _task_id            xTaskID;
-    FTE_TASK_INFO_PTR   pTaskInfo;
+    FTE_TASK_ID         xTaskID;
     
-    xTaskID = _task_create(xProcessorID, nTemplateIndex, ulParameter);
+    xTaskID = _task_create(0, nTemplateIndex, ulParameter);
 
     if (xTaskID == MQX_NULL_TASK_ID)
     {
-        for(int i = 0  ; MQX_template_list[nTemplateIndex].TASK_TEMPLATE_INDEX != 0 ; i++)
+        for(FTE_INT32 i = 0  ; MQX_template_list[nTemplateIndex].TASK_TEMPLATE_INDEX != 0 ; i++)
         {
             if (MQX_template_list[nTemplateIndex].TASK_TEMPLATE_INDEX == nTemplateIndex)
             {
                 ERROR("\nCould not create %s\n", MQX_template_list[nTemplateIndex].TASK_NAME);
-                return  MQX_ERROR;
+                return  FTE_RET_ERROR;
             }
         }
         
         ERROR("\nCould not create unknown[%d]\n", nTemplateIndex);
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
-        
-    pTaskInfo = (FTE_TASK_INFO_PTR)FTE_MEM_allocZero(sizeof(FTE_TASK_INFO));
-    if (pTaskInfo != NULL)
+       
+    FTE_TASK_append(FTE_TASK_TYPE_MQX, xTaskID);
+
+    if (pTaskID != NULL)
     {
-        pTaskInfo->xID  = xTaskID;
-        pTaskInfo->xType= FTE_TASK_TYPE_MQX;
-        
-        FTE_LIST_pushBack(&_taskList, (pointer)pTaskInfo);    
+        *pTaskID = xTaskID;
     }
-    
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_TASK_append
 (
     FTE_TASK_TYPE   xType,
-    _task_id        xTaskID
+    FTE_TASK_ID     xTaskID
 )
 {
     FTE_TASK_INFO_PTR   pTaskInfo;
@@ -267,7 +269,7 @@ FTE_RET   FTE_TASK_append
     pTaskInfo = (FTE_TASK_INFO_PTR)FTE_MEM_allocZero(sizeof(FTE_TASK_INFO));
     if (pTaskInfo == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pTaskInfo->xID  = xTaskID;
@@ -275,15 +277,15 @@ FTE_RET   FTE_TASK_append
         
     FTE_LIST_pushBack(&_taskList, (pointer)pTaskInfo);    
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_TASK_remove
 (
-    _task_id        xTaskID
+    FTE_TASK_ID        xTaskID
 )
 { 
-    for(int i = 0 ; i < FTE_LIST_count(&_taskList); i++)
+    for(FTE_INT32 i = 0 ; i < FTE_LIST_count(&_taskList); i++)
     {
         FTE_TASK_INFO_PTR   pTaskInfo = (FTE_TASK_INFO_PTR)FTE_LIST_getAt(&_taskList, i);
         if (pTaskInfo->xID == xTaskID)
@@ -291,17 +293,21 @@ FTE_RET   FTE_TASK_remove
             FTE_LIST_remove(&_taskList, pTaskInfo);
             FTE_MEM_free(pTaskInfo);
             
-            return  MQX_OK;
+            return  FTE_RET_OK;
         }        
     }
 
     return  MQX_INVALID_TASK_ID;
 }
 
-int_32 FTE_TASK_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
+FTE_INT32 FTE_TASK_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[]
+)
 { 
-    boolean                 bPrintUsage, bShortHelp = FALSE;
-    int_32                  nRet = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   nRet = SHELL_EXIT_SUCCESS;
     
     bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
     
@@ -309,7 +315,7 @@ int_32 FTE_TASK_SHELL_cmd(int_32 nArgc, char_ptr pArgv[] )
     {
     case    1:
         {
-            uint_32             ulCount = 0;
+            FTE_UINT32             ulCount = 0;
             FTE_LIST_ITERATOR   xIter;
             FTE_TASK_INFO_PTR   pTaskInfo;
             

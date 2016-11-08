@@ -56,17 +56,17 @@ typedef struct
         TIME_STRUCT         xTime;
     }   xParams;
     
-    uint_16                 ulDelayTime;
-    uint_16                 ulHoldTime;
+    FTE_UINT16                 ulDelayTime;
+    FTE_UINT16                 ulHoldTime;
 }   FTE_EVENT_CONFIG, _PTR_ FTE_CFG_EVENT_PTR;
 
 typedef struct
 {
     struct FTE_OBJECT_STRUCT _PTR_ pObj;
-    uint_8                          bState;
-    uint_8                          bStateChanged;
-    uint_8                          bOccurred;    
-    uint_8                          bChanged;
+    FTE_UINT8                          bState;
+    FTE_UINT8                          bStateChanged;
+    FTE_UINT8                          bOccurred;    
+    FTE_UINT8                          bChanged;
     TIME_STRUCT                     xTimeStamp;
     TIME_STRUCT                     xChangedTime;
     FTE_LIST                        xObjectList;

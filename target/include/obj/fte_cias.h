@@ -18,11 +18,11 @@ typedef struct FTE_CIAS_ALARM_STRUCT
 
 typedef struct FTE_CIAS_ZONE_STRUCT
 {
-    FTE_UINT8      nDeviceNumber;
-    boolean     bInOperation;
-    FTE_UINT8      bSensorCount;
-    FTE_UINT32     ulAlarm;
-    FTE_UINT32     ulValue;
+    FTE_UINT8   nDeviceNumber;
+    FTE_BOOL    bInOperation;
+    FTE_UINT8   bSensorCount;
+    FTE_UINT32  ulAlarm;
+    FTE_UINT32  ulValue;
     TIME_STRUCT xVOT;           // valid operation time
 }   FTE_CIAS_ZONE, _PTR_ FTE_CIAS_ZONE_PTR;
 
@@ -38,10 +38,10 @@ typedef struct  FTE_CIAS_SIOUX_CU_STATUS_STRUCT
 
 typedef struct  FTE_CIAS_SIOUX_CU_STRUCT
 {
-    _task_id        xTaskID;
-    FTE_UINT32         ulObjectID;
-    FTE_UINT32         ulSensorCount;
-    FTE_UINT32         ulDistance;    
+    FTE_TASK_ID     xTaskID;
+    FTE_UINT32      ulObjectID;
+    FTE_UINT32      ulSensorCount;
+    FTE_UINT32      ulDistance;    
     FTE_CIAS_ALARM  pAlarms[8];
     FTE_CIAS_ZONE   pZones[FTE_CIAS_SIOUX_CU_ZONE_MAX];
 }   FTE_CIAS_SIOUX_CU, _PTR_ FTE_CIAS_SIOUX_CU_PTR;

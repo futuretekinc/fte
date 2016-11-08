@@ -1737,9 +1737,9 @@ double SX1276GetPacketRssi( void )
     }
 }
 
-uint_8 SX1276LoRaGetOpMode( void )
+FTE_UINT8 SX1276LoRaGetOpMode( void )
 {
-    uint_8  ubObMode;
+    FTE_UINT8  ubObMode;
     
     ubObMode = SX1276Read( REG_LR_OPMODE );
     
@@ -1748,37 +1748,37 @@ uint_8 SX1276LoRaGetOpMode( void )
 
 #define FREQ_STEP                                   61.03515625
 
-uint_32 SX1276LoRaGetRFFrequency( void )
+FTE_UINT32 SX1276LoRaGetRFFrequency( void )
 {
-    uint_8 pValue[3];
+    FTE_UINT8 pValue[3];
     SX1276ReadBuffer( REG_LR_FRFMSB, pValue, 3 );
     
-    uint_32 ulRFFrequency = ( ( uint32_t )pValue[0] << 16 ) | ( ( uint32_t )pValue[1] << 8 ) | ( ( uint32_t )pValue[2] );
+    FTE_UINT32 ulRFFrequency = ( ( uint32_t )pValue[0] << 16 ) | ( ( uint32_t )pValue[1] << 8 ) | ( ( uint32_t )pValue[2] );
     return  ( uint32_t )( ( double )ulRFFrequency * ( double )FREQ_STEP );
 }
 
-uint_8 SX1276LoRaGetSpreadingFactor( void )
+FTE_UINT8 SX1276LoRaGetSpreadingFactor( void )
 {
-    uint_8  ubValue;
+    FTE_UINT8  ubValue;
     
     ubValue = SX1276Read( REG_LR_MODEMCONFIG2);   
     return  ( ubValue & ~RFLR_MODEMCONFIG2_SF_MASK ) >> 4;
 }
 
-uint_8 SX1276LoRaGetErrorCoding( void )
+FTE_UINT8 SX1276LoRaGetErrorCoding( void )
 {
-    uint_8  ubValue = SX1276Read( REG_LR_MODEMCONFIG1);
+    FTE_UINT8  ubValue = SX1276Read( REG_LR_MODEMCONFIG1);
     return  ( ubValue & ~RFLR_MODEMCONFIG1_CODINGRATE_MASK ) >> 1;
 }
 
-uint_8 SX1276LoRaGetSignalBandwidth( void )
+FTE_UINT8 SX1276LoRaGetSignalBandwidth( void )
 {
-    uint_8 ubValue = SX1276Read( REG_LR_MODEMCONFIG1);
+    FTE_UINT8 ubValue = SX1276Read( REG_LR_MODEMCONFIG1);
     return  ( ubValue & ~RFLR_MODEMCONFIG1_BW_MASK ) >> 4;
 }
 
-boolean SX1276LoRaGetPacketCrcOn( void )
+FTE_BOOL SX1276LoRaGetPacketCrcOn( void )
 {
-    uint_8  ubValue = SX1276Read( REG_LR_MODEMCONFIG2);
+    FTE_UINT8  ubValue = SX1276Read( REG_LR_MODEMCONFIG2);
     return  ( ubValue & RFLR_MODEMCONFIG2_RXPAYLOADCRC_ON ) >> 1;
 }

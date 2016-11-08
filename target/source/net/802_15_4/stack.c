@@ -335,7 +335,7 @@ portCHAR NS_STACK_init( void )
   events = xQueueCreate( STACK_BUFFERS_MAX + 20, sizeof( event_t ) );
 	n_buffers = 0;
 	
-    FTE_TASK_create(0, FTE_TASK_NS_STACK, 0);
+    FTE_TASK_create(FTE_TASK_NS_STACK, 0);
 	//xTaskCreate( stack_main, "Stack", configMAXIMUM_STACK_SIZE, NULL, STACK_PRIORITY, &core_handle );
   /* Initialize modules */
   debug("Stack: mod inits.\r\n");
@@ -424,7 +424,7 @@ start_status_t stack_start(stack_init_t  *stack_parameters)
  *	\param pvParameters 	not used
  *
  */
-void NS_STACK_main ( uint_32 ulParams)
+void NS_STACK_main ( FTE_UINT32 ulParams)
 {
 	event_t event;
     MQX_TICK_STRUCT xLastWakeTime;

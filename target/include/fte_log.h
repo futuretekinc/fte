@@ -52,6 +52,6 @@ FTE_LOG_PTR FTE_LOG_getAt(FTE_UINT32 nID);
 
 FTE_INT32   FTE_LOG_count(void);
 
-FTE_INT32   FTE_LOG_SHELL_cmd(FTE_INT32 argc, FTE_CHAR_PTR argv[]);
+FTE_INT32   FTE_LOG_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
 FTE_CHAR_PTR    FTE_LOG_getSystemMessageString(FTE_LOG_SYSTEM_MESSAGE xMsg);
 #endif

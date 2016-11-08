@@ -17,29 +17,29 @@ typedef struct
 
 typedef void (_CODE_PTR_  FTE_SYS_STATE_CHANGE_FPTR)(pointer);
 
-void        FTE_SYS_powerUp(void);
+void    FTE_SYS_powerUp(void);
 
-void        FTE_SYS_STATE_initialized(void);
-void        FTE_SYS_STATE_connected(void);
-void        FTE_SYS_STATE_disconnected(void);
-void        FTE_SYS_STATE_factoryResetRequested(void);
-void        FTE_SYS_STATE_factoryResetCanceled(void);
-void        FTE_SYS_STATE_factoryResetFinished(void);
-void        FTE_SYS_STATE_setAlert(void);
+void    FTE_SYS_STATE_initialized(void);
+void    FTE_SYS_STATE_connected(void);
+void    FTE_SYS_STATE_disconnected(void);
+void    FTE_SYS_STATE_factoryResetRequested(void);
+void    FTE_SYS_STATE_factoryResetCanceled(void);
+void    FTE_SYS_STATE_factoryResetFinished(void);
+void    FTE_SYS_STATE_setAlert(void);
 
-FTE_UINT32     FTE_SYS_STATE_get(void);
-void        FTE_SYS_STATE_setChangeCB(FTE_SYS_STATE_CHANGE_FPTR fCallback);
+FTE_RET FTE_SYS_STATE_get(FTE_UINT32_PTR pState);
+void    FTE_SYS_STATE_setChangeCB(FTE_SYS_STATE_CHANGE_FPTR fCallback);
 
-FTE_RET   FTE_SYS_powerHoldInit(void);
-FTE_RET   FTE_SYS_powerHold(FTE_BOOL bHoldOn);
+FTE_RET FTE_SYS_powerHoldInit(void);
+FTE_RET FTE_SYS_powerHold(FTE_BOOL bHoldOn);
 
-void        FTE_SYS_powerStateInit(void);
+void    FTE_SYS_powerStateInit(void);
 
-void        FTE_SYS_SWDetectInit(void);
+void    FTE_SYS_SWDetectInit(void);
 
-void        FTE_SYS_factoryResetInit(void);
-FTE_BOOL    FTE_SYS_isfactoryResetPushed(void);
-void        FTE_SYS_factoryReset(FTE_BOOL bPushed);
+void    FTE_SYS_factoryResetInit(void);
+FTE_RET FTE_SYS_isfactoryResetPushed(FTE_BOOL_PTR pPushed);
+void    FTE_SYS_factoryReset(FTE_BOOL bPushed);
 
 FTE_RET     FTE_SYS_DEVICE_resetInit(void);
 FTE_RET     FTE_SYS_DEVICE_reset(void);
@@ -63,9 +63,9 @@ FTE_RET     FTE_SYS_liveCheckStart(void);
 FTE_RET     FTE_SYS_liveCheckStop(void);
 FTE_BOOL    FTE_SYS_isLiveChecking(void);
 
-FTE_RET     FTE_SYS_getOID(uint_8_ptr pOID);
+FTE_RET     FTE_SYS_getOID(FTE_UINT8_PTR pOID);
 FTE_CHAR_PTR    FTE_SYS_getOIDString(void);
 
-FTE_RET     FTE_SYS_getMAC(uint_8_ptr pMAC);
+FTE_RET     FTE_SYS_getMAC(FTE_UINT8_PTR pMAC);
 
 #endif

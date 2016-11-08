@@ -13,7 +13,7 @@ FTE_RET FTE_GPIO_create
     pGPIO = (FTE_GPIO_PTR)FTE_MEM_allocZero(sizeof(FTE_GPIO));
     if (pGPIO == NULL)
     {
-        return  MQX_OUT_OF_MEMORY;
+        return  FTE_RET_NOT_ENOUGH_MEMORY;
     }
     
     pGPIO->pNext    = _pHead;
@@ -22,7 +22,7 @@ FTE_RET FTE_GPIO_create
     _pHead = pGPIO;
     _nGPIOs++;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_GPIO_attach
@@ -31,11 +31,7 @@ FTE_RET   FTE_GPIO_attach
     FTE_UINT32      nParent
 )
 {
-    assert(pGPIO != NULL);
-        if (pGPIO == NULL)
-    {
-        return  MQX_INVALID_COMPONENT_HANDLE;
-    }
+    ASSERT(pGPIO != NULL);
     
     switch(FTE_DEV_TYPE(pGPIO->pConfig->nDevID))
     {
@@ -47,7 +43,7 @@ FTE_RET   FTE_GPIO_attach
                 goto error;
             }
             
-            if (FTE_LWGPIO_attach(pLWGPIO, pGPIO->pConfig->nID) != MQX_OK)
+            if (FTE_LWGPIO_attach(pLWGPIO, pGPIO->pConfig->nID) != FTE_RET_OK)
             {
                 goto error;
             }
@@ -84,7 +80,7 @@ FTE_RET   FTE_GPIO_attach
                 goto error;
             }
             
-            if (FTE_MCP23S08_GPIO_attach(pMCP23S08_GPIO, pGPIO->pConfig->nID) != MQX_OK)
+            if (FTE_MCP23S08_GPIO_attach(pMCP23S08_GPIO, pGPIO->pConfig->nID) != FTE_RET_OK)
             {
                 goto error;
             }
@@ -101,10 +97,10 @@ FTE_RET   FTE_GPIO_attach
     
     pGPIO->nParent = nParent;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 error:
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
     
 FTE_RET FTE_GPIO_detach
@@ -112,11 +108,7 @@ FTE_RET FTE_GPIO_detach
     FTE_GPIO_PTR    pGPIO
 )
 {
-    assert(pGPIO != NULL);
-    if (pGPIO == NULL)
-    {
-        return  MQX_INVALID_COMPONENT_HANDLE;
-    }
+    ASSERT(pGPIO != NULL);
     
     switch(FTE_DEV_TYPE(pGPIO->pConfig->nDevID))
     {
@@ -155,10 +147,10 @@ FTE_RET FTE_GPIO_detach
     _nGPIOs--;
             
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_UINT32 FTE_GPIO_count(void)
@@ -193,11 +185,7 @@ FTE_RET   FTE_GPIO_setValue
     FTE_BOOL        nValue
 )
 {
-    assert(pGPIO != NULL);
-    if (pGPIO == NULL)
-    {
-        return  MQX_INVALID_COMPONENT_HANDLE;
-    }
+    ASSERT(pGPIO != NULL);
     
     switch(FTE_DEV_TYPE(pGPIO->pConfig->nDevID))
     {
@@ -222,7 +210,7 @@ FTE_RET   FTE_GPIO_setValue
 #endif
     }
 
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
     
 }
 
@@ -232,11 +220,7 @@ FTE_RET   FTE_GPIO_getValue
     FTE_BOOL_PTR    pValue
 )
 {
-    assert(pGPIO != NULL);
-    if (pGPIO == NULL)
-    {
-        return  MQX_INVALID_COMPONENT_HANDLE;
-    }
+    ASSERT(pGPIO != NULL);
     
     switch(FTE_DEV_TYPE(pGPIO->pConfig->nDevID))
     {
@@ -249,9 +233,9 @@ FTE_RET   FTE_GPIO_getValue
     case    FTE_DEV_TYPE_MCP23S08:
         {
             FTE_UINT32 nValue;
-            if (FTE_MCP23S08_GPIO_getValue((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, &nValue) != MQX_OK)
+            if (FTE_MCP23S08_GPIO_getValue((FTE_MCP23S08_GPIO_PTR)pGPIO->pPort, &nValue) != FTE_RET_OK)
             {
-                return  MQX_ERROR;
+                return  FTE_RET_ERROR;
             }
             
             if (pGPIO->pConfig->nActive == FTE_GPIO_VALUE_HIGH)
@@ -263,14 +247,14 @@ FTE_RET   FTE_GPIO_getValue
                 *pValue = (nValue == 0);
             }
             
-            return  MQX_OK;
+            return  FTE_RET_OK;
             
         }
 #endif
         break;
     }
 
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_GPIO_setDir
@@ -279,11 +263,7 @@ FTE_RET   FTE_GPIO_setDir
     FTE_GPIO_DIR    nValue
 )
 {
-    assert(pGPIO != NULL);
-    if (pGPIO == NULL)
-    {
-        return  MQX_INVALID_COMPONENT_HANDLE;
-    }
+    ASSERT(pGPIO != NULL);
     
     switch(FTE_DEV_TYPE(pGPIO->pConfig->nDevID))
     {
@@ -310,7 +290,7 @@ FTE_RET   FTE_GPIO_setDir
 #endif
     }
 
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_GPIO_setISR
@@ -320,11 +300,7 @@ FTE_RET   FTE_GPIO_setISR
     FTE_VOID_PTR    pParams
 )
 {
-    assert(pGPIO != NULL);
-    if (pGPIO == NULL)
-    {
-        return  MQX_INVALID_COMPONENT_HANDLE;
-    }
+    ASSERT(pGPIO != NULL);
     
     switch(FTE_DEV_TYPE(pGPIO->pConfig->nDevID))
     {
@@ -343,7 +319,7 @@ FTE_RET   FTE_GPIO_setISR
 #endif
     }
 
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_GPIO_INT_init
@@ -367,13 +343,13 @@ FTE_RET   FTE_GPIO_INT_init
 #if FTE_MCP23S08_SUPPORTED
     case    FTE_DEV_TYPE_MCP23S08:
         {
-            return  MQX_OK;
+            return  FTE_RET_OK;
         }
         break;
 #endif
     }
 
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_GPIO_INT_setPolarity
@@ -401,7 +377,7 @@ FTE_RET   FTE_GPIO_INT_setPolarity
 #endif
     }
 
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET    FTE_GPIO_INT_setEnable
@@ -429,7 +405,7 @@ FTE_RET    FTE_GPIO_INT_setEnable
 #endif
     }
 
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET    FTE_GPIO_INT_getFlag
@@ -457,7 +433,7 @@ FTE_RET    FTE_GPIO_INT_getFlag
 #endif
     }
 
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET    FTE_GPIO_INT_clrFlag
@@ -484,7 +460,7 @@ FTE_RET    FTE_GPIO_INT_clrFlag
 #endif
     }
 
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET FTE_GPIO_showList(void)

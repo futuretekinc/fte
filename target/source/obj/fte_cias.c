@@ -243,7 +243,7 @@ FTE_RET   FTE_CIAS_SIOUX_CU_attach
         goto error;
     }
         
-    if (FTE_UCS_attach(pUCS, pObj->pConfig->xCommon.nID) != MQX_OK)
+    if (FTE_UCS_attach(pUCS, pObj->pConfig->xCommon.nID) != FTE_RET_OK)
     {
         goto error;
     }
@@ -252,10 +252,10 @@ FTE_RET   FTE_CIAS_SIOUX_CU_attach
     
     FTE_CIAS_SIOUX_CU_init(pObj->pConfig->xCommon.nID);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_CIAS_SIOUX_CU_detach
@@ -287,7 +287,7 @@ FTE_RET   FTE_CIAS_SIOUX_CU_detach
         pStatus->xGUS.pUCS = NULL;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_CIAS_SIOUX_CU_loadConfig
@@ -299,12 +299,12 @@ FTE_RET FTE_CIAS_SIOUX_CU_loadConfig
     
     if (ulIndex >= FTE_CIAS_SIOUX_CU_MAX)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
-    if (FTE_CFG_CIAS_getExtConfig(&xConfig, sizeof(xConfig)) != MQX_OK)
+    if (FTE_CFG_CIAS_getExtConfig(&xConfig, sizeof(xConfig)) != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     SIOUX_CU[ulIndex].ulDistance    = xConfig.ulDistance;
@@ -315,7 +315,7 @@ FTE_RET FTE_CIAS_SIOUX_CU_loadConfig
         SIOUX_CU[ulIndex].pZones[i].bInOperation = xConfig.pZones[i].bActivation;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_CIAS_SIOUX_CU_saveConfig
@@ -327,7 +327,7 @@ FTE_RET FTE_CIAS_SIOUX_CU_saveConfig
     
     if (ulIndex >= FTE_CIAS_SIOUX_CU_MAX)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     xConfig.ulSensorCount   = SIOUX_CU[ulIndex].ulSensorCount;
@@ -404,7 +404,7 @@ FTE_UINT32     FTE_CIAS_SIOUX_CU_get
         FTE_VALUE_setULONG(pValue, ulValue);
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 void FTE_CIAS_SIOUX_CU_init
@@ -415,7 +415,7 @@ void FTE_CIAS_SIOUX_CU_init
     FTE_CIAS_SIOUX_CU_loadConfig(0);
     
     SIOUX_CU[0].ulObjectID = ulObjectID;    
-    SIOUX_CU[0].xTaskID = _task_create(0, FTE_TASK_CIAS_SIOUX_CU, 0);
+     FTE_TASK_create(FTE_TASK_CIAS_SIOUX_CU, 0, &SIOUX_CU[0].xTaskID);
 }
 
 FTE_RET FTE_CIAS_SIOUX_CU_initDefaultExtConfig
@@ -431,7 +431,7 @@ FTE_RET FTE_CIAS_SIOUX_CU_initDefaultExtConfig
         pConfig->pZones[i].bActivation = FALSE;
     }
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
                                             
 void FTE_CIAS_SIOUX_CU_task
@@ -441,8 +441,6 @@ void FTE_CIAS_SIOUX_CU_task
 {
     FTE_OBJECT_PTR  pObj = NULL;    
 
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
-    
     while(!pObj)
     {
         _time_delay(1000);
@@ -466,11 +464,11 @@ void FTE_CIAS_SIOUX_CU_task
         {
             if (SIOUX_CU[ulID].pZones[nZone-1].bInOperation)
             {
-                uint_8  pReqFrame[16];
+                FTE_UINT8  pReqFrame[16];
                 FTE_UINT32 ulReqLen;
-                uint_8  pRecvBuff[20];
+                FTE_UINT8  pRecvBuff[20];
                 FTE_UINT32 ulRecvLen;
-                uint_16 ulCRC = 0xFFFF;
+                FTE_UINT16 ulCRC = 0xFFFF;
 
                 ulReqLen = 0;
                 pReqFrame[ulReqLen++] = 0x01;
@@ -504,7 +502,7 @@ void FTE_CIAS_SIOUX_CU_task
                 ulRecvLen = FTE_UCS_sendAndRecv(pUCS, pReqFrame, ulReqLen, pRecvBuff, sizeof(pRecvBuff), 0, 50);
                 if (ulRecvLen >= 12)
                 {
-                    uint_8  pRespFrame[13];
+                    FTE_UINT8  pRespFrame[13];
                     FTE_UINT32 ulRespLen = 0;
                     
                     for(int i = 0 ; i < ulRecvLen ; i++)
@@ -559,7 +557,7 @@ void FTE_CIAS_SIOUX_CU_task
                             FTE_UINT32     ulValue;
                             TIME_STRUCT xTime;
                             
-                            ulValue = ((uint_16)pRespFrame[5] << 8) | ((uint_16)pRespFrame[6]);
+                            ulValue = ((FTE_UINT16)pRespFrame[5] << 8) | ((FTE_UINT16)pRespFrame[6]);
                             _time_get(&xTime);
                             
                             if (SIOUX_CU[ulID].pZones[nZone-1].ulValue != ulValue)

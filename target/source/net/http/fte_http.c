@@ -3,9 +3,9 @@
 #include "fte_net.h"
 #include <tfs.h> 
 
-uint_32 FTE_HTTPD_init(FTE_HTTP_CFG_PTR  pConfig)
+FTE_UINT32 FTE_HTTPD_init(FTE_HTTP_CFG_PTR  pConfig)
 { 
-    uint_32                              server;
+    FTE_UINT32                              server;
     extern const HTTPSRV_CGI_LINK_STRUCT cgi_lnk_tbl[];
     extern const TFS_DIR_ENTRY           tfs_data[];
     HTTPSRV_PARAM_STRUCT                 srv_param;
@@ -47,10 +47,10 @@ uint_32 FTE_HTTPD_init(FTE_HTTP_CFG_PTR  pConfig)
 
     if (server)
     {   
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
     else
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 }

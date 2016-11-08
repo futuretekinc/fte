@@ -65,7 +65,7 @@ FTE_RET   FTE_SSD1305_create
     pSSD1305 = (FTE_SSD1305_PTR)FTE_MEM_allocZero(sizeof(FTE_SSD1305));
     if (pSSD1305 == NULL)
     {
-        return  MQX_OUT_OF_MEMORY;
+        return  FTE_RET_NOT_ENOUGH_MEMORY;
     }
     
     pSSD1305->pNext  = _pHead;
@@ -75,7 +75,7 @@ FTE_RET   FTE_SSD1305_create
     _nSSD1305s++;
     
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_attach
@@ -98,12 +98,12 @@ FTE_RET   FTE_SSD1305_attach
         goto error;
     }
     
-    if (FTE_I2C_attach(pSSD1305->pI2C, pSSD1305->pConfig->nID) != MQX_OK)
+    if (FTE_I2C_attach(pSSD1305->pI2C, pSSD1305->pConfig->nID) != FTE_RET_OK)
     {
         goto error;
     }
     
-    if (FTE_GPIO_attach(pSSD1305->pGPIOPower, pSSD1305->pConfig->nID) != MQX_OK)
+    if (FTE_GPIO_attach(pSSD1305->pGPIOPower, pSSD1305->pConfig->nID) != FTE_RET_OK)
     {
         FTE_I2C_detach(pSSD1305->pI2C);
         goto error;
@@ -111,10 +111,10 @@ FTE_RET   FTE_SSD1305_attach
     
     pSSD1305->nParent = nParent;    
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:    
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_SSD1305_detach
@@ -127,16 +127,16 @@ FTE_RET   FTE_SSD1305_detach
         goto error;
     }
     
-    if (FTE_I2C_detach(pSSD1305->pI2C) != MQX_OK)
+    if (FTE_I2C_detach(pSSD1305->pI2C) != FTE_RET_OK)
     {
         goto error;
     }
     
     pSSD1305->nParent = 0;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 /*********************************************************************
@@ -236,12 +236,12 @@ FTE_RET   FTE_SSD1305_SetDisplayMode
     case    FTE_SSD1305_DISPLAY_ON:     pData[1] = 0xAF; break;
     case    FTE_SSD1305_DISPLAY_DIM:    pData[1] = 0xAC; break;
     default:
-            return   MQX_ERROR;
+            return   FTE_RET_ERROR;
     }
 
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_SetInverseMode
@@ -256,7 +256,7 @@ FTE_RET   FTE_SSD1305_SetInverseMode
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_SetStartLine
@@ -271,7 +271,7 @@ FTE_RET   FTE_SSD1305_SetStartLine
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_SetMemoryAddressingMode
@@ -287,7 +287,7 @@ FTE_RET   FTE_SSD1305_SetMemoryAddressingMode
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_SetColumnAddress
@@ -306,7 +306,7 @@ FTE_RET   FTE_SSD1305_SetColumnAddress
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[4], 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_SetPageAddress
@@ -325,7 +325,7 @@ FTE_RET   FTE_SSD1305_SetPageAddress
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[4], 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_SetOrientation
@@ -347,7 +347,7 @@ FTE_RET   FTE_SSD1305_SetOrientation
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, sizeof(pData));
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_SetDisplayEnable
@@ -369,7 +369,7 @@ FTE_RET   FTE_SSD1305_SetDisplayEnable
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, sizeof(pData));
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 
@@ -386,7 +386,7 @@ FTE_RET   FTE_SSD1305_SetMultiplexRatio
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_SetOffset
@@ -402,7 +402,7 @@ FTE_RET   FTE_SSD1305_SetOffset
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_SetStartPage
@@ -417,7 +417,7 @@ FTE_RET   FTE_SSD1305_SetStartPage
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 
@@ -434,7 +434,7 @@ FTE_RET   FTE_SSD1305_SetFrameFrequency
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_SetColorMode
@@ -450,7 +450,7 @@ FTE_RET   FTE_SSD1305_SetColorMode
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
      FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
    
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_SetBank0Contrast
@@ -466,7 +466,7 @@ FTE_RET   FTE_SSD1305_SetBank0Contrast
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_SetColorBrightness
@@ -482,7 +482,7 @@ FTE_RET   FTE_SSD1305_SetColorBrightness
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_SetPrechargePeriod
@@ -498,7 +498,7 @@ FTE_RET   FTE_SSD1305_SetPrechargePeriod
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_SetCommonPadsHardware
@@ -512,7 +512,7 @@ FTE_RET   FTE_SSD1305_SetCommonPadsHardware
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_SetOutputScanDirection
@@ -534,7 +534,7 @@ FTE_RET   FTE_SSD1305_SetOutputScanDirection
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_SetVCOMDeselectLevel
@@ -550,7 +550,7 @@ FTE_RET   FTE_SSD1305_SetVCOMDeselectLevel
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 
@@ -574,7 +574,7 @@ FTE_RET   FTE_SSD1305_SetExternalVCC
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 FTE_RET   FTE_SSD1305_EnterReadModifyWrite
 (
@@ -585,7 +585,7 @@ FTE_RET   FTE_SSD1305_EnterReadModifyWrite
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_WriteData
@@ -600,7 +600,7 @@ FTE_RET   FTE_SSD1305_WriteData
     
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, pData, 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_ReadData
@@ -615,7 +615,7 @@ FTE_RET   FTE_SSD1305_ReadData
     
     *puiData = pData[1];
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SSD1305_SetAddress
@@ -636,7 +636,7 @@ FTE_RET   FTE_SSD1305_SetAddress
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[2], 2);
     FTE_I2C_write(pSSD1305->pI2C, 0x3C, &pData[4], 2);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 
@@ -706,7 +706,7 @@ FTE_RET   FTE_SSD1305_init
  
         FTE_SSD1305_SetDisplayEnable(pSSD1305, FALSE);
         
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 void FTE_SSD1305_clear

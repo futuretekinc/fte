@@ -99,7 +99,7 @@ FTE_RET    fte_cgi_query_parser
     query->count = 0;
     if (strlen(pQuery) == 0)
     {
-        return  MQX_OK;
+        return  FTE_RET_OK;
     }
     
     FTE_CHAR_PTR pQueryEnd, pQueryStart = pQuery;
@@ -135,7 +135,7 @@ FTE_RET    fte_cgi_query_parser
         }        
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_CHAR_PTR fte_cgi_query_search
@@ -176,7 +176,7 @@ FTE_RET fte_cgi_query_search_ip
         }
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET fte_cgi_query_search_uint32
@@ -194,11 +194,11 @@ FTE_RET fte_cgi_query_search_uint32
         if (strcmp(name, query->tuples[i].name) == 0)
         {
             *value = atoi(query->tuples[i].value);
-            return  MQX_OK;
+            return  FTE_RET_OK;
         }
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET fte_cgi_query_search_hexnum
@@ -217,11 +217,11 @@ FTE_RET fte_cgi_query_search_hexnum
         {
             *value = strtoul(query->tuples[i].value, NULL, 16);
             
-            return  MQX_OK;
+            return  FTE_RET_OK;
         }
     }
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET fte_cgi_str_to_ip
@@ -237,7 +237,7 @@ FTE_RET fte_cgi_str_to_ip
     
     if (strlen(str) >= sizeof(buf))
     {
-        return  MQX_ERROR;        
+        return  FTE_RET_ERROR;        
     }
     
     strcpy(buf, str);
@@ -256,7 +256,7 @@ FTE_RET fte_cgi_str_to_ip
             }
             else
             {
-                return  MQX_ERROR;
+                return  FTE_RET_ERROR;
             }
         }
         
@@ -269,7 +269,7 @@ FTE_RET fte_cgi_str_to_ip
         *ip = 0;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET fte_cgi_send_response
@@ -318,7 +318,7 @@ FTE_RET _cgi_request_get
     FTE_CHAR_PTR                pBuff = NULL;
     FTE_UINT32                 query_count = 0, nMaxLen = 0;
     FTE_UINT32                 nLen  = 0, ret;
-    boolean                 reboot = FALSE;
+    FTE_BOOL                 reboot = FALSE;
     
     CGI_TRACE("CALLED");
     nMaxLen = FTE_NET_HTTP_CGI_BUFF_SIZE;
@@ -348,7 +348,7 @@ FTE_RET _cgi_request_get
     
     if (strcmp(cmd, "view") == 0)
     {
-        FTE_PRODUCT_DESC const _PTR_    pProductDesc = fte_get_product_desc();
+        FTE_PRODUCT_DESC const _PTR_    pProductDesc = FTE_getProductDescription();
         
         subcmd = fte_cgi_query_search(cgi_query, "page");
         
@@ -425,7 +425,7 @@ FTE_RET _cgi_request_get
         {
             FTE_UINT32 nOID;
             
-            if (fte_cgi_query_search_hexnum(cgi_query, "oid", &nOID) == MQX_OK)
+            if (fte_cgi_query_search_hexnum(cgi_query, "oid", &nOID) == FTE_RET_OK)
             {
             }
             else
@@ -436,7 +436,7 @@ FTE_RET _cgi_request_get
     else if (strcmp(cmd, "ctrl") == 0)
     {
         FTE_UINT32 nOID;
-        if (fte_cgi_query_search_hexnum(cgi_query, "oid", &nOID) != MQX_OK)
+        if (fte_cgi_query_search_hexnum(cgi_query, "oid", &nOID) != FTE_RET_OK)
         {
             CGI_ERROR("fte_cgi_query_search_hexnum\n");
             goto error;
@@ -498,7 +498,7 @@ FTE_RET _cgi_request_get
         TIME_STRUCT xCurrentTime;
         TIME_STRUCT xLastUpdatedTime = { .SECONDS = 0, .MILLISECONDS = 0};
         
-        if (fte_cgi_query_search_uint32(cgi_query, "lut", &xLastUpdatedTime.SECONDS) != MQX_OK)
+        if (fte_cgi_query_search_uint32(cgi_query, "lut", &xLastUpdatedTime.SECONDS) != FTE_RET_OK)
         {
             CGI_ERROR("fte_cgi_query_search_uint32\n");
             goto error;
@@ -511,7 +511,7 @@ FTE_RET _cgi_request_get
         nLen += fte_print_json_comma(&pBuff[nLen], nMaxLen - nLen);
         nLen += snprintf(&pBuff[nLen], nMaxLen - nLen, "\"objects\":[");        
         
-        boolean bFirst = TRUE;
+        FTE_BOOL bFirst = TRUE;
         FTE_UINT32 nCount = FTE_OBJ_count(FTE_OBJ_TYPE_UNKNOWN, 0, FALSE);
         if (nCount != 0)
         {
@@ -576,16 +576,19 @@ error:
 }
 
 
-FTE_RET _cgi_request_post(HTTPSRV_CGI_REQ_STRUCT* param)
+FTE_RET _cgi_request_post
+(
+    HTTPSRV_CGI_REQ_STRUCT* param
+)
 {
-    FTE_CGI_QUERY_PTR       cgi_query = NULL;
-    FTE_CHAR_PTR                cmd;
-    FTE_CHAR_PTR                pBuff = NULL;
-    FTE_UINT32                 query_count = 0, nMaxLen = 0;
-    FTE_UINT32                 nLen  = 0, ret;
-    boolean                 reboot = FALSE;
-    char                    pField[32];
-    FTE_CHAR_PTR                pValue;
+    FTE_CGI_QUERY_PTR   cgi_query = NULL;
+    FTE_CHAR_PTR        cmd;
+    FTE_CHAR_PTR        pBuff = NULL;
+    FTE_UINT32          query_count = 0, nMaxLen = 0;
+    FTE_UINT32          nLen  = 0, ret;
+    FTE_BOOL            reboot = FALSE;
+    FTE_CHAR            pField[32];
+    FTE_CHAR_PTR        pValue;
     
     
     nMaxLen = FTE_NET_HTTP_CGI_BUFF_SIZE;
@@ -647,9 +650,9 @@ FTE_RET _cgi_request_post(HTTPSRV_CGI_REQ_STRUCT* param)
         FTE_CHAR_PTR    pNetType;
         FTE_UINT32 ip, nNetMask, gateway, server1 = 0, server2 = 0;
         
-        if ((fte_cgi_query_search_ip(cgi_query, "ip", &ip) != MQX_OK) ||
-            (fte_cgi_query_search_ip(cgi_query, "netmask", &nNetMask) != MQX_OK) ||
-            (fte_cgi_query_search_ip(cgi_query, "gateway", &gateway) != MQX_OK))
+        if ((fte_cgi_query_search_ip(cgi_query, "ip", &ip) != FTE_RET_OK) ||
+            (fte_cgi_query_search_ip(cgi_query, "netmask", &nNetMask) != FTE_RET_OK) ||
+            (fte_cgi_query_search_ip(cgi_query, "gateway", &gateway) != FTE_RET_OK))
         {
             goto error;
         }
@@ -657,7 +660,7 @@ FTE_RET _cgi_request_post(HTTPSRV_CGI_REQ_STRUCT* param)
         FTE_CHAR_PTR item = fte_cgi_query_search(cgi_query, "server1");
         if (item != NULL)
         {
-            if (fte_cgi_str_to_ip(item, &server1) != MQX_OK)
+            if (fte_cgi_str_to_ip(item, &server1) != FTE_RET_OK)
             {
                 goto error;
             }
@@ -666,7 +669,7 @@ FTE_RET _cgi_request_post(HTTPSRV_CGI_REQ_STRUCT* param)
         item = fte_cgi_query_search(cgi_query, "server2");
         if (item != NULL)
         {
-            if (fte_cgi_str_to_ip(item, &server2) != MQX_OK)
+            if (fte_cgi_str_to_ip(item, &server2) != FTE_RET_OK)
             {
                 goto error;
             }

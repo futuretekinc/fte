@@ -238,7 +238,7 @@ FTE_UINT32 FTE_MQTT_load_default
     pConfig->xBroker.ulKeepalive    = FTE_MQTT_DEFAULT_KEEPALIVE;
     pConfig->xBroker.xAuth.bEnabled = FALSE;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_UINT32 FTE_MQTT_init
@@ -350,13 +350,16 @@ void FTE_MQTT_receiver
 
     while(1)
     {
-        if ((FTE_SYS_STATE_get() & FTE_STATE_CONNECTED) == FTE_STATE_CONNECTED)
+        FTE_UINT32  xState;
+        FTE_SYS_STATE_get(&xState);
+        
+        if (( xState & FTE_STATE_CONNECTED) == FTE_STATE_CONNECTED)
         {        
             if (FTE_LIST_count(&pCTX->xRecvMsgPool) != 0)
             {
                 FTE_MQTT_MSG_PTR    pMsg;
                 
-                if (FTE_LIST_popFront(&pCTX->xRecvMsgPool, (pointer _PTR_)&pMsg) == MQX_OK)
+                if (FTE_LIST_popFront(&pCTX->xRecvMsgPool, (pointer _PTR_)&pMsg) == FTE_RET_OK)
                 {
                     FTE_MQTT_MSG_processing(pCTX, pMsg);
                     FTE_MQTT_MSG_destroy(pMsg);
@@ -381,13 +384,16 @@ void FTE_MQTT_sender
 
     while(1)
     {
-        if ((FTE_SYS_STATE_get() & FTE_STATE_CONNECTED) == FTE_STATE_CONNECTED)
+        FTE_UINT32  xState;
+        FTE_SYS_STATE_get(&xState);
+        
+        if ((xState & FTE_STATE_CONNECTED) == FTE_STATE_CONNECTED)
         {        
             if (FTE_LIST_count(&pCTX->xSendMsgPool) != 0)
             {
                 FTE_MQTT_SEND_MSG_PTR pMsg;
                     
-                if (FTE_LIST_popFront(&pCTX->xSendMsgPool, (pointer _PTR_)&pMsg) == MQX_OK)
+                if (FTE_LIST_popFront(&pCTX->xSendMsgPool, (pointer _PTR_)&pMsg) == FTE_RET_OK)
                 {
                     FTE_MQTT_INTERNAL_publish(pCTX, pMsg->pTopic, pMsg->nQoS, pMsg->pMsg);
                     FTE_MEM_free(pMsg);
@@ -505,7 +511,7 @@ FTE_RET   FTE_MQTT_subscribe
     ASSERT(pCTX != NULL);
 
     ulRet = FTE_MQTT_TRANS_create(pCTX, &pTrans);
-    if (ulRet != MQX_OK)
+    if (ulRet != FTE_RET_OK)
     {
         return  ulRet;
     }    
@@ -930,7 +936,7 @@ FTE_RET     FTE_MQTT_INTERNAL_publish(FTE_MQTT_CONTEXT_PTR pCTX, char *pTopic, F
        {
            FTE_MQTT_TRANS_PTR   pTrans;
            
-            if (MQX_OK != FTE_MQTT_TRANS_create(pCTX, &pTrans))
+            if (FTE_RET_OK != FTE_MQTT_TRANS_create(pCTX, &pTrans))
             {
                 return  FTE_MQTT_RET_NOT_ENOUGH_MEMORY;
             }    
@@ -1123,7 +1129,10 @@ FTE_UINT32  FTE_MQTT_STATE_CB_initialized
 {
     FTE_MQTT_TRACE("MQTT STATE : Initialized\n");
 
-    if ((FTE_SYS_STATE_get() & FTE_STATE_CONNECTED) == FTE_STATE_CONNECTED)
+    FTE_UINT32  xState;
+    FTE_SYS_STATE_get(&xState);
+        
+    if ((xState & FTE_STATE_CONNECTED) == FTE_STATE_CONNECTED)
     {
         FTE_MQTT_connect(pCTX);
     }
@@ -1151,7 +1160,8 @@ FTE_UINT32  FTE_MQTT_STATE_CB_connected
     
     while(pCTX->xState == FTE_MQTT_STATE_CONNECTED)
     {
-        FTE_UINT32 ulRet;
+        FTE_UINT32  ulRet;
+        FTE_UINT32  xState;
             
         ulRet = FTE_MQTT_recvPacket(pCTX, 1000);
         if (ulRet == RTCS_OK)
@@ -1165,7 +1175,8 @@ FTE_UINT32  FTE_MQTT_STATE_CB_connected
             }
         }
         
-        if ((FTE_SYS_STATE_get() & FTE_STATE_CONNECTED) != FTE_STATE_CONNECTED)
+        FTE_SYS_STATE_get(&xState);        
+        if ((xState & FTE_STATE_CONNECTED) != FTE_STATE_CONNECTED)
         {
             FTE_MQTT_disconnect(pCTX);
             break;
@@ -1437,7 +1448,7 @@ FTE_RET   FTE_MQTT_TRANS_create
     if (FTE_LIST_count(&pCTX->xFreeTransList) != 0)
     {
         ulRet = FTE_LIST_popFront(&pCTX->xFreeTransList, (pointer _PTR_)&pTrans);
-        if (ulRet != MQX_OK)
+        if (ulRet != FTE_RET_OK)
         {
             return  FTE_MQTT_RET_NOT_ENOUGH_MEMORY;
         }
@@ -1658,7 +1669,7 @@ FTE_RET FTE_MQTT_METHOD_CB_setProperty
 )
 {
     printf("%s called\n", __func__);
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET     FTE_MQTT_METHOD_CB_controlActuator
@@ -1666,7 +1677,7 @@ FTE_RET     FTE_MQTT_METHOD_CB_controlActuator
     void _PTR_ pParams
 )
 {
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_MQTT_METHOD_CB_timeSync
@@ -1674,7 +1685,7 @@ FTE_RET FTE_MQTT_METHOD_CB_timeSync
     void _PTR_ pParams
 )
 {
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_MQTT_METHOD _pThingPlusMethods[] =
@@ -1739,7 +1750,7 @@ FTE_RET            FTE_MQTT_METHOD_FTLM_CB_deviceGet
     sprintf(pTopic, "/v/a/g/%02x%02x%02x%02x%02x%02x/resp", pMAC[0], pMAC[1], pMAC[2], pMAC[3], pMAC[4], pMAC[5]);
     FTE_MQTT_publish(_pxCTX, FTE_MQTT_QOS_1, pTopic, pBuff);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_MQTT_METHOD_FTLM_CB_deviceSet
@@ -1798,19 +1809,19 @@ FTE_RET FTE_MQTT_METHOD_FTLM_CB_deviceSet
         }
     }
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_MQTT_METHOD_FTLM_CB_groupGet(void _PTR_ pParams)
 {
     printf("%s called\n", __func__);
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_MQTT_METHOD_FTLM_CB_groupSet(void _PTR_ pParams)
 {
     printf("%s called\n", __func__);
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_MQTT_METHOD _pFTLMMethods[] =

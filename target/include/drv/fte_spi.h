@@ -17,7 +17,7 @@ typedef FTE_SPI_CONFIG const _PTR_ FTE_SPI_CONFIG_CONST_PTR;
 typedef struct FTE_SPI_CHANNEL_STRUCT
 {
     MQX_FILE_PTR    xFD;
-    LWSEM_STRUCT    xLWSEM;
+    FTE_SYS_LOCK    xLock;
     FTE_UINT32      nBaudrate;
     FTE_UINT32      xFlags;
     FTE_UINT32      nCount;

@@ -14,7 +14,7 @@ static FTE_RET        _FTE_MCP23S08_getRegs(FTE_MCP23S08_PTR pDev, FTE_UINT32 nR
 static FTE_RET        _FTE_MCP23S08_INT_enable(FTE_MCP23S08_PTR pDev);
 static FTE_RET        _FTE_MCP23S08_INT_disable(FTE_MCP23S08_PTR pDev);
 static FTE_RET        _FTE_MCP23S08_TIMER_start(FTE_MCP23S08_PTR pDev);
-static void             _FTE_MCP23S08_TIMER_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
+static void             _FTE_MCP23S08_TIMER_done(_timer_id id, FTE_VOID_PTR data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
 static FTE_RET        _FTE_MCP23S08_POLL_start(FTE_MCP23S08_PTR pDev);
 static FTE_RET        _FTE_MCP23S08_POLL_stop(FTE_MCP23S08_PTR pDev);
 
@@ -66,7 +66,7 @@ FTE_RET   FTE_MCP23S08_create
     pMCP23S08 = (FTE_MCP23S08_PTR)FTE_MEM_allocZero(sizeof(FTE_MCP23S08));
     if (pMCP23S08 == NULL)
     {
-        return  MQX_OUT_OF_MEMORY;
+        return  FTE_RET_NOT_ENOUGH_MEMORY;
     }
 
     pMCP23S08->pNext    = _pHead;
@@ -76,7 +76,7 @@ FTE_RET   FTE_MCP23S08_create
     _pHead = pMCP23S08;
     _nMCP23S08s++;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MCP23S08_attach
@@ -94,12 +94,12 @@ FTE_RET   FTE_MCP23S08_attach
     pMCP23S08_GPIO = FTE_MCP23S08_GPIO_get(nParent);
     if (pMCP23S08_GPIO == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     if (pMCP23S08->pParent[pMCP23S08_GPIO->pConfig->nBit] != 0)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     if (pMCP23S08->nEnableMask == 0)
@@ -122,7 +122,7 @@ FTE_RET   FTE_MCP23S08_attach
             goto error1;
         }
         
-        if (FTE_LWGPIO_attach(pLWGPIO, pMCP23S08->pConfig->nID) != MQX_OK)
+        if (FTE_LWGPIO_attach(pLWGPIO, pMCP23S08->pConfig->nID) != FTE_RET_OK)
         {
             goto error2;
         }
@@ -132,12 +132,12 @@ FTE_RET   FTE_MCP23S08_attach
         FTE_LWGPIO_INT_setPolarity(pLWGPIO, FTE_LWGPIO_INT_RISING);
 #endif
         
-        if (FTE_LWGPIO_attach(pLWGPIO_Reset, pMCP23S08->pConfig->nID) != MQX_OK)
+        if (FTE_LWGPIO_attach(pLWGPIO_Reset, pMCP23S08->pConfig->nID) != FTE_RET_OK)
         {
             goto error2;
         }
         
-        if (FTE_SPI_attach(pSPI, pMCP23S08->pConfig->nID) != MQX_OK)
+        if (FTE_SPI_attach(pSPI, pMCP23S08->pConfig->nID) != FTE_RET_OK)
         {
             goto error2;
         }
@@ -152,7 +152,7 @@ FTE_RET   FTE_MCP23S08_attach
 
     pMCP23S08->pParent[pMCP23S08_GPIO->pConfig->nBit] = pMCP23S08_GPIO->pConfig->nID;
     pMCP23S08->nEnableMask |= (1 << pMCP23S08_GPIO->pConfig->nBit);
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error2:
     
@@ -173,7 +173,7 @@ error2:
 
 error1:
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_MCP23S08_detach
@@ -189,7 +189,7 @@ FTE_RET   FTE_MCP23S08_detach
     pMCP23S08_GPIO = FTE_MCP23S08_GPIO_get(nParentID);
     if (pMCP23S08_GPIO == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
         
     pMCP23S08->pParent[pMCP23S08_GPIO->pConfig->nBit] = 0;
@@ -206,7 +206,7 @@ FTE_RET   FTE_MCP23S08_detach
         pMCP23S08->pLWGPIO_Reset = NULL;
     }    
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 
@@ -224,16 +224,16 @@ FTE_RET   FTE_MCP23S08_setReg
         goto error;
     }
     
-    if (_FTE_MCP23S08_setReg(pMCP23S08, nRegID, nValue) != MQX_OK)
+    if (_FTE_MCP23S08_setReg(pMCP23S08, nRegID, nValue) != FTE_RET_OK)
     {
         goto error;
     }
     pMCP23S08->pRegs[nRegID] = nValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_MCP23S08_regGet
@@ -252,10 +252,10 @@ FTE_RET   FTE_MCP23S08_regGet
 
     *pValue = pMCP23S08->pRegs[nRegID];
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_MCP23S08_setRegBit
@@ -273,7 +273,7 @@ FTE_RET   FTE_MCP23S08_setRegBit
         goto error;
     }
     
-    if (FTE_MCP23S08_regGet(pMCP23S08, nReg, &nRegValue) != MQX_OK)
+    if (FTE_MCP23S08_regGet(pMCP23S08, nReg, &nRegValue) != FTE_RET_OK)
     {
         goto error;
     }
@@ -287,15 +287,15 @@ FTE_RET   FTE_MCP23S08_setRegBit
         nRegValue = nRegValue & ~(1 << nBit);
     }
     
-    if (FTE_MCP23S08_setReg(pMCP23S08, nReg, nRegValue) != MQX_OK)
+    if (FTE_MCP23S08_setReg(pMCP23S08, nReg, nRegValue) != FTE_RET_OK)
     {
         goto error;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_MCP23S08_getRegBit
@@ -313,17 +313,17 @@ FTE_RET   FTE_MCP23S08_getRegBit
         goto error;
     }
 
-    if (FTE_MCP23S08_regGet(pMCP23S08, nReg, &nRegValue) != MQX_OK)
+    if (FTE_MCP23S08_regGet(pMCP23S08, nReg, &nRegValue) != FTE_RET_OK)
     {
         goto error;
     }
 
     *pValue = (nRegValue >> nBit) & 0x01;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_MCP23S08_INT_enableRegBit
@@ -335,7 +335,7 @@ FTE_RET   FTE_MCP23S08_INT_enableRegBit
 {
     if (pMCP23S08 == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     if (((pMCP23S08->nINTMask >> nBit) & 0x01) != bEnable)
@@ -350,7 +350,7 @@ FTE_RET   FTE_MCP23S08_INT_enableRegBit
         }
     } 
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_MCP23S08_INT_initRegBit
@@ -366,7 +366,7 @@ FTE_RET   FTE_MCP23S08_INT_initRegBit
     pMCP23S08->f_isr[nBit] = func;
     pMCP23S08->pParams[nBit] = pParams;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 
@@ -381,7 +381,7 @@ FTE_RET   FTE_MCP23S08_INT_setPolarityRegBit
     
     pMCP23S08->pPolaries[nBit] = nPolarity;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 
@@ -465,7 +465,7 @@ FTE_INT32  FTE_MCP23S08_SHELL_cmd
                 else
                 {
                     FTE_GPIO_DIR nValue;
-                    if (FTE_MCP23S08_gpio_get_direction(pObj, (nID & 0x07), &nValue) != MQX_OK)
+                    if (FTE_MCP23S08_gpio_get_direction(pObj, (nID & 0x07), &nValue) != FTE_RET_OK)
                     {
                         goto error;
                     }
@@ -485,7 +485,7 @@ FTE_INT32  FTE_MCP23S08_SHELL_cmd
                     goto error;
                 }
                 
-                if (FTE_MCP23S08_gpio_get_value(pObj, (nID & 0x07), &nValue) == MQX_OK)
+                if (FTE_MCP23S08_gpio_get_value(pObj, (nID & 0x07), &nValue) == FTE_RET_OK)
                 {
                     printf("%08x : %s\n", nID, (nValue)?"ON":"OFF");
                 }
@@ -563,17 +563,17 @@ FTE_RET    _FTE_MCP23S08_init
     
     _FTE_MCP23S08_reset(pMCP23S08);
     
-    if (_FTE_MCP23S08_getRegs(pMCP23S08, FTE_MCP23S08_REG_IODIR, pMCP23S08->pRegs, sizeof(pMCP23S08->pRegs)) != MQX_OK)
+    if (_FTE_MCP23S08_getRegs(pMCP23S08, FTE_MCP23S08_REG_IODIR, pMCP23S08->pRegs, sizeof(pMCP23S08->pRegs)) != FTE_RET_OK)
     {
         goto error;
     }
     
-    if (FTE_MCP23S08_setReg(pMCP23S08, FTE_MCP23S08_REG_IOCON, 0x02) != MQX_OK)
+    if (FTE_MCP23S08_setReg(pMCP23S08, FTE_MCP23S08_REG_IOCON, 0x02) != FTE_RET_OK)
     {
         goto error;
     }
     
-    if (FTE_MCP23S08_setReg(pMCP23S08, FTE_MCP23S08_REG_INTCON, 0xFF) != MQX_OK)
+    if (FTE_MCP23S08_setReg(pMCP23S08, FTE_MCP23S08_REG_INTCON, 0xFF) != FTE_RET_OK)
     {
         goto error;
     }
@@ -582,10 +582,10 @@ FTE_RET    _FTE_MCP23S08_init
     FTE_MCP23S08_setReg(pMCP23S08, FTE_MCP23S08_REG_GPINTEN, pMCP23S08->pRegs[FTE_MCP23S08_REG_IODIR]);
     
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 #if 0
@@ -607,14 +607,14 @@ FTE_RET   _FTE_MCP23S08_regGet
                 FTE_MCP23S08_SPI_READ;
     pFrame[1] = (nReg & FTE_MCP23S08_REG_MASK);
     
-    if (MQX_OK != FTE_SPI_read(pDev->pSPI, pFrame, sizeof(pFrame), &nValue, 1))
+    if (FTE_RET_OK != FTE_SPI_read(pDev->pSPI, pFrame, sizeof(pFrame), &nValue, 1))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     *pValue = nValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 #endif
 
@@ -636,12 +636,12 @@ FTE_RET   _FTE_MCP23S08_getRegs
                 FTE_MCP23S08_SPI_READ;
     pFrame[1] = (nReg & FTE_MCP23S08_REG_MASK);
     
-    if (MQX_OK != FTE_SPI_read(pDev->pSPI, pFrame, sizeof(pFrame), pData, nData))
+    if (FTE_RET_OK != FTE_SPI_read(pDev->pSPI, pFrame, sizeof(pFrame), pData, nData))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 static 
@@ -661,19 +661,19 @@ FTE_RET   _FTE_MCP23S08_setReg
                 FTE_MCP23S08_SPI_WRITE;
     pFrame[1] = (nReg & FTE_MCP23S08_REG_MASK);
     pFrame[2] = nValue;
-    if (MQX_OK != FTE_SPI_write(pDev->pSPI, pFrame, 3, NULL, 0))
+    if (FTE_RET_OK != FTE_SPI_write(pDev->pSPI, pFrame, 3, NULL, 0))
     {
         goto error;
     }
 
-    if (MQX_OK != FTE_SPI_write(pDev->pSPI, pFrame, 3, NULL, 0))
+    if (FTE_RET_OK != FTE_SPI_write(pDev->pSPI, pFrame, 3, NULL, 0))
     {
         goto error;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 
@@ -696,19 +696,19 @@ FTE_RET   _FTE_MCP23S08_setRegs
                 ((pMCP23S08->pConfig->xSlaveAddr & FTE_MCP23S08_SLAVE_ADDR_MASK) << FTE_MCP23S08_SLAVE_ADDR_SHIFT) |
                 FTE_MCP23S08_SPI_WRITE;
     pFrame[1] = (nReg & FTE_MCP23S08_REG_MASK);
-    if (MQX_OK != FTE_SPI_write(pMCP23S08->pSPI, pFrame, 3, pData, nData))
+    if (FTE_RET_OK != FTE_SPI_write(pMCP23S08->pSPI, pFrame, 3, pData, nData))
     {
         goto error;
     }
 
-    if (MQX_OK != FTE_SPI_write(pMCP23S08->pSPI, pFrame, 3, pData, nData))
+    if (FTE_RET_OK != FTE_SPI_write(pMCP23S08->pSPI, pFrame, 3, pData, nData))
     {
         goto error;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 void _FTE_MCP23S08_isr
@@ -733,7 +733,7 @@ FTE_RET        _FTE_MCP23S08_INT_enable(FTE_MCP23S08_PTR pMCP23S08)
     FTE_LWGPIO_int_set_enable(pMCP23S08->pLWGPIO, TRUE);
 #endif
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   _FTE_MCP23S08_INT_disable
@@ -745,7 +745,7 @@ FTE_RET   _FTE_MCP23S08_INT_disable
     FTE_LWGPIO_int_set_enable(pMCP23S08->pLWGPIO, FALSE);
     FTE_LWGPIO_int_init(pMCP23S08->pLWGPIO, 3, 0, FALSE);
 #endif    
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   _FTE_MCP23S08_POLL_start
@@ -755,14 +755,14 @@ FTE_RET   _FTE_MCP23S08_POLL_start
 {
     pMCP23S08->nFlags |= FTE_MCP23S08_FLAG_RUN;
     
-    if (_FTE_MCP23S08_TIMER_start(pMCP23S08) != MQX_OK)
+    if (_FTE_MCP23S08_TIMER_start(pMCP23S08) != FTE_RET_OK)
     {
         printf("MCP23S08 Timer failed\n");
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     _FTE_MCP23S08_INT_enable(pMCP23S08);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   _FTE_MCP23S08_POLL_stop
@@ -775,7 +775,7 @@ FTE_RET   _FTE_MCP23S08_POLL_stop
     
     pMCP23S08->nFlags &= ~FTE_MCP23S08_FLAG_RUN;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   _FTE_MCP23S08_TIMER_start
@@ -792,25 +792,25 @@ FTE_RET   _FTE_MCP23S08_TIMER_start
     pMCP23S08->xTimerID = _timer_start_periodic_at_ticks(_FTE_MCP23S08_TIMER_done, pMCP23S08, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);    
     if (pMCP23S08->xTimerID != 0)
     {
-        return MQX_OK;
+        return FTE_RET_OK;
     }
     else
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 }
 
 void _FTE_MCP23S08_TIMER_done
 (
     _timer_id   xTimerID, 
-    pointer     pData, 
+    FTE_VOID_PTR     pData, 
     MQX_TICK_STRUCT_PTR     pTick
 )
 {
     FTE_UINT8              pRegValues[FTE_MCP23S08_REG_COUNT];
     FTE_MCP23S08_PTR    pMCP23S08 = (FTE_MCP23S08_PTR)pData;
 
-    if(_FTE_MCP23S08_getRegs(pMCP23S08, FTE_MCP23S08_REG_IODIR, pRegValues, sizeof(pRegValues)) != MQX_OK)
+    if(_FTE_MCP23S08_getRegs(pMCP23S08, FTE_MCP23S08_REG_IODIR, pRegValues, sizeof(pRegValues)) != FTE_RET_OK)
     {
         return;
     }
@@ -873,7 +873,7 @@ FTE_RET   _FTE_MCP23S08_reset
     FTE_LWGPIO_setValue(pDev->pLWGPIO_Reset, FALSE);
     //_time_delay(FTE_MCP23S08_RESET_DELAY);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 #endif

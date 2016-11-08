@@ -34,7 +34,7 @@
 #include "snmpcfg.h"
 #include "asn1.h"
 #include "snmp.h"
-
+#include "fte_type.h"
 
 #if RTCSCFG_ENABLE_SNMP
 
@@ -496,93 +496,93 @@ extern const RTCSMIB_VALUE MIBVALUE_dbgBTEntry;
 extern const RTCSMIB_VALUE MIBVALUE_dbgBTIndex;
 extern const RTCSMIB_VALUE MIBVALUE_dbgBTTime;
 
-boolean MIB_find_svrEntry            (uint_32, pointer, pointer _PTR_);
-boolean MIB_find_gasEntry            (uint_32, pointer, pointer _PTR_);
-boolean MIB_find_diEntry             (uint_32, pointer, pointer _PTR_);
-boolean MIB_find_devEntry            (uint_32, pointer, pointer _PTR_);
-boolean MIB_find_doEntry             (uint_32, pointer, pointer _PTR_);
-boolean MIB_find_currEntry           (uint_32, pointer, pointer _PTR_);
-boolean MIB_find_dscEntry            (uint_32, pointer, pointer _PTR_);
-boolean MIB_find_tsEntry             (uint_32, pointer, pointer _PTR_);
-boolean MIB_find_pwrEntry            (uint_32, pointer, pointer _PTR_);
-boolean MIB_find_vltEntry            (uint_32, pointer, pointer _PTR_);
-boolean MIB_find_humiEntry           (uint_32, pointer, pointer _PTR_);
-boolean MIB_find_logEntry            (uint_32, pointer, pointer _PTR_);
-boolean MIB_find_cntEntry            (uint_32, pointer, pointer _PTR_);
-boolean MIB_find_dbgBTEntry          (uint_32, pointer, pointer _PTR_);
-boolean MIB_find_tempEntry           (uint_32, pointer, pointer _PTR_);
-boolean MIB_find_eventEntry          (uint_32, pointer, pointer _PTR_);
-boolean MIB_find_prsEntry            (uint_32, pointer, pointer _PTR_);
+FTE_BOOL MIB_find_svrEntry            (FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_find_gasEntry            (FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_find_diEntry             (FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_find_devEntry            (FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_find_doEntry             (FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_find_currEntry           (FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_find_dscEntry            (FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_find_tsEntry             (FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_find_pwrEntry            (FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_find_vltEntry            (FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_find_humiEntry           (FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_find_logEntry            (FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_find_cntEntry            (FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_find_dbgBTEntry          (FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_find_tempEntry           (FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_find_eventEntry          (FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_find_prsEntry            (FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_);
 
-boolean MIB_instance_svrEntry            (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
-boolean MIB_instance_gasEntry            (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
-boolean MIB_instance_diEntry             (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
-boolean MIB_instance_devEntry            (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
-boolean MIB_instance_doEntry             (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
-boolean MIB_instance_currEntry           (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
-boolean MIB_instance_dscEntry            (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
-boolean MIB_instance_tsEntry             (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
-boolean MIB_instance_pwrEntry            (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
-boolean MIB_instance_vltEntry            (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
-boolean MIB_instance_humiEntry           (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
-boolean MIB_instance_logEntry            (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
-boolean MIB_instance_cntEntry            (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
-boolean MIB_instance_dbgBTEntry          (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
-boolean MIB_instance_tempEntry           (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
-boolean MIB_instance_eventEntry          (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
-boolean MIB_instance_prsEntry            (RTCSMIB_WALK_PTR, uint_32, boolean (_CODE_PTR_)(uint_32, pointer, pointer _PTR_), boolean _PTR_, pointer _PTR_);
+FTE_BOOL MIB_instance_svrEntry            (RTCSMIB_WALK_PTR, FTE_UINT32, FTE_BOOL (_CODE_PTR_)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_), FTE_BOOL _PTR_, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_instance_gasEntry            (RTCSMIB_WALK_PTR, FTE_UINT32, FTE_BOOL (_CODE_PTR_)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_), FTE_BOOL _PTR_, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_instance_diEntry             (RTCSMIB_WALK_PTR, FTE_UINT32, FTE_BOOL (_CODE_PTR_)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_), FTE_BOOL _PTR_, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_instance_devEntry            (RTCSMIB_WALK_PTR, FTE_UINT32, FTE_BOOL (_CODE_PTR_)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_), FTE_BOOL _PTR_, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_instance_doEntry             (RTCSMIB_WALK_PTR, FTE_UINT32, FTE_BOOL (_CODE_PTR_)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_), FTE_BOOL _PTR_, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_instance_currEntry           (RTCSMIB_WALK_PTR, FTE_UINT32, FTE_BOOL (_CODE_PTR_)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_), FTE_BOOL _PTR_, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_instance_dscEntry            (RTCSMIB_WALK_PTR, FTE_UINT32, FTE_BOOL (_CODE_PTR_)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_), FTE_BOOL _PTR_, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_instance_tsEntry             (RTCSMIB_WALK_PTR, FTE_UINT32, FTE_BOOL (_CODE_PTR_)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_), FTE_BOOL _PTR_, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_instance_pwrEntry            (RTCSMIB_WALK_PTR, FTE_UINT32, FTE_BOOL (_CODE_PTR_)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_), FTE_BOOL _PTR_, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_instance_vltEntry            (RTCSMIB_WALK_PTR, FTE_UINT32, FTE_BOOL (_CODE_PTR_)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_), FTE_BOOL _PTR_, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_instance_humiEntry           (RTCSMIB_WALK_PTR, FTE_UINT32, FTE_BOOL (_CODE_PTR_)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_), FTE_BOOL _PTR_, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_instance_logEntry            (RTCSMIB_WALK_PTR, FTE_UINT32, FTE_BOOL (_CODE_PTR_)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_), FTE_BOOL _PTR_, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_instance_cntEntry            (RTCSMIB_WALK_PTR, FTE_UINT32, FTE_BOOL (_CODE_PTR_)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_), FTE_BOOL _PTR_, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_instance_dbgBTEntry          (RTCSMIB_WALK_PTR, FTE_UINT32, FTE_BOOL (_CODE_PTR_)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_), FTE_BOOL _PTR_, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_instance_tempEntry           (RTCSMIB_WALK_PTR, FTE_UINT32, FTE_BOOL (_CODE_PTR_)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_), FTE_BOOL _PTR_, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_instance_eventEntry          (RTCSMIB_WALK_PTR, FTE_UINT32, FTE_BOOL (_CODE_PTR_)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_), FTE_BOOL _PTR_, FTE_VOID_PTR _PTR_);
+FTE_BOOL MIB_instance_prsEntry            (RTCSMIB_WALK_PTR, FTE_UINT32, FTE_BOOL (_CODE_PTR_)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_), FTE_BOOL _PTR_, FTE_VOID_PTR _PTR_);
 
-uint_32 MIB_set_prodDesc            (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_tempName            (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_tempState           (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_tempUpdateInterval  (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_humiName            (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_humiState           (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_humiUpdateInterval  (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_vltName             (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_vltState            (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_vltUpdateInterval   (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_currName            (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_currState           (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_currUpdateInterval  (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_diName              (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_diState             (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_diInitValue         (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_doName              (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_doState             (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_doValue             (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_doInitValue         (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_pwrName             (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_pwrState            (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_pwrUpdateInterval   (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_gasName             (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_gasState            (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_gasUpdateInterval   (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_cntName             (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_cntState            (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_cntValue            (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_cntInitValue        (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_prsName             (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_prsState            (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_prsValue            (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_prsInitValue        (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_dscName             (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_dscState            (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_dscValue            (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_dscInitValue        (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_devName             (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_devState            (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_devValue            (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_smDiscovery         (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_smDestroyDynamicObject(pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_eventCondition      (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_tsAdd               (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_tsDel               (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_adminOID            (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_adminMAC            (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_adminFactoryReset   (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_adminSystemTime     (pointer, uchar_ptr, uint_32);
-uint_32 MIB_set_adminReset          (pointer, uchar_ptr, uint_32);
+FTE_UINT32 MIB_set_prodDesc            (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_tempName            (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_tempState           (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_tempUpdateInterval  (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_humiName            (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_humiState           (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_humiUpdateInterval  (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_vltName             (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_vltState            (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_vltUpdateInterval   (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_currName            (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_currState           (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_currUpdateInterval  (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_diName              (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_diState             (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_diInitValue         (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_doName              (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_doState             (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_doValue             (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_doInitValue         (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_pwrName             (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_pwrState            (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_pwrUpdateInterval   (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_gasName             (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_gasState            (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_gasUpdateInterval   (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_cntName             (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_cntState            (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_cntValue            (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_cntInitValue        (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_prsName             (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_prsState            (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_prsValue            (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_prsInitValue        (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_dscName             (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_dscState            (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_dscValue            (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_dscInitValue        (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_devName             (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_devState            (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_devValue            (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_smDiscovery         (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_smDestroyDynamicObject(FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_eventCondition      (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_tsAdd               (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_tsDel               (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_adminOID            (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_adminMAC            (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_adminFactoryReset   (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_adminSystemTime     (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
+FTE_UINT32 MIB_set_adminReset          (FTE_VOID_PTR, uchar_ptr, FTE_UINT32);
 
 RTCSMIB_NODE MIBNODE_futuretek = {
    42251,
@@ -3705,17 +3705,17 @@ const RTCSMIB_NODE MIBNODE_dbgBTTime = {
 };
 
 
-static boolean MIB_instance_svrEntry
+static FTE_BOOL MIB_instance_svrEntry
    (
       RTCSMIB_WALK_PTR     mib,
-      uint_32              op,
-      boolean (_CODE_PTR_  find)(uint_32, pointer, pointer _PTR_),
-      boolean _PTR_        found,
-      pointer _PTR_        instance
+      FTE_UINT32              op,
+      FTE_BOOL (_CODE_PTR_  find)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_),
+      FTE_BOOL _PTR_        found,
+      FTE_VOID_PTR _PTR_        instance
    )
 { /* Body */
    struct {
-      uint_32 svrIndex;
+      FTE_UINT32 svrIndex;
    } index;
 
    *found = FALSE;
@@ -3756,17 +3756,17 @@ static boolean MIB_instance_svrEntry
    return TRUE;
 } /* Endbody */
 
-static boolean MIB_instance_gasEntry
+static FTE_BOOL MIB_instance_gasEntry
    (
       RTCSMIB_WALK_PTR     mib,
-      uint_32              op,
-      boolean (_CODE_PTR_  find)(uint_32, pointer, pointer _PTR_),
-      boolean _PTR_        found,
-      pointer _PTR_        instance
+      FTE_UINT32              op,
+      FTE_BOOL (_CODE_PTR_  find)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_),
+      FTE_BOOL _PTR_        found,
+      FTE_VOID_PTR _PTR_        instance
    )
 { /* Body */
    struct {
-      uint_32 gasID;
+      FTE_UINT32 gasID;
    } index;
 
    *found = FALSE;
@@ -3807,17 +3807,17 @@ static boolean MIB_instance_gasEntry
    return TRUE;
 } /* Endbody */
 
-static boolean MIB_instance_diEntry
+static FTE_BOOL MIB_instance_diEntry
    (
       RTCSMIB_WALK_PTR     mib,
-      uint_32              op,
-      boolean (_CODE_PTR_  find)(uint_32, pointer, pointer _PTR_),
-      boolean _PTR_        found,
-      pointer _PTR_        instance
+      FTE_UINT32              op,
+      FTE_BOOL (_CODE_PTR_  find)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_),
+      FTE_BOOL _PTR_        found,
+      FTE_VOID_PTR _PTR_        instance
    )
 { /* Body */
    struct {
-      uint_32 diID;
+      FTE_UINT32 diID;
    } index;
 
    *found = FALSE;
@@ -3858,17 +3858,17 @@ static boolean MIB_instance_diEntry
    return TRUE;
 } /* Endbody */
 
-static boolean MIB_instance_devEntry
+static FTE_BOOL MIB_instance_devEntry
    (
       RTCSMIB_WALK_PTR     mib,
-      uint_32              op,
-      boolean (_CODE_PTR_  find)(uint_32, pointer, pointer _PTR_),
-      boolean _PTR_        found,
-      pointer _PTR_        instance
+      FTE_UINT32              op,
+      FTE_BOOL (_CODE_PTR_  find)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_),
+      FTE_BOOL _PTR_        found,
+      FTE_VOID_PTR _PTR_        instance
    )
 { /* Body */
    struct {
-      uint_32 devID;
+      FTE_UINT32 devID;
    } index;
 
    *found = FALSE;
@@ -3909,17 +3909,17 @@ static boolean MIB_instance_devEntry
    return TRUE;
 } /* Endbody */
 
-static boolean MIB_instance_doEntry
+static FTE_BOOL MIB_instance_doEntry
    (
       RTCSMIB_WALK_PTR     mib,
-      uint_32              op,
-      boolean (_CODE_PTR_  find)(uint_32, pointer, pointer _PTR_),
-      boolean _PTR_        found,
-      pointer _PTR_        instance
+      FTE_UINT32              op,
+      FTE_BOOL (_CODE_PTR_  find)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_),
+      FTE_BOOL _PTR_        found,
+      FTE_VOID_PTR _PTR_        instance
    )
 { /* Body */
    struct {
-      uint_32 doID;
+      FTE_UINT32 doID;
    } index;
 
    *found = FALSE;
@@ -3960,17 +3960,17 @@ static boolean MIB_instance_doEntry
    return TRUE;
 } /* Endbody */
 
-static boolean MIB_instance_currEntry
+static FTE_BOOL MIB_instance_currEntry
    (
       RTCSMIB_WALK_PTR     mib,
-      uint_32              op,
-      boolean (_CODE_PTR_  find)(uint_32, pointer, pointer _PTR_),
-      boolean _PTR_        found,
-      pointer _PTR_        instance
+      FTE_UINT32              op,
+      FTE_BOOL (_CODE_PTR_  find)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_),
+      FTE_BOOL _PTR_        found,
+      FTE_VOID_PTR _PTR_        instance
    )
 { /* Body */
    struct {
-      uint_32 currID;
+      FTE_UINT32 currID;
    } index;
 
    *found = FALSE;
@@ -4011,17 +4011,17 @@ static boolean MIB_instance_currEntry
    return TRUE;
 } /* Endbody */
 
-static boolean MIB_instance_dscEntry
+static FTE_BOOL MIB_instance_dscEntry
    (
       RTCSMIB_WALK_PTR     mib,
-      uint_32              op,
-      boolean (_CODE_PTR_  find)(uint_32, pointer, pointer _PTR_),
-      boolean _PTR_        found,
-      pointer _PTR_        instance
+      FTE_UINT32              op,
+      FTE_BOOL (_CODE_PTR_  find)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_),
+      FTE_BOOL _PTR_        found,
+      FTE_VOID_PTR _PTR_        instance
    )
 { /* Body */
    struct {
-      uint_32 dscID;
+      FTE_UINT32 dscID;
    } index;
 
    *found = FALSE;
@@ -4062,17 +4062,17 @@ static boolean MIB_instance_dscEntry
    return TRUE;
 } /* Endbody */
 
-static boolean MIB_instance_tsEntry
+static FTE_BOOL MIB_instance_tsEntry
    (
       RTCSMIB_WALK_PTR     mib,
-      uint_32              op,
-      boolean (_CODE_PTR_  find)(uint_32, pointer, pointer _PTR_),
-      boolean _PTR_        found,
-      pointer _PTR_        instance
+      FTE_UINT32              op,
+      FTE_BOOL (_CODE_PTR_  find)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_),
+      FTE_BOOL _PTR_        found,
+      FTE_VOID_PTR _PTR_        instance
    )
 { /* Body */
    struct {
-      uint_32 tsIndex;
+      FTE_UINT32 tsIndex;
    } index;
 
    *found = FALSE;
@@ -4113,17 +4113,17 @@ static boolean MIB_instance_tsEntry
    return TRUE;
 } /* Endbody */
 
-static boolean MIB_instance_pwrEntry
+static FTE_BOOL MIB_instance_pwrEntry
    (
       RTCSMIB_WALK_PTR     mib,
-      uint_32              op,
-      boolean (_CODE_PTR_  find)(uint_32, pointer, pointer _PTR_),
-      boolean _PTR_        found,
-      pointer _PTR_        instance
+      FTE_UINT32              op,
+      FTE_BOOL (_CODE_PTR_  find)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_),
+      FTE_BOOL _PTR_        found,
+      FTE_VOID_PTR _PTR_        instance
    )
 { /* Body */
    struct {
-      uint_32 gasID;
+      FTE_UINT32 gasID;
    } index;
 
    *found = FALSE;
@@ -4164,17 +4164,17 @@ static boolean MIB_instance_pwrEntry
    return TRUE;
 } /* Endbody */
 
-static boolean MIB_instance_vltEntry
+static FTE_BOOL MIB_instance_vltEntry
    (
       RTCSMIB_WALK_PTR     mib,
-      uint_32              op,
-      boolean (_CODE_PTR_  find)(uint_32, pointer, pointer _PTR_),
-      boolean _PTR_        found,
-      pointer _PTR_        instance
+      FTE_UINT32              op,
+      FTE_BOOL (_CODE_PTR_  find)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_),
+      FTE_BOOL _PTR_        found,
+      FTE_VOID_PTR _PTR_        instance
    )
 { /* Body */
    struct {
-      uint_32 vltID;
+      FTE_UINT32 vltID;
    } index;
 
    *found = FALSE;
@@ -4215,17 +4215,17 @@ static boolean MIB_instance_vltEntry
    return TRUE;
 } /* Endbody */
 
-static boolean MIB_instance_humiEntry
+static FTE_BOOL MIB_instance_humiEntry
    (
       RTCSMIB_WALK_PTR     mib,
-      uint_32              op,
-      boolean (_CODE_PTR_  find)(uint_32, pointer, pointer _PTR_),
-      boolean _PTR_        found,
-      pointer _PTR_        instance
+      FTE_UINT32              op,
+      FTE_BOOL (_CODE_PTR_  find)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_),
+      FTE_BOOL _PTR_        found,
+      FTE_VOID_PTR _PTR_        instance
    )
 { /* Body */
    struct {
-      uint_32 humiID;
+      FTE_UINT32 humiID;
    } index;
 
    *found = FALSE;
@@ -4266,17 +4266,17 @@ static boolean MIB_instance_humiEntry
    return TRUE;
 } /* Endbody */
 
-static boolean MIB_instance_logEntry
+static FTE_BOOL MIB_instance_logEntry
    (
       RTCSMIB_WALK_PTR     mib,
-      uint_32              op,
-      boolean (_CODE_PTR_  find)(uint_32, pointer, pointer _PTR_),
-      boolean _PTR_        found,
-      pointer _PTR_        instance
+      FTE_UINT32              op,
+      FTE_BOOL (_CODE_PTR_  find)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_),
+      FTE_BOOL _PTR_        found,
+      FTE_VOID_PTR _PTR_        instance
    )
 { /* Body */
    struct {
-      uint_32 logIndex;
+      FTE_UINT32 logIndex;
    } index;
 
    *found = FALSE;
@@ -4317,17 +4317,17 @@ static boolean MIB_instance_logEntry
    return TRUE;
 } /* Endbody */
 
-static boolean MIB_instance_cntEntry
+static FTE_BOOL MIB_instance_cntEntry
    (
       RTCSMIB_WALK_PTR     mib,
-      uint_32              op,
-      boolean (_CODE_PTR_  find)(uint_32, pointer, pointer _PTR_),
-      boolean _PTR_        found,
-      pointer _PTR_        instance
+      FTE_UINT32              op,
+      FTE_BOOL (_CODE_PTR_  find)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_),
+      FTE_BOOL _PTR_        found,
+      FTE_VOID_PTR _PTR_        instance
    )
 { /* Body */
    struct {
-      uint_32 cntID;
+      FTE_UINT32 cntID;
    } index;
 
    *found = FALSE;
@@ -4368,17 +4368,17 @@ static boolean MIB_instance_cntEntry
    return TRUE;
 } /* Endbody */
 
-static boolean MIB_instance_dbgBTEntry
+static FTE_BOOL MIB_instance_dbgBTEntry
    (
       RTCSMIB_WALK_PTR     mib,
-      uint_32              op,
-      boolean (_CODE_PTR_  find)(uint_32, pointer, pointer _PTR_),
-      boolean _PTR_        found,
-      pointer _PTR_        instance
+      FTE_UINT32              op,
+      FTE_BOOL (_CODE_PTR_  find)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_),
+      FTE_BOOL _PTR_        found,
+      FTE_VOID_PTR _PTR_        instance
    )
 { /* Body */
    struct {
-      uint_32 dbgBTIndex;
+      FTE_UINT32 dbgBTIndex;
    } index;
 
    *found = FALSE;
@@ -4419,17 +4419,17 @@ static boolean MIB_instance_dbgBTEntry
    return TRUE;
 } /* Endbody */
 
-static boolean MIB_instance_tempEntry
+static FTE_BOOL MIB_instance_tempEntry
    (
       RTCSMIB_WALK_PTR     mib,
-      uint_32              op,
-      boolean (_CODE_PTR_  find)(uint_32, pointer, pointer _PTR_),
-      boolean _PTR_        found,
-      pointer _PTR_        instance
+      FTE_UINT32              op,
+      FTE_BOOL (_CODE_PTR_  find)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_),
+      FTE_BOOL _PTR_        found,
+      FTE_VOID_PTR _PTR_        instance
    )
 { /* Body */
    struct {
-      uint_32 tempID;
+      FTE_UINT32 tempID;
    } index;
 
    *found = FALSE;
@@ -4470,17 +4470,17 @@ static boolean MIB_instance_tempEntry
    return TRUE;
 } /* Endbody */
 
-static boolean MIB_instance_eventEntry
+static FTE_BOOL MIB_instance_eventEntry
    (
       RTCSMIB_WALK_PTR     mib,
-      uint_32              op,
-      boolean (_CODE_PTR_  find)(uint_32, pointer, pointer _PTR_),
-      boolean _PTR_        found,
-      pointer _PTR_        instance
+      FTE_UINT32              op,
+      FTE_BOOL (_CODE_PTR_  find)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_),
+      FTE_BOOL _PTR_        found,
+      FTE_VOID_PTR _PTR_        instance
    )
 { /* Body */
    struct {
-      uint_32 eventIndex;
+      FTE_UINT32 eventIndex;
    } index;
 
    *found = FALSE;
@@ -4521,17 +4521,17 @@ static boolean MIB_instance_eventEntry
    return TRUE;
 } /* Endbody */
 
-static boolean MIB_instance_prsEntry
+static FTE_BOOL MIB_instance_prsEntry
    (
       RTCSMIB_WALK_PTR     mib,
-      uint_32              op,
-      boolean (_CODE_PTR_  find)(uint_32, pointer, pointer _PTR_),
-      boolean _PTR_        found,
-      pointer _PTR_        instance
+      FTE_UINT32              op,
+      FTE_BOOL (_CODE_PTR_  find)(FTE_UINT32, FTE_VOID_PTR, FTE_VOID_PTR _PTR_),
+      FTE_BOOL _PTR_        found,
+      FTE_VOID_PTR _PTR_        instance
    )
 { /* Body */
    struct {
-      uint_32 prsID;
+      FTE_UINT32 prsID;
    } index;
 
    *found = FALSE;

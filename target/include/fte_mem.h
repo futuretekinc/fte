@@ -11,9 +11,9 @@
 #define FTE_MEM_free(pMem);         _mem_free(pMem)      
 #endif
 
-void *  _FTE_MEM_DEBUG_alloc(const char *pFunc, int nLine, uint_32 nSize);
-void *  _FTE_MEM_DEBUG_allocZero(const char *pFunc, int nLine, uint_32 nSize);
-void    _FTE_MEM_DEBUG_free(const char *pFunc, int nLine, void *pMem);
+FTE_VOID_PTR _FTE_MEM_DEBUG_alloc(const FTE_CHAR _PTR_ pFunc, FTE_INT32 nLine, FTE_UINT32 nSize);
+FTE_VOID_PTR _FTE_MEM_DEBUG_allocZero(const FTE_CHAR _PTR_ pFunc, FTE_INT32 nLine, FTE_UINT32 nSize);
+void        _FTE_MEM_DEBUG_free(const FTE_CHAR _PTR_ pFunc, FTE_INT32 nLine, FTE_VOID_PTR pMem);
 
-int_32  FTE_MEM_SHELL_cmd(int_32 argc, char_ptr argv[]);
+FTE_INT32   FTE_MEM_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
 #endif

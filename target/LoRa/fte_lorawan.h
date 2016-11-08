@@ -12,7 +12,7 @@
 #define LORAWAN_APP_EUI_LENGTH   16
 #define LORAWAN_APP_KEY_LENGTH   16
 
-typedef uint_32 FTE_LORAWAN_ID, _PTR_ FTE_LORAWAN_ID_PTR;
+typedef FTE_UINT32 FTE_LORAWAN_ID, _PTR_ FTE_LORAWAN_ID_PTR;
 
 typedef enum
 {
@@ -23,20 +23,20 @@ typedef enum
 
 typedef struct
 {
-    uint_8                  bPort;
-    uint_8                  bSize;
-    uint_8                  pBuffer[FTE_LORAWAN_BUFFER_SIZE];
+    FTE_UINT8                  bPort;
+    FTE_UINT8                  bSize;
+    FTE_UINT8                  pBuffer[FTE_LORAWAN_BUFFER_SIZE];
 }   FTE_LORAWAN_FRAME, _PTR_ FTE_LORAWAN_FRAME_PTR;
 
 typedef struct
 {
-    uint_8                  pDevEui[LORAWAN_DEV_EUI_LENGTH];        // Device IEEE EUI
-    uint_8                  pAppEui[LORAWAN_APP_EUI_LENGTH];        // Application IEEE EUI
-    uint_8                  pAppKey[LORAWAN_APP_KEY_LENGTH];
+    FTE_UINT8                  pDevEui[LORAWAN_DEV_EUI_LENGTH];        // Device IEEE EUI
+    FTE_UINT8                  pAppEui[LORAWAN_APP_EUI_LENGTH];        // Application IEEE EUI
+    FTE_UINT8                  pAppKey[LORAWAN_APP_KEY_LENGTH];
     LoRaMacConfig_t         xMAC;
 
     bool                    bOverTheAirActivation;
-    uint_32                 ulOverTheAirActivationDutyCycle;
+    FTE_UINT32                 ulOverTheAirActivationDutyCycle;
 
 }   FTE_LORAWAN_CONFIG, _PTR_ FTE_LORAWAN_CONFIG_PTR;
 
@@ -47,13 +47,13 @@ typedef struct
     LoRaMac_t               *pMac;
     
     FTE_LORAWAN_FRAME_PTR   pSendFrame;
-    uint_32                 ulBufferSize;
-    uint_8                  pBuffer[FTE_LORAWAN_BUFFER_SIZE];
+    FTE_UINT32                 ulBufferSize;
+    FTE_UINT8                  pBuffer[FTE_LORAWAN_BUFFER_SIZE];
     
-    int_32                  nRSSI;
-    int_32                  nSNR;
-    uint_32                 ulRxPktCount;
-    uint_32                 ulTxPktCount;
+    FTE_INT32                  nRSSI;
+    FTE_INT32                  nSNR;
+    FTE_UINT32                 ulRxPktCount;
+    FTE_UINT32                 ulTxPktCount;
     
     bool                    bIsNetworkJoined;    
     bool                    bTxNextPacket;
@@ -64,11 +64,11 @@ typedef struct
 } FTE_LORAWAN, _PTR_ FTE_LORAWAN_PTR;
 
 _mqx_uint   FTE_LORAWAN_init( void *pConfig);
-_mqx_uint   FTE_LORAWAN_send(void *pBuff, uint_32 ulLen);
-uint_32     FTE_LORAWAN_recv(void *pBuff, uint_32 ulBuffSize);
+_mqx_uint   FTE_LORAWAN_send(void *pBuff, FTE_UINT32 ulLen);
+FTE_UINT32     FTE_LORAWAN_recv(void *pBuff, FTE_UINT32 ulBuffSize);
 
 _mqx_uint   FTE_LORAWAN_requestJoin(FTE_LORAWAN_PTR pLoRaWan);
 
-int_32  FTE_LORAWAN_SHELL_cmd(int_32 argc, char_ptr argv[]);
+FTE_INT32  FTE_LORAWAN_SHELL_cmd(FTE_INT32 argc, char_ptr argv[]);
 
 #endif

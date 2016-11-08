@@ -24,7 +24,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 
 typedef struct
 {
-    uint_32                 ulSize;
+    FTE_UINT32                 ulSize;
     uint_8                  pBuffer[FTE_LORAMAC_BUFFER_SIZE];
 }   FTE_LORAMAC_FRAME, _PTR_ FTE_LORAMAC_FRAME_PTR;
 
@@ -111,12 +111,12 @@ FTE_LORAMAC_PTR FTE_LORAMAC_init( FTE_LORAMAC_CONFIG_PTR pConfig )
     pLoRaMac->pConfig    = pConfig;
     FTE_LIST_init(&pLoRaMac->xTxPktList);
 
-    _task_create(0, FTE_TASK_LORAMAC, (uint_32)pLoRaMac);
+    FTE_TASK_create(FTE_TASK_LORAMAC, (FTE_UINT32)pLoRaMac, NULL);
 
     return  pLoRaMac;
 }
 
-_mqx_uint FTE_LORAMAC_send(FTE_LORAMAC_PTR pLoRaMac, void *pBuff, uint_32 ulLen)
+_mqx_uint FTE_LORAMAC_send(FTE_LORAMAC_PTR pLoRaMac, void *pBuff, FTE_UINT32 ulLen)
 {
     FTE_LORAMAC_FRAME_PTR   pFrame = NULL;
     
@@ -124,41 +124,39 @@ _mqx_uint FTE_LORAMAC_send(FTE_LORAMAC_PTR pLoRaMac, void *pBuff, uint_32 ulLen)
     
     if ((ulLen == 0) || (ulLen > FTE_LORAMAC_BUFFER_SIZE))
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     if (FTE_LIST_count(&pLoRaMac->xTxPktList) >= 10)
     {
-        return  MQX_NOT_ENOUGH_MEMORY;
+        return  FTE_RET_NOT_ENOUGH_MEMORY;
     }
     
     pFrame = FTE_MEM_allocZero(sizeof(FTE_LORAMAC_FRAME));
     if (pFrame == NULL)
     {
-        return  MQX_NOT_ENOUGH_MEMORY;
+        return  FTE_RET_NOT_ENOUGH_MEMORY;
     }
     
     memcpy(pFrame->pBuffer, pBuff, ulLen);
     pFrame->ulSize = ulLen;
     
-    if (FTE_LIST_pushBack(&pLoRaMac->xTxPktList, pFrame) != MQX_OK)
+    if (FTE_LIST_pushBack(&pLoRaMac->xTxPktList, pFrame) != FTE_RET_OK)
     {
         FTE_MEM_free(pFrame);
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
-void FTE_LORAMAC_process(uint_32 ulParams)
+void FTE_LORAMAC_process(FTE_UINT32 ulParams)
 {
     pLoRaMac = (FTE_LORAMAC_PTR)ulParams;
     
     ASSERT(pLoRaMac != NULL);
     
     FTE_LORAMAC_CONFIG_PTR  pConfig = pLoRaMac->pConfig;
-
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
 
     // Radio initialization
     RadioEvents.TxDone =    FTE_LORAMAC_onTxDone;
@@ -173,11 +171,11 @@ void FTE_LORAMAC_process(uint_32 ulParams)
 
     Radio.Rx( pConfig->RxTimeout );
     
-    _task_create(0, FTE_TASK_LORA_CTRL, (uint_32)pLoRaMac);
+    FTE_TASK_create(FTE_TASK_LORA_CTRL, (FTE_UINT32)pLoRaMac, NULL);
     
     pLoRaMac->xState = FTE_LORAMAC_STATE_TX;
     
-    while( 1 )
+    while( TRUE )
     {
         switch( pLoRaMac->xState )
         {
@@ -189,7 +187,7 @@ void FTE_LORAMAC_process(uint_32 ulParams)
                 {
                     FTE_LORAMAC_FRAME_PTR pFrame;
                     
-                    if (FTE_LIST_popFront(&pLoRaMac->xTxPktList, (void **)&pFrame) == MQX_OK)
+                    if (FTE_LIST_popFront(&pLoRaMac->xTxPktList, (void **)&pFrame) == FTE_RET_OK)
                     {
                         Radio.Send(pFrame->pBuffer, pFrame->ulSize);
                         FTE_MEM_free(pFrame);
@@ -229,14 +227,12 @@ void FTE_LORAMAC_process(uint_32 ulParams)
 }
 
 
-void FTE_LORAMAC_ctrl(uint_32 params)
+void FTE_LORAMAC_ctrl(FTE_UINT32 params)
 {
-    boolean bPrevValue[4] = {FALSE,FALSE,FALSE,FALSE};
-    boolean bValue[4] = {FALSE,FALSE,FALSE,FALSE};
+    FTE_BOOL bPrevValue[4] = {FALSE,FALSE,FALSE,FALSE};
+    FTE_BOOL bValue[4] = {FALSE,FALSE,FALSE,FALSE};
     
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, _task_get_id());
-    
-    while(1)
+    while(TRUE)
     {
         FTE_LWGPIO_getValue(SX1276.pDIO0, &bValue[0]);
         if (bPrevValue[0] != bValue[0])
@@ -341,7 +337,7 @@ void FTE_LORAMAC_onRxDone( void * params, uint8_t *payload, uint16_t size, int16
     
     pLoRaMac->pBuffer[pLoRaMac->ulBufferSize] = 0;
     
-    uint_32 ulBuffLen = 0;
+    FTE_UINT32 ulBuffLen = 0;
     for(int i = 0 ; i < 16 && i < pLoRaMac->ulBufferSize ; i++)
     {
         ulBuffLen += sprintf(&pBuff[ulBuffLen], "%02x ", pLoRaMac->pBuffer[i]);
@@ -371,7 +367,7 @@ void FTE_LORAMAC_onRxError( void * params )
     TRACE(DEBUG_NET_LORA, "Rx Error\n");
 }
 
-uint_32         FTE_LORAMAC_getFrequency(FTE_LORAMAC_PTR pLoRaMac)
+FTE_UINT32         FTE_LORAMAC_getFrequency(FTE_LORAMAC_PTR pLoRaMac)
 {
     ASSERT(pLoRaMac != NULL);
     

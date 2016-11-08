@@ -45,8 +45,8 @@ _mqx_int cgi_request(HTTPSRV_CGI_REQ_STRUCT* param)
     FTE_CGI_QUERY_PTR       cgi_query = NULL;
     char_ptr                cmd, subcmd;
     char_ptr                pBuff = NULL;
-    uint_32                 query_count = 0, nMaxLen = 0;
-    uint_32                 length = 0, ret;
+    FTE_UINT32                 query_count = 0, nMaxLen = 0;
+    FTE_UINT32                 length = 0, ret;
     
     nMaxLen = FTE_NET_HTTP_CGI_BUFF_SIZE;
     pBuff = (char_ptr)FTE_MEM_alloc(nMaxLen);
@@ -84,7 +84,7 @@ _mqx_int cgi_request(HTTPSRV_CGI_REQ_STRUCT* param)
         }
         else if (strcmp(subcmd, "value") == 0)
         {
-            uint_32 nOID;
+            FTE_UINT32 nOID;
             
             if (fte_cgi_query_search_hexnum(cgi_query, "oid", &nOID) == MQX_OK)
             {
@@ -96,7 +96,7 @@ _mqx_int cgi_request(HTTPSRV_CGI_REQ_STRUCT* param)
     }
     else if (strcmp(cmd, "ctrl") == 0)
     {
-        uint_32 nOID;
+        FTE_UINT32 nOID;
         if (fte_cgi_query_search_hexnum(cgi_query, "oid", &nOID) != MQX_OK)
         {
             goto error;

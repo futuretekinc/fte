@@ -52,7 +52,7 @@ FTE_RET   FTE_M25P16_create
     pM25P16 = (FTE_M25P16_PTR)FTE_MEM_allocZero(sizeof(FTE_M25P16));
     if (pM25P16 == NULL)
     {
-        return  MQX_OUT_OF_MEMORY;
+        return  FTE_RET_NOT_ENOUGH_MEMORY;
     }
 
     pM25P16->pNext    = _pHead;
@@ -60,7 +60,7 @@ FTE_RET   FTE_M25P16_create
         
     _pHead = pM25P16;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_M25P16_attach
@@ -92,17 +92,17 @@ FTE_RET   FTE_M25P16_attach
         goto error1;
     }
         
-    if (FTE_LWGPIO_attach(pLWGPIO_Hold, pM25P16->pConfig->nID) != MQX_OK)
+    if (FTE_LWGPIO_attach(pLWGPIO_Hold, pM25P16->pConfig->nID) != FTE_RET_OK)
     {
         goto error2;
     }
 
-    if (FTE_LWGPIO_attach(pLWGPIO_WP, pM25P16->pConfig->nID) != MQX_OK)
+    if (FTE_LWGPIO_attach(pLWGPIO_WP, pM25P16->pConfig->nID) != FTE_RET_OK)
     {
         goto error2;
     }
     
-    if (FTE_SPI_attach(pSPI, pM25P16->pConfig->nID) != MQX_OK)
+    if (FTE_SPI_attach(pSPI, pM25P16->pConfig->nID) != FTE_RET_OK)
     {
         goto error2;
     }
@@ -114,7 +114,7 @@ FTE_RET   FTE_M25P16_attach
     pM25P16->pHold  = pLWGPIO_Hold;
     pM25P16->pWP    = pLWGPIO_WP;        
         
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error2:
     
@@ -135,7 +135,7 @@ error2:
 
 error1:
     
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_M25P16_detach
@@ -153,7 +153,7 @@ FTE_RET   FTE_M25P16_detach
     FTE_LWGPIO_detach(pM25P16->pWP);
     pM25P16->pWP = NULL;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_M25P16_eraseSector
@@ -169,9 +169,9 @@ FTE_RET   FTE_M25P16_eraseSector
     
     ASSERT((pM25P16 != NULL) && (pM25P16->pSPI != NULL));
     
-    if (FTE_M25P16_writeEnable(pM25P16, TRUE) != MQX_OK)
+    if (FTE_M25P16_writeEnable(pM25P16, TRUE) != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pEraseSectorCmd[0] = FTE_M25P16_CMD_SECTOR_ERASE;
@@ -180,17 +180,17 @@ FTE_RET   FTE_M25P16_eraseSector
     pEraseSectorCmd[3] = ((ulAddress      )& 0xFF);
   
     ulRet = FTE_SPI_write(pM25P16->pSPI, pEraseSectorCmd, sizeof(pEraseSectorCmd), NULL, 0);
-    if (ulRet != MQX_OK)
+    if (ulRet != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     for(nCount = 0 ; nCount < 10 ; nCount++)
     {
         
-        if (FTE_M25P16_readStatus(pM25P16, &ulStatus) != MQX_OK)
+        if (FTE_M25P16_readStatus(pM25P16, &ulStatus) != FTE_RET_OK)
         {
-            return  MQX_ERROR;
+            return  FTE_RET_ERROR;
         }
     
         if ((ulStatus & 0x01) == 0)
@@ -201,18 +201,18 @@ FTE_RET   FTE_M25P16_eraseSector
         _time_delay(100);        
     }
     
-    if (FTE_M25P16_writeEnable(pM25P16, FALSE) != MQX_OK)
+    if (FTE_M25P16_writeEnable(pM25P16, FALSE) != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     
     if (nCount == 10)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_BOOL FTE_M25P16_isExist
@@ -225,7 +225,7 @@ FTE_BOOL FTE_M25P16_isExist
     
     ASSERT((pM25P16 != NULL) && (pM25P16->pSPI != NULL));
 
-    if (FTE_SPI_read(pM25P16->pSPI, pCmd, sizeof(pCmd), pBuff, sizeof(pBuff)) != MQX_OK)
+    if (FTE_SPI_read(pM25P16->pSPI, pCmd, sizeof(pCmd), pBuff, sizeof(pBuff)) != FTE_RET_OK)
     {
         return  FALSE;
     }
@@ -274,9 +274,9 @@ FTE_RET   FTE_M25P16_write
     
     ASSERT((pM25P16 != NULL) && (pM25P16->pSPI != NULL));
     
-    if (FTE_M25P16_writeEnable(pM25P16, TRUE) != MQX_OK)
+    if (FTE_M25P16_writeEnable(pM25P16, TRUE) != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pEraseSectorCmd[0] = 0x02;
@@ -285,17 +285,17 @@ FTE_RET   FTE_M25P16_write
     pEraseSectorCmd[3] = ((ulAddress      )& 0xFF);
   
     ulRet = FTE_SPI_write(pM25P16->pSPI, pEraseSectorCmd, sizeof(pEraseSectorCmd), pBuff, ulLen);
-    if (ulRet != MQX_OK)
+    if (ulRet != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     for(nCount = 0 ; nCount < 10 ; nCount++)
     {
         ulRet = FTE_SPI_read(pM25P16->pSPI, pReadStatusCmd, sizeof(pReadStatusCmd), pStatus, sizeof(pStatus));
-        if (ulRet != MQX_OK)
+        if (ulRet != FTE_RET_OK)
         {
-            return  MQX_ERROR;
+            return  FTE_RET_ERROR;
         }
     
         if ((pStatus[0] & 0x01) == 0)
@@ -306,17 +306,17 @@ FTE_RET   FTE_M25P16_write
         _time_delay(1);        
     }
     
-    if (FTE_M25P16_writeEnable(pM25P16, FALSE) != MQX_OK)
+    if (FTE_M25P16_writeEnable(pM25P16, FALSE) != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     if (nCount == 10)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET       FTE_M25P16_writeEnable
@@ -331,9 +331,9 @@ FTE_RET       FTE_M25P16_writeEnable
     {
         FTE_UINT8      pCmd[1] = {FTE_M25P16_CMD_WRITE_ENABLE};
         
-        if (FTE_SPI_write(pM25P16->pSPI, pCmd, sizeof(pCmd), NULL, 0) != MQX_OK)
+        if (FTE_SPI_write(pM25P16->pSPI, pCmd, sizeof(pCmd), NULL, 0) != FTE_RET_OK)
         {
-            return  MQX_ERROR;
+            return  FTE_RET_ERROR;
         }
         
         pM25P16->bWriteEnable = TRUE;
@@ -342,15 +342,15 @@ FTE_RET       FTE_M25P16_writeEnable
     {
         FTE_UINT8      pCmd[1] = {FTE_M25P16_CMD_WRITE_DISABLE};
         
-        if (FTE_SPI_write(pM25P16->pSPI, pCmd, sizeof(pCmd), NULL, 0) != MQX_OK)
+        if (FTE_SPI_write(pM25P16->pSPI, pCmd, sizeof(pCmd), NULL, 0) != FTE_RET_OK)
         {
-            return  MQX_ERROR;
+            return  FTE_RET_ERROR;
         }
 
         pM25P16->bWriteEnable = FALSE;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_BOOL    FTE_M25P16_isWriteEnabled
@@ -370,12 +370,12 @@ FTE_RET FTE_M25P16_readStatus
     FTE_UINT8      pBuff[1];
     FTE_UINT8      pReadStatusCmd[1] = {FTE_M25P16_CMD_READ_STATUS};
 
-    if (FTE_SPI_read(pM25P16->pSPI, pReadStatusCmd, sizeof(pReadStatusCmd), pBuff, sizeof(pBuff)) != MQX_OK)
+    if (FTE_SPI_read(pM25P16->pSPI, pReadStatusCmd, sizeof(pReadStatusCmd), pBuff, sizeof(pBuff)) != FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     *pulStatus = pBuff[0];
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }

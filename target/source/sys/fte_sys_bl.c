@@ -36,12 +36,12 @@ FTE_RET       FTE_SYS_BL_getOID
 
     if (FTE_SYS_BL_checkStaticParams() != TRUE)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     memcpy(pOID, pBLStaticParams->device.id, FTE_OID_SIZE);
     
-    return  MQX_OK;   
+    return  FTE_RET_OK;   
 }
 
 
@@ -54,28 +54,28 @@ FTE_RET       FTE_SYS_BL_getMAC
     
     if (FTE_SYS_BL_checkStaticParams() != TRUE)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     memcpy(pMAC, pBLStaticParams->device.mac, FTE_MAC_SIZE);
     
-    return  MQX_OK;   
+    return  FTE_RET_OK;   
 }
 
 FTE_RET   FTE_SYS_BL_startUpgrade(void)
 {
-    if (FTE_SYS_BL_load() != MQX_OK)
+    if (FTE_SYS_BL_load() != FTE_RET_OK)
     {
         printf("ERROR : BL not loaded\n");
     }
     
     pBLDynamicParams->boot.mode = FAPP_PARAMS_BOOT_MODE_SCRIPT;
-    if (FTE_SYS_BL_save() == MQX_OK)
+    if (FTE_SYS_BL_save() == FTE_RET_OK)
     {
         FTE_SYS_reset();
     }
   
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_SYS_BL_load(void)
@@ -87,7 +87,7 @@ FTE_RET   FTE_SYS_BL_load(void)
         pBLDynamicParams = (FTE_BL_DYNAMIC_PARAMS _PTR_)FTE_MEM_allocZero(sizeof(FTE_BL_DYNAMIC_PARAMS));
         if (pBLDynamicParams == NULL)
         {
-            return  MQX_ERROR;
+            return  FTE_RET_ERROR;
         }
         
         fp = fopen("flashx:bl_dynamic", NULL);
@@ -108,7 +108,7 @@ FTE_RET   FTE_SYS_BL_load(void)
         }
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
     if (pBLDynamicParams != NULL)
@@ -116,7 +116,7 @@ error:
         FTE_MEM_free(pBLDynamicParams);
         pBLDynamicParams = NULL;
     }
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET   FTE_SYS_BL_save(void)
@@ -125,7 +125,7 @@ FTE_RET   FTE_SYS_BL_save(void)
     
     if (pBLDynamicParams == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     fp = fopen("flashx:bl_dynamic", NULL);
@@ -146,10 +146,10 @@ FTE_RET   FTE_SYS_BL_save(void)
         fclose(fp);
     }
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_INT32  FTE_SYS_BL_cmd
@@ -161,7 +161,7 @@ FTE_INT32  FTE_SYS_BL_cmd
     FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
     FTE_INT32   nReturnCode = SHELL_EXIT_SUCCESS;
     
-    if (FTE_SYS_BL_load() != MQX_OK)
+    if (FTE_SYS_BL_load() != FTE_RET_OK)
     {
         printf("ERROR : BL not loaded\n");
     }
@@ -218,7 +218,7 @@ FTE_INT32  FTE_SYS_BL_cmd
                     pBLDynamicParams->boot.mode = FAPP_PARAMS_BOOT_MODE_SCRIPT;
                     strcpy(pBLDynamicParams->boot.script, "dhcp;! reset;telnet;! reset");
                     
-                    if (FTE_SYS_BL_save() == MQX_OK)
+                    if (FTE_SYS_BL_save() == FTE_RET_OK)
                     {
                         FTE_SYS_reset();
                     }
@@ -257,7 +257,7 @@ FTE_INT32  FTE_SYS_BL_cmd
                         break;
                     }
                     
-                    if (FTE_SYS_BL_save() == MQX_OK)
+                    if (FTE_SYS_BL_save() == FTE_RET_OK)
                     {
                         printf("Bootloader configuration changed!\n");
                     }

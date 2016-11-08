@@ -211,6 +211,7 @@ FTE_RET   FTE_ELT_init
 {
     ASSERT((pObj != NULL) && (pObj->pConfig != NULL));
     
+    FTE_RET     xRet;
     FTE_INT32   i;
     FTE_ELT_DEVICE_PTR   pDevice = NULL;
 
@@ -228,14 +229,13 @@ FTE_RET   FTE_ELT_init
         return  FTE_RET_OBJECT_FULL;
     }    
     
-    pDevice->xTaskID = _task_create(0, FTE_TASK_ELT, (FTE_UINT32)pObj->pConfig->xCommon.nID);
-    if (pDevice->xTaskID <= 0)
+    xRet = FTE_TASK_create(FTE_TASK_ELT, (FTE_UINT32)pObj->pConfig->xCommon.nID, &pDevice->xTaskID);
+    if (xRet != FTE_RET_OK)
     {
         return  FTE_RET_TASK_CREATION_FAILED;
     }             
                 
     pDevice->pObj = pObj;    
-    FTE_TASK_append(FTE_TASK_TYPE_MQX, pDevice->xTaskID);
     ulDeviceCount++;
                 
     return  FTE_RET_OK;
@@ -557,8 +557,8 @@ FTE_RET     FTE_ELT_AQM100_update
 
     if (nFrameStart < 0)
     {
-        pStatus->xGUS.xRet = MQX_ERROR;
-        return  MQX_ERROR;
+        pStatus->xGUS.xRet = FTE_RET_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     pFrame = &pRcvdBuff[nFrameStart];
@@ -570,8 +570,8 @@ FTE_RET     FTE_ELT_AQM100_update
     
     if (nCRC != pFrame[10])
     {
-        pStatus->xGUS.xRet = MQX_ERROR;
-        return  MQX_ERROR;
+        pStatus->xGUS.xRet = FTE_RET_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     nFlag = pFrame[3];

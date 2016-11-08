@@ -6,7 +6,10 @@ typedef struct
     FTE_VALUE_TYPE  xType;
 }   FTE_VALUE_TYPE_DESCRIPT, _PTR_ FTE_VALUE_TYPE_DESCRIPT_PTR;
 
-FTE_VALUE_PTR   FTE_VALUE_create(FTE_VALUE_TYPE xType)
+FTE_VALUE_PTR   FTE_VALUE_create
+(
+    FTE_VALUE_TYPE  xType
+)
 {
     switch(xType)
     {
@@ -235,7 +238,7 @@ FTE_RET FTE_VALUE_destroy
     
     FTE_MEM_free(pValue);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_init
@@ -249,7 +252,7 @@ FTE_RET FTE_VALUE_init
     memset(pValue, 0, sizeof(FTE_VALUE));
     pValue->xType = xType;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_initTemperature
@@ -264,7 +267,7 @@ FTE_RET FTE_VALUE_initTemperature
     pValue->xType = FTE_VALUE_TYPE_TEMPERATURE;
     pValue->xData.nValue = nValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_initHumidity
@@ -279,7 +282,7 @@ FTE_RET FTE_VALUE_initHumidity
     pValue->xType = FTE_VALUE_TYPE_HUMIDITY;
     pValue->xData.ulValue = ulValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_initDIO
@@ -294,7 +297,7 @@ FTE_RET FTE_VALUE_initDIO
     pValue->xType = FTE_VALUE_TYPE_DIO;
     pValue->xData.bValue = bValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_initPPM
@@ -309,7 +312,7 @@ FTE_RET FTE_VALUE_initPPM
     pValue->xType = FTE_VALUE_TYPE_PPM;
     pValue->xData.ulValue = ulValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_initULONG
@@ -324,7 +327,7 @@ FTE_RET FTE_VALUE_initULONG
     pValue->xType = FTE_VALUE_TYPE_ULONG;
     pValue->xData.ulValue = ulValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_initHex32
@@ -339,7 +342,7 @@ FTE_RET FTE_VALUE_initHex32
     pValue->xType = FTE_VALUE_TYPE_HEX32;
     pValue->xData.ulValue = ulValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_initVoltage
@@ -354,7 +357,7 @@ FTE_RET FTE_VALUE_initVoltage
     pValue->xType = FTE_VALUE_TYPE_VOLTAGE;
     pValue->xData.ulValue = ulValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_initCurrent
@@ -369,7 +372,7 @@ FTE_RET FTE_VALUE_initCurrent
     pValue->xType = FTE_VALUE_TYPE_CURRENT;
     pValue->xData.ulValue = ulValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_initPressure
@@ -384,7 +387,7 @@ FTE_RET FTE_VALUE_initPressure
     pValue->xType = FTE_VALUE_TYPE_PRESSURE;
     pValue->xData.ulValue = ulValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_initPowerKW
@@ -399,7 +402,7 @@ FTE_RET FTE_VALUE_initPowerKW
     pValue->xType = FTE_VALUE_TYPE_PWR_KW;
     pValue->xData.ulValue = ulValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_initPowerKWH
@@ -414,7 +417,7 @@ FTE_RET FTE_VALUE_initPowerKWH
     pValue->xType = FTE_VALUE_TYPE_PWR_KWH;
     pValue->xData.ulValue = ulValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 
@@ -430,7 +433,7 @@ FTE_RET FTE_VALUE_initLED
     pValue->xType = FTE_VALUE_TYPE_LED;
     pValue->xData.xState = ulState;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_setValid
@@ -452,7 +455,7 @@ FTE_RET FTE_VALUE_setValid
         }
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_BOOL    FTE_VALUE_isValid
@@ -597,12 +600,12 @@ FTE_RET FTE_VALUE_set
     
     FTE_VALUE_setValid(pObj, TRUE);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:
     FTE_VALUE_setValid(pObj, FALSE);
 
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 
@@ -619,7 +622,7 @@ FTE_RET FTE_VALUE_setTemperature
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_getTemperature
@@ -632,7 +635,7 @@ FTE_RET FTE_VALUE_getTemperature
     
     *pnValue = pObj->xData.nValue;
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_setHumidity
@@ -648,7 +651,7 @@ FTE_RET FTE_VALUE_setHumidity
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_getHumidity
@@ -661,7 +664,7 @@ FTE_RET FTE_VALUE_getHumidity
     
     *pulValue = pObj->xData.ulValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_setDIO
@@ -677,7 +680,7 @@ FTE_RET FTE_VALUE_setDIO
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_getDIO
@@ -690,7 +693,7 @@ FTE_RET FTE_VALUE_getDIO
     
     *pbValue = pObj->xData.bValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_setPPM
@@ -706,7 +709,7 @@ FTE_RET FTE_VALUE_setPPM
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_getPPM
@@ -719,7 +722,7 @@ FTE_RET FTE_VALUE_getPPM
     
     *pulValue = pObj->xData.ulValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_setULONG
@@ -735,7 +738,7 @@ FTE_RET FTE_VALUE_setULONG
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_getULONG
@@ -748,7 +751,7 @@ FTE_RET FTE_VALUE_getULONG
     
     *pulValue = pObj->xData.ulValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_setVoltage
@@ -764,7 +767,7 @@ FTE_RET FTE_VALUE_setVoltage
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_getVoltage
@@ -777,7 +780,7 @@ FTE_RET FTE_VALUE_getVoltage
     
     *pulValue = pObj->xData.ulValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_setCurrent
@@ -793,7 +796,7 @@ FTE_RET FTE_VALUE_setCurrent
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_getCurrent
@@ -806,7 +809,7 @@ FTE_RET FTE_VALUE_getCurrent
     
     *pulValue = pObj->xData.ulValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_setPressure
@@ -822,7 +825,7 @@ FTE_RET FTE_VALUE_setPressure
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_getPowerKW
@@ -835,7 +838,7 @@ FTE_RET FTE_VALUE_getPowerKW
     
     *pulValue = pObj->xData.ulValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_setPowerKW
@@ -851,7 +854,7 @@ FTE_RET FTE_VALUE_setPowerKW
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_getPowerKWH
@@ -864,7 +867,7 @@ FTE_RET FTE_VALUE_getPowerKWH
     
     *pulValue = pObj->xData.ulValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_setPowerKWH
@@ -880,7 +883,7 @@ FTE_RET FTE_VALUE_setPowerKWH
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 FTE_RET FTE_VALUE_getPressure
 (
@@ -892,7 +895,7 @@ FTE_RET FTE_VALUE_getPressure
     
     *pnValue = pObj->xData.nValue;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_setLED
@@ -908,7 +911,7 @@ FTE_RET FTE_VALUE_setLED
     FTE_VALUE_setValid(pObj, TRUE);
     _time_get (&pObj->xTimeStamp);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_getLED
@@ -921,7 +924,7 @@ FTE_RET FTE_VALUE_getLED
     
     *pxState = pObj->xData.xState;
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_getTimeStamp
@@ -937,7 +940,7 @@ FTE_RET FTE_VALUE_getTimeStamp
         *pTimeStamp = pObj->xTimeStamp;
     }
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET FTE_VALUE_copy
@@ -950,7 +953,7 @@ FTE_RET FTE_VALUE_copy
     
     memcpy(pDest, pSrc, sizeof(FTE_VALUE));
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_CHAR_PTR    FTE_VALUE_toString

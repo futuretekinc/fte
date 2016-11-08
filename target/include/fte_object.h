@@ -234,7 +234,7 @@ typedef struct   FTE_OBJECT_COMMON_CONFIG_STRUCT
     FTE_CHAR    pName[MAX_OBJECT_NAME_LEN+1];
     FTE_UINT32  xFlags;
     FTE_UINT32  ulChild;
-    struct  FTE_OBJECT_CONFIG_STRUCT  **pChild;
+    struct  FTE_OBJECT_CONFIG_STRUCT  _PTR_ _PTR_ pChild;
 }   FTE_COMMON_CONFIG, _PTR_ FTE_COMMON_CONFIG_PTR;
 
 typedef struct   FTE_OBJECT_CONFIG_STRUCT
@@ -317,10 +317,10 @@ FTE_RET             FTE_OBJ_destroy(FTE_OBJECT_PTR pObj);
 FTE_RET             FTE_OBJ_init(FTE_OBJECT_PTR pObj);
 
 FTE_OBJECT_PTR      FTE_OBJ_get(FTE_OBJECT_ID nID);
-FTE_OBJECT_PTR      FTE_OBJ_getFirst(FTE_OBJECT_ID nID, FTE_UINT32 nMask, boolean bSystem);
-FTE_OBJECT_PTR      FTE_OBJ_getNext(FTE_OBJECT_PTR  pObj, FTE_OBJECT_ID nID, FTE_UINT32 nMask, boolean bSystem);
-FTE_OBJECT_PTR      FTE_OBJ_getAt(FTE_OBJECT_ID nID, FTE_UINT32 nMask, FTE_UINT32 nIndex, boolean bSystem);
-FTE_UINT32          FTE_OBJ_count(FTE_OBJECT_ID nID, FTE_UINT32 nMask, boolean bSystem);
+FTE_OBJECT_PTR      FTE_OBJ_getFirst(FTE_OBJECT_ID nID, FTE_UINT32 nMask, FTE_BOOL bSystem);
+FTE_OBJECT_PTR      FTE_OBJ_getNext(FTE_OBJECT_PTR  pObj, FTE_OBJECT_ID nID, FTE_UINT32 nMask, FTE_BOOL bSystem);
+FTE_OBJECT_PTR      FTE_OBJ_getAt(FTE_OBJECT_ID nID, FTE_UINT32 nMask, FTE_UINT32 nIndex, FTE_BOOL bSystem);
+FTE_UINT32          FTE_OBJ_count(FTE_OBJECT_ID nID, FTE_UINT32 nMask, FTE_BOOL bSystem);
 FTE_UINT32          FTE_OBJ_getList(FTE_OBJECT_ID nID, FTE_UINT32 nMask, FTE_OBJECT_PTR _PTR_ pObjList, FTE_UINT32 nMaxCount);
 FTE_RET         FTE_OBJ_getIDList(FTE_OBJECT_ID nID, FTE_UINT32 nMask, FTE_OBJECT_ID_PTR pObjIDs, FTE_UINT32 nMaxCount, FTE_UINT32_PTR pCount);
 
@@ -350,7 +350,7 @@ FTE_RET    FTE_OBJ_getStatistics
     FTE_OBJECT_STATISTICS_PTR pStatistics
 );
 
-FTE_RET         FTE_OBJ_activate(FTE_OBJECT_PTR pObj, boolean bEnable);
+FTE_RET         FTE_OBJ_activate(FTE_OBJECT_PTR pObj, FTE_BOOL bEnable);
 FTE_RET         FTE_OBJ_wasUpdated(FTE_OBJECT_PTR pObj);
 FTE_RET         FTE_OBJ_wasChanged(FTE_OBJECT_PTR pObj);
 
@@ -364,7 +364,7 @@ FTE_UINT32      FTE_OBJ_runMeasurement(FTE_OBJECT_PTR pObj, TIMER_NOTIFICATION_T
 
 FTE_UINT32      FTE_OBJ_getFailureCount(FTE_OBJECT_PTR pObj);
 
-boolean         FTE_OBJ_FLAG_isSet(FTE_OBJECT_PTR pObj, FTE_UINT32 xFlag);
+FTE_BOOL         FTE_OBJ_FLAG_isSet(FTE_OBJECT_PTR pObj, FTE_UINT32 xFlag);
 FTE_RET         FTE_OBJ_FLAG_set(FTE_OBJECT_PTR pObj, FTE_UINT32 xFlag);
 FTE_RET         FTE_OBJ_FLAG_clear(FTE_OBJECT_PTR pObj, FTE_UINT32 xFlag);
 
@@ -373,7 +373,7 @@ FTE_RET         FTE_OBJ_EVENT_detach(FTE_OBJECT_PTR pObj, FTE_EVENT_PTR pEvent);
 
 void            FTE_OBJ_STATE_set(FTE_OBJECT_PTR pObj, FTE_UINT32 xFlags);
 void            FTE_OBJ_STATE_clear(FTE_OBJECT_PTR pObj, FTE_UINT32 xFlags);
-boolean         FTE_OBJ_STATE_isSet(FTE_OBJECT_PTR pObj, FTE_UINT32 xFlags);
+FTE_BOOL         FTE_OBJ_STATE_isSet(FTE_OBJECT_PTR pObj, FTE_UINT32 xFlags);
 
 FTE_RET         FTE_OBJ_getChildCount(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pCount);
 FTE_RET         FTE_OBJ_getChild(FTE_OBJECT_PTR pObj, FTE_UINT32 ulIndex, FTE_OBJECT_PTR _PTR_ ppChild);
@@ -381,7 +381,7 @@ FTE_RET         FTE_OBJ_getChild(FTE_OBJECT_PTR pObj, FTE_UINT32 ulIndex, FTE_OB
 FTE_RET         FTE_OBJ_attachChild(FTE_OBJECT_PTR pObj, FTE_OBJECT_ID xChildID);
 FTE_RET         FTE_OBJ_detachChild(FTE_OBJECT_PTR pObj, FTE_OBJECT_ID xChildID);
 
-FTE_UINT32      FTE_OBJ_1WIRE_discovery(boolean bSave);
+FTE_UINT32      FTE_OBJ_1WIRE_discovery(FTE_BOOL bSave);
 
 FTE_RET         FT_OBJ_STAT_incSucceed(FTE_OBJECT_STATISTICS_PTR pStat);
 FTE_RET         FT_OBJ_STAT_incFailed(FTE_OBJECT_STATISTICS_PTR pStat);

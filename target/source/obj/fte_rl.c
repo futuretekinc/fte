@@ -13,7 +13,7 @@ static
 FTE_RET        _FTE_RL_setValue(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue);
 
 static  FTE_LIST            _xObjList = { 0, NULL, NULL};
-static  FTE_OBJECT_ACTION   _xAction = 
+static  FTE_OBJECT_ACTION   FTE_RL_action = 
 {
     .fInit  = _FTE_RL_init,
     .fSet   = _FTE_RL_setValue,
@@ -36,7 +36,7 @@ FTE_RET FTE_RL_attach
         goto error;
     }
         
-    if (FTE_GPIO_attach(pStatus->pGPIOOpen, pConfig->xCommon.nID) != MQX_OK)
+    if (FTE_GPIO_attach(pStatus->pGPIOOpen, pConfig->xCommon.nID) != FTE_RET_OK)
     {
         goto error;
     }
@@ -47,15 +47,15 @@ FTE_RET FTE_RL_attach
         goto error;
     }
         
-    if (FTE_GPIO_attach(pStatus->pGPIOClose, pConfig->xCommon.nID) != MQX_OK)
+    if (FTE_GPIO_attach(pStatus->pGPIOClose, pConfig->xCommon.nID) != FTE_RET_OK)
     {
         FTE_GPIO_detach(pStatus->pGPIOOpen);
         goto error;
     }
     
-    pObj->pAction = (FTE_OBJECT_ACTION_PTR)&_xAction;
+    pObj->pAction = (FTE_OBJECT_ACTION_PTR)&FTE_RL_action;
     
-    if (_FTE_RL_init(pObj) != MQX_OK)
+    if (_FTE_RL_init(pObj) != FTE_RET_OK)
     {
         FTE_GPIO_detach(pStatus->pGPIOOpen);
         FTE_GPIO_detach(pStatus->pGPIOClose);
@@ -65,10 +65,10 @@ FTE_RET FTE_RL_attach
     
     FTE_LIST_pushBack(&_xObjList, pObj);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 error:
    
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_RET FTE_RL_detach
@@ -85,10 +85,10 @@ FTE_RET FTE_RL_detach
     pObj->pAction = NULL;
    
 
-    return  MQX_OK;
+    return  FTE_RET_OK;
     
 error:    
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 /******************************************************************************/
@@ -107,7 +107,7 @@ FTE_RET   FTE_RL_getInitState
     
     *pState = FTE_FLAG_IS_SET(pObj->pConfig->xCommon.xFlags, FTE_RL_CONFIG_INIT_CLOSE);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_RL_setInitState
@@ -128,7 +128,7 @@ FTE_RET   FTE_RL_setInitState
     
     FTE_OBJ_save(pObj);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_RL_setValue
@@ -141,17 +141,17 @@ FTE_RET   FTE_RL_setValue
     FTE_OBJECT_PTR  pObj = _FTE_RL_getObject(nID);
     if (pObj == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
-    if (FTE_VALUE_initDIO(&xValue, bValue) == MQX_OK)
+    if (FTE_VALUE_initDIO(&xValue, bValue) == FTE_RET_OK)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     _FTE_RL_setValue(pObj, &xValue);
    
-    return  MQX_OK;    
+    return  FTE_RET_OK;    
 }
 
 
@@ -180,13 +180,13 @@ FTE_RET   FTE_RL_setPermanent
     FTE_OBJECT_PTR pObj = _FTE_RL_getObject(nID);
     if (pObj == NULL)
     {
-        return  MQX_ERROR;
+        return  FTE_RET_ERROR;
     }
 
     FTE_VALUE_getULONG(((FTE_RL_STATUS_PTR)pObj->pStatus)->xCommon.pValue, &((FTE_RL_CONFIG_PTR)pObj->pConfig)->nInitClosed);
     FTE_OBJ_save(pObj);
     
-    return  MQX_OK;    
+    return  FTE_RET_OK;    
    
 }
 
@@ -199,7 +199,7 @@ FTE_OBJECT_PTR  _FTE_RL_getObject
     FTE_OBJECT_PTR      pObj;
     FTE_LIST_ITERATOR   xIter;
     
-    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == MQX_OK)
+    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == FTE_RET_OK)
     {
         while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
         {
@@ -231,7 +231,7 @@ FTE_RET   _FTE_RL_init
 
     FTE_RL_setValue(pObj->pConfig->xCommon.nID, pConfig->nInitClosed);
     
-    return  MQX_OK;
+    return  FTE_RET_OK;
 }
 
 FTE_RET _FTE_RL_setValue
@@ -247,24 +247,24 @@ FTE_RET _FTE_RL_setValue
     
     if (pValue->xData.bValue)
     {
-        if (FTE_GPIO_setValue(pStatus->pGPIOClose, TRUE) != MQX_OK)
+        if (FTE_GPIO_setValue(pStatus->pGPIOClose, TRUE) != FTE_RET_OK)
         {
             goto    error;
         }
         _time_delay(50);
-        if (FTE_GPIO_setValue(pStatus->pGPIOClose, FALSE) != MQX_OK)
+        if (FTE_GPIO_setValue(pStatus->pGPIOClose, FALSE) != FTE_RET_OK)
         {
             goto    error;
         }
     }
     else
     {
-        if (FTE_GPIO_setValue(pStatus->pGPIOOpen, TRUE) != MQX_OK)
+        if (FTE_GPIO_setValue(pStatus->pGPIOOpen, TRUE) != FTE_RET_OK)
         {
             goto    error;
         }
         _time_delay(50);
-        if (FTE_GPIO_setValue(pStatus->pGPIOOpen, FALSE) != MQX_OK)
+        if (FTE_GPIO_setValue(pStatus->pGPIOOpen, FALSE) != FTE_RET_OK)
         {
             goto    error;
         }
@@ -276,11 +276,11 @@ FTE_RET _FTE_RL_setValue
         FTE_LED_setValue(pConfig->nLED, pValue->xData.bValue);
     }
     
-    return   MQX_OK;
+    return   FTE_RET_OK;
     
 error:
     pStatus->xCommon.xFlags = FTE_FLAG_CLR(pStatus->xCommon.xFlags, FTE_OBJ_STATUS_FLAG_VALID);
-    return  MQX_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_INT32   FTE_RL_SHELL_cmd
