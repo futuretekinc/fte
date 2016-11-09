@@ -3,7 +3,7 @@
 
 #if FTE_DEBUG
  
-static char     _pBuff[1024];
+static FTE_CHAR    _pBuff[1024];
 static FTE_UINT32  _ulTraceModule = 0;
 
 static MQX_FILE_PTR _debugOut = 0;
@@ -29,7 +29,7 @@ void    FTE_DEBUG_init(void)
 FTE_RET    FTE_DEBUG_trace
 (
     FTE_UINT32      ulModule, 
-    const char _PTR_ fmt_ptr, 
+    const FTE_CHAR   _PTR_ fmt_ptr, 
     ... 
 )
 {
@@ -39,14 +39,14 @@ FTE_RET    FTE_DEBUG_trace
        FTE_UINT32      ulLen = 0;
 #if 0
         TIME_STRUCT  xTime;
-       char         pTimeBuff[64];
+       FTE_CHAR    pTimeBuff[64];
        
         _time_get(&xTime);
         FTE_TIME_toStr(&xTime, pTimeBuff, sizeof(pTimeBuff));   
         ulLen = sprintf(&_pBuff[ulLen], "[%s] ", pTimeBuff);
 #endif   
         va_start(ap, fmt_ptr);
-        _io_vsnprintf(&_pBuff[ulLen], sizeof(_pBuff) - ulLen,  (char _PTR_)fmt_ptr, ap );
+        _io_vsnprintf(&_pBuff[ulLen], sizeof(_pBuff) - ulLen,  (FTE_CHAR_PTR)fmt_ptr, ap );
         va_end(ap);
        
        return   fprintf(_debugOut, "%s", _pBuff);
@@ -85,23 +85,23 @@ FTE_BOOL FTE_DEBUG_isTraceOn
 
 FTE_RET    FTE_DEBUG_error
 (
-    const char _PTR_ pFuncName, 
+    const FTE_CHAR _PTR_ pFuncName, 
     FTE_INT32   nLine, 
-    const char _PTR_ fmt_ptr, 
+    const FTE_CHAR _PTR_ fmt_ptr, 
     ... 
 )
 {
    va_list      ap;
-   FTE_UINT32      ulLen = 0;
+   FTE_UINT32   ulLen = 0;
    TIME_STRUCT  xTime;
-   char         pTimeBuff[64];
+   FTE_CHAR     pTimeBuff[64];
    
     _time_get(&xTime);
     FTE_TIME_toStr(&xTime, pTimeBuff, sizeof(pTimeBuff));   
     ulLen = sprintf(&_pBuff[ulLen], "[%s] ", pTimeBuff);
     
     va_start(ap, fmt_ptr);
-    _io_vsnprintf(&_pBuff[ulLen], sizeof(_pBuff) - ulLen,  (char _PTR_)fmt_ptr, ap );
+    _io_vsnprintf(&_pBuff[ulLen], sizeof(_pBuff) - ulLen,  (FTE_CHAR _PTR_)fmt_ptr, ap );
     va_end(ap);
    
     return   fprintf(_debugOut, "%s[%d] : %s\n", pFuncName, nLine, _pBuff);
@@ -109,7 +109,7 @@ FTE_RET    FTE_DEBUG_error
 
 FTE_RET    FTE_DEBUG_dump
 (
-    const char _PTR_ pFuncName, 
+    const FTE_CHAR _PTR_ pFuncName, 
     FTE_INT32       nLine, 
     FTE_CHAR_PTR    pTitle, 
     FTE_VOID_PTR    pBuff, 
@@ -172,7 +172,11 @@ static FTE_DEBUG_MODULE_TYPE_NAME  _pModuleTypeName[] =
     {   .pName = NULL,      .ulType = 0}
 };
 
-FTE_INT32 FTE_TRACE_SHELL_cmd(FTE_INT32 nArgc, char_ptr pArgv[])
+FTE_INT32 FTE_TRACE_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[]
+)
 {
     FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
     FTE_INT32   nReturnCode = SHELL_EXIT_SUCCESS;

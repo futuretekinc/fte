@@ -34,12 +34,12 @@
 #define DUMP(...)
 #endif
 void        FTE_DEBUG_init(void);
-FTE_RET     FTE_DEBUG_trace(FTE_UINT32 ulModule, const char _PTR_ fmt_ptr, ... );
+FTE_RET     FTE_DEBUG_trace(FTE_UINT32 ulModule, const FTE_CHAR _PTR_ fmt_ptr, ... );
 FTE_RET     FTE_DEBUG_traceOn(FTE_UINT32 ulModule);
 FTE_RET     FTE_DEBUG_traceOff(FTE_UINT32 ulModule);
 FTE_BOOL    FTE_DEBUG_isTraceOn(FTE_UINT32 ulModule);
-FTE_RET     FTE_DEBUG_error(const char _PTR_ pFuncName, FTE_INT32 nLine, const char _PTR_ fmt_ptr, ... );
-FTE_RET     FTE_DEBUG_dump(const char _PTR_ pFuncName, FTE_INT32 nLine, FTE_CHAR_PTR pTitle, FTE_VOID_PTR pBuff, FTE_UINT32 ulSize, FTE_UINT32 ulWrapLen);
+FTE_RET     FTE_DEBUG_error(const FTE_CHAR _PTR_ pFuncName, FTE_INT32 nLine, const FTE_CHAR _PTR_ fmt_ptr, ... );
+FTE_RET     FTE_DEBUG_dump(const FTE_CHAR _PTR_ pFuncName, FTE_INT32 nLine, FTE_CHAR_PTR pTitle, FTE_VOID_PTR pBuff, FTE_UINT32 ulSize, FTE_UINT32 ulWrapLen);
 
 FTE_INT32   FTE_TRACE_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
 

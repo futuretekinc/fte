@@ -14,6 +14,7 @@ void FTE_TASK_objectManagement
     FTE_UINT32  params
 )
 {
+    FTE_RET             xRet;
     MQX_TICK_STRUCT     xTicks;            
     MQX_TICK_STRUCT     xNextTicks;            
     FTE_BOOL            bOverflow;
@@ -21,10 +22,12 @@ void FTE_TASK_objectManagement
     FTE_TASK_ID         xTaskID = _task_get_id();
         
 #if FTE_1WIRE_SUPPORTED
-    FTE_UINT32 ulNewObject = FTE_OBJ_1WIRE_discovery(TRUE);
-    if (ulNewObject != 0)
+    FTE_UINT32 ulNewObject;
+   
+    xRet = FTE_OBJ_1WIRE_discovery(TRUE, &ulNewObject);
+    if (xRet != FTE_RET_OK)
     {
-        TRACE(DEBUG_OBJECT, "New object found![%d]\n", ulNewObject);
+        TRACE(DEBUG_OBJECT, "1Wire discovery not supported!\n");
     }
 #endif
    _time_get_elapsed_ticks(&xNextTicks);

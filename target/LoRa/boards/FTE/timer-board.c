@@ -15,6 +15,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 #include <math.h>
 #include "board.h"
 #include "timer-board.h"
+#include "fte_sys_timer.h"
 
 /*!
  * Hardware Time base in us
@@ -56,9 +57,9 @@ uint32_t TimerHwGetDelayValue( void );
  */
 void TimerIncrementDelayCounter( void );
 
-void TIM2_IRQHandler( _timer_id xTimer, pointer pParams, uint_32 a, uint_32  b);
+void TIM2_IRQHandler( FTE_TIMER_ID xTimerID, FTE_VOID_PTR pParams, FTE_UINT32 a, FTE_UINT32  b);
 
-_timer_id _xHWTimer;
+FTE_TIMER_ID _xHWTimer;
 
 
 void TimerHwInit( void )
@@ -153,7 +154,7 @@ void TimerIncrementTickCounter( void )
 /*!
  * Timer IRQ handler
  */
-void TIM2_IRQHandler( _timer_id xTimer, pointer pParams, uint_32 a, uint_32  b)
+void TIM2_IRQHandler( FTE_TIMER_ID xTimerID, FTE_VOID_PTR pParams, FTE_UINT32 a, FTE_UINT32  b)
 {
     TimerIncrementTickCounter( );
 

@@ -8,7 +8,7 @@
 static FTE_RET  FTE_IFCE_init(FTE_OBJECT_PTR pObj);
 static FTE_RET  FTE_IFCE_run(FTE_OBJECT_PTR pObj);
 static FTE_RET  FTE_IFCE_stop(FTE_OBJECT_PTR pObj);
-static void     FTE_IFCE_restartConvert(_timer_id id, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
+static void     FTE_IFCE_restartConvert(FTE_TIMER_ID xTimerID, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 static FTE_RET  FTE_IFCE_set(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue);
 static FTE_RET  FTE_IFCE_getInterval(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pulInterval);
 static FTE_RET  FTE_IFCE_setInterval(FTE_OBJECT_PTR pObj, FTE_UINT32 nInterval);
@@ -201,7 +201,7 @@ FTE_RET   FTE_IFCE_stop
 
 void FTE_IFCE_restartConvert
 (
-    _timer_id       id, 
+    FTE_TIMER_ID    xTimerID, 
     FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR pTick
 )

@@ -6,6 +6,7 @@
 #include <libemqtt.h>
 #include "fte_list.h"
 #include "fte_ssl.h"
+#include "fte_sys_timer.h"
 
 #ifndef FTE_MQTT_DEFAULT_PORT   
 #define FTE_MQTT_DEFAULT_PORT       1883
@@ -101,7 +102,7 @@ typedef struct
 
 typedef struct
 {
-    char        pClientID[FTE_MQTT_CLIENT_ID_LENGTH+1];
+    FTE_CHAR    pClientID[FTE_MQTT_CLIENT_ID_LENGTH+1];
     FTE_BOOL    bEnable;
     // Broker Information
     FTE_MQTT_BROKER_CONFIG  xBroker;    
@@ -112,7 +113,7 @@ typedef struct
 
 typedef struct
 {
-    FTE_INT32                  nSocketID;
+    FTE_INT32               nSocketID;
     FTE_MQTT_STATE          xState;
     FTE_MQTT_CFG_PTR        pConfig;
 	mqtt_broker_handle_t    xBroker;
@@ -120,12 +121,12 @@ typedef struct
     FTE_LIST                xFreeTransList;
     FTE_LIST                xRecvMsgPool;
     FTE_LIST                xSendMsgPool;
-    FTE_UINT8                  pBuff[FTE_MQTT_RECV_BUFF_SIZE];
-    FTE_UINT32                 ulBuffSize;
-    FTE_UINT32                 ulRcvdLen;
+    FTE_UINT8               pBuff[FTE_MQTT_RECV_BUFF_SIZE];
+    FTE_UINT32              ulBuffSize;
+    FTE_UINT32              ulRcvdLen;
     TIME_STRUCT             xTime;
-    _timer_id               xPingTimer;
-    FTE_UINT32                 ulPingTimeout;
+    FTE_TIMER_ID            xPingTimer;
+    FTE_UINT32              ulPingTimeout;
     struct
     {
         FTE_UINT32                 ulTransTimeout;
@@ -146,7 +147,7 @@ typedef _mqx_uint   (*FTE_MQTT_METHOD_CALLBACK)(void _PTR_ pParams);
 typedef struct
 {
     FTE_MQTT_METHOD_TYPE        xMethod;
-    char_ptr                    pString;
+    FTE_CHAR_PTR                pString;
     FTE_MQTT_METHOD_CALLBACK    fCallback;
 }   FTE_MQTT_METHOD, _PTR_ FTE_MQTT_METHOD_PTR;
 
@@ -158,5 +159,5 @@ FTE_UINT32 FTE_MQTT_publishEPValue(FTE_OBJECT_ID xEPID, FTE_UINT32 nQoS);
 
 FTE_UINT32 FTE_MQTT_TP_publishEPValue(FTE_OBJECT_ID xEPID, FTE_UINT32 nQoS);
 
-FTE_INT32  FTE_MQTT_SHELL_cmd(FTE_INT32 argc, char_ptr argv[]);
+FTE_INT32  FTE_MQTT_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
 #endif

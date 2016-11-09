@@ -6,9 +6,9 @@
 
 typedef struct
 {
-    char    pUserID[FTE_SHELL_USER_ID_LENGTH+1];
-    char    pPasswd[FTE_SHELL_PASSWD_LENGTH+1];
-    FTE_UINT32 ulTimeout;
+    FTE_CHAR    pUserID[FTE_SHELL_USER_ID_LENGTH+1];
+    FTE_CHAR    pPasswd[FTE_SHELL_PASSWD_LENGTH+1];
+    FTE_UINT32  ulTimeout;
 }   FTE_SHELL_CONFIG, _PTR_ FTE_SHELL_CONFIG_PTR;
 
 typedef struct FTE_SHELL_CMD_STRUCT

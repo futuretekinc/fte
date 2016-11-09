@@ -745,7 +745,7 @@ FTE_INT32 FTE_ELT_SHELL_cmd
             {
                 FTE_ELT_CONFIG_PTR pConfig;
                 FTE_ELT_STATUS_PTR pStatus;
-                char    pBuff[32];
+                FTE_CHAR pBuff[32];
                 
                 if (pDevices[i].pObj == NULL)
                 {

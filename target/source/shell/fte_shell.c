@@ -133,8 +133,8 @@ FTE_RET     FTE_SHELL_proc(void)
     FTE_RET     nResult;
     FTE_CHAR    nCh;
     FTE_SHELL_CONFIG_PTR    pShellConfig = FTE_CFG_SHELL_get();
-    char    pUserID[FTE_SHELL_USER_ID_LENGTH+1];
-    char    pPasswd[FTE_SHELL_PASSWD_LENGTH+1];
+    FTE_CHAR    pUserID[FTE_SHELL_USER_ID_LENGTH+1];
+    FTE_CHAR    pPasswd[FTE_SHELL_PASSWD_LENGTH+1];
     /* Run the shell */
  
     if (FTE_SHELL_fgetc(stdin, &nCh, pShellConfig->ulTimeout) != FTE_RET_OK)
@@ -256,9 +256,9 @@ FTE_INT32  FTE_SHELL_cmdPasswd
         case    1:
             {    
                 FTE_SHELL_CONFIG_PTR    pShellConfig = FTE_CFG_SHELL_get();
-                char    pOldPasswd[FTE_SHELL_PASSWD_LENGTH+1];
-                char    pNewPasswd[FTE_SHELL_PASSWD_LENGTH+1];
-                char    pNewPasswdConfirm[FTE_SHELL_PASSWD_LENGTH+1];
+                FTE_CHAR    pOldPasswd[FTE_SHELL_PASSWD_LENGTH+1];
+                FTE_CHAR    pNewPasswd[FTE_SHELL_PASSWD_LENGTH+1];
+                FTE_CHAR    pNewPasswdConfirm[FTE_SHELL_PASSWD_LENGTH+1];
 
                 fprintf(stdout, "Changing password for %s\n", pShellConfig->pUserID);
                 fprintf(stdout, "(current) password : ");
@@ -382,7 +382,7 @@ FTE_INT32  FTE_SHELL_cmdSet
                 FTE_UINT32                 ulTimeout;
                 FTE_SHELL_CONFIG_PTR    pConfig = FTE_CFG_SHELL_get();
                     
-                if (! Shell_parse_number( pArgv[2], &ulTimeout))  
+                if (FTE_strToUINT32( pArgv[2], &ulTimeout) != FTE_RET_OK)  
                 {
                     nReturnCode = SHELL_EXIT_ERROR;
                     goto print_usage;
@@ -649,7 +649,7 @@ FTE_RET FTE_SHELL_fgets
         } 
         else 
         {
-            *pBuff++ = (char)c;
+            *pBuff++ = (FTE_CHAR    )c;
             ++i;
         } /* Endif */
         

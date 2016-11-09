@@ -817,7 +817,7 @@ FTE_INT32  FTE_AD7785_SHELL_cmd
                 FTE_UINT32 nDID;
                 
                 
-                if (!Shell_parse_hexnum(pArgv[1], &nDID))
+                if (FTE_strToHex(pArgv[1], &nDID) != FTE_RET_OK)
                 {
                     bPrintUsage = TRUE;
                     break;
@@ -885,7 +885,7 @@ FTE_INT32  FTE_AD7785_SHELL_cmd
             {
                 FTE_UINT32 nDID;
                 
-                if (!Shell_parse_hexnum(pArgv[1], &nDID))
+                if (FTE_strToHex(pArgv[1], &nDID) != FTE_RET_OK)
                 {
                     bPrintUsage = TRUE;
                     break;

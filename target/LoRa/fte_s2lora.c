@@ -352,7 +352,7 @@ FTE_INT32  FTE_S2LORA_SHELL_cmd
                 {
                     FTE_UINT8  pRegs[64];
                     FTE_UINT32 i;
-                    const   char *pBandwidths[10] = { "7.8", "10.4", "15.6", "20.8", "31.25", "41.7", "62.5", "125", "250", "500"};
+                    const   FTE_CHAR_PTR pBandwidths[10] = { "7.8", "10.4", "15.6", "20.8", "31.25", "41.7", "62.5", "125", "250", "500"};
                     
                     SX1276ReadBuffer( 0, pRegs, sizeof(pRegs));
                     
@@ -539,9 +539,9 @@ FTE_INT32  FTE_S2LORA_SHELL_cmd
                 }
                 else if (strcmp(pArgv[1], "send_test") == 0)
                 {
-                    char pBuff[16];
-                    FTE_UINT32 ulCount;
-                    Shell_parse_number(pArgv[2], &ulCount);
+                    FTE_CHAR    pBuff[16];
+                    FTE_UINT32  ulCount;
+                    FTE_strToUINT32(pArgv[2], &ulCount);
                     
                     for(int i = 0; i < ulCount ; i++)
                     {
@@ -554,7 +554,7 @@ FTE_INT32  FTE_S2LORA_SHELL_cmd
                 else if (strcasecmp(pArgv[1], "rr") == 0)
                 {
                     FTE_UINT32 ulReg;
-                    Shell_parse_hexnum(pArgv[2], &ulReg);
+                    FTE_strToHex(pArgv[2], &ulReg);
                     
                     FTE_UINT8  bReg = SX1276Read( ulReg);
                     printf("Read : %02x - %02x\n", ulReg, bReg);
@@ -562,7 +562,7 @@ FTE_INT32  FTE_S2LORA_SHELL_cmd
                 else if (strcasecmp(pArgv[1], "sf") == 0)
                 {
                     FTE_UINT32 ulSF;
-                    Shell_parse_number(pArgv[2], &ulSF);
+                    FTE_strToUINT32(pArgv[2], &ulSF);
                     printf("Change SF : SF%d -> ", pS2LORA->pMac->Config.SpreadingFactor);
                     printf("SF%d\n", ulSF);
                     pS2LORA->pMac->Config.SpreadingFactor = ulSF;
@@ -570,7 +570,7 @@ FTE_INT32  FTE_S2LORA_SHELL_cmd
                 else if (strcasecmp(pArgv[1], "bw") == 0)
                 {
                     FTE_UINT32 ulBandwidth;
-                    Shell_parse_number(pArgv[2], &ulBandwidth);
+                    FTE_strToUINT32(pArgv[2], &ulBandwidth);
                     printf("Change BW : BW%d -> ", pS2LORA->pMac->Config.Bandwidth);
                     printf("BW%d\n", ulBandwidth);
                     pS2LORA->pMac->Config.Bandwidth = ulBandwidth;
@@ -595,9 +595,12 @@ FTE_INT32  FTE_S2LORA_SHELL_cmd
                     }
                     else
                     {
+                        FTE_UINT32  ulLen;
                         FTE_UINT8  pDevEUI[8];
                         
-                        if (fte_parse_hex_string(pArgv[2], pDevEUI, 8) != 8)
+                        xRet = FTE_strToHexArray(pArgv[2], pDevEUI, 8, &ulLen);
+                        
+                        if ((xRet != FTE_RET_OK) || (ulLen != 8))
                         {
                             printf("Invalid parameters\n");
                             bPrintUsage = TRUE;
@@ -617,9 +620,11 @@ FTE_INT32  FTE_S2LORA_SHELL_cmd
                     }
                     else
                     {
+                        FTE_UINT32  ulLen;
                         FTE_UINT8  pAppEUI[S2LORA_APP_EUI_LENGTH];
                         
-                        if (fte_parse_hex_string(pArgv[2], pAppEUI, S2LORA_APP_EUI_LENGTH) != S2LORA_APP_EUI_LENGTH)
+                        xRet = FTE_strToHexArray(pArgv[2], pAppEUI, S2LORA_APP_EUI_LENGTH, &ulLen);
+                        if ((xRet != FTE_RET_OK) || (ulLen != S2LORA_APP_EUI_LENGTH))
                         {
                             printf("Invalid parameters\n");
                             bPrintUsage = TRUE;
@@ -639,9 +644,12 @@ FTE_INT32  FTE_S2LORA_SHELL_cmd
                     }
                     else
                     {
+                        FTE_UINT32  ulLen;
                         FTE_UINT8  pAppKey[S2LORA_APP_KEY_LENGTH];
                         
-                        if (fte_parse_hex_string(pArgv[2], pAppKey, S2LORA_APP_KEY_LENGTH) != S2LORA_APP_KEY_LENGTH)
+                        xRet = FTE_strToHexArray(pArgv[2], pAppKey, S2LORA_APP_KEY_LENGTH, &ulLen);
+                       
+                        if ((xRet != FTE_RET_OK) || (ulLen != S2LORA_APP_KEY_LENGTH))
                         {
                             printf("Invalid parameters\n");
                             bPrintUsage = TRUE;
@@ -660,8 +668,8 @@ FTE_INT32  FTE_S2LORA_SHELL_cmd
                 if (strcasecmp(pArgv[1], "wr") == 0)
                 {
                     FTE_UINT32 ulReg, ulValue;
-                    Shell_parse_hexnum(pArgv[2], &ulReg);
-                    Shell_parse_hexnum(pArgv[3], &ulValue);
+                    FTE_strToHex(pArgv[2], &ulReg);
+                    FTE_strToHex(pArgv[3], &ulValue);
                     
                     FTE_UINT8 bTemp = SX1276Read( REG_OPMODE ) ;
                     

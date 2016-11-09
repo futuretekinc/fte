@@ -1148,7 +1148,7 @@ FTE_INT32 FTE_DOTECH_SHELL_cmd
             {
                 FTE_DOTECH_CONFIG_PTR pConfig;
                 FTE_DOTECH_FX3D_STATUS_PTR pStatus;
-                char    pBuff[32];
+                FTE_CHAR pBuff[32];
                 
                 if (pDevices[i].pObj == NULL)
                 {
@@ -1181,7 +1181,7 @@ FTE_INT32 FTE_DOTECH_SHELL_cmd
             FTE_OBJECT_ID   xOID;
             FTE_OBJECT_PTR  pObject;
             
-            if (!Shell_parse_hexnum(pArgv[1], &xOID))
+            if (FTE_strToHex(pArgv[1], &xOID) != FTE_RET_OK)
             {
                 bPrintUsage = TRUE;
                 goto error;
@@ -1198,7 +1198,7 @@ FTE_INT32 FTE_DOTECH_SHELL_cmd
             {
                 int i;
                 FTE_DOTECH_FX3D_STATUS_PTR  pStatus;
-                char    pBuff[32];
+                FTE_CHAR pBuff[32];
                
                 pStatus = (FTE_DOTECH_FX3D_STATUS_PTR)pObject->pStatus;
 
@@ -1229,7 +1229,7 @@ FTE_INT32 FTE_DOTECH_SHELL_cmd
                 FTE_OBJECT_PTR  pParent;
                 FTE_DOTECH_FX3D_STATUS_PTR  pStatus;
                 FTE_UINT32 ulCtrlID;
-                char    pBuff[32];
+                FTE_CHAR pBuff[32];
                 
                 ulCtrlID = ((FTE_IFCE_CONFIG_PTR)pObject->pConfig)->nRegID - FTE_DOTECH_FX3D_FIELD_CTRL0;
                 
@@ -1267,7 +1267,7 @@ FTE_INT32 FTE_DOTECH_SHELL_cmd
                 {
                     FTE_UINT32 ulInterval;
                     
-                    if (!Shell_parse_uint_32(pArgv[3], &ulInterval))
+                    if (FTE_strToUINT32(pArgv[3], &ulInterval) != FTE_RET_OK)
                     {
                         bPrintUsage = TRUE;
                         goto error;
@@ -1286,7 +1286,7 @@ FTE_INT32 FTE_DOTECH_SHELL_cmd
                 {
                     FTE_UINT32 ulTimeout;
                     
-                    if (!Shell_parse_uint_32(pArgv[3], &ulTimeout))
+                    if (FTE_strToUINT32(pArgv[3], &ulTimeout) != FTE_RET_OK)
                     {
                         bPrintUsage = TRUE;
                         goto error;
@@ -1325,7 +1325,7 @@ FTE_INT32 FTE_DOTECH_SHELL_cmd
                 FTE_OBJECT_ID   xOID;
                 FTE_OBJECT_PTR  pObject;
                 
-               if (!Shell_parse_hexnum(pArgv[2], &xOID))
+               if (FTE_strToHex(pArgv[2], &xOID) != FTE_RET_OK)
                 {
                     bPrintUsage = TRUE;
                     goto error;

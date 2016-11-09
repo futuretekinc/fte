@@ -1,19 +1,8 @@
 #include "fte_target.h"
-#include <lwtimer.h>
 #include "sys/fte_sys_timer.h"
 
-typedef struct
-{
-    LWTIMER_STRUCT      xLWTimer; 
-    FTE_INT32           nInterval;
-    FTE_INT32           nStartDelay;
-    FTE_INT32           nRemain;
-    LWTIMER_ISR_FPTR    fCallback;
-    FTE_VOID_PTR        pParams;
-}   FTE_TIMER, _PTR_ FTE_TIMER_PTR;
-
 static 
-void FTE_TIMER_ISR(FTE_VOID_PTR pParams);
+void FTE_SYS_TIMER_ISR(FTE_VOID_PTR pParams);
 
 
 LWTIMER_PERIOD_STRUCT _hPeriodicTimer;
@@ -35,7 +24,7 @@ FTE_UINT32 FTE_SYS_TIMER_add
     FTE_VOID_PTR    pParams
 )
 {
-    FTE_TIMER_PTR   pTimer = (FTE_TIMER_PTR)FTE_MEM_allocZero(sizeof(FTE_TIMER));
+    FTE_SYS_TIMER_PTR   pTimer = (FTE_SYS_TIMER_PTR)FTE_MEM_allocZero(sizeof(FTE_SYS_TIMER));
     if (pTimer == NULL)
     {
         return  0;
@@ -47,7 +36,7 @@ FTE_UINT32 FTE_SYS_TIMER_add
     pTimer->fCallback   = fCallback;
     pTimer->pParams     = pParams;
     
-    _lwtimer_add_timer_to_queue(&_hPeriodicTimer, &pTimer->xLWTimer, pTimer->nStartDelay, FTE_TIMER_ISR, pTimer);
+    _lwtimer_add_timer_to_queue(&_hPeriodicTimer, &pTimer->xLWTimer, pTimer->nStartDelay, FTE_SYS_TIMER_ISR, pTimer);
     
     return  (FTE_UINT32)pTimer;
 }
@@ -57,7 +46,7 @@ FTE_RET   FTE_SYS_TIMER_cancel
     FTE_UINT32  hTimer
 )
 {
-    FTE_TIMER_PTR pTimer = (FTE_TIMER_PTR)hTimer;
+    FTE_SYS_TIMER_PTR pTimer = (FTE_SYS_TIMER_PTR)hTimer;
     
     if (pTimer == NULL)
     {
@@ -71,12 +60,12 @@ FTE_RET   FTE_SYS_TIMER_cancel
     return  FTE_RET_OK;
 }
 
-void FTE_TIMER_ISR
+void FTE_SYS_TIMER_ISR
 (
     FTE_VOID_PTR    pParams
 )
 {
-    FTE_TIMER_PTR   pTimer = (FTE_TIMER_PTR)pParams;
+    FTE_SYS_TIMER_PTR   pTimer = (FTE_SYS_TIMER_PTR)pParams;
     
     if (--pTimer->nRemain <= 0)
     {

@@ -71,6 +71,6 @@ uint_32     FTE_S2LORA_recv(void *pBuff, uint_32 ulBuffSize);
 
 _mqx_uint   FTE_S2LORA_requestJoin(FTE_S2LORA_PTR pLoRaWan);
 
-int_32  FTE_S2LORA_SHELL_cmd(int_32 argc, char_ptr argv[]);
+FTE_INT32   FTE_S2LORA_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
 
 #endif

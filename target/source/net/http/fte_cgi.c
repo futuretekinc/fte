@@ -1,5 +1,8 @@
 #include <stdlib.h>
 #include "fte_target.h"
+
+#if  FTE_HTTPD_SUPPORTED
+
 #include "fte_net.h"
 #include "fte_config.h"
 #include "fte_object.h"
@@ -12,188 +15,196 @@
 #define CGI_ERROR(...)    ERROR(__VA_ARGS__)
 
 static 
-FTE_RET _cgi_request(HTTPSRV_CGI_REQ_STRUCT* param);
+FTE_RET FTE_CGI_request(HTTPSRV_CGI_REQ_STRUCT _PTR_ pParam);
 
 static 
-FTE_RET _cgi_request_get(HTTPSRV_CGI_REQ_STRUCT* param);
+FTE_RET FTE_CGI_requestGet(HTTPSRV_CGI_REQ_STRUCT _PTR_ pParam);
 
 static 
-FTE_RET _cgi_request_post(HTTPSRV_CGI_REQ_STRUCT* param);
+FTE_RET FTE_CGI_requestPost(HTTPSRV_CGI_REQ_STRUCT _PTR_ pParam);
 
 const 
 HTTPSRV_CGI_LINK_STRUCT cgi_lnk_tbl[] = 
 {
-    { "request",        _cgi_request},
+    { "request",        (HTTPSRV_CGI_CALLBACK_FN)FTE_CGI_request},
     { 0, 0 }    // DO NOT REMOVE - last item - end of table
 };
 
-FTE_UINT32 fte_cgi_query_count
+FTE_RET FTE_CGI_QUERY_count
 (   
-    FTE_CHAR_PTR    pQuery
+    FTE_CHAR_PTR    pQuery,
+    FTE_UINT32_PTR  pulCount
 )
 {
+    ASSERT((pQuery != NULL) && (pulCount != NULL));
+    
     FTE_UINT32 ulCount = 0;
+    
     if (strlen(pQuery) != 0)
     {
-        FTE_CHAR_PTR pQueryEnd, pQueryStart = pQuery;
-        while(1)
+        FTE_CHAR_PTR pEnd, pStart = pQuery;
+        
+        while(TRUE)
         {
             FTE_CHAR_PTR    pValue;
             
-            pQueryEnd = strchr(pQueryStart, '&');
-            pValu  = strchr(pQueryStart, '=');
+            pEnd = strchr(pStart, '&');
+            pValue = strchr(pStart, '=');
             if (pValue != 0)
             {
                 ulCount++;
             }
             
-            if (pQueryEnd == NULL)
+            if (pEnd == NULL)
             {
                 break;
             }
             
-            pQueryStart = pQueryEnd + 1;
+            pStart = pEnd + 1;
         }
     }
     
-    return  ulCount;
+    *pulCount = ulCount;
+    
+    return  FTE_RET_OK;
 }
 
-FTE_CGI_QUERY_PTR   fte_cgi_query_alloc
+FTE_CGI_QUERY_PTR   FTE_CGI_QUERY_alloc
 (
-    FTE_UINT32  count
+    FTE_UINT32  ulCount
 )
 {
-    FTE_CGI_QUERY_PTR   query;
+    FTE_CGI_QUERY_PTR   pQuery;
    
-    query = (FTE_CGI_QUERY_PTR)FTE_MEM_allocZero(sizeof(FTE_CGI_QUERY) + sizeof(FTE_CGI_QUERY_TUPLE) * count);
-    if (query != NULL)
+    pQuery = (FTE_CGI_QUERY_PTR)FTE_MEM_allocZero(sizeof(FTE_CGI_QUERY) + sizeof(FTE_CGI_QUERY_TUPLE) * ulCount);
+    if (pQuery != NULL)
     {
-        query->max_count = count;
+        pQuery->ulMaxCount = ulCount;
     }
    
-    if (query == NULL)
+    if (pQuery == NULL)
     {
         printf("Can't alloc CGI query buffer. Memory not enough\n");
     }
-   return   query;
+   return   pQuery;
 }
 
-void        fte_cgi_query_free
+void        FTE_CGI_QUERY_free
 (
-    FTE_CGI_QUERY_PTR   query
+    FTE_CGI_QUERY_PTR   pQuery
 )
 {
-    if (query != NULL)
+    if (pQuery != NULL)
     {
-        FTE_MEM_free(query);
+        FTE_MEM_free(pQuery);
     }
 }
 
-FTE_RET    fte_cgi_query_parser
+FTE_RET    FTE_CGI_QUERY_parser
 (
-    FTE_CHAR_PTR    pQuery, 
-    FTE_CGI_QUERY_PTR   query
+    FTE_CHAR_PTR        pString, 
+    FTE_CGI_QUERY_PTR   pQuery
 )
 {
-    query->count = 0;
-    if (strlen(pQuery) == 0)
+    pQuery->ulCount = 0;
+    if (strlen(pString) == 0)
     {
         return  FTE_RET_OK;
     }
     
-    FTE_CHAR_PTR pQueryEnd, pQueryStart = pQuery;
-    while(1)
+    FTE_CHAR_PTR pEnd, pStart = pString;
+    while(TRUE)
     {
-        FTE_CHAR_PTR    _name, _value;
+        FTE_CHAR_PTR    pName, pValue;
         
-        pQueryEnd = strchr(pQueryStart, '&');
-        if (pQueryEnd != NULL)
+        pEnd = strchr(pStart, '&');
+        if (pEnd != NULL)
         {
-            *pQueryEnd = '\0';
+            *pEnd = '\0';
         }
         
-        _name   = pQueryStart;
-        _value  = strchr(pQueryStart, '=');
-        if (_value != 0)
+        pName   = pStart;
+        pValue  = strchr(pStart, '=');
+        if (pValue != 0)
         {
-            *_value = '\0';
-            _value++;
+            *pValue = '\0';
+            pValue++;
             
-            query->tuples[query->count].name    = _name;            
-            query->tuples[query->count].value   = _value;
-            query->count++;
+            pQuery->pTuples[pQuery->ulCount].pName  = pName;            
+            pQuery->pTuples[pQuery->ulCount].pValue = pValue;
+            pQuery->ulCount++;
         }
         
-        if (pQueryEnd == NULL)
+        if (pEnd == NULL)
         {
             break;
         }
         else
         {
-            pQueryStart = pQueryEnd + 1;
+            pStart = pEnd + 1;
         }        
     }
     
     return  FTE_RET_OK;
 }
 
-FTE_CHAR_PTR fte_cgi_query_search
+FTE_RET FTE_CGI_QUERY_get
 (
-    FTE_CGI_QUERY_PTR   query, 
-    FTE_CHAR_PTR        name
+    FTE_CGI_QUERY_PTR   pQuery, 
+    FTE_CHAR_PTR        pName,
+    FTE_CHAR_PTR _PTR_  ppValue
 )
 {
-    assert(query != NULL && name != NULL);
+    ASSERT((pQuery != NULL) && (pName != NULL) && (ppValue != NULL));
     
-    FTE_UINT32 i;
-    for(i = 0 ; i < query->count ; i++)
+    for(FTE_UINT32 i = 0 ; i < pQuery->ulCount ; i++)
     {
-        if (strcmp(name, query->tuples[i].name) == 0)
+        if (strcmp(pName, pQuery->pTuples[i].pName) == 0)
         {
-            return  query->tuples[i].value;
+            *ppValue = pQuery->pTuples[i].pValue;
+            return  FTE_RET_OK;
         }
     }
     
-    return  NULL;
+    *ppValue = NULL;
+    
+    return  FTE_RET_OBJECT_NOT_FOUND;
 }
 
-FTE_RET fte_cgi_query_search_ip
+FTE_RET FTE_CGI_QUERY_getIP
 (
-    FTE_CGI_QUERY_PTR   query, 
-    FTE_CHAR_PTR        name, 
-    FTE_UINT32_PTR      ip
+    FTE_CGI_QUERY_PTR   pQuery, 
+    FTE_CHAR_PTR        pName, 
+    FTE_UINT32_PTR      pIP
 )
 {
-    assert(query != NULL && name != NULL);
+    ASSERT(pQuery != NULL && pName != NULL && pIP != NULL);
     
-    FTE_UINT32 i;
-    for(i = 0 ; i < query->count ; i++)
+    for(FTE_UINT32 i = 0 ; i < pQuery->ulCount ; i++)
     {
-        if (strcmp(name, query->tuples[i].name) == 0)
+        if (strcmp(pName, pQuery->pTuples[i].pName) == 0)
         {
-            return  fte_cgi_str_to_ip(query->tuples[i].value, ip);
+            return  FTE_strToIP(pQuery->pTuples[i].pValue, pIP);
         }
     }
     
     return  FTE_RET_ERROR;
 }
 
-FTE_RET fte_cgi_query_search_uint32
+FTE_RET FTE_CGI_QUERY_getUINT32
 (
-    FTE_CGI_QUERY_PTR   query, 
-    FTE_CHAR_PTR        name, 
-    FTE_UINT32_PTR      value
+    FTE_CGI_QUERY_PTR   pQuery, 
+    FTE_CHAR_PTR        pName, 
+    FTE_UINT32_PTR      pValue
 )
 {
-    assert(query != NULL && name != NULL);
+    ASSERT(pQuery != NULL && pName != NULL && pValue != NULL);
     
-    FTE_UINT32 i;
-    for(i = 0 ; i < query->count ; i++)
+    for(FTE_UINT32 i = 0 ; i < pQuery->ulCount ; i++)
     {
-        if (strcmp(name, query->tuples[i].name) == 0)
+        if (strcmp(pName, pQuery->pTuples[i].pName) == 0)
         {
-            *value = atoi(query->tuples[i].value);
+            *pValue = atoi(pQuery->pTuples[i].pValue);
             return  FTE_RET_OK;
         }
     }
@@ -201,21 +212,20 @@ FTE_RET fte_cgi_query_search_uint32
     return  FTE_RET_ERROR;
 }
 
-FTE_RET fte_cgi_query_search_hexnum
+FTE_RET FTE_CGI_QUERY_getHEXNUM
 (
-    FTE_CGI_QUERY_PTR   query, 
-    FTE_CHAR_PTR        name, 
-    FTE_UINT32_PTR      value
+    FTE_CGI_QUERY_PTR   pQuery, 
+    FTE_CHAR_PTR        pName, 
+    FTE_UINT32_PTR      pValue
 )
 {
-    assert(query != NULL && name != NULL);
+    ASSERT(pQuery != NULL && pName != NULL && pValue != NULL);
     
-    FTE_UINT32 i;
-    for(i = 0 ; i < query->count ; i++)
+    for(FTE_UINT32 i = 0 ; i < pQuery->ulCount ; i++)
     {
-        if (strcmp(name, query->tuples[i].name) == 0)
+        if (strcmp(pName, pQuery->pTuples[i].pName) == 0)
         {
-            *value = strtoul(query->tuples[i].value, NULL, 16);
+            *pValue = strtoul(pQuery->pTuples[i].pValue, NULL, 16);
             
             return  FTE_RET_OK;
         }
@@ -224,208 +234,183 @@ FTE_RET fte_cgi_query_search_hexnum
     return  FTE_RET_ERROR;
 }
 
-FTE_RET fte_cgi_str_to_ip
+
+FTE_RET FTE_CGI_sendResponse
 (
-    FTE_CHAR_PTR    str, 
-    FTE_UINT32_PTR  ip
+    FTE_UINT32      ulHandle, 
+    FTE_UINT32      ulStatusCode, 
+    FTE_CHAR_PTR    pData, 
+    FTE_UINT32      ulLen
 )
 {
-    FTE_UINT32     i;
-    FTE_CHAR_PTR    byte[4] = {0, };
-    char        buf[16];
-    FTE_CHAR_PTR    ptr;
+    HTTPSRV_CGI_RES_STRUCT  xResponse = {.content_length = 0};
     
-    if (strlen(str) >= sizeof(buf))
-    {
-        return  FTE_RET_ERROR;        
-    }
+    xResponse.ses_handle     = ulHandle;
+    xResponse.content_type   = HTTPSRV_CONTENT_TYPE_JSON;
+    xResponse.status_code    = ulStatusCode;
+    xResponse.data           = pData;
+    xResponse.data_length    = ulLen;
+    xResponse.content_length = xResponse.data_length;
     
-    strcpy(buf, str);
-    ptr  = buf;
-    
-    if (strlen(ptr) != 0)
-    {
-        for(i = 0 ; i < 3 ; i++)
-        {
-            ptr = strchr(str, '.');
-            if (ptr != NULL)
-            {
-                byte[i] = str;
-                *ptr = '\0';
-                str = ptr + 1;
-            }
-            else
-            {
-                return  FTE_RET_ERROR;
-            }
-        }
-        
-        byte[3] = str;
-
-        *ip = ((atoi(byte[0]) & 0xFF) << 24) | ((atoi(byte[1]) & 0xFF) << 16) | ((atoi(byte[2])  & 0xFF) << 8) | (atoi(byte[3]) & 0xFF);
-    }
-    else
-    {
-        *ip = 0;
-    }
+    /* Send response */
+    HTTPSRV_cgi_write(&xResponse);
     
     return  FTE_RET_OK;
 }
 
-FTE_RET fte_cgi_send_response
+FTE_RET FTE_CGI_request
 (
-    FTE_UINT32  handle, 
-    FTE_UINT32  status_code, 
-    FTE_CHAR_PTR data, 
-    FTE_UINT32  length
+    HTTPSRV_CGI_REQ_STRUCT _PTR_ pParam
 )
 {
-    HTTPSRV_CGI_RES_STRUCT  response = {.content_length = 0};
-    
-    response.ses_handle     = handle;
-    response.content_type   = HTTPSRV_CONTENT_TYPE_PLAIN;
-    response.status_code    = status_code;
-    response.data           = data;
-    response.data_length    = length;
-    response.content_length = response.data_length;
-    
-    /* Send response */
-    return  HTTPSRV_cgi_write(&response);
-}
-
-FTE_RET _cgi_request
-(
-    HTTPSRV_CGI_REQ_STRUCT* param
-)
-{
-    if (param->request_method == HTTPSRV_REQ_GET)
+    if (pParam->request_method == HTTPSRV_REQ_GET)
     {
-        return  _cgi_request_get(param);
+        return  FTE_CGI_requestGet(pParam);
     }
     else 
     {
-        return  _cgi_request_post(param);
+        return  FTE_CGI_requestPost(pParam);
     }
 }
 
-FTE_RET _cgi_request_get
+FTE_RET FTE_CGI_requestGet
 (
-    HTTPSRV_CGI_REQ_STRUCT* param
+    HTTPSRV_CGI_REQ_STRUCT _PTR_ pParam
 )
 {
-    FTE_CGI_QUERY_PTR       cgi_query = NULL;
-    FTE_CHAR_PTR                cmd, subcmd;
-    FTE_CHAR_PTR                pBuff = NULL;
-    FTE_UINT32                 query_count = 0, nMaxLen = 0;
-    FTE_UINT32                 nLen  = 0, ret;
-    FTE_BOOL                 reboot = FALSE;
+    FTE_RET             xRet;
+    FTE_CGI_QUERY_PTR   pQuery = NULL;
+    FTE_CHAR_PTR        pCmd, pSubCmd;
+    FTE_CHAR_PTR        pBuff = NULL;
+    FTE_UINT32          ulQueryCount = 0, nMaxLen = 0;
+    FTE_UINT32          nLen  = 0;
+    FTE_BOOL            bReboot = FALSE;
+    FTE_JSON_OBJECT_PTR pJSONObject;
+        
     
     CGI_TRACE("CALLED");
-    nMaxLen = FTE_NET_HTTP_CGI_BUFF_SIZE;
-    pBuff = (FTE_CHAR_PTR)FTE_MEM_allocZero(nMaxLen);
-    if (pBuff == NULL)
-    {
-        CGI_ERROR("Not enough memory.[ Size = %d ]\n", nMaxLen);
-        goto error;
-    }    
     
-    query_count = fte_cgi_query_count(param->pQuery);
-    cgi_query = fte_cgi_query_alloc(query_count);
-    if (cgi_query == NULL)
+    xRet = FTE_CGI_QUERY_count(pParam->query_string, &ulQueryCount);
+    if (xRet != FTE_RET_OK)
     {
-        CGI_ERROR("fte_cgi_query_alloc(%d) failed\n", query_count);
         goto error;
     }
     
-    fte_cgi_query_parser(param->pQuery, cgi_query);
-    
-    cmd = fte_cgi_query_search(cgi_query, "cmd");
-    if (cmd == NULL)
+    pQuery = FTE_CGI_QUERY_alloc(ulQueryCount);
+    if (pQuery == NULL)
     {
-        CGI_ERROR("fte_cgi_query_search(cgi_query, cmd) not found\n");
+        CGI_ERROR("FTE_CGI_QUERY_alloc(%d) failed\n", ulQueryCount);
+        xRet = FTE_RET_NOT_ENOUGH_MEMORY;
         goto error;
     }
     
-    if (strcmp(cmd, "view") == 0)
+    xRet = FTE_CGI_QUERY_parser(pParam->query_string, pQuery);
+    if (xRet != FTE_RET_OK)
+    {
+        xRet = FTE_RET_INVALID_MSG;
+        goto error;
+    }
+
+    pJSONObject = (FTE_JSON_OBJECT_PTR)FTE_JSON_VALUE_createObject(20);
+    if (pJSONObject == NULL)
+    {
+        xRet = FTE_RET_NOT_ENOUGH_MEMORY;
+        goto error;
+    }
+    
+    xRet = FTE_CGI_QUERY_get(pQuery, "cmd", &pCmd);
+    if (xRet != FTE_RET_OK)
+    {
+        CGI_ERROR("FTE_CGI_QUERY_get(cgi_query, cmd) not found\n");
+        goto error;
+    }
+    
+    if (strcmp(pCmd, "view") == 0)
     {
         FTE_PRODUCT_DESC const _PTR_    pProductDesc = FTE_getProductDescription();
         
-        subcmd = fte_cgi_query_search(cgi_query, "page");
+        xRet = FTE_CGI_QUERY_get(pQuery, "page", &pSubCmd);
+        if (xRet != FTE_RET_OK)
+        {
+            goto error;
+        }
         
-        nLen = snprintf(pBuff, nMaxLen, "{");
-        nLen += fte_print_json_object_string(&pBuff[nLen], nMaxLen - nLen, "model", pProductDesc->pModel);
-        nLen += fte_print_json_comma(&pBuff[nLen], nMaxLen - nLen);
-        nLen += fte_print_json_object_string(&pBuff[nLen], nMaxLen - nLen, "type", subcmd);
-        
-        if (strcmp(subcmd, "status") == 0)
+        xRet = FTE_JSON_OBJECT_addStringPair(pJSONObject, "model", pProductDesc->pModel);
+        if (xRet != FTE_RET_OK)
+        {
+            goto error;
+        }
+
+        xRet = FTE_JSON_OBJECT_addStringPair(pJSONObject, "type", pSubCmd);
+        if (xRet != FTE_RET_OK)
+        {
+            goto error;
+        }
+
+        if (strcmp(pSubCmd, "status") == 0)
         {
             TIME_STRUCT                     xTime;
-            FTE_UINT32 nFields = FTE_OBJ_FIELD_ID | FTE_OBJ_FIELD_NAME | FTE_OBJ_FIELD_VALUE | FTE_OBJ_FIELD_STATUS | FTE_OBJ_FIELD_SN | FTE_OBJ_FIELD_CTRL;
             
             _time_get(&xTime);
-            nLen += fte_print_json_comma(&pBuff[nLen], nMaxLen - nLen);
-            nLen += fte_print_json_object_string(&pBuff[nLen], nMaxLen - nLen, "title", "Status");
-            nLen += fte_print_json_comma(&pBuff[nLen], nMaxLen - nLen);
-            nLen += fte_print_json_object_uint(&pBuff[nLen], nMaxLen - nLen, "LUT", xTime.SECONDS);
-            nLen += fte_print_json_comma(&pBuff[nLen], nMaxLen - nLen);
-            nLen += fte_print_json_object_uint(&pBuff[nLen], nMaxLen - nLen, "RI", 5);
-            nLen += fte_print_json_comma(&pBuff[nLen], nMaxLen - nLen);
-            nLen += snprintf(&pBuff[nLen], nMaxLen - nLen, "\"product_info\":");
-            nLen += fte_print_json_object_set_product_info(&pBuff[nLen], nMaxLen - nLen);
-            nLen += fte_print_json_comma(&pBuff[nLen], nMaxLen - nLen);
-            nLen += fte_print_json_object_groups(&pBuff[nLen], nMaxLen - nLen, nFields);        
-        }
-        else if (strcmp(subcmd, "config") == 0)
-        {
-            FTE_UINT32 nFields = FTE_OBJ_FIELD_ID | FTE_OBJ_FIELD_NAME | FTE_OBJ_FIELD_ENABLE | FTE_OBJ_FIELD_SN;
-            
-            nLen += fte_print_json_comma(&pBuff[nLen], nMaxLen - nLen);
-            nLen += fte_print_json_object_string(&pBuff[nLen], nMaxLen - nLen, "title", "Point Configurations");
-            
-            nLen += fte_print_json_comma(&pBuff[nLen], nMaxLen - nLen);
-            nLen += fte_print_json_object_groups(&pBuff[nLen], nMaxLen - nLen, nFields);        
-        }
-        else if (strcmp(subcmd, "system") == 0)
-        {
-            FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
 
-            nLen += fte_print_json_comma(&pBuff[nLen], nMaxLen - nLen);
-            nLen += fte_print_json_object_string(&pBuff[nLen], nMaxLen - nLen, "title", "System Configurations");
-            
-            nLen += fte_print_json_comma(&pBuff[nLen], nMaxLen - nLen);
-            nLen += snprintf(&pBuff[nLen], nMaxLen - nLen, "\"system\": {");
-            
-            nLen += snprintf(&pBuff[nLen], nMaxLen - nLen, "\"network\":");
-            nLen += fte_print_json_object_set_network(&pBuff[nLen], nMaxLen - nLen);
-            
-            nLen += fte_print_json_comma(&pBuff[nLen], nMaxLen - nLen);
-            nLen += snprintf(&pBuff[nLen], nMaxLen - nLen, "\"servers\":[");
-            nLen += snprintf(&pBuff[nLen], nMaxLen - nLen, "\"%d.%d.%d.%d\",", IPBYTES(pCfgNet->xSNMP.xTrap.pList[0]));
-            nLen += snprintf(&pBuff[nLen], nMaxLen - nLen, "\"%d.%d.%d.%d\"]", IPBYTES(pCfgNet->xSNMP.xTrap.pList[1]));
-#if FTE_CONSOLE_SUPPORTED
-            nLen += fte_print_json_comma(&pBuff[nLen], nMaxLen - nLen);
-            nLen += snprintf(&pBuff[nLen], nMaxLen - nLen, "\"console\":");
-            nLen += fte_print_json_object_set_console(&pBuff[nLen], nMaxLen - nLen);
-#endif
-            nLen += snprintf(&pBuff[nLen], nMaxLen - nLen, "}");            
-        }
-        nLen += snprintf(&pBuff[nLen], nMaxLen - nLen, "}");            
-            
+            xRet = FTE_JSON_OBJECT_addStringPair(pJSONObject, "title", "Status");
+            if (xRet != FTE_RET_OK)
+            {
+                goto error;
+            }
 
+            xRet = FTE_JSON_OBJECT_addNumberPair(pJSONObject, "LUT", xTime.SECONDS);
+            if (xRet != FTE_RET_OK)
+            {
+                goto error;
+            }
+
+            xRet = FTE_JSON_OBJECT_addNumberPair(pJSONObject, "RI", 5);
+            if (xRet != FTE_RET_OK)
+            {
+                goto error;
+            }
+
+            xRet = FTE_JSON_OBJECT_addNumberPair(pJSONObject, "LUT", xTime.SECONDS);
+            if (xRet != FTE_RET_OK)
+            {
+                goto error;
+            }
+        }
+        else if (strcmp(pSubCmd, "config") == 0)
+        {
+            xRet = FTE_JSON_OBJECT_addStringPair(pJSONObject, "title", "Point Configurations");
+            if (xRet != FTE_RET_OK)
+            {
+                goto error;
+            }
+        }
+        else if (strcmp(pSubCmd, "system") == 0)
+        {
+            xRet = FTE_JSON_OBJECT_addStringPair(pJSONObject, "title", "System Configurations");
+            if (xRet != FTE_RET_OK)
+            {
+                goto error;
+            }
+        }
                    
     }
-    else if (strcmp(cmd, "get") == 0)
+    else if (strcmp(pCmd, "get") == 0)
     {
-        subcmd = fte_cgi_query_search(cgi_query, "subcmd");
-        if (strcmp(subcmd, "desc") == 0)
+        xRet = FTE_CGI_QUERY_get(pQuery, "subcmd", &pSubCmd);
+        if (xRet != FTE_RET_OK)
         {
-            //nLen = fte_print_json_object_set_product_info(pBuff, nMaxLen);
+            goto error;
         }
-        else if (strcmp(subcmd, "value") == 0)
+                                
+        if (strcmp(pSubCmd, "desc") == 0)
+        {
+        }
+        else if (strcmp(pSubCmd, "value") == 0)
         {
             FTE_UINT32 nOID;
             
-            if (fte_cgi_query_search_hexnum(cgi_query, "oid", &nOID) == FTE_RET_OK)
+            if (FTE_CGI_QUERY_getHEXNUM(pQuery, "oid", &nOID) == FTE_RET_OK)
             {
             }
             else
@@ -433,12 +418,14 @@ FTE_RET _cgi_request_get
             }
         }
     }
-    else if (strcmp(cmd, "ctrl") == 0)
+    else if (strcmp(pCmd, "ctrl") == 0)
     {
         FTE_UINT32 nOID;
-        if (fte_cgi_query_search_hexnum(cgi_query, "oid", &nOID) != FTE_RET_OK)
+        
+        xRet = FTE_CGI_QUERY_getHEXNUM(pQuery, "oid", &nOID);
+        if (xRet != FTE_RET_OK)
         {
-            CGI_ERROR("fte_cgi_query_search_hexnum\n");
+            CGI_ERROR("FTE_CGI_QUERY_getHEXNUM\n");
             goto error;
         }
         
@@ -446,120 +433,34 @@ FTE_RET _cgi_request_get
         if (pObj == NULL)
         {
             CGI_ERROR("FTE_OBJ_get\n");
+            xRet = FTE_RET_OBJECT_NOT_FOUND;
             goto error;
         }
             
-        FTE_CHAR_PTR pValue = fte_cgi_query_search(cgi_query, "value");
-        switch(FTE_OBJ_TYPE(pObj))
-        {
-        case    FTE_OBJ_TYPE_DO:
-            {
-                if (strcmp(pValue, "on") == 0)
-                {
-                    FTE_VALUE_setDIO(pObj->pStatus->pValue, TRUE);
-                }
-                else if (strcmp(pValue, "off") == 0)
-                {
-                    FTE_VALUE_setDIO(pObj->pStatus->pValue, FALSE);
-                }
-                
-                nLen = snprintf(pBuff, nMaxLen, "{\"ret\":\"success\",\"oid\":\"%08x\",\"value\":\"%s\",\"ctrl\":\"%s\"}",
-                                  pObj->pConfig->nID, 
-                                  (((FTE_DO_STATUS_PTR)pObj->pStatus)->nValue)?"on":"off",
-                                  (((FTE_DO_STATUS_PTR)pObj->pStatus)->nValue)?"off":"on");
-            }
-            break;
-            
-        case    FTE_OBJ_TYPE_RL:
-            {
-                if (strcmp(pValue, "close") == 0)
-                {
-                    ((FTE_DO_ACTION_PTR)pObj->pAction)->f_set(pObj, TRUE);
-                }
-                else if (strcmp(pValue, "open") == 0)
-                {
-                    ((FTE_DO_ACTION_PTR)pObj->pAction)->f_set(pObj, FALSE);
-                }
+    }
 
-                nLen = snprintf(pBuff, nMaxLen, "{\"ret\":\"success\",\"oid\":\"%08x\",\"value\":\"%s\",\"ctrl\":\"%s\"}",
-                                  pObj->pConfig->nID, 
-                                  (((FTE_DO_STATUS_PTR)pObj->pStatus)->nValue)?"open":"close",
-                                  (((FTE_DO_STATUS_PTR)pObj->pStatus)->nValue)?"close":"open");
-            }
-            break;
-            
-        default:
-            CGI_ERROR("Not supported object[ OBJ_TYPE = %08x]\n", FTE_OBJ_TYPE(pObj));
-            goto error;
-        }
-    }
-    else if (strcmp(cmd, "update") == 0)
+    nMaxLen = FTE_JSON_VALUE_buffSize((FTE_JSON_VALUE_PTR)pJSONObject);
+    if (nMaxLen != 0)
     {
-        TIME_STRUCT xCurrentTime;
-        TIME_STRUCT xLastUpdatedTime = { .SECONDS = 0, .MILLISECONDS = 0};
-        
-        if (fte_cgi_query_search_uint32(cgi_query, "lut", &xLastUpdatedTime.SECONDS) != FTE_RET_OK)
+        pBuff = (FTE_CHAR_PTR)FTE_MEM_allocZero(nMaxLen);
+        if (pBuff == NULL)
         {
-            CGI_ERROR("fte_cgi_query_search_uint32\n");
+            CGI_ERROR("Not enough memory.[ Size = %d ]\n", nMaxLen);
+            xRet = FTE_RET_NOT_ENOUGH_MEMORY;
             goto error;
-        }
+        }    
         
-        _time_get(&xCurrentTime);
-        
-        nLen = snprintf(pBuff, nMaxLen, "{");
-        nLen += fte_print_json_object_uint(&pBuff[nLen], nMaxLen - nLen, "LUT", xCurrentTime.SECONDS);
-        nLen += fte_print_json_comma(&pBuff[nLen], nMaxLen - nLen);
-        nLen += snprintf(&pBuff[nLen], nMaxLen - nLen, "\"objects\":[");        
-        
-        FTE_BOOL bFirst = TRUE;
-        FTE_UINT32 nCount = FTE_OBJ_count(FTE_OBJ_TYPE_UNKNOWN, 0, FALSE);
-        if (nCount != 0)
-        {
-            FTE_OBJECT_PTR _PTR_ pObjList = (FTE_OBJECT_PTR _PTR_)FTE_MEM_allocZero(sizeof(FTE_OBJECT_PTR) * nCount);
-            if (pObjList != NULL)
-            {
-                nCount = FTE_OBJ_getList(FTE_OBJ_TYPE_UNKNOWN, 0, pObjList, nCount);
-                for( int i = 0 ; i < nCount ; i++)
-                {
-                    if (!bFirst)
-                    {
-                        nLen += fte_print_json_comma(&pBuff[nLen], nMaxLen - nLen);
-                    }
-
-                    nLen += fte_print_json_object_set_object(&pBuff[nLen], nMaxLen - nLen, pObjList[i], FTE_OBJ_FIELD_VALUE | FTE_OBJ_FIELD_STATUS);                
-                    bFirst = FALSE;
-                }
-            }
-            
-            FTE_MEM_free(pObjList);
-        }
-        
-        nLen += snprintf(&pBuff[nLen], nMaxLen - nLen,"]}");
-    }    
-    else if (strcmp(cmd, "factory_reset") == 0)
-    {
-        FTE_CFG_clear(&FTE_CFG_desc);
-        reboot = TRUE;
-        nLen = sprintf(pBuff, "SUCCESS");               
+        nLen = FTE_JSON_VALUE_snprint(pBuff, nMaxLen, (FTE_JSON_VALUE_PTR)pJSONObject);
+        xRet = FTE_CGI_sendResponse(pParam->ses_handle, 200, pBuff, nLen);
     }
-    else if (strcmp(cmd, "reboot") == 0)
-    {
-        reboot = TRUE;
-        nLen = sprintf(pBuff, "SUCCESS");               
-    }
-    else
-    {
-        nLen = snprintf(pBuff, nMaxLen, "ERROR");
-    }
- 
-    ret = fte_cgi_send_response(param->ses_handle, 200, pBuff, nLen);
+    
 
 error:
 
-    if (cgi_query != NULL)
+    if (pQuery != NULL)
     {
-        fte_cgi_query_free(cgi_query);
-        cgi_query = NULL;
+        FTE_CGI_QUERY_free(pQuery);
+        pQuery = NULL;
     }
 
     if (pBuff != NULL)
@@ -567,26 +468,32 @@ error:
         FTE_MEM_free(pBuff);
     }
     
-    if (reboot)
+    if (bReboot)
     {
-        fte_system_reset();
+        FTE_SYS_reset();
     }
     
-    return ret;
+    if (pJSONObject != NULL)
+    {
+        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pJSONObject);
+        pJSONObject = NULL;
+    }
+    
+    return xRet;
 }
 
-
-FTE_RET _cgi_request_post
+FTE_RET FTE_CGI_requestPost
 (
-    HTTPSRV_CGI_REQ_STRUCT* param
+    HTTPSRV_CGI_REQ_STRUCT _PTR_ pParam
 )
 {
-    FTE_CGI_QUERY_PTR   cgi_query = NULL;
-    FTE_CHAR_PTR        cmd;
+    FTE_RET             xRet;
+    FTE_CGI_QUERY_PTR   pQuery = NULL;
+    FTE_CHAR_PTR        pCmd;
     FTE_CHAR_PTR        pBuff = NULL;
-    FTE_UINT32          query_count = 0, nMaxLen = 0;
+    FTE_UINT32          ulQueryCount = 0, nMaxLen = 0;
     FTE_UINT32          nLen  = 0, ret;
-    FTE_BOOL            reboot = FALSE;
+    FTE_BOOL            bReboot = FALSE;
     FTE_CHAR            pField[32];
     FTE_CHAR_PTR        pValue;
     
@@ -598,38 +505,48 @@ FTE_RET _cgi_request_post
         goto error;
     }    
     
-    nLen = HTTPSRV_cgi_read(param->ses_handle, pBuff, nMaxLen);
+    nLen = HTTPSRV_cgi_read(pParam->ses_handle, pBuff, nMaxLen);
     
-    query_count = fte_cgi_query_count(pBuff);
-    cgi_query = fte_cgi_query_alloc(query_count);
-    if (cgi_query == NULL)
+    xRet = FTE_CGI_QUERY_count(pBuff, &ulQueryCount);
+    if (xRet != FTE_RET_OK)
     {
         goto error;
     }
-    fte_cgi_query_parser(pBuff, cgi_query);
-
-    cmd = fte_cgi_query_search(cgi_query, "cmd");
-    if (cmd == NULL)
+    
+    pQuery = FTE_CGI_QUERY_alloc(ulQueryCount);
+    if (pQuery == NULL)
+    {
+        goto error;
+    }
+    
+    xRet = FTE_CGI_QUERY_parser(pBuff, pQuery);
+    if (xRet != FTE_RET_OK)
     {
         goto error;
     }
 
-    if (strcmp(cmd, "config") == 0)
+    xRet  = FTE_CGI_QUERY_get(pQuery, "cmd", &pCmd);
+    if (xRet != FTE_RET_OK)
+    {
+        goto error;
+    }
+
+    if (strcmp(pCmd, "config") == 0)
     {
         for(int nIdx = 0 ; nIdx < FTE_OBJ_count(FTE_OBJ_TYPE_UNKNOWN, 0, FALSE); nIdx++)
         {
             FTE_OBJECT_PTR  pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_UNKNOWN, 0, nIdx, FALSE);
             
-            sprintf(pField, "%08x_name", pObj->pConfig->nID);
-            pValue = fte_cgi_query_search(cgi_query, pField);
-            if (pValue != NULL)
+            sprintf(pField, "%08x_name", pObj->pConfig->xCommon.nID);
+            xRet = FTE_CGI_QUERY_get(pQuery, pField, &pValue);
+            if (xRet == FTE_RET_OK)
             {
                 FTE_OBJ_setName(pObj, pValue, strlen(pValue));
             }
             
-            sprintf(pField, "%08x_enable", pObj->pConfig->nID);                                    
-            pValue = fte_cgi_query_search(cgi_query, pField);
-            if (pValue != NULL)
+            sprintf(pField, "%08x_enable", pObj->pConfig->xCommon.nID);                                    
+            xRet = FTE_CGI_QUERY_get(pQuery, pField, &pValue);
+            if (xRet == FTE_RET_OK)
             {
                 if (strcmp(pValue, "true") == 0) 
                 {
@@ -644,32 +561,33 @@ FTE_RET _cgi_request_post
 
         nLen = snprintf(pBuff, nMaxLen, "SUCCESS");
     }
-    else if (strcmp(cmd, "system") == 0)
+    else if (strcmp(pCmd, "system") == 0)
     {
-        FTE_NET_CFG net;
+        FTE_NET_CFG     net;
         FTE_CHAR_PTR    pNetType;
-        FTE_UINT32 ip, nNetMask, gateway, server1 = 0, server2 = 0;
+        FTE_CHAR_PTR    pItem;
+        FTE_UINT32      ulIP, nNetMask, gateway, server1 = 0, server2 = 0;
         
-        if ((fte_cgi_query_search_ip(cgi_query, "ip", &ip) != FTE_RET_OK) ||
-            (fte_cgi_query_search_ip(cgi_query, "netmask", &nNetMask) != FTE_RET_OK) ||
-            (fte_cgi_query_search_ip(cgi_query, "gateway", &gateway) != FTE_RET_OK))
+        if ((FTE_CGI_QUERY_getIP(pQuery, "ip", &ulIP) != FTE_RET_OK) ||
+            (FTE_CGI_QUERY_getIP(pQuery, "netmask", &nNetMask) != FTE_RET_OK) ||
+            (FTE_CGI_QUERY_getIP(pQuery, "gateway", &gateway) != FTE_RET_OK))
         {
             goto error;
         }
         
-        FTE_CHAR_PTR item = fte_cgi_query_search(cgi_query, "server1");
-        if (item != NULL)
+        xRet = FTE_CGI_QUERY_get(pQuery, "server1", &pItem);
+        if (xRet == FTE_RET_OK)
         {
-            if (fte_cgi_str_to_ip(item, &server1) != FTE_RET_OK)
+            if (FTE_strToIP(pItem, &server1) != FTE_RET_OK)
             {
                 goto error;
             }
         }
 
-        item = fte_cgi_query_search(cgi_query, "server2");
-        if (item != NULL)
+        xRet = FTE_CGI_QUERY_get(pQuery, "server2", &pItem);
+        if (xRet == FTE_RET_OK)
         {
-            if (fte_cgi_str_to_ip(item, &server2) != FTE_RET_OK)
+            if (FTE_strToIP(pItem, &server2) != FTE_RET_OK)
             {
                 goto error;
             }
@@ -677,8 +595,8 @@ FTE_RET _cgi_request_post
         
         FTE_CFG_NET_copy(&net);
         
-        pNetType = fte_cgi_query_search(cgi_query, "type");
-        if (pNetType != NULL && (strcmp(pNetType, "dhcp") == 0))
+        xRet = FTE_CGI_QUERY_get(pQuery, "type", &pNetType);
+        if ((xRet == FTE_RET_OK) && (strcmp(pNetType, "dhcp") == 0))
         {
             net.nType           = FTE_NET_TYPE_DHCP;
             net.xIPData.ip      = 0;
@@ -688,10 +606,11 @@ FTE_RET _cgi_request_post
         else
         {
             net.nType           = FTE_NET_TYPE_STATIC;
-            net.xIPData.ip      = ip;
+            net.xIPData.ip      = ulIP;
             net.xIPData.mask    = nNetMask;
             net.xIPData.gateway = gateway;
         }
+        
         net.xSNMP.xTrap.ulCount = 0;
         if (server1 != 0)
         {
@@ -707,14 +626,15 @@ FTE_RET _cgi_request_post
         FTE_CFG_save(FALSE);
         nLen = sprintf(pBuff, "SUCCESS");    
     }
-    ret = fte_cgi_send_response(param->ses_handle, 200, pBuff, nLen);
+    
+    xRet = FTE_CGI_sendResponse(pParam->ses_handle, 200, pBuff, nLen);
 
 error:
 
-    if (cgi_query != NULL)
+    if (pQuery != NULL)
     {
-        fte_cgi_query_free(cgi_query);
-        cgi_query = NULL;
+        FTE_CGI_QUERY_free(pQuery);
+        pQuery = NULL;
     }
 
     if (pBuff != NULL)
@@ -722,7 +642,7 @@ error:
         FTE_MEM_free(pBuff);
     }
     
-    if (reboot)
+    if (bReboot)
     {
         extern void __boot(void);
         __boot();
@@ -730,3 +650,5 @@ error:
     
     return ret;
 }
+            
+#endif

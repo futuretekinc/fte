@@ -523,7 +523,7 @@ FTE_INT32 FTE_SOHA_SHELL_cmd
             {
                 FTE_SOHA_CONFIG_PTR pConfig;
                 FTE_SOHA_STATUS_PTR pStatus;
-                char    pBuff[32];
+                FTE_CHAR    pBuff[32];
                 
                 if (pDevices[i].pObj == NULL)
                 {

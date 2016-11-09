@@ -10,7 +10,7 @@
 *
 *END------------------------------------------------------------------*/
  
-extern  void _FTE_DI_ISR(_timer_id id, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
+void _FTE_DI_ISR(FTE_TIMER_ID xTimerID, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 
 void FTE_TASK_timer
 (

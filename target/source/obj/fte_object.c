@@ -889,32 +889,63 @@ FTE_RET       FTE_OBJ_save
     return  FTE_RET_OK;
 }
 
-FTE_UINT32  FTE_OBJ_runLoop
+FTE_RET FTE_OBJ_runLoop
 (   
-    FTE_OBJECT_PTR  pObj, 
+    FTE_OBJECT_PTR      pObj, 
     TIMER_NOTIFICATION_TICK_FPTR f_callback, 
-    FTE_UINT32  nInterval
+    FTE_UINT32          ulInterval,
+    FTE_TIMER_ID_PTR    pTimerID
 )
 {
     MQX_TICK_STRUCT     xTicks;            
-
+    FTE_TIMER_ID        xTimerID;
+    
+    ASSERT((pObj != NULL) && (pTimerID != NULL));
+    
     _time_init_ticks(&xTicks, 0);
-    _time_add_msec_to_ticks(&xTicks, nInterval);
-    return  _timer_start_periodic_every_ticks(f_callback, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks);    
+    _time_add_msec_to_ticks(&xTicks, ulInterval);
+    
+    xTimerID = _timer_start_periodic_every_ticks(f_callback, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks);    
+    if ( xTimerID != 0)
+    {
+        if (pTimerID != NULL)
+        {
+            *pTimerID = xTimerID;
+        }
+        
+        return  FTE_RET_OK;
+    }
+    
+    return  FTE_RET_ERROR;
 }
         
-FTE_UINT32  FTE_OBJ_runMeasurement
+FTE_RET FTE_OBJ_runMeasurement
 (
-    FTE_OBJECT_PTR  pObj, 
+    FTE_OBJECT_PTR      pObj, 
     TIMER_NOTIFICATION_TICK_FPTR f_callback, 
-    FTE_UINT32  nTimeout
+    FTE_UINT32          nTimeout,
+    FTE_TIMER_ID_PTR    pTimerID
 )
 {
     MQX_TICK_STRUCT     xTicks;            
-
+    FTE_TIMER_ID        xTimerID;
+    
     _time_init_ticks(&xTicks, 0);
     _time_add_msec_to_ticks(&xTicks, nTimeout);
-    return  _timer_start_oneshot_after_ticks(f_callback, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks);    
+    xTimerID = _timer_start_oneshot_after_ticks(f_callback, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks);    
+
+    if ( xTimerID != 0)
+    {
+        if (pTimerID != NULL)
+        {
+            *pTimerID = xTimerID;
+        }
+        
+        return  FTE_RET_OK;
+    }
+    
+    return  FTE_RET_ERROR;
+    
 }
         
 
@@ -946,12 +977,14 @@ FTE_BOOL FTE_OBJ_STATE_isSet
 }
 
 
-FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON
+FTE_RET FTE_OBJ_createJSON
 (
     FTE_OBJECT_PTR  pObj, 
-    FTE_UINT32  xOptions
+    FTE_UINT32  xOptions,
+    FTE_JSON_OBJECT_PTR  _PTR_ ppObject
 )
 {
+    FTE_RET xRet;
     FTE_JSON_OBJECT_PTR pObject = NULL;
     FTE_JSON_VALUE_PTR  pValue = NULL;
 
@@ -960,6 +993,7 @@ FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON
     pObject = (FTE_JSON_OBJECT_PTR)FTE_JSON_VALUE_createObject(8);
     if (pObject == NULL)
     {
+        xRet = FTE_RET_NOT_ENOUGH_MEMORY;
         goto error;
     }
     
@@ -974,8 +1008,8 @@ FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON
         {
         case    FTE_OBJ_FIELD_DID:
             {
-                _enet_address       xMACAddress;
-                char                pBuff[20];
+                _enet_address   xMACAddress;
+                FTE_CHAR        pBuff[20];
                 
                 FTE_SYS_getMAC(xMACAddress);                
                 snprintf(pBuff, sizeof(pBuff), "%02x%02x%02x%02x%02x%02x", 
@@ -986,10 +1020,12 @@ FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON
                 pValue = FTE_JSON_VALUE_createString(pBuff);
                 if (pValue == NULL)
                 {
+                    xRet = FTE_RET_NOT_ENOUGH_MEMORY;
                     goto error;
                 }
 
-                if (FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_DID_STRING, pValue) != FTE_JSON_RET_OK)
+                xRet = FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_DID_STRING, pValue);
+                if (xRet != FTE_RET_OK)
                 {
                     FTE_JSON_VALUE_destroy(pValue);
                     goto error;
@@ -999,16 +1035,18 @@ FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON
             
         case    FTE_OBJ_FIELD_ID:
             {
-                char    pBuff[16];
+                FTE_CHAR pBuff[16];
                 
                 sprintf(pBuff, "%08x", pObj->pConfig->xCommon.nID);
                 pValue = FTE_JSON_VALUE_createString(pBuff);
                 if (pValue == NULL)
                 {
+                    xRet = FTE_RET_NOT_ENOUGH_MEMORY;
                     goto error;
                 }
                 
-                if (FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_ID_STRING, pValue) != FTE_JSON_RET_OK)
+                xRet = FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_ID_STRING, pValue);
+                if (xRet != FTE_RET_OK)
                 {
                     FTE_JSON_VALUE_destroy(pValue);
                     goto error;
@@ -1021,10 +1059,12 @@ FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON
                 pValue = FTE_JSON_VALUE_createString(pObj->pConfig->xCommon.pName);
                 if (pValue == NULL)
                 {
+                    xRet = FTE_RET_NOT_ENOUGH_MEMORY;
                     goto error;
                 }
 
-                if (FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_NAME_STRING, pValue) != FTE_JSON_RET_OK)
+                xRet = FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_NAME_STRING, pValue);
+                if ( xRet != FTE_RET_OK)
                 {
                     FTE_JSON_VALUE_destroy(pValue);
                     goto error;
@@ -1034,188 +1074,30 @@ FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON
             
         case    FTE_OBJ_FIELD_VALUE:
             {
-                switch(FTE_OBJ_TYPE(pObj))
+                if (pObj->pAction->fCreateJSON != NULL)
                 {
-                case FTE_OBJ_TYPE_MULTI_PN1500:
+                    xRet = pObj->pAction->fCreateJSON(pObj, FTE_OBJ_FIELD_VALUE, (FTE_JSON_OBJECT_PTR _PTR_)&pValue);
+                    if (xRet != FTE_RET_OK)
                     {
-                        FTE_UINT32 ulValue;
-                        FTE_BOOL bValue;
-                        FTE_JSON_OBJECT_PTR  pValues = (FTE_JSON_OBJECT_PTR)FTE_JSON_VALUE_createObject(3);
-                        if (pValues == NULL)
-                        {
-                            goto error;
-                        }
-                        
-                        FTE_VALUE_getULONG(&pObj->pStatus->pValue[0], &ulValue);
-                        pValue = FTE_JSON_VALUE_createNumber(ulValue);
-                        if (pValue == NULL)
-                        {
-                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                            goto error;
-                        }
-                        if (FTE_JSON_OBJECT_setPair(pValues, "count", pValue) != FTE_JSON_RET_OK)
-                        {
-                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                            FTE_JSON_VALUE_destroy(pValue);
-                            goto error;
-                        }
-                        
-                        FTE_VALUE_getULONG(&pObj->pStatus->pValue[1], &ulValue);
-                        pValue = FTE_JSON_VALUE_createNumber(ulValue);
-                        if (pValue == NULL)
-                        {
-                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                            goto error;
-                        }
-                        if (FTE_JSON_OBJECT_setPair(pValues, "accum", pValue) != FTE_JSON_RET_OK)
-                        {
-                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                            FTE_JSON_VALUE_destroy(pValue);
-                            goto error;
-                        }
-
-                        FTE_VALUE_getDIO(&pObj->pStatus->pValue[2], &bValue);
-                        pValue = FTE_JSON_VALUE_createNumber(bValue);
-                        if (pValue == NULL)
-                        {
-                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                            goto error;
-                        }
-                        if (FTE_JSON_OBJECT_setPair(pValues, "switch", pValue) != FTE_JSON_RET_OK)
-                        {
-                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                            FTE_JSON_VALUE_destroy(pValue);
-                            goto error;
-                        }                    
-                        
-                        if (FTE_JSON_OBJECT_setPair(pObject, "value", (FTE_JSON_VALUE_PTR)pValues) != FTE_JSON_RET_OK)
-                        {
-                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                            goto error;
-                        }                    
-                        
-                    }
-                    break;
-                    
-                case FTE_OBJ_TYPE_MULTI_CIAS_ALARM:
-                    {
-                        FTE_UINT32 ulValue;
-                        FTE_BOOL bValue;
-                        FTE_JSON_OBJECT_PTR  pValues = (FTE_JSON_OBJECT_PTR)FTE_JSON_VALUE_createObject(3);
-                        if (pValues == NULL)
-                        {
-                            goto error;
-                        }
-                        
-                        FTE_VALUE_getULONG(&pObj->pStatus->pValue[0], &ulValue);
-                        pValue = FTE_JSON_VALUE_createNumber(ulValue);
-                        if (pValue == NULL)
-                        {
-                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                            goto error;
-                        }
-                        if (FTE_JSON_OBJECT_setPair(pValues, "count", pValue) != FTE_JSON_RET_OK)
-                        {
-                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                            FTE_JSON_VALUE_destroy(pValue);
-                            goto error;
-                        }
-                        
-                        FTE_VALUE_getULONG(&pObj->pStatus->pValue[1], &ulValue);
-                        pValue = FTE_JSON_VALUE_createNumber(ulValue);
-                        if (pValue == NULL)
-                        {
-                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                            goto error;
-                        }
-                        if (FTE_JSON_OBJECT_setPair(pValues, "accum", pValue) != FTE_JSON_RET_OK)
-                        {
-                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                            FTE_JSON_VALUE_destroy(pValue);
-                            goto error;
-                        }
-
-                        FTE_VALUE_getDIO(&pObj->pStatus->pValue[2], &bValue);
-                        pValue = FTE_JSON_VALUE_createNumber(bValue);
-                        if (pValue == NULL)
-                        {
-                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                            goto error;
-                        }
-                        if (FTE_JSON_OBJECT_setPair(pValues, "switch", pValue) != FTE_JSON_RET_OK)
-                        {
-                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                            FTE_JSON_VALUE_destroy(pValue);
-                            goto error;
-                        }                    
-                        
-                        if (FTE_JSON_OBJECT_setPair(pObject, "value", (FTE_JSON_VALUE_PTR)pValues) != FTE_JSON_RET_OK)
-                        {
-                            FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
-                            goto error;
-                        }                    
-                        
-                    }
-                    break;
-                    
-                default:
-                   {
-#if FTE_ES18
-                       FTE_UINT32  ulCmd = pObj->pStatus->pValue->xData.ulValue & 0xFF;
-                       FTE_UINT32  ulLevel = (pObj->pStatus->pValue->xData.ulValue >> 8) & 0xFF;
-                       FTE_UINT32  ulTime = (pObj->pStatus->pValue->xData.ulValue >> 16) & 0xFF;
-                       
-                        pValue = FTE_JSON_VALUE_createNumber(ulCmd);
-                        if (pValue == NULL)
-                        {
-                            goto error;
-                        }
-
-                        if (FTE_JSON_OBJECT_setPair(pObject, "cmd", pValue) != FTE_JSON_RET_OK)
-                        {
-                            FTE_JSON_VALUE_destroy(pValue);
-                            goto error;
-                        }
-
-                        pValue = FTE_JSON_VALUE_createNumber(ulLevel);
-                        if (pValue == NULL)
-                        {
-                            goto error;
-                        }
-
-                        if (FTE_JSON_OBJECT_setPair(pObject, "level", pValue) != FTE_JSON_RET_OK)
-                        {
-                            FTE_JSON_VALUE_destroy(pValue);
-                            goto error;
-                        }
-
-                        pValue = FTE_JSON_VALUE_createNumber(ulTime);
-                        if (pValue == NULL)
-                        {
-                            goto error;
-                        }
-
-                        if (FTE_JSON_OBJECT_setPair(pObject, "time", pValue) != FTE_JSON_RET_OK)
-                        {
-                            FTE_JSON_VALUE_destroy(pValue);
-                            goto error;
-                        }
-#else
-                        pValue = FTE_JSON_VALUE_createValue(pObj->pStatus->pValue);
-                        if (pValue == NULL)
-                        {
-                            goto error;
-                        }
-
-                        if (FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_VALUE_STRING, pValue) != FTE_JSON_RET_OK)
-                        {
-                            FTE_JSON_VALUE_destroy(pValue);
-                            goto error;
-                        }
-#endif
+                        goto error;
                     }
                 }
-                   
+                else
+                {
+                    pValue = FTE_JSON_VALUE_createValue(pObj->pStatus->pValue);
+                    if (pValue == NULL)
+                    {
+                        xRet = FTE_RET_NOT_ENOUGH_MEMORY;
+                        goto error;
+                    }
+                }
+
+                xRet = FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_VALUE_STRING, pValue);
+                if (xRet != FTE_RET_OK)
+                {
+                    FTE_JSON_VALUE_destroy(pValue);
+                    goto error;
+                }
             }
             break;
             
@@ -1228,10 +1110,12 @@ FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON
                 pValue = FTE_JSON_VALUE_createNumber(xTimeStamp.SECONDS);
                 if (pValue == NULL)
                 {
+                    xRet = FTE_RET_NOT_ENOUGH_MEMORY;
                     goto error;
                 }
 
-                if (FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_TIME_STRING, pValue) != FTE_JSON_RET_OK)
+                xRet = FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_TIME_STRING, pValue);
+                if (xRet != FTE_RET_OK)
                 {
                     FTE_JSON_VALUE_destroy(pValue);
                     goto error;
@@ -1252,10 +1136,12 @@ FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON
 
                 if (pValue == NULL)
                 {
+                    xRet = FTE_RET_NOT_ENOUGH_MEMORY;
                     goto error;
                 }
 
-                if (FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_STATE_STRING, pValue) != FTE_JSON_RET_OK)
+                xRet = FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_STATE_STRING, pValue);
+                if (xRet != FTE_RET_OK)
                 {
                     FTE_JSON_VALUE_destroy(pValue);
                     goto error;
@@ -1265,7 +1151,9 @@ FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON
         }
     }
     
-    return  (FTE_JSON_OBJECT_PTR)pObject;    
+    *ppObject = (FTE_JSON_OBJECT_PTR)pObject;    
+    
+    return  FTE_RET_OK;
     
 error:
     if (pObject != NULL)
@@ -1273,103 +1161,7 @@ error:
         FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pObject);        
     }
     
-    return  NULL;
-}
-
-FTE_JSON_OBJECT_PTR  FTE_OBJ_createJSON2
-(
-    FTE_OBJECT_PTR  pObj, 
-    FTE_UINT32  xOptions
-)
-{
-    FTE_JSON_OBJECT_PTR pObject = NULL;
-    FTE_JSON_VALUE_PTR  pValue = NULL;
-
-    ASSERT(pObj != NULL);
-
-    pObject = (FTE_JSON_OBJECT_PTR)FTE_JSON_VALUE_createObject(5);
-    if (pObject == NULL)
-    {
-        goto error;
-    }
-    
-    for(FTE_UINT32 nOption = FTE_OBJ_FIELD_ID ; nOption != 0 ; nOption <<= 1)
-    {
-        if (FTE_FLAG_IS_CLR(xOptions, nOption))
-        {
-            continue;
-        }
-        
-        switch(nOption)
-        {
-        case    FTE_OBJ_FIELD_ID:
-            {
-                char    pBuff[16];
-                
-                sprintf(pBuff, "%08x", pObj->pConfig->xCommon.nID);
-                pValue = FTE_JSON_VALUE_createString(pBuff);
-                FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_ID_STRING, pValue);
-            }
-            break;
-            
-        case    FTE_OBJ_FIELD_NAME:
-            {
-                pValue = FTE_JSON_VALUE_createString(pObj->pConfig->xCommon.pName);
-                FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_NAME_STRING, pValue);
-            }
-            break;
-            
-        case    FTE_OBJ_FIELD_VALUE:
-            {
-                //char    pValueString[32];
-                
-                //FTE_VALUE_toString(pObj->pStatus->pValue, pValueString, sizeof(pValueString));
-                pValue = FTE_JSON_VALUE_createValue(pObj->pStatus->pValue);
-                FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_VALUE_STRING, pValue);
-            }
-            break;
-            
-        case    FTE_OBJ_FIELD_TIME:
-            {
-                TIME_STRUCT xTimeStamp;
-                
-                FTE_VALUE_getTimeStamp(pObj->pStatus->pValue, &xTimeStamp);
-                
-                pValue = FTE_JSON_VALUE_createNumber(xTimeStamp.SECONDS);
-                FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_TIME_STRING, pValue);
-            }
-            break;
-            
-        case    FTE_OBJ_FIELD_STATE:
-            {
-                if (FTE_FLAG_IS_SET(pObj->pConfig->xCommon.xFlags, FTE_OBJ_CONFIG_FLAG_ENABLE))
-                {
-                    pValue = FTE_JSON_VALUE_createString("enable");
-                }
-                else
-                {
-                    pValue = FTE_JSON_VALUE_createString("disable");
-                }
-                FTE_JSON_OBJECT_setPair(pObject, FTE_JSON_OBJ_STATE_STRING, pValue);
-            }
-            break;
-        }
-    }
-    
-    return  (FTE_JSON_OBJECT_PTR)pObject;    
-    
-error:
-    if (pObject != NULL)
-    {
-        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pObject);        
-    }
-    
-    if (pValue!= NULL)
-    {
-        FTE_JSON_VALUE_destroy(pValue);        
-    }
-    
-    return  NULL;
+    return  xRet;
 }
 
 FTE_RET FTE_OBJ_getChildCount
@@ -1457,10 +1249,10 @@ FTE_RET FTE_OBJ_detachChild
     return  FTE_RET_NOT_SUPPORTED_FUNCTION;
 }
 
-FTE_UINT32    FTE_OBJ_1WIRE_discovery(FTE_BOOL bSave)
+FTE_RET FTE_OBJ_1WIRE_discovery(FTE_BOOL bSave, FTE_UINT32_PTR pCount)
 {
-    FTE_UINT32                     ulCount = 0;
 #if FTE_1WIRE_SUPPORTED && FTE_DS18B20_SUPPORTED
+    FTE_UINT32                     ulCount = 0;
     FTE_1WIRE_PTR               p1Wire;
     FTE_DS18B20_CREATE_PARAMS   xParams;
     FTE_UINT32                     nIndex;
@@ -1523,9 +1315,13 @@ FTE_UINT32    FTE_OBJ_1WIRE_discovery(FTE_BOOL bSave)
     {
         FTE_CFG_save(TRUE);
     }
-#endif
     
-    return  ulCount;
+    *pCount = ulCount;
+    
+    return  FTE_RET_OK;
+#else
+    return  FTE_RET_NOT_SUPPORTED_FUNCTION;
+#endif
 }
 
 FTE_RET FT_OBJ_STAT_incSucceed
@@ -1602,9 +1398,9 @@ FTE_RET FTE_OBJ_CMD_showInfo
     FTE_OBJECT_PTR  pObj;
     FTE_UINT32  i;
     TIME_STRUCT xTime;
-    char        pTimeString[32];
-    char        pValueString[16];
-    char        pUnitString[8];
+    FTE_CHAR pTimeString[32];
+    FTE_CHAR pValueString[16];
+    FTE_CHAR pUnitString[8];
     
     if (nArgc < 1)
     {
@@ -1662,7 +1458,7 @@ FTE_RET FTE_OBJ_CMD_showInfo
         FTE_EVENT_PTR pEvent = FTE_LIST_getAt(&pObj->xEventList, i);
         if (pEvent != NULL)
         {
-            char                pTypeString[64];
+            FTE_CHAR        pTypeString[64];
             
             FTE_EVENT_type_string(pEvent->pConfig->xType, pTypeString, sizeof(pTypeString));
             printf("%8d : %08lx %16s %-10s\n", 
@@ -1842,9 +1638,9 @@ FTE_RET FTE_OBJ_CMD_list
             if (pObj->pStatus->pValue != NULL)
             {
                 TIME_STRUCT xTime;
-                char        pTimeString[64];
-                char        pValueString[32];
-                char        pUnitString[8];
+                FTE_CHAR    pTimeString[64];
+                FTE_CHAR    pValueString[32];
+                FTE_CHAR    pUnitString[8];
                 
                 FTE_VALUE_toString(pObj->pStatus->pValue, pValueString, sizeof(pValueString));
                 FTE_VALUE_unit(pObj->pStatus->pValue, pUnitString, sizeof(pUnitString));

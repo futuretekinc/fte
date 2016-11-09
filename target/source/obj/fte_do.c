@@ -322,7 +322,7 @@ FTE_INT32   FTE_DO_SHELL_cmd
         
         if (nArgc > 1)
         {
-            if (!Shell_parse_hexnum(pArgv[1], &nID))
+            if (FTE_strToHex(pArgv[1], &nID) != FTE_RET_OK)
             {
                 bPrintUsage = TRUE;
                 goto error;
@@ -355,8 +355,8 @@ FTE_INT32   FTE_DO_SHELL_cmd
                 FTE_LIST_ITER_init(&_xObjList, &xIter);
                 while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
                 {
-                    char    pBuff[32];
-                    char    pValueString[32];
+                    FTE_CHAR pBuff[32];
+                    FTE_CHAR pValueString[32];
                     
                     FTE_VALUE_toString(((FTE_DO_STATUS_PTR)pObj->pStatus)->xCommon.pValue, pValueString, sizeof(pValueString));
                     FTE_TIME_toStr(&((FTE_DO_STATUS_PTR)pObj->pStatus)->xCommon.pValue->xTimeStamp, pBuff, sizeof(pBuff));
@@ -372,8 +372,8 @@ FTE_INT32   FTE_DO_SHELL_cmd
         case    2:
             {
                 FTE_OBJECT_PTR  pObj;
-                char    pBuff[32];
-                char    pValueString[32];
+                FTE_CHAR pBuff[32];
+                FTE_CHAR pValueString[32];
                         
                 pObj = FTE_OBJ_get(nID);
                 if (pObj == NULL)

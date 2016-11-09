@@ -69,6 +69,6 @@ FTE_UINT32     FTE_LORAWAN_recv(void *pBuff, FTE_UINT32 ulBuffSize);
 
 _mqx_uint   FTE_LORAWAN_requestJoin(FTE_LORAWAN_PTR pLoRaWan);
 
-FTE_INT32  FTE_LORAWAN_SHELL_cmd(FTE_INT32 argc, char_ptr argv[]);
+FTE_INT32  FTE_LORAWAN_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
 
 #endif

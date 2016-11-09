@@ -1,4 +1,8 @@
 #include <tfs.h>
+#include "fte_target.h"
+
+#if  FTE_HTTPD_SUPPORTED
+
 
 extern const TFS_DIR_ENTRY tfs_data[];
 
@@ -3459,3 +3463,4 @@ const TFS_DIR_ENTRY tfs_data[] = {
 	{ 0, 0, 0, 0 }
 };
 
+#endif

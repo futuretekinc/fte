@@ -12,11 +12,11 @@
 static  FTE_RET   FTE_MULTI_run(FTE_OBJECT_PTR pObj);
 static  FTE_RET   FTE_MULTI_stop(FTE_OBJECT_PTR pObj);
 static  FTE_RET   FTE_MULTI_startMeasurement(FTE_OBJECT_PTR pObj);
-static  void      FTE_MULTI_done(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
+static  void      FTE_MULTI_done(FTE_TIMER_ID xTimerID, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 static  FTE_RET   FTE_MULTI_get(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pValue, TIME_STRUCT_PTR xTimeStamp);
 static  FTE_RET   FTE_MULTI_set(FTE_OBJECT_PTR pSelf, FTE_UINT32 nValue);
 static  FTE_RET   FTE_MULTI_setMulti(FTE_OBJECT_PTR pSelf, FTE_UINT32 nIndex, FTE_UINT32 nValue);
-static  void      FTE_MULTI_restartConvert(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
+static  void      FTE_MULTI_restartConvert(FTE_TIMER_ID xTimerID, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 static  FTE_UINT32     FTE_MULTI_getUpdateInterval(FTE_OBJECT_PTR pObj);
 static  FTE_RET   FTE_MULTI_setUpdateInterval(FTE_OBJECT_PTR pObj, FTE_UINT32 nInterval);
 #if 0
@@ -185,9 +185,7 @@ FTE_RET   FTE_MULTI_run
     FTE_MULTI_stop(pObj);
     FTE_MULTI_startMeasurement(pObj);
     
-    pStatus->hRepeatTimer   = FTE_OBJ_runLoop(pObj, FTE_MULTI_restartConvert, pConfig->nInterval);    
-
-    return  FTE_RET_OK;
+    return  FTE_OBJ_runLoop(pObj, FTE_MULTI_restartConvert, pConfig->nInterval, &pStatus->hRepeatTimer);    
 }
 
 FTE_RET   FTE_MULTI_stop
@@ -221,25 +219,30 @@ FTE_RET FTE_MULTI_startMeasurement
 )
 {
     ASSERT((pObj != NULL) && (pObj->pStatus != NULL));
+    FTE_RET xRet;
     FTE_MULTI_STATUS_PTR    pStatus = (FTE_MULTI_STATUS_PTR)pObj->pStatus;
         
     if (pStatus->pModelInfo->f_request_data != NULL)
     {
         pStatus->pModelInfo->f_request_data(pObj);
-        pStatus->hConvertTimer  = FTE_OBJ_runMeasurement(pObj, FTE_MULTI_done, FTE_MULTI_RESPONSE_TIME);    
+        xRet = FTE_OBJ_runMeasurement(pObj, FTE_MULTI_done, FTE_MULTI_RESPONSE_TIME, &pStatus->hConvertTimer);    
 #if FTE_DEBUG
         pStatus->xStatistic.nTotalTrial++;
 #endif    
     }
+    else
+    {
+        xRet = FTE_RET_NOT_SUPPORTED_FUNCTION;
+    }
 
-    return  FTE_RET_OK;
+    return  xRet;
     
 }
 
 void FTE_MULTI_done
 (
-    _timer_id   id, 
-    pointer     pData, 
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR pTick
 )
 {
@@ -270,8 +273,8 @@ error:
 
 void FTE_MULTI_restartConvert
 (   
-    _timer_id   id, 
-    pointer     pData, 
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR pTick
 )
 {

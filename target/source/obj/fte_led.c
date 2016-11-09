@@ -7,7 +7,7 @@ static FTE_RET  _FTE_LED_init(FTE_OBJECT_PTR pObj);
 static FTE_RET  _FTE_LED_run(FTE_OBJECT_PTR pObj);
 static FTE_RET  _FTE_LED_stop(FTE_OBJECT_PTR pObj);
 static FTE_RET  _FTE_LED_setValue(FTE_OBJECT_PTR pObj, FTE_VALUE_PTR pValue);
-static void     _FTE_LED_timerDone(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
+static void     _FTE_LED_timerDone(FTE_TIMER_ID xTimerID, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 
 static  
 FTE_LIST            _xObjList = {0, NULL, NULL};
@@ -97,7 +97,7 @@ error:
     return  FTE_RET_ERROR;
 }
 
-pointer     FTE_LED_get
+FTE_VOID_PTR     FTE_LED_get
 (
     FTE_OBJECT_ID   nID
 )
@@ -200,14 +200,15 @@ FTE_RET _FTE_LED_setValue
 )
 {
     assert(pObj != NULL);
-    
+    FTE_RET xRet;
     FTE_LED_STATUS_PTR   pStatus = (FTE_LED_STATUS_PTR)pObj->pStatus;
     
     switch(pValue->xData.xState)
     {
     case    FTE_LED_STATE_OFF:
         {
-            if (FTE_GPIO_setValue(pStatus->pGPIO,  FALSE) != FTE_RET_OK)
+            xRet = FTE_GPIO_setValue(pStatus->pGPIO,  FALSE);
+            if ( xRet != FTE_RET_OK)
             {
                 goto error;
             }
@@ -222,7 +223,8 @@ FTE_RET _FTE_LED_setValue
         
     case    FTE_LED_STATE_ON:
         {
-            if (FTE_GPIO_setValue(pStatus->pGPIO,  TRUE) != FTE_RET_OK)
+            xRet = FTE_GPIO_setValue(pStatus->pGPIO,  TRUE);
+            if ( xRet != FTE_RET_OK)
             {
                 goto error;
             }
@@ -244,7 +246,11 @@ FTE_RET _FTE_LED_setValue
                     FTE_GPIO_setValue(pStatus->pGPIO,  TRUE);
                 }
                 
-                _hTimer = FTE_OBJ_runLoop(pObj, _FTE_LED_timerDone, 500); 
+                xRet = FTE_OBJ_runLoop(pObj, _FTE_LED_timerDone, 500, &_hTimer); 
+                if (xRet != FTE_RET_OK)
+                {
+                    goto error;
+                }
             }
         
         }
@@ -257,16 +263,17 @@ FTE_RET _FTE_LED_setValue
     FTE_VALUE_setULONG(pStatus->xCommon.pValue, pValue->xData.xState);
     
     return   FTE_RET_OK;
+    
 error:
     pStatus->xCommon.xFlags&= ~FTE_OBJ_STATUS_FLAG_VALID;
     
-    return   FTE_RET_ERROR;
+    return   xRet;
 }
 
 void _FTE_LED_timerDone
 (
-    _timer_id   id, 
-    pointer     pData, 
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR pTick
 )
 {

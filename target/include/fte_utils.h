@@ -10,17 +10,21 @@
 #define isspace(c)           (c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\v')
 #endif		
 
-void    fte_udelay(FTE_UINT32 usec);
-FTE_BOOL fte_parse_ip_address( FTE_CHAR_PTR pIPString, FTE_UINT32_PTR pIP);
-FTE_BOOL fte_parse_enet_address( FTE_CHAR_PTR pMACString, _enet_address enet_address);
-FTE_UINT32 fte_parse_hex_string(FTE_CHAR_PTR pString, FTE_UINT8_PTR pBuff, FTE_UINT32 ulBuffLen);
-
-void    fte_system_reset(void);
+void    FTE_udelay(FTE_UINT32 usec);
+FTE_RET FTE_strToIP( FTE_CHAR_PTR pIPString, FTE_UINT32_PTR pIP);
+FTE_RET FTE_strToMAC( FTE_CHAR_PTR pMACString, _enet_address enet_address);
+FTE_RET FTE_strToHexArray(FTE_CHAR_PTR pString, FTE_UINT8_PTR pBuff, FTE_UINT32 ulBuffLen, FTE_UINT32_PTR pLen);
 
 FTE_RET FTE_strToFLOAT
 (
     FTE_CHAR_PTR    pString, 
     FTE_FLOAT_PTR   pValue
+);
+
+FTE_RET FTE_strToUINT16
+(
+   FTE_CHAR_PTR     pString, 
+   FTE_UINT16_PTR   pValue
 );
 
 FTE_RET FTE_strToUINT32

@@ -83,10 +83,10 @@ static
 FTE_RET FTE_GAI_stop(FTE_OBJECT_PTR pObj);
 
 static  
-void    FTE_GAI_done(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
+void    FTE_GAI_done(FTE_TIMER_ID xTimerID, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 
 static 
-void    FTE_GAI_restartConvert(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
+void    FTE_GAI_restartConvert(FTE_TIMER_ID xTimerID, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 
 static 
 FTE_UINT32  FTE_GAI_getUpdateInterval(FTE_OBJECT_PTR pObj);
@@ -262,8 +262,8 @@ FTE_RET   FTE_GAI_stop
 
 void FTE_GAI_done
 (
-    _timer_id   id, 
-    pointer     pData, 
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR pTick
 )
 {
@@ -309,8 +309,8 @@ void FTE_GAI_done
 
 void FTE_GAI_restartConvert
 (
-    _timer_id   id, 
-    pointer     pData, 
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR pTick
 )
 {

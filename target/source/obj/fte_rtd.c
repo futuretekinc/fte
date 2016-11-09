@@ -14,10 +14,10 @@ static
 FTE_RET     FTE_RTD_stop(FTE_OBJECT_PTR pObj);
 
 static  
-void        _rtd_done(_timer_id id, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
+void        _rtd_done(FTE_TIMER_ID xTimerID, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 
 static  
-void        _rtd_restart_convert(_timer_id id, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
+void        _rtd_restart_convert(FTE_TIMER_ID xTimerID, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 
 static 
 FTE_RET     FTE_RTD_get(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR value, TIME_STRUCT_PTR pTimeStamp);
@@ -137,7 +137,7 @@ error:
     return  FTE_RET_ERROR;
 }
 /*
-FTE_UINT32 FTE_RTD_printValue(FTE_OBJECT_PTR pObj, char_ptr pBuff, FTE_UINT32 nLen)
+FTE_UINT32 FTE_RTD_printValue(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pBuff, FTE_UINT32 nLen)
 {
     ASSERT((pObj != NULL) && FTE_OBJ_CLASS(pObj) == FTE_OBJ_CLASS_TEMPERATURE));
 
@@ -261,8 +261,8 @@ FTE_RET   FTE_RTD_stop
 
 void _rtd_done
 (
-    _timer_id   id, 
-    FTE_VOID_PTR     pData, 
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR pTick
 )
 {
@@ -310,8 +310,8 @@ void _rtd_done
 
 void _rtd_restart_convert
 (
-    _timer_id   id, 
-    FTE_VOID_PTR     pData, 
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR     pTick
 )
 {

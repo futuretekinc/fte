@@ -28,9 +28,14 @@
 #define FTE_CFG_EXT_POOL_VERSION        0x20150708
 #define FTE_CFG_CERT_POOL_VERSION       0x20150708
 
+static
 void    FTE_CFG_lock(void);
+
+static
 void    FTE_CFG_unlock(void);
-void    _FTE_CFG_auto_save(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
+
+static
+void    FTE_CFG_autoSave(FTE_TIMER_ID xTimerID, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 
 FTE_CFG_EVENT_PTR       FTE_CFG_EVENT_create(FTE_CFG_EVENT_PTR pConfig);
 FTE_RET               FTE_CFG_CERT_load(void);
@@ -346,7 +351,7 @@ FTE_RET   FTE_CFG_init(FTE_CFG_DESC const *desc)
     _time_get_elapsed_ticks(&xTicks);
     _time_add_sec_to_ticks(&xTicks, 1);
     
-    _timer_start_periodic_at_ticks(_FTE_CFG_auto_save, NULL, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);
+    _timer_start_periodic_at_ticks(FTE_CFG_autoSave, NULL, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);
 
     return  FTE_RET_OK;
     
@@ -410,7 +415,7 @@ FTE_RET FTE_CFG_save(FTE_BOOL force)
             {
                 ioctl(fp, FLASH_IOCTL_ENABLE_SECTOR_CACHE, NULL);
                 
-                if (sizeof(FTE_CFG_POOL) != write(fp, (pointer)&_config.xPool, sizeof(FTE_CFG_POOL)))
+                if (sizeof(FTE_CFG_POOL) != write(fp, (FTE_VOID_PTR)&_config.xPool, sizeof(FTE_CFG_POOL)))
                 {
                     fprintf(stderr, "\nError writing to the file. Error code: %d", _io_ferror(fp));
                     fclose(fp);
@@ -444,7 +449,7 @@ FTE_RET FTE_CFG_save(FTE_BOOL force)
             {
                 ioctl(fp, FLASH_IOCTL_ENABLE_SECTOR_CACHE, NULL);
                 
-                if (sizeof(FTE_CFG_OBJECT_POOL) != write(fp, (pointer)&_config.xObjectPool, sizeof(FTE_CFG_OBJECT_POOL)))
+                if (sizeof(FTE_CFG_OBJECT_POOL) != write(fp, (FTE_VOID_PTR)&_config.xObjectPool, sizeof(FTE_CFG_OBJECT_POOL)))
                 {
                     fprintf(stderr, "\nError writing to the file. Error code: %d", _io_ferror(fp));
                     fclose(fp);
@@ -477,7 +482,7 @@ FTE_RET FTE_CFG_save(FTE_BOOL force)
             {
                 ioctl(fp, FLASH_IOCTL_ENABLE_SECTOR_CACHE, NULL);
                 
-                if (sizeof(FTE_CFG_EVENT_POOL) != write(fp, (pointer)&_config.xEventPool, sizeof(FTE_CFG_EVENT_POOL)))
+                if (sizeof(FTE_CFG_EVENT_POOL) != write(fp, (FTE_VOID_PTR)&_config.xEventPool, sizeof(FTE_CFG_EVENT_POOL)))
                 {
                     fprintf(stderr, "\nError writing to the file. Error code: %d", _io_ferror(fp));
                     fclose(fp);
@@ -510,7 +515,7 @@ FTE_RET FTE_CFG_save(FTE_BOOL force)
             {
                 ioctl(fp, FLASH_IOCTL_ENABLE_SECTOR_CACHE, NULL);
                 
-                if (sizeof(FTE_CFG_EXT_POOL) != write(fp, (pointer)&_config.xExtPool, sizeof(FTE_CFG_EXT_POOL)))
+                if (sizeof(FTE_CFG_EXT_POOL) != write(fp, (FTE_VOID_PTR)&_config.xExtPool, sizeof(FTE_CFG_EXT_POOL)))
                 {
                     fprintf(stderr, "\nError writing to the file. Error code: %d", _io_ferror(fp));
                     fclose(fp);
@@ -640,9 +645,16 @@ void    FTE_CFG_unlock(void)
     _int_enable();
 }
 
-FTE_BOOL FTE_CFG_isChanged(void)
+FTE_RET FTE_CFG_isChanged
+(
+    FTE_BOOL_PTR    pChanged
+)
 {
-    return  _config.bPoolModified;
+    ASSERT(pChanged != NULL);
+    
+    *pChanged = _config.bPoolModified;
+    
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_CFG_OBJ_save(FTE_OBJECT_PTR pObj)
@@ -693,7 +705,7 @@ FTE_UINT32 FTE_CFG_objects_count(void)
     return  _config.xObjectPool.uiObjectCount;
 }
 
-pointer FTE_CFG_OBJ_get(FTE_UINT32 oid)
+FTE_VOID_PTR FTE_CFG_OBJ_get(FTE_UINT32 oid)
 {
     if (_config.pDESC != NULL && _config.xObjectPool.uiObjectCount != 0)
     {
@@ -711,7 +723,7 @@ pointer FTE_CFG_OBJ_get(FTE_UINT32 oid)
     return  NULL;
 }
 
-pointer             FTE_CFG_OBJ_getAt(FTE_UINT32 oid, FTE_UINT32 ulMask, FTE_UINT32 ulIdx)
+FTE_VOID_PTR             FTE_CFG_OBJ_getAt(FTE_UINT32 oid, FTE_UINT32 ulMask, FTE_UINT32 ulIdx)
 {
     if ((_config.pDESC != NULL) && (ulIdx < _config.xObjectPool.uiObjectCount))
     {
@@ -880,7 +892,7 @@ FTE_UINT32 FTE_CFG_OBJ_count(FTE_UINT32 ulType, FTE_UINT32 ulMask)
     return  0;
 }
 
-pointer FTE_CFG_OBJ_getFirst(void)
+FTE_VOID_PTR FTE_CFG_OBJ_getFirst(void)
 {
     if ((_config.pDESC != NULL) && (_config.xObjectPool.uiObjectCount != 0))
     {
@@ -891,7 +903,7 @@ pointer FTE_CFG_OBJ_getFirst(void)
     return  NULL;
 }
 
-pointer FTE_CFG_OBJ_getNext(void)
+FTE_VOID_PTR FTE_CFG_OBJ_getNext(void)
 {
     if ((_config.pDESC != NULL) && (++_config.ulIndex < _config.xObjectPool.uiObjectCount))
     {
@@ -991,7 +1003,7 @@ FTE_UINT32 FTE_CFG_EVENT_getAt(FTE_UINT32 ulIndex, FTE_CFG_EVENT_PTR _PTR_ ppCon
     return  FTE_RET_ERROR;
 }
 
-pointer FTE_CFG_EVENT_getFirst(void)
+FTE_VOID_PTR FTE_CFG_EVENT_getFirst(void)
 {
     if ((_config.pDESC != NULL) && (_config.xEventPool.uiEventCount != 0))
     {
@@ -1002,7 +1014,7 @@ pointer FTE_CFG_EVENT_getFirst(void)
     return  NULL;
 }
 
-pointer FTE_CFG_EVENT_getNext(void)
+FTE_VOID_PTR FTE_CFG_EVENT_getNext(void)
 {
     if ((_config.pDESC != NULL) && (++_config.ulIndex < _config.xEventPool.uiEventCount))
     {
@@ -1144,24 +1156,39 @@ FTE_UINT32 FTE_CFG_CERT_size(void)
     return  pCertPool->ulCertLen;
 }
 
-FTE_UINT32 FTE_CFG_CERT_get(FTE_VOID_PTR pBuff, FTE_UINT32 ulBuffLen)
+FTE_RET FTE_CFG_CERT_get
+(
+    FTE_VOID_PTR    pBuff, 
+    FTE_UINT32      ulBuffLen,
+    FTE_UINT32_PTR  pLen
+)
 {
+    ASSERT(pBuff != NULL);
+    
+    FTE_RET xRet;
+    
     if (pCertPool == NULL)
     {
-        if (FTE_CFG_CERT_load() != FTE_RET_OK)
-        {
-            return  0;
+        xRet = FTE_CFG_CERT_load();
+        if (xRet != FTE_RET_OK)
+        {            
+            return  xRet;
         }
     }
     
     if (ulBuffLen < pCertPool->ulCertLen)
     {
-        return  0;
+        return  FTE_RET_BUFFER_TOO_SMALL;
     }
     
     memcpy(pBuff, pCertPool->pCert, pCertPool->ulCertLen);
     
-    return  pCertPool->ulCertLen;
+    if (pLen != NULL)
+    {
+        *pLen = pCertPool->ulCertLen;
+    }
+    
+    return  FTE_RET_OK;
 }
 
 FTE_RET   FTE_CFG_CERT_load(void)
@@ -1203,8 +1230,14 @@ FTE_RET   FTE_CFG_CERT_load(void)
 }
 
 
-FTE_RET   FTE_CFG_CERT_set(FTE_VOID_PTR pCert, FTE_UINT32 ulCertLen)
+FTE_RET   FTE_CFG_CERT_set
+(
+    FTE_VOID_PTR    pCert, 
+    FTE_UINT32      ulCertLen
+)
 {
+    ASSERT(pCert != NULL);
+
     FTE_CFG_CERT_POOL_HEAD  xCertHead;
     
     if (pCertPool == NULL)
@@ -1225,7 +1258,7 @@ FTE_RET   FTE_CFG_CERT_set(FTE_VOID_PTR pCert, FTE_UINT32 ulCertLen)
         xCertHead.ulCRC = FTE_CRC32(0, &xCertHead.ulTag, sizeof(FTE_CFG_CERT_POOL_HEAD) - sizeof(FTE_UINT32));   
         xCertHead.ulCRC = FTE_CRC32(xCertHead.ulCRC, pCert, ulCertLen);
         
-        char    pFileName[32];
+        FTE_CHAR    pFileName[32];
             
         sprintf(pFileName, "flashx:cert%d", (xCertHead.nID & 0x01));
             
@@ -1258,12 +1291,12 @@ FTE_INT32  FTE_CFG_CERT_SHELL_cmd
     FTE_CHAR_PTR    pArgv[]
 )
 {
-    FTE_BOOL     print_usage, shorthelp = FALSE;
-    FTE_INT32      return_code = SHELL_EXIT_SUCCESS;
-    FTE_UINT32     ulBuffLen = 4096;
-    FTE_UINT8_PTR  pBuff = NULL;
+    FTE_BOOL        bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32       xRet = SHELL_EXIT_SUCCESS;
+    FTE_UINT32      ulBuffLen = 4096;
+    FTE_UINT8_PTR   pBuff = NULL;
     
-    print_usage = Shell_check_help_request (nArgc, pArgv, &shorthelp);
+    bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
     pBuff = (FTE_UINT8_PTR)FTE_MEM_alloc(ulBuffLen);
     if (pBuff == NULL)
@@ -1272,7 +1305,7 @@ FTE_INT32  FTE_CFG_CERT_SHELL_cmd
         return  SHELL_EXIT_ERROR;
     }
     
-    if (!print_usage)
+    if (!bPrintUsage)
     {
         switch(nArgc)
         {
@@ -1282,8 +1315,8 @@ FTE_INT32  FTE_CFG_CERT_SHELL_cmd
                
                 if (strcmp(pArgv[1], "show") == 0)
                 {
-                   ulLen = FTE_CFG_CERT_get(pBuff, ulBuffLen);
-                   if (ulLen == 0)
+                   xRet = FTE_CFG_CERT_get(pBuff, ulBuffLen, &ulLen);
+                   if (xRet != FTE_RET_OK)
                    {
                         printf("Can't find CERT\n");
                    }
@@ -1305,10 +1338,10 @@ FTE_INT32  FTE_CFG_CERT_SHELL_cmd
 
                 if (strcmp(pArgv[1], "load") == 0)
                 {
-                    if (! Shell_parse_ip_address (pArgv[2], &xServerIP))
+                    if (FTE_strToIP(pArgv[2], &xServerIP) != FTE_RET_OK)
                     {
                         printf ("Error in parameter, invalid ip address!\n");
-                        return_code = SHELL_EXIT_ERROR;
+                        xRet = SHELL_EXIT_ERROR;
                         break;
                     }
                     
@@ -1358,14 +1391,14 @@ FTE_INT32  FTE_CFG_CERT_SHELL_cmd
                 }
                 else
                 {
-                    print_usage = TRUE;
+                    bPrintUsage = TRUE;
                 }
                 
             }
             break;
             
         default:
-            print_usage = TRUE;
+            bPrintUsage = TRUE;
         }
         
     }
@@ -1377,9 +1410,9 @@ FTE_INT32  FTE_CFG_CERT_SHELL_cmd
         pBuff = NULL;
     }
     
-    if (print_usage || (return_code !=SHELL_EXIT_SUCCESS))
+    if (bPrintUsage || (xRet !=SHELL_EXIT_SUCCESS))
     {
-        if (shorthelp)
+        if (bShortHelp)
         {
             printf ("%s [<command>]\n", pArgv[0]);
         }
@@ -1396,19 +1429,29 @@ FTE_INT32  FTE_CFG_CERT_SHELL_cmd
             printf("      <file_name> = Certificate file name.\n");
         }
     }
-    return   return_code;
+    return   xRet;
 }
 
 /******************************************************************************
  * Support for Network
  ******************************************************************************/
 
-FTE_NET_CFG_PTR FTE_CFG_NET_get(void)
+FTE_RET FTE_CFG_NET_get
+(   
+    FTE_NET_CFG_PTR _PTR_ ppConfig
+)
 {
-    return  &_config.xPool.xNetwork;
+    ASSERT(ppConfig != NULL);
+    
+    *ppConfig = &_config.xPool.xNetwork;
+    
+    return  FTE_RET_OK;
 }
 
-FTE_RET   FTE_CFG_NET_copy(FTE_NET_CFG_PTR pCfgNet)
+FTE_RET   FTE_CFG_NET_copy
+(
+    FTE_NET_CFG_PTR     pCfgNet
+)
 {
     FTE_PRODUCT_DESC const *desc = FTE_getProductDescription();
 
@@ -1569,12 +1612,19 @@ FTE_BOOL FTE_CFG_NET_TRAP_isExist(_ip_address nTrapIP)
  * System Configuration
  ******************************************************************************/
 
-FTE_SYS_CONFIG_PTR  FTE_CFG_SYS_get(void)
+FTE_RET FTE_CFG_SYS_get(FTE_SYS_CONFIG_PTR _PTR_ ppConfig)
 {
-    return  &_config.xPool.xSystem;
+    ASSERT(ppConfig != NULL);
+    
+    *ppConfig = &_config.xPool.xSystem;
+    
+    return  FTE_RET_OK;
 }
 
-FTE_RET   FTE_CFG_SYS_set(FTE_SYS_CONFIG const *pConfig)
+FTE_RET   FTE_CFG_SYS_set
+(
+    FTE_SYS_CONFIG const *pConfig
+)
 {
     FTE_CFG_lock();
     memcpy(&_config.xPool.xSystem, pConfig, sizeof(FTE_SYS_CONFIG));
@@ -1591,7 +1641,10 @@ FTE_BOOL FTE_CFG_SYS_getSystemMonitor(void)
     return  _config.xPool.xSystem.xFlags.bSystemMonitor;
 }
 
-FTE_RET   FTE_CFG_SYS_setSystemMonitor(FTE_BOOL bStart)
+FTE_RET   FTE_CFG_SYS_setSystemMonitor
+(
+    FTE_BOOL    bStart
+)
 {
     FTE_CFG_lock();
     _config.xPool.xSystem.xFlags.bSystemMonitor = bStart;    
@@ -1646,9 +1699,17 @@ FTE_RET   FTE_CFG_SHELL_set(FTE_SHELL_CONFIG const *pConfig)
     return  FTE_RET_OK;
 }
 
-static void _FTE_CFG_auto_save(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr)
+void    FTE_CFG_autoSave
+(
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
+    MQX_TICK_STRUCT_PTR pTick
+)
 {
-    if (FTE_CFG_isChanged())
+    FTE_BOOL    bChanged = FALSE;
+    
+    FTE_CFG_isChanged(&bChanged);
+    if (bChanged)
     {
         FTE_CFG_save(FALSE);
     }
@@ -1668,12 +1729,12 @@ void    FTE_CFG_DBG_setBootTime(void)
  ******************************************************************************/
 FTE_INT32  FTE_CFG_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[])
 {
-    FTE_BOOL              print_usage, shorthelp = FALSE;
-    FTE_INT32               return_code = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   xRet = SHELL_EXIT_SUCCESS;
     
-    print_usage = Shell_check_help_request (nArgc, pArgv, &shorthelp);
+    bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
-    if (!print_usage)
+    if (!bPrintUsage)
     {
         switch(nArgc)
         {
@@ -1712,7 +1773,11 @@ FTE_INT32  FTE_CFG_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[])
                     FTE_NET_CFG_PTR         pConfig;
 
                     ipcfg_get_ip (0, &ip_data);
-                    pConfig = FTE_CFG_NET_get();
+                    xRet = FTE_CFG_NET_get(&pConfig);
+                    if (xRet != FTE_RET_OK)
+                    {
+                        break;
+                    }
                     
                     if ((pConfig->xIPData.ip != ip_data.ip) || (pConfig->xIPData.mask != ip_data.mask) || (pConfig->xIPData.gateway != ip_data.gateway))
                     {
@@ -1740,15 +1805,15 @@ FTE_INT32  FTE_CFG_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[])
             
         default:
             {
-                print_usage = TRUE;
+                bPrintUsage = TRUE;
             }
         }
             
     }
     
-    if (print_usage || (return_code !=SHELL_EXIT_SUCCESS))
+    if (bPrintUsage || (xRet !=SHELL_EXIT_SUCCESS))
     {
-        if (shorthelp)
+        if (bShortHelp)
         {
             printf ("%s [<commands>]\n", pArgv[0]);
         }
@@ -1760,7 +1825,7 @@ FTE_INT32  FTE_CFG_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[])
             printf("        The processes is restarted when unstable state.\n"); 
         }
     }
-    return   return_code;
+    return   xRet;
 }
 
 /******************************************************************************
@@ -1768,12 +1833,12 @@ FTE_INT32  FTE_CFG_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[])
  ******************************************************************************/
 FTE_INT32  FTE_CFG_SHELL_cmdSave(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[])
 {
-    FTE_BOOL              print_usage, shorthelp = FALSE;
-    FTE_INT32               return_code = SHELL_EXIT_SUCCESS;
+    FTE_BOOL    bPrintUsage, bShortHelp = FALSE;
+    FTE_INT32   xRet = SHELL_EXIT_SUCCESS;
     
-    print_usage = Shell_check_help_request (nArgc, pArgv, &shorthelp);
+    bPrintUsage = Shell_check_help_request (nArgc, pArgv, &bShortHelp);
 
-    if (!print_usage)
+    if (!bPrintUsage)
     {
         switch(nArgc)
         {
@@ -1783,7 +1848,11 @@ FTE_INT32  FTE_CFG_SHELL_cmdSave(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[])
                 FTE_NET_CFG_PTR         pConfig;
 
                 ipcfg_get_ip (0, &ip_data);
-                pConfig = FTE_CFG_NET_get();
+                xRet = FTE_CFG_NET_get(&pConfig);
+                if (xRet != FTE_RET_OK)
+                {
+                    break;
+                }
                 
                 if ((pConfig->xIPData.ip != ip_data.ip) || (pConfig->xIPData.mask != ip_data.mask) || (pConfig->xIPData.gateway != ip_data.gateway))
                 {
@@ -1807,9 +1876,9 @@ FTE_INT32  FTE_CFG_SHELL_cmdSave(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[])
         }
     }
     
-    if (print_usage || (return_code !=SHELL_EXIT_SUCCESS))
+    if (bPrintUsage || (xRet !=SHELL_EXIT_SUCCESS))
     {
-        if (shorthelp)
+        if (bShortHelp)
         {
             printf ("%s\n", pArgv[0]);
         }
@@ -1818,5 +1887,5 @@ FTE_INT32  FTE_CFG_SHELL_cmdSave(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[])
             printf("Usage : %s\n", pArgv[0]);
         }
     }
-    return   return_code;
+    return   xRet;
 }

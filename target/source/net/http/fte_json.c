@@ -1,5 +1,8 @@
 #include <stdlib.h>
 #include "fte_target.h"
+
+#if  FTE_HTTPD_SUPPORTED
+
 #include "fte_net.h"
 #include "fte_config.h"
 #include "fte_object.h"
@@ -246,7 +249,7 @@ FTE_UINT32 FTE_JSON_printObjectSetObject
 {
     FTE_UINT32 nLen;
     FTE_UINT32 nTempBuff;
-    char    pTempBuff[32];
+    FTE_CHAR    pTempBuff[32];
     /* Calculate content length while saving it to buffer */
     nLen  = snprintf(pBuff, nBuffLen, "{");
     nLen += FTE_JSON_printObjectHEX(&pBuff[nLen], nBuffLen - nLen,"id", pObject->pConfig->nID);
@@ -403,3 +406,4 @@ FTE_UINT32 FTE_JSON_printArrayObjectFields
     return  nLen;
 }
 
+#endfi

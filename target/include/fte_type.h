@@ -10,6 +10,8 @@ typedef _mqx_uint   FTE_RET;
 typedef void _PTR_ FTE_VOID_PTR;
 typedef char        FTE_CHAR,    _PTR_ FTE_CHAR_PTR;
 typedef boolean     FTE_BOOL,   _PTR_ FTE_BOOL_PTR;
+typedef int         FTE_INT,    _PTR_ FTE_INT_PTR;
+typedef unsigned int FTE_UINT,  _PTR_ FTE_UINT_PTR;
 typedef int_8       FTE_INT8,   _PTR_ FTE_INT8_PTR;
 typedef uint_8      FTE_UINT8,  _PTR_ FTE_UINT8_PTR;
 typedef int_16      FTE_INT16,  _PTR_ FTE_INT16_PTR;
@@ -53,5 +55,6 @@ typedef double      FTE_FLOAT,  _PTR_ FTE_FLOAT_PTR;
 #define FTE_RET_PARENT_IS_STOPPED       (MQX_ERROR_BASE|0x8E)
 #define FTE_RET_INITIALIZE_FAILED       (MQX_ERROR_BASE|0x8F)
 #define FTE_RET_INVALID_MSG_FRAME       (MQX_ERROR_BASE|0x90)
-
+#define FTE_RET_INVALID_MSG             (MQX_ERROR_BASE|0x90)
+#define FTE_RET_BUFFER_TOO_SMALL        (MQX_ERROR_BASE|0x91)
 #endif

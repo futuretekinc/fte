@@ -4,6 +4,7 @@
 #include "fte_type.h"
 #include "fte_mem.h"
 #include "fte_sys.h"
+#include "fte_utils.h"
 
 #define FTE_MEM_DEFAULT_CAPTURE_COUNT       300
 #define FTE_MEM_DEFAULT_CAPTURE_SKIP_COUNT   300
@@ -326,7 +327,7 @@ FTE_INT32  FTE_MEM_SHELL_cmd
                     else
                     {
                         FTE_UINT32 ulCount;
-                        if (Shell_parse_number(ppArgv[2], &ulCount) != TRUE)
+                        if (FTE_strToUINT32(ppArgv[2], &ulCount) != FTE_RET_OK)
                         {
                             bPrintUsage = TRUE;
                             break;

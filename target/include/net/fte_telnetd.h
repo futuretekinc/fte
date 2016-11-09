@@ -11,10 +11,10 @@
 
 typedef struct
 {
-    char    pID[FTE_TELNETD_ID_LENGTH];
-    char    pPasswd[FTE_TELNETD_PASSWD_LENGTH];
+    FTE_CHAR    pID[FTE_TELNETD_ID_LENGTH];
+    FTE_CHAR    pPasswd[FTE_TELNETD_PASSWD_LENGTH];
 }   FTE_TELNETD_CFG, _PTR_ FTE_TELNETD_CFG_PTR;
 
-_mqx_uint   FTE_TELNETD_init(void _PTR_ pParams);
+FTE_RET FTE_TELNETD_init(void _PTR_ pParams);
 
 #endif

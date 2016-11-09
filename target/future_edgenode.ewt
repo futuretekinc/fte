@@ -2931,6 +2931,9 @@
       <name>$PROJ_DIR$\source\fte_time.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\source\fte_timer.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\source\fte_utils.c</name>
     </file>
   </group>

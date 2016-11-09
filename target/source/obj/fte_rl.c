@@ -335,7 +335,7 @@ FTE_INT32   FTE_RL_SHELL_cmd
         
         if (nArgc > 1)
         {
-            if (!Shell_parse_number(pArgv[1], &nID))
+            if (FTE_strToUINT32(pArgv[1], &nID) != FTE_RET_OK)
             {
                 bPrintUsage = TRUE;
                 goto error;
@@ -365,8 +365,8 @@ FTE_INT32   FTE_RL_SHELL_cmd
                 FTE_LIST_ITER_init(&_xObjList, &xIter);
                 while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
                 {
-                    char    pValueString[32];
-                    char    pBuff[32];
+                    FTE_CHAR    pValueString[32];
+                    FTE_CHAR    pBuff[32];
                     TIME_STRUCT xTimeStamp;
                     
                     
@@ -385,8 +385,8 @@ FTE_INT32   FTE_RL_SHELL_cmd
         case    2:
             {
                 FTE_OBJECT_PTR  pObj;
-                char            pBuff[32];
-                char            pValueString[32];
+                FTE_CHAR    pBuff[32];
+                FTE_CHAR    pValueString[32];
                 TIME_STRUCT     xTimeStamp;
                     
                 pObj = FTE_OBJ_get(nID); 

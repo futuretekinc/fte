@@ -13,10 +13,10 @@
 static  FTE_RET     FTE_GUS_run(FTE_OBJECT_PTR pObj);
 static  FTE_RET     FTE_GUS_stop(FTE_OBJECT_PTR pObj);
 static  FTE_RET     FTE_GUS_startMeasurement(FTE_OBJECT_PTR pObj);
-static  void        FTE_GUS_done(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
+static  void        FTE_GUS_done(FTE_TIMER_ID xTimerID, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 static  FTE_RET     FTE_GUS_setMulti(FTE_OBJECT_PTR pObj, FTE_UINT32 nIndex, FTE_VALUE_PTR pValue);
 static  FTE_RET     FTE_GUS_getMulti(FTE_OBJECT_PTR pObj, FTE_UINT32 nIndex, FTE_VALUE_PTR pValue);
-static  void        FTE_GUS_restartConvert(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
+static  void        FTE_GUS_restartConvert(FTE_TIMER_ID xTimerID, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 static  FTE_RET     FTE_GUS_getUpdateInterval(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pulInterval);
 static  FTE_RET     FTE_GUS_setUpdateInterval(FTE_OBJECT_PTR pObj, FTE_UINT32 nInterval);
 static  FTE_RET     FTE_GUS_getStatistics(FTE_OBJECT_PTR pObj, FTE_OBJECT_STATISTICS_PTR pStatistic);
@@ -28,6 +28,7 @@ static  FTE_RET     FTE_GUS_attachChild(FTE_OBJECT_PTR pObj, FTE_UINT32 nChild);
 static  FTE_RET     FTE_GUS_detachChild(FTE_OBJECT_PTR pObj, FTE_UINT32 nChild);
 static  FTE_RET     FTE_GUS_getChildCount(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pulCount);
 static  FTE_RET     FTE_GUS_getChild(FTE_OBJECT_PTR pObj, FTE_UINT32 ulIndex, FTE_OBJECT_ID _PTR_ pxID);
+static  FTE_RET     FTE_GUS_createJSON(FTE_OBJECT_PTR pObj, FTE_UINT32 ulOption, FTE_JSON_OBJECT_PTR _PTR_ ppJSON);
 
 static  FTE_OBJECT_ACTION _Action = 
 { 
@@ -44,8 +45,9 @@ static  FTE_OBJECT_ACTION _Action =
     .fDetachChild   = FTE_GUS_detachChild,
     .fGetChildCount = FTE_GUS_getChildCount,
     .fGetChild      = FTE_GUS_getChild,
-    .fSetChildConfig    = FTE_GUS_setChildConfig,
-    .fGetChildConfig    = FTE_GUS_getChildConfig,
+    .fSetChildConfig= FTE_GUS_setChildConfig,
+    .fGetChildConfig= FTE_GUS_getChildConfig,
+    .fCreateJSON    = FTE_GUS_createJSON
 }; 
  
 FTE_RET   FTE_GUS_attach
@@ -188,7 +190,7 @@ FTE_RET FTE_GUS_attachChild
 {
     FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
 
-    FTE_LIST_pushBack(&pStatus->xChildList, (pointer)nChild);
+    FTE_LIST_pushBack(&pStatus->xChildList, (FTE_VOID_PTR)nChild);
     
     return  FTE_RET_OK;
 }
@@ -201,7 +203,7 @@ FTE_RET FTE_GUS_detachChild
 {
     FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
 
-    FTE_LIST_remove(&pStatus->xChildList, (pointer)nChild);
+    FTE_LIST_remove(&pStatus->xChildList, (FTE_VOID_PTR)nChild);
     
     return  FTE_RET_OK;
 }
@@ -236,9 +238,7 @@ FTE_RET   FTE_GUS_run
 
     FTE_GUS_startMeasurement(pObj);
 
-    pStatus->hRepeatTimer   = FTE_OBJ_runLoop(pObj, FTE_GUS_restartConvert, pConfig->nInterval);    
-
-    return  FTE_RET_OK;
+    return  FTE_OBJ_runLoop(pObj, FTE_GUS_restartConvert, pConfig->nInterval, &pStatus->hRepeatTimer);
 }
 
 FTE_RET   FTE_GUS_stop
@@ -277,6 +277,8 @@ FTE_RET FTE_GUS_startMeasurement
 )
 {
     ASSERT((pObj != NULL) && (pObj->pStatus != NULL));
+    
+    FTE_RET xRet;
     FTE_GUS_STATUS_PTR    pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
         
     _time_get_elapsed_ticks(&pStatus->xCommon.xStartTicks);
@@ -286,23 +288,26 @@ FTE_RET FTE_GUS_startMeasurement
         pStatus->pModelInfo->fRequest(pObj);
         if (pStatus->pModelInfo->nMaxResponseTime != 0)
         {
-            pStatus->hConvertTimer  = FTE_OBJ_runMeasurement(pObj, FTE_GUS_done, pStatus->pModelInfo->nMaxResponseTime);
+            xRet = FTE_OBJ_runMeasurement(pObj, FTE_GUS_done, pStatus->pModelInfo->nMaxResponseTime, &pStatus->hConvertTimer);
         }
         else
         {
-            pStatus->hConvertTimer  = FTE_OBJ_runMeasurement(pObj, FTE_GUS_done, FTE_GUS_RESPONSE_TIME);    
-        }
-        
+            xRet = FTE_OBJ_runMeasurement(pObj, FTE_GUS_done, FTE_GUS_RESPONSE_TIME, &pStatus->hConvertTimer);    
+        }        
+    }
+    else
+    {
+        xRet = FTE_RET_NOT_SUPPORTED_FUNCTION;
     }
 
-    return  FTE_RET_OK;
+    return  xRet;
     
 }
 
 void FTE_GUS_done
 (
-    _timer_id   id, 
-    pointer     pData, 
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR pTick
 )
 {
@@ -336,8 +341,8 @@ error:
 static 
 void FTE_GUS_restartConvert
 (
-    _timer_id   id, 
-    pointer     pData, 
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR pTick
 )
 {
@@ -513,7 +518,6 @@ FTE_RET FTE_GUS_setUpdateInterval
     return  FTE_RET_OK;
 }
 
-static  
 FTE_RET   FTE_GUS_getStatistics
 (   
     FTE_OBJECT_PTR  pObj, 
@@ -529,5 +533,27 @@ FTE_RET   FTE_GUS_getStatistics
     return  FTE_RET_OK;
 }
 
+
+FTE_RET     FTE_GUS_createJSON
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      ulOption, 
+    FTE_JSON_OBJECT_PTR _PTR_ ppJSON
+)
+{
+    ASSERT((pObj != NULL) && (ppJSON!= NULL));
+    
+    FTE_GUS_STATUS_PTR  pStatus = (FTE_GUS_STATUS_PTR)pObj->pStatus;
+    
+    if (FTE_OBJ_IS_ENABLED(pObj))
+    {
+        if (pStatus->pModelInfo->fCreateJSON != NULL)
+        {
+            return  pStatus->pModelInfo->fCreateJSON(pObj, ulOption, ppJSON);
+        }
+    }
+
+    return  FTE_RET_ERROR;
+}
 
 #endif

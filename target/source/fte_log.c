@@ -275,9 +275,9 @@ FTE_INT32   FTE_LOG_SHELL_cmd
                 
                 for(i =  xPool.ulCount - 1 ; i >= 0; i--)
                 {
-                    char    pTimeString[64];
-                    char    pLevelString[32];
-                    char    pValueString[16];
+                    FTE_CHAR pTimeString[64];
+                    FTE_CHAR pLevelString[32];
+                    FTE_CHAR pValueString[16];
                     
                     FTE_UINT32 index = (xPool.ulHead + i) % MAX_LOG_COUNT;
                 
@@ -323,7 +323,7 @@ FTE_INT32   FTE_LOG_SHELL_cmd
                 {
                     FTE_UINT32 ulCount;
                     
-                    if (! Shell_parse_number( pArgv[2], &ulCount))  
+                    if (FTE_strToUINT32( pArgv[2], &ulCount) != FTE_RET_OK)  
                     {
                         xRet = SHELL_EXIT_ERROR;
                         goto error;

@@ -17,7 +17,7 @@ typedef struct _FTE_SSD1305_CONFIG_STRUCT
 {
     FTE_UINT32     nID;
     FTE_UINT32     xType;
-    char_ptr    pName;
+    FTE_CHAR_PTR    pName;
     FTE_UINT32     xGPIOPower;
     FTE_UINT32     xI2C;       // I2C channel id
 }   FTE_SSD1305_CONFIG, _PTR_ FTE_SSD1305_CONFIG_PTR;
@@ -66,6 +66,6 @@ FTE_RET   FTE_SSD1305_ReadData(FTE_SSD1305_PTR pSSD1305, FTE_UINT8_PTR puiData);
 FTE_RET   FTE_SSD1305_SetAddress(FTE_SSD1305_PTR pSSD1305,FTE_UINT32 page, FTE_UINT32 lAddr, FTE_UINT32 hAddr);
 FTE_RET   FTE_SSD1305_SetDisplayEnable(FTE_SSD1305_PTR pSSD1305, FTE_BOOL bEnable);
 
-int_32  FTE_SSD1305_shell_cmd(int_32 argc, char_ptr argv[] );
+FTE_INT32   FTE_SSD1305_shell_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[] );
 
 #endif

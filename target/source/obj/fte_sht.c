@@ -25,8 +25,8 @@ FTE_RET FTE_SHT_stop
 static  
 void    FTE_SHT_done
 (
-    _timer_id   id, 
-    FTE_VOID_PTR     pData, 
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR pTick
 );
 
@@ -51,8 +51,8 @@ FTE_RET  FTE_SHT_startConvert
 static  
 void    FTE_SHT_restartConvert
 (
-    _timer_id       id, 
-    FTE_VOID_PTR         pData, 
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR pTick
 );
 
@@ -361,8 +361,8 @@ FTE_RET   FTE_SHT_stop
 static 
 void FTE_SHT_done
 (
-    _timer_id   id, 
-    FTE_VOID_PTR     pData, 
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR pTick
 )
 {
@@ -440,8 +440,8 @@ void FTE_SHT_done
 static 
 void FTE_SHT_restartConvert
 (
-    _timer_id   id, 
-    FTE_VOID_PTR     pData, 
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR pTick
 )
 {
@@ -1086,7 +1086,7 @@ FTE_INT32   FTE_SHT_SHELL_cmd
 
         case    4:
             {
-                if (!Shell_parse_hexnum(pArgv[1], &nID))
+                if (FTE_strToHex(pArgv[1], &nID) != FTE_RET_OK)
                 {
                     bPrintUsage = TRUE;
                     goto error;
@@ -1109,7 +1109,7 @@ FTE_INT32   FTE_SHT_SHELL_cmd
                 {
                     FTE_UINT32     ulDelay;
                     
-                    if (!Shell_parse_uint_32(pArgv[3], &ulDelay))
+                    if (FTE_strToUINT32(pArgv[3], &ulDelay) != FTE_RET_OK)
                     {
                         bPrintUsage = TRUE;
                         goto error;

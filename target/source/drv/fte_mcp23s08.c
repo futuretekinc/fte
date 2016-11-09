@@ -14,7 +14,7 @@ static FTE_RET        _FTE_MCP23S08_getRegs(FTE_MCP23S08_PTR pDev, FTE_UINT32 nR
 static FTE_RET        _FTE_MCP23S08_INT_enable(FTE_MCP23S08_PTR pDev);
 static FTE_RET        _FTE_MCP23S08_INT_disable(FTE_MCP23S08_PTR pDev);
 static FTE_RET        _FTE_MCP23S08_TIMER_start(FTE_MCP23S08_PTR pDev);
-static void             _FTE_MCP23S08_TIMER_done(_timer_id id, FTE_VOID_PTR data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
+static void           _FTE_MCP23S08_TIMER_done(FTE_TIMER_ID xTimerID, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 static FTE_RET        _FTE_MCP23S08_POLL_start(FTE_MCP23S08_PTR pDev);
 static FTE_RET        _FTE_MCP23S08_POLL_stop(FTE_MCP23S08_PTR pDev);
 
@@ -428,9 +428,9 @@ FTE_INT32  FTE_MCP23S08_SHELL_cmd
         {
             FTE_UINT32     nMCP23S08, nBit;
             
-            if ((!Shell_parse_number(pArgv[1], &nMCP23S08)) ||
+            if ((FTE_strToUINT32(pArgv[1], &nMCP23S08) != FTE_RET_OK) ||
                 (strcmp(pArgv[2], "gpio") != 0) ||
-                    (!Shell_parse_number(pArgv[3], &nBit)))
+                    (FTE_strToUINT32(pArgv[3], &nBit) != FTE_RET_OK))
             {
                 goto error;
             }
@@ -802,8 +802,8 @@ FTE_RET   _FTE_MCP23S08_TIMER_start
 
 void _FTE_MCP23S08_TIMER_done
 (
-    _timer_id   xTimerID, 
-    FTE_VOID_PTR     pData, 
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR     pTick
 )
 {

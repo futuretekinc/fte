@@ -49,7 +49,7 @@ typedef struct FTE_GUS_MODEL_INFO_STRUCT
     FTE_RET             (*fGetConfig)(FTE_OBJECT_PTR pObject, FTE_CHAR_PTR pBuff, FTE_UINT32 ulBuffLen);
     FTE_RET             (*fSetChildConfig)(FTE_OBJECT_PTR pChild, FTE_CHAR_PTR pBuff);
     FTE_RET             (*fGetChildConfig)(FTE_OBJECT_PTR pChild, FTE_CHAR_PTR pBuff, FTE_UINT32 ulBuffLen);
-
+    FTE_RET             (*fCreateJSON)(FTE_OBJECT_PTR pObject, FTE_UINT32 ulOption, FTE_JSON_OBJECT_PTR _PTR_ ppJSON);
 } FTE_GUS_MODEL_INFO, _PTR_ FTE_GUS_MODEL_INFO_PTR;
 
 typedef FTE_GUS_MODEL_INFO const _PTR_ FTE_GUS_MODEL_INFO_CONST_PTR;

@@ -11,18 +11,18 @@
 #endif
  
 static  
-FTE_RET   _FTE_DI_init(FTE_OBJECT_PTR pObj);
+FTE_RET   FTE_DI_init(FTE_OBJECT_PTR pObj);
 
 static  
-FTE_RET   _FTE_DI_run(FTE_OBJECT_PTR pObj);
+FTE_RET   FTE_DI_run(FTE_OBJECT_PTR pObj);
 
 static  
-FTE_RET   _FTE_DI_stop(FTE_OBJECT_PTR pObj);
+FTE_RET   FTE_DI_stop(FTE_OBJECT_PTR pObj);
 
 static  
-void        FTE_DI_ISR(pointer);
+void        FTE_DI_ISR(FTE_VOID_PTR);
 
-void _FTE_DI_ISR(_timer_id id, pointer pData, MQX_TICK_STRUCT_PTR pTick);
+void _FTE_DI_ISR(FTE_TIMER_ID xTimerID, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 
 FTE_DI_CONFIG FTE_GPIO_DI_defaultConfig =
 {
@@ -43,9 +43,9 @@ FTE_LIST                _xObjList = { 0, NULL, NULL};
 static  
 FTE_OBJECT_ACTION       _xAction = 
 {
-    .fInit  =   _FTE_DI_init,
-    .fRun   =   _FTE_DI_run,
-    .fStop  =   _FTE_DI_stop
+    .fInit  =   FTE_DI_init,
+    .fRun   =   FTE_DI_run,
+    .fStop  =   FTE_DI_stop
 };
 
 FTE_RET FTE_DI_attach
@@ -80,7 +80,7 @@ FTE_RET FTE_DI_attach
     }
 
     
-    if (_FTE_DI_init(pObj) != FTE_RET_OK)
+    if (FTE_DI_init(pObj) != FTE_RET_OK)
     {
         FTE_GPIO_detach(pStatus->pGPIO);
         goto error;
@@ -325,7 +325,7 @@ FTE_RET   FTE_DI_INT_unlock
 }
 
 /******************************************************************************/
-FTE_RET   _FTE_DI_init
+FTE_RET   FTE_DI_init
 (
     FTE_OBJECT_PTR  pObj
 )
@@ -357,7 +357,7 @@ FTE_RET   _FTE_DI_init
     return  FTE_RET_OK;
 }
 
-FTE_RET   _FTE_DI_run
+FTE_RET   FTE_DI_run
 (
     FTE_OBJECT_PTR  pObj
 )
@@ -374,7 +374,7 @@ FTE_RET   _FTE_DI_run
     return  FTE_RET_OK;
 }
 
-FTE_RET    _FTE_DI_stop
+FTE_RET    FTE_DI_stop
 (
     FTE_OBJECT_PTR  pObj
 )
@@ -522,8 +522,8 @@ void FTE_DI_ISR
 
 void _FTE_DI_ISR
 (
-    _timer_id   id, 
-    pointer     pData, 
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR pTick
 )
 {
@@ -563,7 +563,7 @@ FTE_INT32      FTE_DI_SHELL_cmd
                 {
                     while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
                     {
-                        char    pValueString[32];
+                        FTE_CHAR pValueString[32];
                         
                         FTE_VALUE_toString(((FTE_DI_STATUS_PTR)pObj->pStatus)->xCommon.pValue, pValueString, sizeof(pValueString));
                         printf("%08x: %16s %s\n", 
@@ -580,7 +580,7 @@ FTE_INT32      FTE_DI_SHELL_cmd
                 FTE_UINT32 nID;
                 FTE_OBJECT_PTR  pObj = NULL;
                 
-                if (!Shell_parse_number(pArgv[1], &nID))
+                if (FTE_strToUINT32(pArgv[1], &nID) != FTE_RET_OK)
                 {
                     bPrintUsage = TRUE;
                     break;
@@ -603,7 +603,7 @@ FTE_INT32      FTE_DI_SHELL_cmd
                 
                 if (pObj != NULL)
                 {
-                    char    pValueString[32];
+                    FTE_CHAR pValueString[32];
 
                     FTE_VALUE_toString(((FTE_DI_STATUS_PTR)pObj->pStatus)->xCommon.pValue, pValueString, sizeof(pValueString));                            
                     

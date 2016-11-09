@@ -8,6 +8,12 @@ FTE_RET   FTE_BOTEM_PN1500_switchCtrl(FTE_OBJECT_PTR pObj, FTE_BOOL bSwitchON);
 FTE_RET   FTE_BOTEM_PN1500_reset(FTE_OBJECT_PTR pObj);
 FTE_RET   FTE_BOTEM_PN1500_countReset(FTE_OBJECT_PTR pObj);
 FTE_RET   FTE_BOTEM_PN1500_accumCountReset(FTE_OBJECT_PTR pObj);
+FTE_RET FTE_BOTEM_PN1500_createJSON
+(
+    FTE_OBJECT_PTR  pObj,
+    FTE_UINT32      ulOption,
+    FTE_JSON_OBJECT_PTR _PTR_ ppObject
+);
 
 static FTE_UINT32  _version = 1;
 
@@ -136,7 +142,8 @@ FTE_GUS_MODEL_INFO   FTE_BOTEM_PN1500_GUSModelInfo =
     .fReceived  = FTE_BOTEM_PN1500_received,
     .fSet       = FTE_BOTEM_PN1500_set,
     .fSetConfig = FTE_BOTEM_PN1500_setConfig,
-    .fGetConfig = FTE_BOTEM_PN1500_getConfig
+    .fGetConfig = FTE_BOTEM_PN1500_getConfig,
+    .fCreateJSON= FTE_BOTEM_PN1500_createJSON
 };
 
 FTE_RET   FTE_BOTEM_PN1500_request
@@ -189,9 +196,9 @@ FTE_RET   FTE_BOTEM_PN1500_received
         pBuff[16] = 0;
         pBuff[22] = 0;
 
-        nPeopleCount = atoi((char *)&pBuff[9]);
+        nPeopleCount = atoi((FTE_CHAR_PTR)&pBuff[9]);
         bSwitch = (pBuff[15] == '1');
-        nAccum = atoi((char *)&pBuff[17]);
+        nAccum = atoi((FTE_CHAR_PTR)&pBuff[17]);
 
         FTE_VALUE_getULONG(&pStatus->xCommon.pValue[0], &nPrevPeopleCount);
         if (nPrevPeopleCount != nPeopleCount)
@@ -219,9 +226,9 @@ FTE_RET   FTE_BOTEM_PN1500_received
         pBuff[26] = 0;
         pBuff[32] = 0;
 
-        nPeopleCount = atoi((char *)&pBuff[21]);
+        nPeopleCount = atoi((FTE_CHAR_PTR)&pBuff[21]);
         bSwitch = (pBuff[12] == '1');
-        nAccum = atoi((char *)&pBuff[27]);
+        nAccum = atoi((FTE_CHAR_PTR)&pBuff[27]);
 
         FTE_VALUE_getULONG(&pStatus->xCommon.pValue[0], &nPrevPeopleCount);
         if (nPrevPeopleCount != nPeopleCount)
@@ -493,3 +500,81 @@ FTE_RET   FTE_BOTEM_PN1500_reset
     return  FTE_RET_OK;
 }
 
+
+FTE_RET FTE_BOTEM_PN1500_createJSON
+(
+    FTE_OBJECT_PTR  pObj,
+    FTE_UINT32      ulOption,
+    FTE_JSON_OBJECT_PTR _PTR_ ppJSON
+)
+{
+    
+    ASSERT((pObj != NULL) && (ppJSON != NULL));
+    
+    FTE_RET xRet;
+    FTE_JSON_VALUE_PTR  pValue = NULL;
+    FTE_JSON_OBJECT_PTR  pValues ;
+    FTE_UINT32 ulValue;
+    FTE_BOOL bValue;
+    
+    ASSERT(pObj != NULL);
+
+    pValues = (FTE_JSON_OBJECT_PTR)FTE_JSON_VALUE_createObject(3);
+    if (pValues == NULL)
+    {
+        goto error;
+    }
+    
+    FTE_VALUE_getULONG(&pObj->pStatus->pValue[0], &ulValue);
+    pValue = FTE_JSON_VALUE_createNumber(ulValue);
+    if (pValue == NULL)
+    {
+        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+        goto error;
+    }
+    if (FTE_JSON_OBJECT_setPair(pValues, "count", pValue) != FTE_RET_OK)
+    {
+        FTE_JSON_VALUE_destroy(pValue);
+        goto error;
+    }
+    
+    FTE_VALUE_getULONG(&pObj->pStatus->pValue[1], &ulValue);
+    pValue = FTE_JSON_VALUE_createNumber(ulValue);
+    if (pValue == NULL)
+    {
+        goto error;
+    }
+    if (FTE_JSON_OBJECT_setPair(pValues, "accum", pValue) != FTE_RET_OK)
+    {
+        FTE_JSON_VALUE_destroy(pValue);
+        goto error;
+    }
+
+    FTE_VALUE_getDIO(&pObj->pStatus->pValue[2], &bValue);
+    pValue = FTE_JSON_VALUE_createNumber(bValue);
+    if (pValue == NULL)
+    {
+        xRet = FTE_RET_NOT_ENOUGH_MEMORY;
+        goto error;
+    }
+    
+    xRet = FTE_JSON_OBJECT_setPair(pValues, "switch", pValue);
+    if (xRet != FTE_RET_OK)
+    {
+        FTE_JSON_VALUE_destroy(pValue);
+        goto error;
+    }                    
+    
+    *ppJSON = (FTE_JSON_OBJECT_PTR)pValue;
+    
+    return  FTE_RET_OK;
+error:
+    
+    if (pValues != NULL)
+    {
+        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+        pValues = NULL;
+    }
+    
+    return  xRet;
+}

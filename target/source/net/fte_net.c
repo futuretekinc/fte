@@ -184,9 +184,16 @@ FTE_INT32  FTE_NET_SERVER_count
     void
 )
 {
-    FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
+    FTE_RET xRet;
+    FTE_NET_CFG_PTR pConfig;
+   
+    xRet = FTE_CFG_NET_get(&pConfig);
+    if (xRet != FTE_RET_OK)
+    {
+        return  0;
+    }
     
-    return  pCfgNet->xSNMP.xTrap.ulCount;
+    return  pConfig->xSNMP.xTrap.ulCount;
 }
 
 
@@ -195,11 +202,18 @@ FTE_UINT32  FTE_NET_SERVER_getAt
     FTE_UINT32 ulIndex
 )
 {
-    FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
-     
-    if (pCfgNet->xSNMP.xTrap.ulCount > ulIndex)
+    FTE_RET xRet;
+    FTE_NET_CFG_PTR pConfig;
+    
+    xRet = FTE_CFG_NET_get(&pConfig);
+    if (xRet != FTE_RET_OK)
     {
-        return  pCfgNet->xSNMP.xTrap.pList[ulIndex];
+        return  0;
+    }
+     
+    if (pConfig->xSNMP.xTrap.ulCount > ulIndex)
+    {
+        return  pConfig->xSNMP.xTrap.pList[ulIndex];
     }
     else
     {
@@ -212,16 +226,19 @@ FTE_BOOL FTE_NET_SERVER_isExist
     _ip_address ip
 )
 {
-    FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
+    FTE_RET xRet;
+    FTE_NET_CFG_PTR pConfig;
    
-   if (pCfgNet == NULL)
+    xRet = FTE_CFG_NET_get(&pConfig);
+   
+   if (xRet != FTE_RET_OK)
     {
         return  FALSE;
     }
     
-    for(int i = 0 ; i < pCfgNet->xSNMP.xTrap.ulCount ; i++)
+    for(int i = 0 ; i < pConfig->xSNMP.xTrap.ulCount ; i++)
     {
-        if (pCfgNet->xSNMP.xTrap.pList[i] == ip)
+        if (pConfig->xSNMP.xTrap.pList[i] == ip)
         {
             return  TRUE;
         }
@@ -355,13 +372,13 @@ FTE_INT32  FTE_PHY_SHELL_cmd
             {
                 FTE_UINT32 nPhyID, nRegID, ulValue;
 
-                if (!Shell_parse_hexnum(pArgv[1], &nPhyID))
+                if (FTE_strToHex(pArgv[1], &nPhyID) != FTE_RET_OK)
                 {
                     bPrintUsage = TRUE;
                     break;
                 }
 
-                if (!Shell_parse_hexnum(pArgv[2], &nRegID))
+                if (FTE_strToHex(pArgv[2], &nRegID) != FTE_RET_OK)
                 {
                     bPrintUsage = TRUE;
                     break;
@@ -382,19 +399,19 @@ FTE_INT32  FTE_PHY_SHELL_cmd
             {
                 FTE_UINT32 nPhyID, nRegID, ulValue ;
 
-                if (!Shell_parse_hexnum(pArgv[1], &nPhyID))
+                if (FTE_strToHex(pArgv[1], &nPhyID) != FTE_RET_OK)
                 {
                     bPrintUsage = TRUE;
                     break;
                 }
 
-                if (!Shell_parse_hexnum(pArgv[2], &nRegID))
+                if (FTE_strToHex(pArgv[2], &nRegID) != FTE_RET_OK)
                 {
                     bPrintUsage = TRUE;
                     break;
                 }
 
-                if (!Shell_parse_hexnum(pArgv[3], &ulValue))
+                if (FTE_strToHex(pArgv[3], &ulValue) != FTE_RET_OK)
                 {
                     bPrintUsage = TRUE;
                     break;
@@ -517,7 +534,7 @@ FTE_INT32 FTE_NET_SHELL_cmd
 
                 if (strcmp (pArgv[2], "add") == 0)
                 {
-                    if (! Shell_parse_ip_address (pArgv[3], &xDNS))
+                    if (FTE_strToIP(pArgv[3], &xDNS) != FTE_RET_OK)
                     {
                         printf ("Error in dns command, invalid ip address!\n");
                         return SHELL_EXIT_ERROR;
@@ -534,7 +551,7 @@ FTE_INT32 FTE_NET_SHELL_cmd
                 }
                 else if (strcmp (pArgv[2], "del") == 0)
                 {
-                    if (! Shell_parse_ip_address (pArgv[3], &xDNS))
+                    if (FTE_strToIP(pArgv[3], &xDNS) != FTE_RET_OK)
                     {
                         printf ("Error in dns command, invalid ip address!\n");
                         return SHELL_EXIT_ERROR;
@@ -568,21 +585,21 @@ FTE_INT32 FTE_NET_SHELL_cmd
                 _ip_address xNetmask = 0;
                 _ip_address xGatewayIP= 0;
 
-                if (! Shell_parse_ip_address (pArgv[2], &xHostIP))
+                if (FTE_strToIP(pArgv[2], &xHostIP) != FTE_RET_OK)
                 {
                     printf ("Error in parameter, invalid ip address!\n");
                     nRet = SHELL_EXIT_ERROR;
                     goto error;
                 }
 
-                if (! Shell_parse_ip_address (pArgv[3], &xNetmask))
+                if (FTE_strToIP(pArgv[3], &xNetmask) != FTE_RET_OK)
                 {
                     printf ("Error in parameter, invalid netmask!\n");
                     nRet = SHELL_EXIT_ERROR;
                     goto error;
                 }
 
-                if (! Shell_parse_ip_address (pArgv[4], &xGatewayIP))
+                if (FTE_strToHex(pArgv[4], &xGatewayIP) != FTE_RET_OK)
                 {
                     printf ("Error in parameter, invalid gateway ip address!\n");
                     nRet = SHELL_EXIT_ERROR;

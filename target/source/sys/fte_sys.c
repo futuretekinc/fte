@@ -496,12 +496,12 @@ FTE_UINT32  _hFactoryResetTimer = 0;
 
 void _FTE_SYS_CB_factoryReset
 (
-    _timer_id   nID, 
-    pointer     pData, 
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR pTick
 )
 {
-    if (nID == _hFactoryResetTimer)
+    if (xTimerID == _hFactoryResetTimer)
     {
         printf("Factory Reset!\n");
         FTE_CFG_clear();
@@ -592,7 +592,7 @@ FTE_INT32  FTE_SYS_SHELL_cmd
                 {
                     FTE_UINT32  ulKeepAliveTime = 0;
                     
-                    if (!Shell_parse_uint_32(pArgv[2], &ulKeepAliveTime))
+                    if (FTE_strToUINT32(pArgv[2], &ulKeepAliveTime) != FTE_RET_OK)
                     {
                         if (ulKeepAliveTime > FTE_SYS_KEEP_ALIVE_TIME_MAX)
                         {

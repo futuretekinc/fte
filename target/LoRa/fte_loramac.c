@@ -325,7 +325,7 @@ void FTE_LORAMAC_onTxDone( void * params )
 
 void FTE_LORAMAC_onRxDone( void * params, uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
-    static char pBuff[256];
+    static FTE_CHAR  pBuff[256];
     
     Radio.Sleep( );
     pLoRaMac->ulBufferSize = size;

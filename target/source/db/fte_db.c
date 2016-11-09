@@ -437,7 +437,7 @@ FTE_INT32   FTE_DB_SHELL_cmd
             {
                 FTE_UINT32 xID;
                 
-                if (Shell_parse_hexnum(pArgv[2], &xID) == FALSE)
+                if (FTE_strToHex(pArgv[2], &xID) != FTE_RET_OK)
                 {
                     bPrintUsage = TRUE;
                     break;
@@ -449,7 +449,7 @@ FTE_INT32   FTE_DB_SHELL_cmd
             {
                 FTE_UINT32 xID;
                 
-                if (Shell_parse_hexnum(pArgv[2], &xID) == FALSE)
+                if (FTE_strToHex(pArgv[2], &xID) != FTE_RET_OK)
                 {
                     bPrintUsage = TRUE;
                     break;
@@ -467,13 +467,13 @@ FTE_INT32   FTE_DB_SHELL_cmd
                 FTE_DB_VALUE    xValue;
                 FTE_UINT32         xID;
                 
-                if (Shell_parse_hexnum(pArgv[2], &xID) == FALSE)
+                if (FTE_strToHex(pArgv[2], &xID) != FTE_RET_OK)
                 {
                     bPrintUsage = TRUE;
                     break;
                 }
 
-                if (Shell_parse_hexnum(pArgv[3], &xValue.ulValue) == FALSE)
+                if (FTE_strToHex(pArgv[3], &xValue.ulValue) != FTE_RET_OK)
                 {
                     bPrintUsage = TRUE;
                     break;
@@ -489,7 +489,7 @@ FTE_INT32   FTE_DB_SHELL_cmd
             {
                 FTE_UINT32 xID;
                 
-                if (Shell_parse_hexnum(pArgv[2], &xID) == FALSE)
+                if (FTE_strToHex(pArgv[2], &xID) != FTE_RET_OK)
                 {
                     bPrintUsage = TRUE;
                     break;
@@ -501,13 +501,13 @@ FTE_INT32   FTE_DB_SHELL_cmd
             {
                 FTE_UINT32 ulAddress, ulLen;
                 
-                if (Shell_parse_hexnum(pArgv[2], &ulAddress) == FALSE)
+                if (FTE_strToHex(pArgv[2], &ulAddress) != FTE_RET_OK)
                 {
                     bPrintUsage = TRUE;
                     break;
                 }
                 
-                if (Shell_parse_number(pArgv[3], &ulLen) == FALSE)
+                if (FTE_strToUINT32(pArgv[3], &ulLen) != FTE_RET_OK)
                 {
                     bPrintUsage = TRUE;
                     break;

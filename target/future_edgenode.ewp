@@ -2651,9 +2651,6 @@
       </group>
       <group>
         <name>http</name>
-        <excluded>
-          <configuration>Debug</configuration>
-        </excluded>
         <group>
           <name>scripts</name>
           <file>
@@ -2677,6 +2674,9 @@
         </file>
         <file>
           <name>$PROJ_DIR$\source\net\http\fte_json.c</name>
+          <excluded>
+            <configuration>Debug</configuration>
+          </excluded>
         </file>
         <file>
           <name>$PROJ_DIR$\source\net\http\fte_tfs_data.c</name>
@@ -2883,6 +2883,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\source\fte_time.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\source\fte_timer.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\source\fte_utils.c</name>

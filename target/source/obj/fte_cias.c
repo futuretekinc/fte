@@ -221,9 +221,10 @@ FTE_GUS_MODEL_INFO    FTE_CIAS_SIOUX_CU_GUSModelInfo =
     .xFlags         = FTE_GUS_FLAG_SHARED,
     .nFieldCount    = FTE_CIAS_SIOUX_CU_ALARM_MAX + FTE_CIAS_SIOUX_CU_ZONE_MAX,
     .pValueTypes    = FTE_CIAS_SIOUX_CU_valueTypes,
-    .f_attach       = FTE_CIAS_SIOUX_CU_attach,
-    .f_detach       = FTE_CIAS_SIOUX_CU_detach,
-    .f_get          = FTE_CIAS_SIOUX_CU_get,
+    .fAttach        = FTE_CIAS_SIOUX_CU_attach,
+    .fDetach        = FTE_CIAS_SIOUX_CU_detach,
+    .fGet           = FTE_CIAS_SIOUX_CU_get,
+    .fCreateJSON    = FTE_CIAS_SIOUX_CU_createJSON
 };
 
 FTE_RET   FTE_CIAS_SIOUX_CU_attach
@@ -450,7 +451,7 @@ void FTE_CIAS_SIOUX_CU_task
     FTE_UCS_PTR pUCS = FTE_UCS_get(((FTE_CIAS_SIOUX_CU_CONFIG_PTR)pObj->pConfig)->xGUS.nUCSID);
     
    
-    while(1)
+    while(TRUE)
     {
         FTE_UINT32 i, nZone;
         FTE_UINT32 ulAlarms[FTE_CIAS_SIOUX_CU_ALARM_MAX] = {0,};
@@ -607,6 +608,100 @@ void FTE_CIAS_SIOUX_CU_task
     }      
 }
 
+FTE_RET FTE_FTLM_createJSON
+(
+    FTE_OBJECT_PTR  pObj,
+    FTE_UINT32      ulOption,
+    FTE_JSON_OBJECT_PTR _PTR_ ppJSON
+)
+{
+    
+    ASSERT((pObj != NULL) && (ppJSON != NULL));
+    
+    FTE_RET xRet;
+    FTE_JSON_VALUE_PTR  pValue = NULL;
+    FTE_JSON_OBJECT_PTR  pValues ;
+    FTE_UINT32  ulCmd;
+    FTE_UINT32  ulLevel;
+    FTE_UINT32  ulTime;
+    FTE_UINT32  ulValue;
+    FTE_BOOL    bValue;
+    
+    ASSERT((pObj != NULL) && (ppJSON != NULL));
+    
+    pValues = (FTE_JSON_OBJECT_PTR)FTE_JSON_VALUE_createObject(3);
+    if (pValues == NULL)
+    {
+        goto error;
+    }   
+
+    FTE_VALUE_getULONG(&pObj->pStatus->pValue[0], &ulValue);
+    pValue = FTE_JSON_VALUE_createNumber(ulValue);
+    if (pValue == NULL)
+    {
+        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+        goto error;
+    }
+    if (FTE_JSON_OBJECT_setPair(pValues, "count", pValue) != FTE_RET_OK)
+    {
+        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+        FTE_JSON_VALUE_destroy(pValue);
+        goto error;
+    }
+    
+    FTE_VALUE_getULONG(&pObj->pStatus->pValue[1], &ulValue);
+    pValue = FTE_JSON_VALUE_createNumber(ulValue);
+    if (pValue == NULL)
+    {
+        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+        goto error;
+    }
+    if (FTE_JSON_OBJECT_setPair(pValues, "accum", pValue) != FTE_RET_OK)
+    {
+        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+        FTE_JSON_VALUE_destroy(pValue);
+        goto error;
+    }
+
+    FTE_VALUE_getDIO(&pObj->pStatus->pValue[2], &bValue);
+    pValue = FTE_JSON_VALUE_createNumber(bValue);
+    if (pValue == NULL)
+    {
+        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+        goto error;
+    }
+    if (FTE_JSON_OBJECT_setPair(pValues, "switch", pValue) != FTE_RET_OK)
+    {
+        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+        FTE_JSON_VALUE_destroy(pValue);
+        goto error;
+    }                    
+    
+    if (FTE_JSON_OBJECT_setPair(pObject, "value", (FTE_JSON_VALUE_PTR)pValues) != FTE_RET_OK)
+    {
+        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+        goto error;
+    }                    
+    
+    *ppJSON = pValue;
+    
+    return  FTE_RET_OK;
+error:
+    
+    if (pValues != NULL)
+    {
+        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+        pValues = NULL;
+    }
+    
+    if (pObject != NULL)
+    {
+        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pObject);
+        pObject = NULL;
+    }
+    
+    return  xRet;
+}
 
 FTE_INT32   FTE_CIAS_SIOUX_CU_SHELL_cmd
 (   
@@ -655,7 +750,7 @@ FTE_INT32   FTE_CIAS_SIOUX_CU_SHELL_cmd
 
             if (strcmp(pArgv[2], "run") == 0)
             {
-                if ((!Shell_parse_number(pArgv[1], &ulZone)) || (ulZone < 1 || FTE_CIAS_SIOUX_CU_ZONE_MAX < ulZone))
+                if ((FTE_strToUINT32(pArgv[1], &ulZone) != FTE_RET_OK) || (ulZone < 1 || FTE_CIAS_SIOUX_CU_ZONE_MAX < ulZone))
                 {
                     printf ("Error in %s command, invalid zone!\n", pArgv[0]);
                     return SHELL_EXIT_ERROR;
@@ -669,7 +764,7 @@ FTE_INT32   FTE_CIAS_SIOUX_CU_SHELL_cmd
             }
             else if (strcmp(pArgv[2], "stop") == 0)
             {
-                if ((!Shell_parse_number(pArgv[1], &ulZone)) || (ulZone < 1 || FTE_CIAS_SIOUX_CU_ZONE_MAX < ulZone))
+                if ((FTE_strToUINT32(pArgv[1], &ulZone) != FTE_RET_OK) || (ulZone < 1 || FTE_CIAS_SIOUX_CU_ZONE_MAX < ulZone))
                 {
                     printf ("Error in %s command, invalid zone!\n", pArgv[0]);
                     return SHELL_EXIT_ERROR;
@@ -685,7 +780,7 @@ FTE_INT32   FTE_CIAS_SIOUX_CU_SHELL_cmd
             {
                 FTE_UINT32  ulSN;
                
-                if (!Shell_parse_number(pArgv[2], &ulSN) || (127 < ulSN))
+                if (FTE_strToUINT32(pArgv[2], &ulSN) != FTE_RET_OK || (127 < ulSN))
                 {
                     printf ("Error in %s command, invalid sensor number!\n", pArgv[0]);
                     return SHELL_EXIT_ERROR;
@@ -698,7 +793,7 @@ FTE_INT32   FTE_CIAS_SIOUX_CU_SHELL_cmd
             {
                 FTE_UINT32  ulDistance;
                
-                if (!Shell_parse_number(pArgv[2], &ulDistance) || (ulDistance == 0) || (1000 < ulDistance))
+                if (FTE_strToUINT32(pArgv[2], &ulDistance) != FTE_RET_OK || (ulDistance == 0) || (1000 < ulDistance))
                 {
                     printf ("Error in %s command, invalid distance between sensors!\n", pArgv[0]);
                     return SHELL_EXIT_ERROR;
@@ -716,13 +811,13 @@ FTE_INT32   FTE_CIAS_SIOUX_CU_SHELL_cmd
             {
                 FTE_UINT32  ulZone, ulDN;
                
-                if ((!Shell_parse_number(pArgv[1], &ulZone)) || (ulZone < 1 || FTE_CIAS_SIOUX_CU_ZONE_MAX < ulZone))
+                if ((FTE_strToUINT32(pArgv[1], &ulZone) != FTE_RET_OK) || (ulZone < 1 || FTE_CIAS_SIOUX_CU_ZONE_MAX < ulZone))
                 {
                     printf ("Error in %s command, invalid zone!\n", pArgv[0]);
                     return SHELL_EXIT_ERROR;
                 }
                
-                if (!Shell_parse_number(pArgv[3], &ulDN) || (127 < ulDN))
+                if (FTE_strToUINT32(pArgv[3], &ulDN) != FTE_RET_OK || (127 < ulDN))
                 {
                     printf ("Error in %s command, invalid device number!\n", pArgv[0]);
                     return SHELL_EXIT_ERROR;
@@ -771,4 +866,6 @@ FTE_INT32   FTE_CIAS_SIOUX_CU_SHELL_cmd
     
     return  nRet;
 } 
+
+
 #endif

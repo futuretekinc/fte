@@ -75,7 +75,7 @@ typedef struct
 
 static const FTE_CHAR_PTR _unknown = "";
 
-static char         _buff[2048];
+static FTE_CHAR     _buff[2048];
 static FTE_LIST     _trapList;
 static FTE_LIST     _trapServerList;
 static FTE_UINT32   ulReqAlertCount = 0;
@@ -569,7 +569,14 @@ FTE_UINT32 MIB_get_netType
     FTE_VOID_PTR     dummy
 )
 {
-    FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
+    FTE_RET xRet;
+    FTE_NET_CFG_PTR pCfgNet;
+    
+    xRet = FTE_CFG_NET_get(&pCfgNet);
+    if (xRet != FTE_RET_OK)
+    {
+        return  FTE_NET_TYPE_STATIC;
+    }
     
     return  pCfgNet->nType;
 }
@@ -580,8 +587,6 @@ FTE_CHAR const _PTR_ MIB_get_netMacAddr
 )
 {
     _enet_address   xMACAddress;
-    
-    FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
     
     FTE_SYS_getMAC(xMACAddress);
     sprintf(_buff, "%02x:%02x:%02x:%02x:%02x:%02x", 
@@ -597,7 +602,14 @@ FTE_CHAR const _PTR_ MIB_get_netIpAddr
     FTE_VOID_PTR     dummy
 )
 {
-    FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
+    FTE_RET xRet;
+    FTE_NET_CFG_PTR pCfgNet;
+    
+    xRet = FTE_CFG_NET_get(&pCfgNet);
+    if (xRet != FTE_RET_OK)
+    {
+        return  "0.0.0.0";
+    }
     
     sprintf(_buff, "%d.%d.%d.%d", IPBYTES(pCfgNet->xIPData.ip));
     
@@ -609,7 +621,14 @@ FTE_CHAR const _PTR_ MIB_get_netNetMask
     FTE_VOID_PTR     dummy
 )
 {
-    FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
+    FTE_RET xRet;
+    FTE_NET_CFG_PTR pCfgNet;
+   
+    xRet = FTE_CFG_NET_get(&pCfgNet);
+    if (xRet != FTE_RET_OK)
+    {
+        return  "255.255.255.255";
+    }
     
     sprintf(_buff, "%d.%d.%d.%d", IPBYTES(pCfgNet->xIPData.mask));
     
@@ -621,7 +640,14 @@ FTE_CHAR const _PTR_ MIB_get_netGateway
     FTE_VOID_PTR     dummy
 )
 {
-    FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
+    FTE_RET xRet;
+    FTE_NET_CFG_PTR pCfgNet;
+   
+    xRet = FTE_CFG_NET_get(&pCfgNet);
+    if (xRet != FTE_RET_OK)
+    {
+        return  "";
+    }
     
     sprintf(_buff, "%d.%d.%d.%d", IPBYTES(pCfgNet->xIPData.gateway));
     
@@ -2361,26 +2387,33 @@ FTE_BOOL MIB_find_tsEntry
     FTE_VOID_PTR _PTR_  instance
 )
 { 
-    FTE_UINT32         serverIndex = *(FTE_UINT32_PTR)index;
-    FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
+    FTE_RET         xRet;
+    FTE_UINT32      ulServerIndex = *(FTE_UINT32_PTR)index;
+    FTE_NET_CFG_PTR pCfgNet;
+   
+    xRet = FTE_CFG_NET_get(&pCfgNet);
+    if (xRet != FTE_RET_OK)
+    {
+        return  FALSE;
+    }
 
     if (pCfgNet->xSNMP.xTrap.ulCount == 0)
     {
         return  FALSE;
     }
     
-    if ((op == RTCSMIB_OP_GETNEXT) && (serverIndex == 0)) 
+    if ((op == RTCSMIB_OP_GETNEXT) && (ulServerIndex == 0)) 
     {
-        serverIndex = 1;
+        ulServerIndex = 1;
     } 
     
-    if (serverIndex > pCfgNet->xSNMP.xTrap.ulCount)
+    if (ulServerIndex > pCfgNet->xSNMP.xTrap.ulCount)
     {
         return  FALSE;
     }
 
-    *instance = (FTE_VOID_PTR)&pCfgNet->xSNMP.xTrap.pList[serverIndex - 1];
-    *(FTE_UINT32_PTR)index = serverIndex;
+    *instance = (FTE_VOID_PTR)&pCfgNet->xSNMP.xTrap.pList[ulServerIndex - 1];
+    *(FTE_UINT32_PTR)index = ulServerIndex;
                     
     return TRUE;
 } /* Endbody */
@@ -2397,7 +2430,14 @@ FTE_CHAR const _PTR_ MIB_get_tsIpAddr(FTE_VOID_PTR dummy)
 
 FTE_UINT32 MIB_get_tsCount(FTE_VOID_PTR dummy)
 {
-    FTE_NET_CFG_PTR pCfgNet = FTE_CFG_NET_get();
+    FTE_RET xRet;
+    FTE_NET_CFG_PTR pCfgNet;
+   
+    xRet = FTE_CFG_NET_get(&pCfgNet);
+    if (xRet != FTE_RET_OK)
+    {
+        return  0;
+    }
 
     if (pCfgNet == NULL)
     {
@@ -2426,7 +2466,7 @@ FTE_UINT32 MIB_set_tsAdd(FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVa
     strncpy(_buff, (FTE_CHAR_PTR)pVar, ulVarLen);
     _buff[ulVarLen] = '\0';
     
-    if (fte_parse_ip_address((FTE_CHAR_PTR)_buff, &nIP) != TRUE)
+    if (FTE_strToIP((FTE_CHAR_PTR)_buff, &nIP) != FTE_RET_OK)
     {
         return  SNMP_ERROR_badValue;
     }
@@ -2453,7 +2493,7 @@ FTE_UINT32 MIB_set_tsDel(FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVa
     strncpy(_buff, (FTE_CHAR_PTR)pVar, ulVarLen);
     _buff[ulVarLen] = '\0';
     
-    if (fte_parse_ip_address((FTE_CHAR_PTR)_buff, &nIP) != TRUE)
+    if (FTE_strToIP((FTE_CHAR_PTR)_buff, &nIP) != FTE_RET_OK)
     {
          return  SNMP_ERROR_badValue;
     }
@@ -2467,13 +2507,30 @@ FTE_UINT32 MIB_set_tsDel(FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVa
 }
 
 
-FTE_CHAR const _PTR_ MIB_get_msgDiscovery(FTE_VOID_PTR pParam)
+FTE_CHAR const _PTR_ MIB_get_msgDiscovery
+(
+    FTE_VOID_PTR    pParam
+)
 { 
-    return  FTE_SMNG_getDiscoveryMessage();
+    FTE_RET xRet;
+    
+    _buff[sizeof(_buff) - 1] = '\0';
+    xRet = FTE_SMNG_getDiscoveryMessage(_buff, sizeof(_buff) - 1);
+    if (xRet != FTE_RET_OK)
+    {
+        _buff[0] = '\0';
+    }
+    
+    return  _buff;
 }
 
-FTE_CHAR const _PTR_ MIB_get_msgAlert(FTE_VOID_PTR pParam)
+FTE_CHAR const _PTR_ MIB_get_msgAlert
+(
+    FTE_VOID_PTR    pParam
+)
 {
+    FTE_RET xRet;
+    
     if ((pCurrentTrapMsg != NULL) && (pCurrentTrapMsg->xType == FTE_NET_SNMP_TRAP_TYPE_ALERT))
     {
         if (pCurrentTrapMsg->pBuff == NULL)
@@ -2485,8 +2542,10 @@ FTE_CHAR const _PTR_ MIB_get_msgAlert(FTE_VOID_PTR pParam)
                 return  _unknown;
             }
             
-            FTE_JSON_VALUE_PTR  pJSONValue = (FTE_JSON_VALUE_PTR)FTE_OBJ_createJSON(pObj, FTE_OBJ_FIELD_DID | FTE_OBJ_FIELD_EP_VALUE);
-            if (pJSONValue == NULL)
+            FTE_JSON_VALUE_PTR  pJSONValue;
+           
+            xRet  = FTE_OBJ_createJSON(pObj, FTE_OBJ_FIELD_DID | FTE_OBJ_FIELD_EP_VALUE, (FTE_JSON_OBJECT_PTR _PTR_)&pJSONValue);
+            if (xRet != FTE_RET_OK)
             {
                 ERROR("Not enough memory!\n");
                 return  _unknown;
@@ -2587,7 +2646,7 @@ FTE_UINT32 MIB_set_adminSystemTime(FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_U
 
     strncpy(_buff, (FTE_CHAR_PTR)pVar, ulVarLen);
     _buff[ulVarLen] = '\0';
-    if (FTE_TIME_toTime((FTE_CHAR_PTR)_buff, &xTime) != FTE_RET_OK)
+    if (FTE_TIME_fromStr(&xTime, (FTE_CHAR_PTR)_buff) != FTE_RET_OK)
     {
         return  SNMP_ERROR_badValue;
     }
@@ -2613,22 +2672,46 @@ FTE_CHAR const _PTR_ MIB_get_adminReset(FTE_VOID_PTR dummy)
     return  _buff;
 }
 
-static void _config_save(FTE_VOID_PTR pParams)
+static 
+void FTE_SNMP_configSave
+(
+    FTE_TIMER_ID   xTimerID, 
+    FTE_VOID_PTR   pData, 
+    FTE_UINT32      ulSecs,
+    FTE_UINT32      ulMilliSecs
+)
 {
     FTE_CFG_save(TRUE);
 }
 
-FTE_UINT32 MIB_set_adminReset(FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
+void FTE_SNMP_reset
+(
+    FTE_TIMER_ID   xTimerID, 
+    FTE_VOID_PTR   pData, 
+    FTE_UINT32      ulSecs,
+    FTE_UINT32      ulMilliSecs
+)
+{
+    FTE_SYS_reset();
+}
+
+
+FTE_UINT32 MIB_set_adminReset
+(
+    FTE_VOID_PTR    dummy, 
+    FTE_UINT8_PTR   pVar, 
+    FTE_UINT32      ulVarLen
+)
 {
     sprintf(_buff, "%08x", _nResetKey);
 
-    if ((_nResetKey == 0) || ulVarLen != 8 || strncmp(_buff, (char*)pVar, 8) != 0)
+    if ((_nResetKey == 0) || ulVarLen != 8 || strncmp(_buff, (FTE_CHAR_PTR)pVar, 8) != 0)
     {
         return  SNMP_ERROR_wrongValue;
     }
     
-    FTE_SYS_TIMER_add(1, 1, (LWTIMER_ISR_FPTR)_config_save, NULL);
-    FTE_SYS_TIMER_add(3, 1, (LWTIMER_ISR_FPTR)FTE_SYS_reset, NULL);
+    FTE_TIMER_startOneshotAfter(FTE_SNMP_configSave, NULL, 1000, NULL);
+    FTE_TIMER_startOneshotAfter(FTE_SNMP_reset, NULL, 3000, NULL);
 
     return   SNMP_ERROR_noError;
 }
@@ -4326,7 +4409,7 @@ FTE_INT32  FTE_SNMPD_SHELL_cmd(FTE_INT32 argc, FTE_CHAR_PTR argv[] )
                 {
                     _ip_address ip;
                     
-                    if (! fte_parse_ip_address (argv[3], &ip))
+                    if (FTE_strToIP(argv[3], &ip) != FTE_RET_OK)
                     {
                         printf ("Error!, invalid ip address!\n");
                         
@@ -4345,7 +4428,7 @@ FTE_INT32  FTE_SNMPD_SHELL_cmd(FTE_INT32 argc, FTE_CHAR_PTR argv[] )
                 {
                     _ip_address ip;
                     
-                    if (! fte_parse_ip_address (argv[3], &ip))
+                    if (FTE_strToIP(argv[3], &ip) != FTE_RET_OK)
                     {
                         printf ("Error!, invalid ip address!\n");
                         
@@ -4368,7 +4451,7 @@ FTE_INT32  FTE_SNMPD_SHELL_cmd(FTE_INT32 argc, FTE_CHAR_PTR argv[] )
                 {
                     _ip_address ip;
                     
-                    if (! fte_parse_ip_address (argv[3], &ip))
+                    if (FTE_strToIP(argv[3], &ip) != FTE_RET_OK)
                     {
                         printf ("Error!, invalid ip address!\n");
                         

@@ -9,9 +9,9 @@
 static FTE_RET  _FTE_DS18B20_init(FTE_OBJECT_PTR pObj);
 static FTE_RET  _FTE_DS18B20_run(FTE_OBJECT_PTR pObj);
 static FTE_RET  _FTE_DS18B20_stop(FTE_OBJECT_PTR pObj);
-static void     _FTE_DS18B20_done(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
+static void     _FTE_DS18B20_done(FTE_TIMER_ID xTimerID, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 static FTE_RET  _FTE_DS18B20_start_convert(FTE_OBJECT_PTR pObj);
-static void     _FTE_DS18B20_restart_convert(_timer_id id, pointer data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
+static void     _FTE_DS18B20_restart_convert(FTE_TIMER_ID xTimerID, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 static FTE_RET  _FTE_DS18B20_get_temperature(FTE_OBJECT_PTR pObj, FTE_INT32_PTR pnTemperature);
 static FTE_RET  _FTE_DS18B20_get_sn(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pBuff, FTE_UINT32 nLen);
 static FTE_RET  _FTE_DS18B20_get_update_interval(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pulInterval);
@@ -312,12 +312,12 @@ FTE_RET   _FTE_DS18B20_stop
 
 static void _FTE_DS18B20_restart_convert
 (
-    _timer_id   id, 
-    pointer     data_ptr, 
-    MQX_TICK_STRUCT_PTR     tick_ptr
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
+    MQX_TICK_STRUCT_PTR     pTick
 )
 {
-    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)data_ptr;
+    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)pData;
     MQX_TICK_STRUCT     xDTicks;            
     FTE_DS18B20_STATUS_PTR  pStatus = (FTE_DS18B20_STATUS_PTR)pObj->pStatus;
 
@@ -341,13 +341,13 @@ static void _FTE_DS18B20_restart_convert
 static 
 void _FTE_DS18B20_done
 (
-    _timer_id   id, 
-    pointer     data_ptr, 
-    MQX_TICK_STRUCT_PTR     tick_ptr
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
+    MQX_TICK_STRUCT_PTR     pTick
 )
 {
     FTE_INT32                  nTemperature;
-    FTE_OBJECT_PTR          pObj = (FTE_OBJECT_PTR)data_ptr;
+    FTE_OBJECT_PTR          pObj = (FTE_OBJECT_PTR)pData;
     FTE_DS18B20_STATUS_PTR  pStatus = (FTE_DS18B20_STATUS_PTR)pObj->pStatus;
 
     pStatus->hConvertTimer = 0;
@@ -488,7 +488,7 @@ FTE_INT32  FTE_DS18B20_SHELL_cmd
                     }
                     else
                     {
-                        if (! Shell_parse_number( pArgv[2], &xParams.nBUSID))  
+                        if (FTE_strToUINT32( pArgv[2], &xParams.nBUSID) != FTE_RET_OK)  
                         {
                            xRet = SHELL_EXIT_ERROR;
                            goto error;
@@ -539,13 +539,13 @@ FTE_INT32  FTE_DS18B20_SHELL_cmd
                 
             case    4:
                 {
-                    if (! Shell_parse_number( pArgv[2], &xParams.nBUSID))  
+                    if (FTE_strToUINT32( pArgv[2], &xParams.nBUSID) != FTE_RET_OK)  
                     {
                        xRet = SHELL_EXIT_ERROR;
                        goto error;
                     }
 
-                    if (! Shell_parse_number( pArgv[3], &nIndex))  
+                    if (FTE_strToUINT32( pArgv[3], &nIndex) != FTE_RET_OK)  
                     {
                        xRet = SHELL_EXIT_ERROR;
                        goto error;

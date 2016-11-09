@@ -438,7 +438,7 @@ FTE_INT32  FTE_SPI_SHELL_cmd
                         goto error;
                     }
                     
-                    if (! Shell_parse_hexnum( pArgv[1], &id))  
+                    if (FTE_strToHex( pArgv[1], &id) != FTE_RET_OK)  
                     {
                        xRet = SHELL_EXIT_ERROR;
                        goto error;
@@ -450,7 +450,7 @@ FTE_INT32  FTE_SPI_SHELL_cmd
                         goto error;
                     }
                     
-                    if (! Shell_parse_number( pArgv[3], &nCmdLen))
+                    if (FTE_strToUINT32( pArgv[3], &nCmdLen) != FTE_RET_OK)
                     {
                        xRet = SHELL_EXIT_ERROR;
                        goto error;
@@ -465,11 +465,13 @@ FTE_INT32  FTE_SPI_SHELL_cmd
                     for(i = 0 ; i < nCmdLen ; i++)
                     {
                         FTE_UINT32 nValue;
-                        Shell_parse_hexnum( pArgv[4 + i], &nValue);
-                        pSendBuff[i] = nValue;
+                        if (FTE_strToHex(pArgv[4 + i], &nValue) == FTE_RET_OK)
+                        {
+                            pSendBuff[i] = nValue;
+                        }
                     }
                     
-                    if (! Shell_parse_number( pArgv[4 + nCmdLen], &nRecvLen))
+                    if (FTE_strToUINT32( pArgv[4 + nCmdLen], &nRecvLen) != FTE_RET_OK)
                     {
                        xRet = SHELL_EXIT_ERROR;
                        goto error;
@@ -499,7 +501,7 @@ FTE_INT32  FTE_SPI_SHELL_cmd
                         goto error;
                     }
                     
-                    if (! Shell_parse_hexnum( pArgv[1], &nID))  
+                    if (FTE_strToHex( pArgv[1], &nID) != FTE_RET_OK)  
                     {
                        xRet = SHELL_EXIT_ERROR;
                        goto error;
@@ -507,7 +509,7 @@ FTE_INT32  FTE_SPI_SHELL_cmd
 
                     pSPI = FTE_SPI_get(nID);
                     
-                    if (! Shell_parse_number( pArgv[3], &nSendLen))
+                    if (FTE_strToUINT32( pArgv[3], &nSendLen) != FTE_RET_OK)
                     {
                        xRet = SHELL_EXIT_ERROR;
                        goto error;
@@ -516,7 +518,7 @@ FTE_INT32  FTE_SPI_SHELL_cmd
                     for(i = 0 ; i < nSendLen ; i++)
                     {
                         FTE_UINT32 nValue;
-                        if (! Shell_parse_hexnum( pArgv[4+i], &nValue))
+                        if (FTE_strToHex( pArgv[4+i], &nValue) != FTE_RET_OK)
                         {
                            xRet = SHELL_EXIT_ERROR;
                            goto error;
@@ -541,7 +543,7 @@ FTE_INT32  FTE_SPI_SHELL_cmd
                         goto error;
                     }
                     
-                    if (! Shell_parse_hexnum( pArgv[1], &nID))  
+                    if (FTE_strToHex( pArgv[1], &nID) != FTE_RET_OK)  
                     {
                        xRet = SHELL_EXIT_ERROR;
                        goto error;

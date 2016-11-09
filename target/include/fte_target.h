@@ -15,6 +15,8 @@
 #include "fte_debug.h"
 #include "fte_task.h"
 #include "fte_sys.h"
+#include "fte_timer.h"
+
 #define VERSION(A,B,C,D)                ((((A) & 0xFF) << 24) | (((B) & 0xFF) << 16) | (((C) & 0xFF) << 8) | ((D) & 0xFF))
 
 #define FTE_STATE_POWER_UP              0x0001
@@ -89,7 +91,8 @@
      
 /* Use this define to tell example if only one server should be used for all interfaces */
 #define FTE_NET_HTTP_MAX_SESSION        6
-#define FTE_NET_HTTP_STACK_SIZE         (FTE_TASK_DEFAULT_STACK * 4)
+#define FTE_NET_HTTP_NAME               "http"
+#define FTE_NET_HTTP_STACK              (FTE_TASK_DEFAULT_STACK * 4)
 #define FTE_NET_HTTP_CGI_BUFF_SIZE      1536
 
 #define FTE_NET_HTTP_INET_AF            AF_INET         
@@ -124,12 +127,12 @@
 
 typedef struct _PRODUCT_DESC_STRUCT
 {
-    char_ptr            pModel;
-    char_ptr            pManufacturer;
+    FTE_CHAR_PTR    pModel;
+    FTE_CHAR_PTR    pManufacturer;
     struct
     {
-        uint_32         hw; 
-        uint_32         sw;
+        FTE_UINT32  hw; 
+        FTE_UINT32  sw;
     } xVersion;
 }   FTE_PRODUCT_DESC, _PTR_ FTE_PRODUCT_DESC_PTR;
 

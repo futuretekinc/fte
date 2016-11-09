@@ -350,7 +350,7 @@ FTE_RET    FTE_EVENT_check
     
     if (bChanged)
     {
-        char    pBuff[32];
+        FTE_CHAR pBuff[32];
             
         FTE_VALUE_toString(pObj->pStatus->pValue, pBuff, 32);
         TRACE(DEBUG_EVENT, "Event : %08x [%s]\n", pEvent->pConfig->ulEPID, pBuff, (pEvent->xState.bOccurred)?"Release":"Occurred");
@@ -481,7 +481,7 @@ FTE_INT32 FTE_EVENT_shell_cmd
                 FTE_EVENT_PTR       pEvent;
                 FTE_LIST_ITERATOR   xIter;
                 FTE_UINT32             ulIndex = 0;
-                char                pTypeString[64];
+                FTE_CHAR pTypeString[64];
                 
                 FTE_LIST_ITER_init(&_eventList, &xIter);
                 printf("     %8s %-4s %-10s %s\n", "ID/GROUP", "CODE", "TYPE", "CONDITION");
@@ -542,7 +542,7 @@ FTE_INT32 FTE_EVENT_shell_cmd
                         
                     case    FTE_EVENT_CONDITION_TIME:
                         {
-                            char    pTimeString[64];
+                            FTE_CHAR pTimeString[64];
                             FTE_TIME_toStr(&pEvent->pConfig->xParams.xTime, pTimeString, sizeof(pTimeString));
                             printf("%s", pTimeString);
                         }
@@ -572,7 +572,7 @@ FTE_INT32 FTE_EVENT_shell_cmd
                     FTE_EVENT_PTR           pEvent;
                     FTE_UINT32                 ulIndex;
                     
-                    if (!Shell_parse_number(pArgv[2], &ulIndex))
+                    if (FTE_strToUINT32(pArgv[2], &ulIndex) != FTE_RET_OK)
                     {
                         bPrintUsage = TRUE;
                         break;
@@ -596,7 +596,7 @@ FTE_INT32 FTE_EVENT_shell_cmd
                     FTE_EVENT_PTR           pEvent;
                     FTE_UINT32                 ulIndex;
                     
-                    if (!Shell_parse_number(pArgv[1], &ulIndex))
+                    if (FTE_strToUINT32(pArgv[1], &ulIndex) != FTE_RET_OK)
                     {
                         bPrintUsage = TRUE;
                         break;
@@ -642,7 +642,7 @@ FTE_INT32 FTE_EVENT_shell_cmd
                     FTE_OBJECT_PTR    pObject;
                     FTE_UINT32           ulEPID;
                     
-                    if (!Shell_parse_hexnum(pArgv[2], &ulEPID))
+                    if (FTE_strToHex(pArgv[2], &ulEPID) != FTE_RET_OK)
                     {
                         bPrintUsage = TRUE;
                         break;
@@ -676,7 +676,7 @@ FTE_INT32 FTE_EVENT_shell_cmd
                 }
                 else
                     {
-                    if (!Shell_parse_number(pArgv[1], &ulIndex))
+                    if (FTE_strToUINT32(pArgv[1], &ulIndex) != FTE_RET_OK)
                     {
                         bPrintUsage = TRUE;
                         break;
@@ -699,7 +699,7 @@ FTE_INT32 FTE_EVENT_shell_cmd
                             break;
                         }
                         
-                        if ((!Shell_parse_number(pArgv[3], &ulInterval)) || (ulInterval > 60*60*24*31))
+                        if ((FTE_strToUINT32(pArgv[3], &ulInterval) != FTE_RET_OK) || (ulInterval > 60*60*24*31))
                         {
                             printf("Invalid interval[%s]!\n", pArgv[3]);
                             bPrintUsage = TRUE;
@@ -780,7 +780,7 @@ FTE_INT32 FTE_EVENT_shell_cmd
                     FTE_UINT32           ulEPID;
                     FTE_UINT32           ulInterval;
                     
-                    if (!Shell_parse_hexnum(pArgv[2], &ulEPID))
+                    if (FTE_strToHex(pArgv[2], &ulEPID) != FTE_RET_OK)
                     {
                         bPrintUsage = TRUE;
                         break;
@@ -795,7 +795,7 @@ FTE_INT32 FTE_EVENT_shell_cmd
                     
                     if (strcmp(pArgv[3], "interval") == 0)
                     {
-                        if (!Shell_parse_number(pArgv[4], &ulInterval))
+                        if (FTE_strToUINT32(pArgv[4], &ulInterval) != FTE_RET_OK)
                         {
                             bPrintUsage = TRUE;
                             break;

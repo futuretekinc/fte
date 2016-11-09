@@ -5,17 +5,17 @@
 
 typedef struct  
 {
-    uint_32 nADC;
-    uint_32 nPPM;
+    FTE_UINT32 nADC;
+    FTE_UINT32 nPPM;
 }   FTE_FIS_VALUE_PAIR, _PTR_ FTE_FIS_VALUE_PAIR_PTR;
 
 typedef FTE_FIS_VALUE_PAIR const _PTR_ FTE_FIS_VALUE_PAIR_CONST_PTR;
 
 typedef struct _fte_fis_model_info
 {
-    uint_32     nModel;
-    char_ptr    pName;
-    uint_32     nCount;
+    FTE_UINT32      nModel;
+    FTE_CHAR_PTR    pName;
+    FTE_UINT32      nCount;
     FTE_FIS_VALUE_PAIR_CONST_PTR  pPairs;
 } FTE_FIS_MODEL_INFO, _PTR_ FTE_FIS_MODEL_INFO_PTR;
 
@@ -26,10 +26,10 @@ typedef FTE_FIS_MODEL_INFO const _PTR_ FTE_FIS_MODEL_INFO_CONST_PTR;
 typedef struct FTE_FIS_CONFIG_STRUCT
 {
     FTE_COMMON_CONFIG   xCommon;
-    uint_32             nModel;
-    uint_32             nUCSID;
-    uint_32             nREQID;
-    uint_32             nInterval;
+    FTE_UINT32             nModel;
+    FTE_UINT32             nUCSID;
+    FTE_UINT32             nREQID;
+    FTE_UINT32             nInterval;
 }   FTE_FIS_CONFIG, _PTR_ FTE_FIS_CONFIG_PTR;
 
 #if sizeof(FTE_OBJECT_CONFIG) < sizeof(FTE_DI_CONFIG)
@@ -40,11 +40,11 @@ typedef FTE_FIS_CONFIG const _PTR_ FTE_FIS_CONFIG_CONST_PTR;
 
 typedef struct  FTE_FIS_STATUS_STRUCT
 {
-    uint_32         xFlags;
+    FTE_UINT32         xFlags;
     FTE_VALUE_PTR   pValue;
     TIME_STRUCT     xEventTimeStamp;
-    uint_32         hRepeatTimer;
-    uint_32         hConvertTimer;
+    FTE_UINT32         hRepeatTimer;
+    FTE_UINT32         hConvertTimer;
     int_32          nValue;
     int_32          nTemperature;
     int_32          nAlarm;

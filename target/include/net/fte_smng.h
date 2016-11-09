@@ -3,12 +3,12 @@
 
 typedef struct
 {
-    uint_32 pulHideClass[16];
-}   FTE_SMNGD_CFG;
+    FTE_UINT32  pulHideClass[16];
+}   FTE_SMNGD_CFG, _PTR_ FTE_SMNGD_CFG_PTR;
 
-uint_32   FTE_SMNGD_init(void _PTR_ Params);
-char_ptr  FTE_SMNG_getDiscoveryMessage(void);
+FTE_RET     FTE_SMNGD_init(FTE_VOID_PTR pParams);
+FTE_RET     FTE_SMNG_getDiscoveryMessage(FTE_CHAR_PTR pBuff, FTE_UINT32 ulBuffSize);
 
-int_32  FTE_SMNGD_SHELL_cmd(int_32 argc, char_ptr argv[] );
+FTE_INT32   FTE_SMNGD_SHELL_cmd(FTE_INT32   nArgc, FTE_CHAR_PTR pArgv[] );
 
 #endif

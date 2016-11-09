@@ -13,7 +13,7 @@ static
 FTE_UINT32  FTE_1WIRE_search(FTE_1WIRE_PTR p1Wire, FTE_1WIRE_ROM_CODE_PTR pROMCodes, FTE_UINT32 max_count);
 
 static 
-void _FTE_1WIRE_autoRecoveryRun(_timer_id id, FTE_VOID_PTR data_ptr, MQX_TICK_STRUCT_PTR tick_ptr);
+void _FTE_1WIRE_autoRecoveryRun(FTE_TIMER_ID xTimerID, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 
 static 
 FTE_1WIRE_PTR   _pHead      = NULL;
@@ -254,15 +254,15 @@ FTE_RET FTE_1WIRE_read
             FTE_BOOL bit = 0;
             _int_disable();
             FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_OUTPUT);
-            fte_udelay(2);
+            FTE_udelay(2);
             FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_INPUT);
-            fte_udelay(5);
+            FTE_udelay(5);
             FTE_LWGPIO_getValue(p1Wire->pLWGPIO, &bit);
             if (bit)
             {
                 pBuff[i] |= 1 << j;
             }
-            fte_udelay(FTE_1WIRE_TIME_SLOT - 7);
+            FTE_udelay(FTE_1WIRE_TIME_SLOT - 7);
             _int_enable();
         }
     }
@@ -287,19 +287,19 @@ FTE_RET FTE_1WIRE_write
         {
             _int_disable();
             FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_OUTPUT);
-            fte_udelay(5);
+            FTE_udelay(5);
             if (((pBuff[i] >> j) & 0x01) == 0)
             {
-                fte_udelay(FTE_1WIRE_TIME_SLOT - 20);
+                FTE_udelay(FTE_1WIRE_TIME_SLOT - 20);
                 FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_INPUT);
             }
             else
             {
                 FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_INPUT);
-                fte_udelay(FTE_1WIRE_TIME_SLOT - 20);
+                FTE_udelay(FTE_1WIRE_TIME_SLOT - 20);
             }
             _int_enable();
-            fte_udelay(15);
+            FTE_udelay(15);
         }
     }
     
@@ -551,7 +551,7 @@ FTE_INT32  FTE_1WIRE_SHELL_cmd
             {
                 FTE_UINT32 nID;
                 
-                if (! Shell_parse_hexnum( pArgv[1], &nID))  
+                if (FTE_strToHex( pArgv[1], &nID) != FTE_RET_OK)  
                 {
                     xRet = SHELL_EXIT_ERROR;
                     goto error;
@@ -577,7 +577,7 @@ FTE_INT32  FTE_1WIRE_SHELL_cmd
                 FTE_1WIRE_PTR   p1Wire;
                 FTE_UINT32 nID;
                 
-                if (! Shell_parse_hexnum( pArgv[2], &nID))  
+                if (FTE_strToHex( pArgv[2], &nID) != FTE_RET_OK)  
                 {
                     xRet = SHELL_EXIT_ERROR;
                     goto error;
@@ -617,7 +617,7 @@ FTE_INT32  FTE_1WIRE_SHELL_cmd
                 
                 FTE_UINT8  pROMCode[8];
                 
-                if (! Shell_parse_hexnum( pArgv[2], &nID))  
+                if (FTE_strToHex( pArgv[2], &nID) != FTE_RET_OK)  
                 {
                     xRet = SHELL_EXIT_ERROR;
                     goto error;
@@ -715,7 +715,7 @@ FTE_RET FTE_1WIRE_reset(FTE_1WIRE_PTR p1Wire)
     
     FTE_LWGPIO_setValue(p1Wire->pLWGPIO, FALSE);
     FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_OUTPUT);
-    fte_udelay(1000);
+    FTE_udelay(1000);
     FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_INPUT);
     _time_delay(1);
     
@@ -741,19 +741,19 @@ FTE_RET FTE_1WIRE_writeBits(FTE_1WIRE_PTR p1Wire, FTE_UINT8_PTR data, FTE_UINT32
         {
             _int_disable();
             FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_OUTPUT);
-            fte_udelay(2);
+            FTE_udelay(2);
             if (((data[i] >> j) & 0x01) == 0)
             {
-                fte_udelay(100);
+                FTE_udelay(100);
                 FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_INPUT);
             }
             else
             {
                 FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_INPUT);
-                fte_udelay(100);
+                FTE_udelay(100);
             }
             _int_enable();
-        fte_udelay(FTE_1WIRE_TIME_SLOT - 100);
+        FTE_udelay(FTE_1WIRE_TIME_SLOT - 100);
         }
     }
     
@@ -761,19 +761,19 @@ FTE_RET FTE_1WIRE_writeBits(FTE_1WIRE_PTR p1Wire, FTE_UINT8_PTR data, FTE_UINT32
     {
        _int_disable();
        FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_OUTPUT);
-        fte_udelay(2);
+        FTE_udelay(2);
         if (((data[i] >> j) & 0x01) == 0)
         {
-                fte_udelay(100);
+                FTE_udelay(100);
             FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_INPUT);
         }
         else
         {
             FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_INPUT);
-            fte_udelay(100);
+            FTE_udelay(100);
         }
         _int_disable();
-        fte_udelay(FTE_1WIRE_TIME_SLOT - 100);
+        FTE_udelay(FTE_1WIRE_TIME_SLOT - 100);
     }
     return FTE_RET_OK;
 }
@@ -799,16 +799,16 @@ FTE_RET FTE_1WIRE_readBits
             
             _int_disable();
             FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_OUTPUT);
-            fte_udelay(2);
+            FTE_udelay(2);
             FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_INPUT);
-            fte_udelay(5);
+            FTE_udelay(5);
             FTE_LWGPIO_getValue(p1Wire->pLWGPIO, &bit);
             if (bit)
             {
                 nBuff |= 1 << j;
             }
             _int_enable();
-            fte_udelay(FTE_1WIRE_TIME_SLOT - 7);
+            FTE_udelay(FTE_1WIRE_TIME_SLOT - 7);
         }
         
         data[i] = nBuff;
@@ -821,16 +821,16 @@ FTE_RET FTE_1WIRE_readBits
         
         _int_disable();
         FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_OUTPUT);
-        fte_udelay(2);
+        FTE_udelay(2);
         FTE_LWGPIO_setDirection(p1Wire->pLWGPIO, LWGPIO_DIR_INPUT);
-        fte_udelay(5);
+        FTE_udelay(5);
         FTE_LWGPIO_getValue(p1Wire->pLWGPIO, &bit);
         if (bit)
         {
             nBuff |= 1 << j;
         }
         _int_enable();
-        fte_udelay(FTE_1WIRE_TIME_SLOT - 7);
+        FTE_udelay(FTE_1WIRE_TIME_SLOT - 7);
     }
     data[i] = nBuff;
  
@@ -886,12 +886,12 @@ FTE_RET FTE_1WIRE_autoRecoveryStart(void)
 
 void _FTE_1WIRE_autoRecoveryRun
 (
-    _timer_id   id, 
-    FTE_VOID_PTR     data_ptr, 
-    MQX_TICK_STRUCT_PTR tick_ptr
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR     pData, 
+    MQX_TICK_STRUCT_PTR pTick
 )
 {
-    if (_n1WireRecoveryTimerID != id)
+    if (_n1WireRecoveryTimerID != xTimerID)
     {
         return;
     }

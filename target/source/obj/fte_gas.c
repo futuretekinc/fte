@@ -39,7 +39,7 @@ FTE_INT32  fte_gas_shell_cmd
             {
                 FTE_UINT32 nValue;
                 
-                if (! Shell_parse_number( pArgv[2], &nValue))  
+                if (FTE_strToUINT32( pArgv[2], &nValue) != FTE_RET_OK)  
                 {
                    xRet = SHELL_EXIT_ERROR;
                    goto error;
@@ -55,9 +55,9 @@ FTE_INT32  fte_gas_shell_cmd
                 
                 if (strcmp(pArgv[1], "mode") == 0)
                 {
-                    char    pBuff[32];
+                    FTE_CHAR pBuff[32];
                     
-                    if (!Shell_parse_number(pArgv[3], &nValue))
+                    if (FTE_strToUINT32(pArgv[3], &nValue) != FTE_RET_OK)
                     {
                        xRet = SHELL_EXIT_ERROR;
                        goto error;

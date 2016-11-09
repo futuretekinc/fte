@@ -12,17 +12,26 @@
 #define FTE_JSON_alloc(x)   FTE_MEM_allocZero(x)
 #define FTE_JSON_free(x)    FTE_MEM_free(x)
 
-int FTE_JSON_init(FTE_JSON_PTR pJSON)
+FTE_RET FTE_JSON_init
+(
+    FTE_JSON_PTR    pJSON
+)
 {
-    return  FTE_JSON_RET_OK;    
+    return  FTE_RET_OK;    
 }
 
-int FTE_JSON_final(FTE_JSON_PTR pJSON)
+FTE_RET FTE_JSON_final
+(
+    FTE_JSON_PTR    pJSON
+)
 {
-    return  FTE_JSON_RET_OK;    
+    return  FTE_RET_OK;    
 }
 
-FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createString(char *pString)
+FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createString
+(
+    FTE_CHAR_PTR    pString
+)
 {
     FTE_JSON_STRING_PTR pItem = NULL;
     
@@ -45,7 +54,10 @@ FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createString(char *pString)
     return  (FTE_JSON_VALUE_PTR)pItem;
 }
 
-FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createNumber(long nValue)
+FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createNumber
+(
+    long    nValue
+)
 {
     FTE_JSON_NUMBER_PTR pItem = NULL;
     
@@ -61,7 +73,10 @@ FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createNumber(long nValue)
     return  (FTE_JSON_VALUE_PTR)pItem;
 }
 
-FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createHex(long nValue)
+FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createHex
+(
+    long    nValue
+)
 {
     FTE_JSON_NUMBER_PTR pItem = NULL;
     
@@ -77,7 +92,10 @@ FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createHex(long nValue)
     return  (FTE_JSON_VALUE_PTR)pItem;
 }
 
-FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createFloat(long nValue)
+FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createFloat
+(
+    long    nValue
+)
 {
     FTE_JSON_FLOAT_PTR pItem = NULL;
     
@@ -93,7 +111,10 @@ FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createFloat(long nValue)
     return  (FTE_JSON_VALUE_PTR)pItem;
 }
 
-FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createValue(FTE_VALUE_PTR pValue)
+FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createValue
+(
+    FTE_VALUE_PTR   pValue
+)
 {
     switch(pValue->xType)
     {
@@ -137,7 +158,11 @@ FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createValue(FTE_VALUE_PTR pValue)
     return  NULL;
 }
 
-FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createPair(char *pString, FTE_JSON_VALUE_PTR pValue)
+FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createPair
+(
+    FTE_CHAR_PTR    pString, 
+    FTE_JSON_VALUE_PTR pValue
+)
 {
     FTE_JSON_PAIR_PTR pItem = NULL;
     
@@ -177,7 +202,10 @@ FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createObject(int nMaxCount)
     return  (FTE_JSON_VALUE_PTR)pItem;
 }
 
-FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createArray(int nMaxCount)
+FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createArray
+(
+    int     nMaxCount
+)
 {
     FTE_JSON_ARRAY_PTR pItem = NULL;
     
@@ -194,7 +222,12 @@ FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createArray(int nMaxCount)
 }
 
 
-int FTE_JSON_OBJECT_setPair(FTE_JSON_OBJECT_PTR pObject, char *pString, FTE_JSON_VALUE_PTR pValue)
+FTE_RET FTE_JSON_OBJECT_setPair
+(
+    FTE_JSON_OBJECT_PTR pObject, 
+    FTE_CHAR_PTR        pString, 
+    FTE_JSON_VALUE_PTR  pValue
+)
 {
     ASSERT((pObject != NULL) && (pValue != NULL));
     
@@ -209,20 +242,109 @@ int FTE_JSON_OBJECT_setPair(FTE_JSON_OBJECT_PTR pObject, char *pString, FTE_JSON
                 FTE_JSON_PAIR_PTR   pPair = (FTE_JSON_PAIR_PTR)FTE_JSON_VALUE_createPair(pString, pValue);
                 if (pPair == NULL)
                 {
-                    return  FTE_JSON_RET_ERROR;
+                    return  FTE_RET_ERROR;
                 }
                 
                 pObject->pPairs[i] = pPair;
                 pObject->nCount++;
 
-                return  FTE_JSON_RET_OK;
+                return  FTE_RET_OK;
             }
         }
     }
     
-    return  FTE_JSON_RET_ERROR;
+    return  FTE_RET_ERROR;
 }
-int FTE_JSON_ARRAY_setElement(FTE_JSON_ARRAY_PTR pArray, FTE_JSON_VALUE_PTR pElement)
+
+FTE_RET FTE_JSON_OBJECT_addStringPair
+(
+    FTE_JSON_OBJECT_PTR     pObject, 
+    FTE_CHAR_PTR            pName, 
+    FTE_CHAR_PTR            pString
+)
+{
+    ASSERT((pObject != NULL) && (pName!= NULL) && (pString != NULL));
+    
+    if (pObject->nCount < pObject->nMaxCount)
+    {
+        FTE_JSON_VALUE_PTR  pValue;
+        int i;
+        
+        pValue = (FTE_JSON_VALUE_PTR)FTE_JSON_VALUE_createString(pString);
+        if (pValue == NULL)
+        {
+            return  FTE_RET_ERROR;
+        }
+        
+        for(i = 0; i < pObject->nMaxCount ; i++)
+        {
+            if (pObject->pPairs[i] == 0)
+            {
+                FTE_JSON_PAIR_PTR   pPair = (FTE_JSON_PAIR_PTR)FTE_JSON_VALUE_createPair(pName, pValue);
+                if (pPair == NULL)
+                {
+                    FTE_JSON_VALUE_destroy(pValue);
+                    return  FTE_RET_ERROR;
+                }
+                
+                pObject->pPairs[i] = pPair;
+                pObject->nCount++;
+
+                return  FTE_RET_OK;
+            }
+        }
+    }
+    
+    return  FTE_RET_ERROR;
+}
+
+FTE_RET FTE_JSON_OBJECT_addNumberPair
+(
+    FTE_JSON_OBJECT_PTR     pObject, 
+    FTE_CHAR_PTR            pName, 
+    FTE_INT32               nValue
+)
+{
+    ASSERT((pObject != NULL) && (pName!= NULL));
+    
+    if (pObject->nCount < pObject->nMaxCount)
+    {
+        FTE_JSON_VALUE_PTR  pValue;
+        int i;
+        
+        pValue = (FTE_JSON_VALUE_PTR)FTE_JSON_VALUE_createNumber(nValue);
+        if (pValue == NULL)
+        {
+            return  FTE_RET_ERROR;
+        }
+        
+        for(i = 0; i < pObject->nMaxCount ; i++)
+        {
+            if (pObject->pPairs[i] == 0)
+            {
+                FTE_JSON_PAIR_PTR   pPair = (FTE_JSON_PAIR_PTR)FTE_JSON_VALUE_createPair(pName, pValue);
+                if (pPair == NULL)
+                {
+                    FTE_JSON_VALUE_destroy(pValue);
+                    return  FTE_RET_ERROR;
+                }
+                
+                pObject->pPairs[i] = pPair;
+                pObject->nCount++;
+
+                return  FTE_RET_OK;
+            }
+        }
+    }
+    
+    return  FTE_RET_ERROR;
+}
+
+FTE_RET FTE_JSON_ARRAY_setElement
+(
+    FTE_JSON_ARRAY_PTR  pArray, 
+    FTE_JSON_VALUE_PTR  pElement
+)
 {
     ASSERT((pArray != NULL) && (pElement != NULL));
     
@@ -237,12 +359,12 @@ int FTE_JSON_ARRAY_setElement(FTE_JSON_ARRAY_PTR pArray, FTE_JSON_VALUE_PTR pEle
                 pArray->pElements[i] = pElement;
                 pArray->nCount++;
         
-                return  FTE_JSON_RET_OK;
+                return  FTE_RET_OK;
             }
         }
     }
     
-    return  FTE_JSON_RET_ERROR;
+    return  FTE_RET_ERROR;
 }
 
 FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createTrue(void)
@@ -290,7 +412,10 @@ FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createNull(void)
     return  (FTE_JSON_VALUE_PTR)pItem;
 }
 
-int FTE_JSON_VALUE_destroy(FTE_JSON_VALUE_PTR pValue)
+FTE_RET FTE_JSON_VALUE_destroy
+(
+    FTE_JSON_VALUE_PTR  pValue
+)
 {
     ASSERT(pValue != NULL);
     
@@ -362,15 +487,20 @@ int FTE_JSON_VALUE_destroy(FTE_JSON_VALUE_PTR pValue)
         break;
         
     default:
-        return  FTE_JSON_RET_ERROR;
+        return  FTE_RET_ERROR;
     }
     
     FTE_JSON_free(pValue);
     
-    return  FTE_JSON_RET_OK;
+    return  FTE_RET_OK;
 }
 
-int FTE_JSON_VALUE_snprint(char *pBuff, int nBuffLen, FTE_JSON_VALUE_PTR pValue)
+FTE_INT32   FTE_JSON_VALUE_snprint
+(
+    FTE_CHAR_PTR    pBuff, 
+    FTE_INT32       nBuffLen, 
+    FTE_JSON_VALUE_PTR pValue
+)
 {
     int nLen = 0;
     
@@ -482,10 +612,13 @@ int FTE_JSON_VALUE_snprint(char *pBuff, int nBuffLen, FTE_JSON_VALUE_PTR pValue)
     return  nLen;
 }
 
-int FTE_JSON_VALUE_buffSize(FTE_JSON_VALUE_PTR pValue)
+FTE_INT32   FTE_JSON_VALUE_buffSize
+(
+    FTE_JSON_VALUE_PTR  pValue
+)
 {
-    int             nLen = 0;
-    static char    pBuff[128];    
+    FTE_INT32   nLen = 0;
+    static FTE_CHAR pBuff[128];    
     
     ASSERT((pBuff != NULL) && (pValue != NULL));
     
@@ -593,5 +726,5 @@ int FTE_JSON_VALUE_buffSize(FTE_JSON_VALUE_PTR pValue)
         return  0;
     }
     
-    return  nLen;
+    return  nLen + 1;
 }

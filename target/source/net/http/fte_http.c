@@ -1,4 +1,7 @@
 #include "fte_target.h"
+
+#if  FTE_HTTPD_SUPPORTED
+
 #include "fte_buff.h"
 #include "fte_net.h"
 #include <tfs.h> 
@@ -42,7 +45,7 @@ FTE_UINT32 FTE_HTTPD_init(FTE_HTTP_CFG_PTR  pConfig)
     srv_param.cgi_lnk_tbl = (HTTPSRV_CGI_LINK_STRUCT*) cgi_lnk_tbl;
 
     /* There are a lot of static data in CGIs so we have to set large enough stack for script handler */
-    srv_param.script_stack = FTE_NET_HTTP_STACK_SIZE;
+    srv_param.script_stack = FTE_NET_HTTP_STACK;
     server = HTTPSRV_init(&srv_param);
 
     if (server)
@@ -54,3 +57,5 @@ FTE_UINT32 FTE_HTTPD_init(FTE_HTTP_CFG_PTR  pConfig)
         return  FTE_RET_ERROR;
     }
 }
+
+#endif

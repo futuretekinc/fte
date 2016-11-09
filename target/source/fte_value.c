@@ -1158,7 +1158,7 @@ FTE_CHAR_PTR    FTE_VALUE_printTimeStamp
     FTE_VALUE_PTR   pObj
 )
 {
-    static  char    pString[16];
+    static  FTE_CHAR pString[16];
     
     ASSERT(pObj != NULL);
     

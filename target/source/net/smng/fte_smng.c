@@ -128,7 +128,10 @@ void FTE_SMNG_task(pointer pParams, pointer pCreator)
     
 }
 
-FTE_UINT32 FTE_SMNGD_init(void _PTR_ Params)
+FTE_RET FTE_SMNGD_init
+(
+    FTE_VOID_PTR    pParams
+)
 { 
    TRACE_ON(DEBUG_NET_SMNG);
 #if 0   
@@ -137,7 +140,7 @@ FTE_UINT32 FTE_SMNGD_init(void _PTR_ Params)
     FTE_JSON_VALUE_PTR  pValue;
     FTE_JSON_VALUE_PTR  pOIDs;
     _enet_address       xMACAddress;
-    char                pMACString[20];
+    FTE_CHAR            pMACString[20];
     FTE_UINT32             ulMsgLen;
 
     pObject = FTE_JSON_VALUE_createObject(3);
@@ -161,7 +164,7 @@ FTE_UINT32 FTE_SMNGD_init(void _PTR_ Params)
 
     for(FTE_UINT32 i = 0 ; i < FTE_OBJ_DESC_CLASS_count() ; i++)
     {
-        char    pOID[32];
+        FTE_CHAR pOID[32];
         FTE_UINT32 ulClass = FTE_OBJ_DESC_CLASS_getAt(i);
         
         if (ulClass != 0)
@@ -191,24 +194,39 @@ FTE_UINT32 FTE_SMNGD_init(void _PTR_ Params)
     return RTCS_task_create("smng", FTE_NET_SMNG_PRIO, FTE_NET_SMNG_STACK, FTE_SMNG_task, NULL);
 } 
 
-FTE_CHAR_PTR FTE_SMNG_getDiscoveryMessage(void)
+FTE_RET FTE_SMNG_getDiscoveryMessage
+(
+    FTE_CHAR_PTR    pBuff, 
+    FTE_UINT32      ulBuffSize
+)
 {
+    ASSERT(pBuff != NULL);
+    
     if (pDiscoveryMsg == NULL)
     {
-        FTE_NET_CFG_PTR     pCfgNet = FTE_CFG_NET_get();
+        FTE_RET xRet;
+        FTE_NET_CFG_PTR     pCfgNet;
         FTE_JSON_VALUE_PTR  pObject;
         FTE_JSON_VALUE_PTR  pValue;
         FTE_JSON_VALUE_PTR  pOIDs;
         _enet_address       xMACAddress;
-        char                pMACString[20];
-        char                pIPString[20];
+        FTE_CHAR            pMACString[20];
+        FTE_CHAR            pIPString[20];
         FTE_UINT32             ulMsgLen;
         IPCFG_IP_ADDRESS_DATA   xIPData;
 
+        xRet = FTE_CFG_NET_get(&pCfgNet);
+        if (xRet != FTE_RET_OK)
+        {
+            pBuff[0] = '\0';
+            return  xRet;
+        }
+        
         pObject = FTE_JSON_VALUE_createObject(4);
         if (pObject == NULL)
         {
-            return  "";
+            pBuff[0] = '\0';
+            return  FTE_RET_NOT_ENOUGH_MEMORY;
         }
 
         pValue = FTE_JSON_VALUE_createString(FTE_SYS_getOIDString());
@@ -231,7 +249,7 @@ FTE_CHAR_PTR FTE_SMNG_getDiscoveryMessage(void)
 
         for(FTE_UINT32 i = 0 ; i < FTE_OBJ_DESC_CLASS_count() ; i++)
         {
-            char    pOID[32];
+            FTE_CHAR pOID[32];
             FTE_UINT32 ulClass = FTE_OBJ_DESC_CLASS_getAt(i);
             
             if (ulClass != 0)
@@ -252,14 +270,16 @@ FTE_CHAR_PTR FTE_SMNG_getDiscoveryMessage(void)
         {
             ERROR("Not enough memory!\n");
             FTE_SYS_setUnstable();
-            return  "";
+            return  FTE_RET_NOT_ENOUGH_MEMORY;
         }
             
         FTE_JSON_VALUE_snprint(pDiscoveryMsg, ulMsgLen, pObject);            
         FTE_JSON_VALUE_destroy(pObject);   
     }
     
-    return  pDiscoveryMsg;
+    strncpy(pBuff, pDiscoveryMsg, ulBuffSize);
+    
+    return  FTE_RET_OK;
 }
 
 
@@ -313,7 +333,7 @@ FTE_INT32  FTE_SMNGD_SHELL_cmd
                         for(i = 0 ; i < ulCount ; i++)
                         {
                             FTE_UINT32 ulClass = pulClassIDs[i];
-                            char    pClassName[32];
+                            FTE_CHAR pClassName[32];
                             
                             FTE_OBJ_CLASS_getName(ulClass, pClassName, sizeof(pClassName));
                             printf("%d : %6d %s\n", i + 1, ulClass >> 16, pClassName);
@@ -331,7 +351,7 @@ FTE_INT32  FTE_SMNGD_SHELL_cmd
                     {
                         FTE_UINT32 ulClass;
                         
-                        if (Shell_parse_hexnum(pArgv[3], &ulClass) != TRUE)
+                        if (FTE_strToHex(pArgv[3], &ulClass) != FTE_RET_OK)
                         {
                             printf("Invalid Class ID[%s]\n", pArgv[3]);
                             xRet = SHELL_EXIT_ERROR;

@@ -24,7 +24,7 @@ FTE_RET     FTE_RTD_preinit(FTE_UINT32 nMaxObjects);
 
 FTE_RET     FTE_RTD_attach(FTE_OBJECT_PTR pObj, FTE_VOID_PTR pOpts);
 FTE_RET     FTE_RTD_detach(FTE_OBJECT_PTR pObj);
-FTE_UINT32  FTE_RTD_printValue(FTE_OBJECT_PTR pObj, char_ptr pBuff, FTE_UINT32 nLen);
+FTE_UINT32  FTE_RTD_printValue(FTE_OBJECT_PTR pObj, FTE_CHAR_PTR pBuff, FTE_UINT32 nLen);
 
 extern  FTE_RTD_CONFIG FTE_RTD_defaultConfig;
 #endif

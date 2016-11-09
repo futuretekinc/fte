@@ -898,7 +898,7 @@ FTE_RET   FTE_TASCON_HEM12_06M_getConfig
     FTE_TASCON_HEM12_CONFIG_PTR    pConfig;
     FTE_JSON_VALUE_PTR          pJOSNObject;
     FTE_JSON_VALUE_PTR          pJOSNValue;
-    char                        pIDString[13];
+    FTE_CHAR    pIDString[13];
     
     if (pObj == NULL)
     {
@@ -1280,9 +1280,9 @@ FTE_INT32  FTE_TASCON_HEM12_SHELL_cmd
                         if (pStatus->xGUS.xCommon.pValue != NULL)
                         {
                             TIME_STRUCT xTime;
-                            char        pTimeString[64];
-                            char        pValueString[32];
-                            char        pUnitString[8];
+                            FTE_CHAR    pTimeString[64];
+                            FTE_CHAR    pValueString[32];
+                            FTE_CHAR    pUnitString[8];
                             
                             FTE_VALUE_toString(pStatus->xGUS.xCommon.pValue, pValueString, sizeof(pValueString));
                             FTE_VALUE_unit(pStatus->xGUS.xCommon.pValue, pUnitString, sizeof(pUnitString));
@@ -1330,7 +1330,7 @@ FTE_INT32  FTE_TASCON_HEM12_SHELL_cmd
                 if (strcmp(pArgv[2], "get_addr") == 0)
                 {
                     FTE_UINT32  nOID = 0;
-                    Shell_parse_hexnum(pArgv[1], &nOID);
+                    FTE_strToHex(pArgv[1], &nOID);
                     
                     FTE_OBJECT_PTR  pObj = FTE_OBJ_get(nOID);                    
                     if (pObj == NULL)
@@ -1403,7 +1403,7 @@ FTE_INT32  FTE_TASCON_HEM12_SHELL_cmd
          case    4:
             {
                 FTE_UINT32  nOID = 0;
-                Shell_parse_hexnum(pArgv[1], &nOID);
+                FTE_strToHex(pArgv[1], &nOID);
                 
                 FTE_OBJECT_PTR  pObj = FTE_OBJ_get(nOID);                    
                 if (pObj == NULL)
@@ -1425,6 +1425,7 @@ FTE_INT32  FTE_TASCON_HEM12_SHELL_cmd
                 }
                 else if (strcasecmp(pArgv[1], "create") == 0)
                 {
+                    FTE_UINT32      ulLen;
                     FTE_TASCON_MODEL    xModel;
                     FTE_UINT8       pSensorID[6];
                     FTE_OBJECT_PTR  pObj;
@@ -1435,7 +1436,8 @@ FTE_INT32  FTE_TASCON_HEM12_SHELL_cmd
                         break;
                     }
                     
-                    if (fte_parse_hex_string(pArgv[3], pSensorID, 6) != 6)
+                    xRet = FTE_strToHexArray(pArgv[3], pSensorID, 6, &ulLen);
+                    if ((xRet != FTE_RET_OK) || (ulLen != 6))
                     {
                         printf("Invalid Sensor ID\n");
                         break;

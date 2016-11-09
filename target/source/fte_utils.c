@@ -1,12 +1,15 @@
 #include "fte_target.h"
 
  
-void fte_udelay(FTE_UINT32 usec)
+void FTE_udelay
+(
+    FTE_UINT32  ulMicroSecs
+)
 {
-    for(int j = usec*20 ; j > 0 ; j--);
+    for(int j = ulMicroSecs*20 ; j > 0 ; j--);
 }
 
-FTE_BOOL fte_parse_ip_address
+FTE_RET FTE_strToIP
 (    FTE_CHAR_PTR    pIPString, 
     FTE_UINT32_PTR  pIP
 )
@@ -15,10 +18,7 @@ FTE_BOOL fte_parse_ip_address
    FTE_UINT32      i, index = 0;
    FTE_UINT32      nTemp = 0;
    
-   if (pIP == NULL) 
-   {
-       return FALSE;
-   }
+   ASSERT(pIP != NULL);
    
    for (i=0; pIPString[i] && (i<16) && (index<4); i++)  
    {
@@ -32,7 +32,7 @@ FTE_BOOL fte_parse_ip_address
       } 
       else  
       {
-         return FALSE;
+         return FTE_RET_INVALID_ARGUMENT;
       }
    }
    
@@ -42,7 +42,7 @@ FTE_BOOL fte_parse_ip_address
       {
          if (nNum[i] > 255)  
          {
-            return FALSE;
+            return FTE_RET_INVALID_ARGUMENT;
          } 
          else  
          {
@@ -53,29 +53,35 @@ FTE_BOOL fte_parse_ip_address
 
    *pIP = nTemp;
    
-   return TRUE;
+   return FTE_RET_OK;
 }
 
-FTE_BOOL fte_parse_enet_address
+FTE_RET     FTE_strToMAC
 (
-   FTE_CHAR_PTR         arg, 
+   FTE_CHAR_PTR     pString, 
    _enet_address    enet_address
 )
 {
-   int i,j=0;
+    FTE_INT32    i,j=0;
    
-   if (strlen(arg) != 17)  {
-      return FALSE;
-   }
+    if (strlen(pString) != 17)  
+    {
+        return FTE_RET_INVALID_ARGUMENT;
+    }
    
-   for (i=0;i<16;i+=3)  {
-      if ( isxdigit(arg[i]) && isxdigit(arg[i+1]) && ((arg[i+2]==':') || (arg[i+2]=='\0')) )  {
-         enet_address[j++] = hexnum(arg[i]) * 16 + hexnum(arg[i+1]);
-      } else  {
-         return FALSE;
-      }
-   } 
-   return TRUE;   
+    for (i=0;i<16;i+=3)  
+    {
+        if ( isxdigit(pString[i]) && isxdigit(pString[i+1]) && ((pString[i+2]==':') || (pString[i+2]=='\0')) )  
+        {
+            enet_address[j++] = hexnum(pString[i]) * 16 + hexnum(pString[i+1]);
+        } 
+        else  
+        {
+            return FTE_RET_INVALID_ARGUMENT;
+        }
+    } 
+    
+   return FTE_RET_OK;   
 }
 
 FTE_RET FTE_strToFLOAT
@@ -162,13 +168,22 @@ FTE_RET FTE_strToFLOAT
 
 }
 
-FTE_UINT32 fte_parse_hex_string(FTE_CHAR_PTR pString, FTE_UINT8_PTR pBuff, FTE_UINT32 ulBuffLen)
+FTE_RET FTE_strToHexArray
+(
+    FTE_CHAR_PTR    pString, 
+    FTE_UINT8_PTR   pBuff, 
+    FTE_UINT32      ulBuffLen,
+    FTE_UINT32_PTR  pLen
+)
 {
+    ASSERT((pString != NULL) && (pBuff != NULL) && (pLen != NULL));
+    
     FTE_UINT32 ulStringLen = strlen(pString);
     
     if (((ulStringLen % 2) == 1) || ((ulStringLen / 2) > ulBuffLen))
     {
-        return  0;
+        *pLen = 0;
+        return  FTE_RET_OK;
     }
     
     for(int i = 0 ; i < ulStringLen ;i++)
@@ -177,7 +192,8 @@ FTE_UINT32 fte_parse_hex_string(FTE_CHAR_PTR pString, FTE_UINT8_PTR pBuff, FTE_U
               ('A' <= pString[i] && pString[i] <= 'F') ||
               ('a' <= pString[i] && pString[i] <= 'f')))
         {
-            return  0;
+            *pLen = 0;
+            return  FTE_RET_INVALID_ARGUMENT;
         }
     }
 
@@ -210,7 +226,34 @@ FTE_UINT32 fte_parse_hex_string(FTE_CHAR_PTR pString, FTE_UINT8_PTR pBuff, FTE_U
         }
    }
    
-   return   ulStringLen / 2;
+   *pLen = ulStringLen / 2;
+   
+   return   FTE_RET_OK;
+}
+
+FTE_RET FTE_strToUINT16
+(   FTE_CHAR_PTR     pString, 
+   FTE_UINT16_PTR   pValue
+)
+{
+   FTE_UINT32   i=0;
+   FTE_UINT16   usValue=0;
+
+   ASSERT((pString != NULL) && (pValue != NULL));
+   
+   while (isdigit(pString[i]))  
+   {
+      usValue = usValue*10 + (pString[i++]-'0');
+   }
+   
+   if (pString[i] != '\0')
+   {
+      return FTE_RET_INVALID_ARGUMENT;
+   }
+   
+    *pValue = usValue;
+   
+   return FTE_RET_OK;
 }
 
 FTE_RET FTE_strToUINT32
@@ -219,10 +262,7 @@ FTE_RET FTE_strToUINT32
     FTE_UINT32_PTR   pValue
 )
 {
-    if ((pString == NULL) || (pValue == NULL))
-    {
-        return  FTE_RET_ASSERT;
-    }
+    ASSERT((pString != NULL) && (pValue != NULL));
     
     FTE_UINT32  i = 0;
     FTE_UINT32  ulValue = 0;

@@ -4,8 +4,13 @@
 #include "fte_time.h"
 #include "nxjson.h"
 
-FTE_RET   FTE_FTLM_switchCtrl(FTE_OBJECT_PTR pObj, FTE_BOOL bSwitchON);
-FTE_RET   FTE_FTLM_countReset(FTE_OBJECT_PTR pObj);
+static
+FTE_RET FTE_FTLM_createJSON
+(
+    FTE_OBJECT_PTR  pObj,
+    FTE_UINT32      ulOption,
+    FTE_JSON_OBJECT_PTR _PTR_ ppJSON
+);
 
 static const 
 FTE_IFCE_CONFIG FTE_FTLM_LED0_defaultConfig =
@@ -187,6 +192,7 @@ FTE_GUS_MODEL_INFO    FTE_FTLM_GUSModelInfo =
     .fRequest      = FTE_FTLM_requestData,
     .fReceived     = FTE_FTLM_receiveData,
     .fSet          = FTE_FTLM_set,
+    .fCreateJSON    = FTE_FTLM_createJSON
 };
 
 
@@ -308,3 +314,94 @@ FTE_RET   FTE_FTLM_set
 
 
 
+FTE_RET FTE_FTLM_createJSON
+(
+    FTE_OBJECT_PTR  pObj,
+    FTE_UINT32      ulOption,
+    FTE_JSON_OBJECT_PTR _PTR_ ppJSON
+)
+{
+    
+    ASSERT((pObj != NULL) && (ppJSON != NULL));
+    
+    FTE_RET xRet;
+    FTE_JSON_OBJECT_PTR pObject = NULL;
+    FTE_JSON_VALUE_PTR  pValue = NULL;
+    FTE_JSON_OBJECT_PTR  pValues ;
+    FTE_UINT32  ulCmd;
+    FTE_UINT32  ulLevel;
+    FTE_UINT32  ulTime;
+    
+    ASSERT((pObj != NULL) && (ppJSON != NULL));
+    
+    pValues = (FTE_JSON_OBJECT_PTR)FTE_JSON_VALUE_createObject(3);
+    if (pValues == NULL)
+    {
+        goto error;
+    }   
+
+   ulCmd = pObj->pStatus->pValue->xData.ulValue & 0xFF;
+   ulLevel = (pObj->pStatus->pValue->xData.ulValue >> 8) & 0xFF;
+   ulTime = (pObj->pStatus->pValue->xData.ulValue >> 16) & 0xFF;
+   
+    pValue = FTE_JSON_VALUE_createNumber(ulCmd);
+    if (pValue == NULL)
+    {
+        goto error;
+    }
+
+    if (FTE_JSON_OBJECT_setPair(pValues, "cmd", pValue) != FTE_RET_OK)
+    {
+        FTE_JSON_VALUE_destroy(pValue);
+        goto error;
+    }
+
+    pValue = FTE_JSON_VALUE_createNumber(ulLevel);
+    if (pValue == NULL)
+    {
+        goto error;
+    }
+
+    if (FTE_JSON_OBJECT_setPair(pValues, "level", pValue) != FTE_RET_OK)
+    {
+        FTE_JSON_VALUE_destroy(pValue);
+        goto error;
+    }
+
+    pValue = FTE_JSON_VALUE_createNumber(ulTime);
+    if (pValue == NULL)
+    {
+        goto error;
+    }
+
+    if (FTE_JSON_OBJECT_setPair(pValues, "time", pValue) != FTE_RET_OK)
+    {
+        FTE_JSON_VALUE_destroy(pValue);
+        goto error;
+    }
+    
+    pObject = (FTE_JSON_OBJECT_PTR)FTE_JSON_VALUE_createPair("value", (FTE_JSON_VALUE_PTR)pValues);
+    if (pObject == NULL)
+    {
+        goto error;
+    }                    
+    
+    *ppJSON = pObject;
+    
+    return  FTE_RET_OK;
+error:
+    
+    if (pValues != NULL)
+    {
+        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pValues);
+        pValues = NULL;
+    }
+    
+    if (pObject != NULL)
+    {
+        FTE_JSON_VALUE_destroy((FTE_JSON_VALUE_PTR)pObject);
+        pObject = NULL;
+    }
+    
+    return  xRet;
+}

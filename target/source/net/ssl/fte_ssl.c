@@ -16,10 +16,12 @@ FTE_SSL_CONTEXT_PTR FTE_SSL_create
     FTE_SSL_CONFIG_PTR pConfig
 )
 {
-    FTE_SSL_CONTEXT_PTR     pxCTX   = NULL;
-    CYASSL_METHOD*          pxMETHOD= NULL;
-    uchar_ptr               pCACert;
-    FTE_UINT32                 ulCACertLen = 0;
+    FTE_RET             xRet;
+    FTE_SSL_CONTEXT_PTR pxCTX   = NULL;
+    CYASSL_METHOD*      pxMETHOD= NULL;
+    FTE_UINT8_PTR       pCACert;
+    FTE_UINT32          ulCACertLen = 0;
+    
     ASSERT(pConfig != NULL);
     
     pxCTX = (FTE_SSL_CONTEXT_PTR)FTE_MEM_allocZero(sizeof(FTE_SSL_CONTEXT));
@@ -36,14 +38,15 @@ FTE_SSL_CONTEXT_PTR FTE_SSL_create
         goto error;
     }
     
-    pCACert = (uchar_ptr)FTE_MEM_allocZero(ulCACertLen);
+    pCACert = (FTE_UINT8_PTR)FTE_MEM_allocZero(ulCACertLen);
     if (pCACert == NULL)
     {
         FTE_SSL_ERR("Can not allocate memory.\n");
         goto error;
     }
     
-    if (ulCACertLen != FTE_CFG_CERT_get(pCACert, ulCACertLen))
+    xRet = FTE_CFG_CERT_get(pCACert, ulCACertLen, NULL);
+    if (xRet != FTE_RET_OK)
     {
         FTE_SSL_ERR("Cannot import the certificate. - buffer too small\n");
         goto error;
@@ -214,7 +217,7 @@ FTE_RET   FTE_SSL_disconnect
 FTE_INT32   FTE_SSL_send
 (
     FTE_SSL_CONTEXT_PTR pxCTX, 
-    const FTE_VOID_PTR  pMsg, 
+    FTE_VOID const _PTR_ pMsg, 
     FTE_INT32           nMsgLen
 )
 {

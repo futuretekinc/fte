@@ -226,7 +226,7 @@ FTE_RET   FTE_UCS_init
         {
             if (pUCS->pConfig->nFlowCtrlID == 0)
             {
-                pUCS->pFD = fopen( pUCS->pConfig->pUART, (char const *)IO_SERIAL_HW_485_FLOW_CONTROL);
+                pUCS->pFD = fopen( pUCS->pConfig->pUART, (FTE_CHAR const *)IO_SERIAL_HW_485_FLOW_CONTROL);
             }
             else
             {

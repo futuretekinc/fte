@@ -14,13 +14,13 @@ static
 FTE_RET FTE_SRF_stop(FTE_OBJECT_PTR pObj);
 
 static  
-void    FTE_SRF_done(_timer_id id, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
+void    FTE_SRF_done(FTE_TIMER_ID xTimerID, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 
 static 
-FTE_RET FTE_SRF_get(FTE_OBJECT_PTR pObj, FTE_UINT32_ptr pValue, TIME_STRUCT *xTimeStamp);
+FTE_RET FTE_SRF_get(FTE_OBJECT_PTR pObj, FTE_UINT32_PTR pValue, TIME_STRUCT_PTR pTimeStamp);
 
 static 
-void    FTE_SRF_restartConvert(_timer_id id, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
+void    FTE_SRF_restartConvert(FTE_TIMER_ID xTimerID, FTE_VOID_PTR pData, MQX_TICK_STRUCT_PTR pTick);
 
 static 
 FTE_UINT32 FTE_SRF_getUpdateInterval(FTE_OBJECT_PTR pObj);
@@ -191,14 +191,14 @@ FTE_RET   FTE_SRF_stop
 
 void FTE_SRF_done
 (
-    _timer_id   id, 
-    FTE_VOID_PTR     pData, 
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR pTick
 )
 {
     FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)pData;
     FTE_SRF_STATUS_PTR  pStatus = (FTE_SRF_STATUS_PTR)pObj->pStatus;
-    char    _buff[16];
+    FTE_CHAR    _buff[16];
     
     memset(_buff, 0, sizeof(_buff));
     if (fgets(_buff, 16, pStatus->pFP) != 0)
@@ -214,8 +214,8 @@ void FTE_SRF_done
 
 void FTE_SRF_restartConvert
 (
-    _timer_id   id, 
-    FTE_VOID_PTR     pData, 
+    FTE_TIMER_ID    xTimerID, 
+    FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR pTick
 )
 {
@@ -294,7 +294,7 @@ FTE_INT32  shell_srf
                 {
                     FTE_UINT32 nValue;
                     
-                    if (! Shell_parse_number( pArgv[2], &nValue))  
+                    if (FTE_strToUINT32( pArgv[2], &nValue) != FTE_RET_OK)  
                     {
                        xRet = SHELL_EXIT_ERROR;
                        goto error;
@@ -307,7 +307,7 @@ FTE_INT32  shell_srf
                        goto error;
                     }
                     
-                    if (! Shell_parse_number( pArgv[3], &nValue))  
+                    if (FTE_strToUINT32( pArgv[3], &nValue) != FTE_RET_OK)  
                     {
                        xRet = SHELL_EXIT_ERROR;
                        goto error;

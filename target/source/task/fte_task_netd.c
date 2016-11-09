@@ -16,11 +16,16 @@ void FTE_TASK_net
     FTE_UINT32  params
 )
 {
+    FTE_RET             xRet;
     FTE_TIME_DELAY      xTimeDelay;
     FTE_BOOL            bLinkActive = FALSE;
-    FTE_NET_CFG_PTR     pCfgNet = FTE_CFG_NET_get();
-
-    ASSERT(pCfgNet != NULL);
+    FTE_NET_CFG_PTR     pCfgNet;
+   
+    xRet = FTE_CFG_NET_get(&pCfgNet);
+    if (xRet != FTE_RET_OK)
+    {
+        goto error;
+    }
 
     printf("Starting netd\n");
     if (FTE_NET_init(pCfgNet) == RTCS_ERROR)
