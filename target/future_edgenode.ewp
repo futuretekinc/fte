@@ -2494,12 +2494,6 @@
       </file>
     </group>
     <group>
-      <name>dev</name>
-      <file>
-        <name>$PROJ_DIR$\source\dev\fte_dev.c</name>
-      </file>
-    </group>
-    <group>
       <name>drv</name>
       <file>
         <name>$PROJ_DIR$\source\drv\fte_1wire.c</name>

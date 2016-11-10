@@ -391,8 +391,6 @@ FTE_INT32   FTE_OBJ_SHELL_cmd(FTE_INT32 argc, FTE_CHAR_PTR argv[]);
 
 #define FTE_OBJ_IS_ENABLED(pObj)     FTE_FLAG_IS_SET((pObj)->pConfig->xCommon.xFlags, FTE_OBJ_CONFIG_FLAG_ENABLE)
 
-#include "dev/fte_dev.h"
-
 #include "obj/fte_event.h"
 #include "obj/fte_di.h"
 #include "obj/fte_do.h"

@@ -12,7 +12,6 @@
 #include "fte_snmp.h" 
 #include "fte_time.h" 
 #include "fte_sys.h" 
-#include "fte_dev.h"
 #include "sys/fte_sys_timer.h" 
 #include "nxjson.h"
 #include "fte_json.h"

@@ -160,7 +160,7 @@ FTE_RET FTE_SMNGD_init
     pValue = FTE_JSON_VALUE_createString(pMACString);
     FTE_JSON_OBJECT_setPair((FTE_JSON_OBJECT_PTR)pObject, "mac", pValue);
 
-    pOIDs = FTE_JSON_VALUE_createArray(FTE_OBJ_DESC_CLASS_count() + FTE_DEVICE_count());
+    pOIDs = FTE_JSON_VALUE_createArray(FTE_OBJ_DESC_CLASS_count());
 
     for(FTE_UINT32 i = 0 ; i < FTE_OBJ_DESC_CLASS_count() ; i++)
     {
@@ -245,7 +245,7 @@ FTE_RET FTE_SMNG_getDiscoveryMessage
         pValue = FTE_JSON_VALUE_createString(pIPString);
         FTE_JSON_OBJECT_setPair((FTE_JSON_OBJECT_PTR)pObject, "ip", pValue);        
 
-        pOIDs = FTE_JSON_VALUE_createArray(FTE_OBJ_DESC_CLASS_count() + FTE_DEVICE_count());
+        pOIDs = FTE_JSON_VALUE_createArray(FTE_OBJ_DESC_CLASS_count());
 
         for(FTE_UINT32 i = 0 ; i < FTE_OBJ_DESC_CLASS_count() ; i++)
         {

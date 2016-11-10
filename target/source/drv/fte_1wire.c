@@ -33,32 +33,40 @@ FTE_RET FTE_1WIRE_create
     FTE_1WIRE_CONFIG_CONST_PTR  pConfig
 )
 {
+    ASSERT(pConfig != NULL);
+    
+    FTE_RET xRet;
     FTE_1WIRE_PTR   p1Wire;
+    
     
     p1Wire = (FTE_1WIRE_PTR)FTE_MEM_allocZero(sizeof(FTE_1WIRE));
     if (p1Wire == NULL)
     {
-        return  FTE_RET_NOT_ENOUGH_MEMORY;
-    }
-
-    p1Wire->pNext = _pHead;
-    if (FTE_SYS_LOCK_init(&p1Wire->xLock, 1) != FTE_RET_OK)
-    {
+        xRet = FTE_RET_NOT_ENOUGH_MEMORY;
         goto error;
     }
-        
+
     p1Wire->pROMCodes = FTE_MEM_allocZero(sizeof(FTE_1WIRE_ROM_CODE) * pConfig->nMaxDevices);
     if (p1Wire->pROMCodes == NULL)
     {
+        xRet = FTE_RET_NOT_ENOUGH_MEMORY;
         goto error;
     }
         
     p1Wire->nROMCodes = 0;    
     p1Wire->pConfig = pConfig;
-    
+
+    p1Wire->pNext = _pHead;
+    xRet = FTE_SYS_LOCK_init(&p1Wire->xLock, 1);
+    if (xRet != FTE_RET_OK)
+    {
+        goto error;
+    }
+        
     if (pConfig->xFlags & FTE_DEV_FLAG_SYSTEM_DEVICE)
     {
-        if (FTE_1WIRE_attach(p1Wire, FTE_DEV_TYPE_ROOT) != FTE_RET_OK)
+        xRet = FTE_1WIRE_attach(p1Wire, FTE_DEV_TYPE_ROOT);
+        if (xRet != FTE_RET_OK)
         {
             goto error;
         }
@@ -70,15 +78,18 @@ FTE_RET FTE_1WIRE_create
     return  FTE_RET_OK;
     
 error:
-    FTE_SYS_LOCK_final(&p1Wire->xLock);
-    if (p1Wire->pROMCodes != NULL)
+    if (p1Wire != NULL)
     {
-        FTE_MEM_free(p1Wire->pROMCodes);
-    }
+        FTE_SYS_LOCK_final(&p1Wire->xLock);
+        if (p1Wire->pROMCodes != NULL)
+        {
+            FTE_MEM_free(p1Wire->pROMCodes);
+        }
         
-    FTE_MEM_free(p1Wire);
+        FTE_MEM_free(p1Wire);
+    }
     
-    return  FTE_RET_ERROR;
+    return  xRet;
 }
 
 FTE_RET FTE_1WIRE_attach
@@ -311,7 +322,12 @@ FTE_RET FTE_1WIRE_write
 #define SET_BIT_AT(value,n) (((FTE_UINT8_PTR)value)[n / 8] |= 1 << (n % 8))
 #define CLR_BIT_AT(value,n) (((FTE_UINT8_PTR)value)[n / 8] &= ~(1 << (n % 8)))
 
-FTE_UINT32  FTE_1WIRE_search(FTE_1WIRE_PTR p1Wire, FTE_1WIRE_ROM_CODE_PTR pROMCodes, FTE_UINT32 nMaxCount)
+FTE_UINT32  FTE_1WIRE_search
+(
+    FTE_1WIRE_PTR           p1Wire, 
+    FTE_1WIRE_ROM_CODE_PTR  pROMCodes, 
+    FTE_UINT32              nMaxCount
+)
 {
     FTE_INT32  i, j;
     FTE_INT32  nCount = 0;
