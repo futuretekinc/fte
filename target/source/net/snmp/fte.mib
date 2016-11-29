@@ -1,6 +1,12 @@
-    MIB DEFINITIONS ::= BEGIN
-
-        DisplayString ::= OCTET STRING
+FTE-E	 DEFINITIONS ::= BEGIN
+       IMPORTS
+       Integer32, OBJECT-TYPE, MODULE-IDENTITY,
+       enterprises
+          FROM SNMPv2-SMI
+       DisplayString
+          FROM SNMPv2-TC
+        OBJECT-GROUP
+          FROM SNMPv2-CONF;
         MacAddress ::= OCTET STRING
         IPAddress ::= OCTET STRING
 
@@ -48,7 +54,9 @@
 
         epDiscrete      OBJECT IDENTIFIER ::= { endpoints 3328 }
 
-        epDevice        OBJECT IDENTIFIER ::= { endpoints 32512 }
+        epMulti         OBJECT IDENTIFIER ::= { endpoints 32256 }
+        
+        epCtrl			OBJECT IDENTIFIER ::= { endpoints 32512 }
 
         epMgmt          OBJECT IDENTIFIER ::= { endpoints 65535 }
 
@@ -610,7 +618,7 @@
             diValue DisplayString,
             diLastValue DisplayString,
             diLastTime DisplayString,
-            diInitValue DisplayString
+            diUpdateInterval INTEGER
         }
 
         diID OBJECT-TYPE
@@ -677,8 +685,8 @@
                         ""
                 ::= { diEntry 8 }
 
-        diInitValue OBJECT-TYPE
-                SYNTAX DisplayString
+        diUpdateInterval OBJECT-TYPE
+                SYNTAX INTEGER
                 ACCESS read-write
                 STATUS deprecated
                 DESCRIPTION
@@ -1357,87 +1365,171 @@
                         ""
                 ::= { dscEntry 9 }
 
-        devCount OBJECT-TYPE
+
+        multiCount OBJECT-TYPE
                 SYNTAX INTEGER
                 ACCESS read-only
                 STATUS deprecated
                 DESCRIPTION
                         ""
-                ::= { epDevice 1 }
+                ::= { epMulti 1 }
 
-        devTable OBJECT-TYPE
+        multiTable OBJECT-TYPE
                 SYNTAX SEQUENCE OF DevEntry
                 ACCESS not-accessible
                 STATUS deprecated
                 DESCRIPTION
                         ""
-                ::= { epDevice 2 }
+                ::= { epMulti 2 }
 
-        devEntry OBJECT-TYPE
+        multiEntry OBJECT-TYPE
                 SYNTAX DevEntry
                 ACCESS not-accessible
                 STATUS deprecated
                 DESCRIPTION
                         ""
-                INDEX { devID }
-                ::= { devTable 1 }
+                INDEX { multiID }
+                ::= { multiTable 1 }
 
-        DevEntry ::= SEQUENCE { 
-            devID DisplayString,
-            devType DisplayString,
-            devName DisplayString,
-            devSN DisplayString,
-            devState DisplayString,
-            devValue DisplayString
+        MultiEntry ::= SEQUENCE { 
+            multiID DisplayString,
+            multiType DisplayString,
+            multiName DisplayString,
+            multiSN DisplayString,
+            multiState DisplayString,
+            multiValue DisplayString
         }
 
-        devID OBJECT-TYPE
+        multiID OBJECT-TYPE
                 SYNTAX DisplayString
                 ACCESS read-only
                 STATUS deprecated
                 DESCRIPTION
                         ""
-                ::= { devEntry 1 }
+                ::= { multiEntry 1 }
 
-        devType OBJECT-TYPE
+        multiType OBJECT-TYPE
                 SYNTAX DisplayString
                 ACCESS read-only
                 STATUS deprecated
                 DESCRIPTION
                         ""
-                ::= { devEntry 2 }
+                ::= { multiEntry 2 }
 
-        devName OBJECT-TYPE
+        multiName OBJECT-TYPE
                 SYNTAX DisplayString
                 ACCESS read-write
                 STATUS deprecated
                 DESCRIPTION
                         ""
-                ::= { devEntry 3 }
+                ::= { multiEntry 3 }
 
-        devSN OBJECT-TYPE
+        multiSN OBJECT-TYPE
                 SYNTAX DisplayString
                 ACCESS read-only
                 STATUS deprecated
                 DESCRIPTION
                         ""
-                ::= { devEntry 4 }
+                ::= { multiEntry 4 }
 
-        devState OBJECT-TYPE
+        multiState OBJECT-TYPE
                 SYNTAX DisplayString
                 ACCESS read-write
                 STATUS deprecated
                 DESCRIPTION
                         ""
-                ::= { devEntry 5 }
+                ::= { multiEntry 5 }
 
-        devValue OBJECT-TYPE
+        multiValue OBJECT-TYPE
                 SYNTAX DisplayString
                 ACCESS read-write
                 STATUS deprecated
                 DESCRIPTION
                         ""
-                ::= { devEntry 6 }
+                ::= { multiEntry 6 }
+
+
+        ctrlCount OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { epCtrl 1 }
+
+        ctrlTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF DevEntry
+                ACCESS not-accessible
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { epCtrl 2 }
+
+        ctrlEntry OBJECT-TYPE
+                SYNTAX DevEntry
+                ACCESS not-accessible
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                INDEX { ctrlID }
+                ::= { ctrlTable 1 }
+
+        CtrlEntry ::= SEQUENCE { 
+            ctrlID DisplayString,
+            ctrlType DisplayString,
+            ctrlName DisplayString,
+            ctrlSN DisplayString,
+            ctrlState DisplayString,
+            ctrlValue DisplayString
+        }
+
+        ctrlID OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-only
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { ctrlEntry 1 }
+
+        ctrlType OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-only
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { ctrlEntry 2 }
+
+        ctrlName OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-write
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { ctrlEntry 3 }
+
+        ctrlSN OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-only
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { ctrlEntry 4 }
+
+        ctrlState OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-write
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { ctrlEntry 5 }
+
+        ctrlValue OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-write
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { ctrlEntry 6 }
 
         smDiscovery OBJECT-TYPE
                 SYNTAX INTEGER

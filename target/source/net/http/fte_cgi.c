@@ -11,8 +11,8 @@
 #include "fte_cgi.h"
 #include "fte_json.h"
 
-#define CGI_TRACE(...)    TRACE(DEBUG_NET_CGI, __VA_ARGS__)
-#define CGI_ERROR(...)    ERROR(__VA_ARGS__)
+#undef  __MODULE__
+#define __MODULE__  FTE_MODULE_NET_CGI
 
 static 
 FTE_RET FTE_CGI_request(HTTPSRV_CGI_REQ_STRUCT _PTR_ pParam);
@@ -287,9 +287,6 @@ FTE_RET FTE_CGI_requestGet
     FTE_BOOL            bReboot = FALSE;
     FTE_JSON_OBJECT_PTR pJSONObject;
         
-    
-    CGI_TRACE("CALLED");
-    
     xRet = FTE_CGI_QUERY_count(pParam->query_string, &ulQueryCount);
     if (xRet != FTE_RET_OK)
     {
@@ -299,7 +296,7 @@ FTE_RET FTE_CGI_requestGet
     pQuery = FTE_CGI_QUERY_alloc(ulQueryCount);
     if (pQuery == NULL)
     {
-        CGI_ERROR("FTE_CGI_QUERY_alloc(%d) failed\n", ulQueryCount);
+        ERROR("FTE_CGI_QUERY_alloc(%d) failed\n", ulQueryCount);
         xRet = FTE_RET_NOT_ENOUGH_MEMORY;
         goto error;
     }
@@ -321,7 +318,7 @@ FTE_RET FTE_CGI_requestGet
     xRet = FTE_CGI_QUERY_get(pQuery, "cmd", &pCmd);
     if (xRet != FTE_RET_OK)
     {
-        CGI_ERROR("FTE_CGI_QUERY_get(cgi_query, cmd) not found\n");
+        ERROR("FTE_CGI_QUERY_get(cgi_query, cmd) not found\n");
         goto error;
     }
     
@@ -425,14 +422,14 @@ FTE_RET FTE_CGI_requestGet
         xRet = FTE_CGI_QUERY_getHEXNUM(pQuery, "oid", &nOID);
         if (xRet != FTE_RET_OK)
         {
-            CGI_ERROR("FTE_CGI_QUERY_getHEXNUM\n");
+            ERROR("FTE_CGI_QUERY_getHEXNUM\n");
             goto error;
         }
         
         FTE_OBJECT_PTR pObj = FTE_OBJ_get(nOID);
         if (pObj == NULL)
         {
-            CGI_ERROR("FTE_OBJ_get\n");
+            ERROR("FTE_OBJ_get\n");
             xRet = FTE_RET_OBJECT_NOT_FOUND;
             goto error;
         }
@@ -445,7 +442,7 @@ FTE_RET FTE_CGI_requestGet
         pBuff = (FTE_CHAR_PTR)FTE_MEM_allocZero(nMaxLen);
         if (pBuff == NULL)
         {
-            CGI_ERROR("Not enough memory.[ Size = %d ]\n", nMaxLen);
+            ERROR("Not enough memory.[ Size = %d ]\n", nMaxLen);
             xRet = FTE_RET_NOT_ENOUGH_MEMORY;
             goto error;
         }    

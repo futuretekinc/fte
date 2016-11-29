@@ -20,6 +20,8 @@ Maintainer: Miguel Luis and Gregory Cristian
 #define FTE_S2LORA_SINGLE_TEST 1
 #if FTE_S2LORA_SUPPORTED
 
+#undef  __MODULE__
+#define __MODULE__  FTE_MODULE_LORA_NET
 
 /*!
  * Radio events function pointer
@@ -119,7 +121,7 @@ FTE_UINT32     FTE_S2LORA_recv(void *pBuff, FTE_UINT32 ulBuffSize)
 
 void FTE_S2LORA_processRxFrame( FTE_S2LORA_PTR pS2LORA, LoRaMacEventFlags_t *flags, LoRaMacEventInfo_t *info )
 {
-    TRACE(DEBUG_NET_LORA, "Rx[%04d] %4d - ", ++pS2LORA->ulRxPktCount, info->RxBufferSize );
+    TRACE("Rx[%04d] %4d - ", ++pS2LORA->ulRxPktCount, info->RxBufferSize );
     for(int i = 0 ; i < info->RxBufferSize ; i++)
     {
         printf("%02x ", info->RxBuffer[i]);
@@ -154,7 +156,7 @@ void FTE_S2LORA_onTxNextPacketTimerEvent( void *obj)
 {
     FTE_S2LORA_PTR pS2LORA = (FTE_S2LORA_PTR)obj;
     
-    TRACE(DEBUG_NET_LORA, "onTxNextPacketTimer\n");
+    TRACE("onTxNextPacketTimer\n");
     if (pS2LORA == NULL)
     {
         return;
@@ -173,7 +175,7 @@ void FTE_S2LORA_onMacEvent( LoRaMacEventFlags_t *flags, LoRaMacEventInfo_t *info
     
     if( flags->Bits.JoinAccept == 1 )
     {
-        TRACE(DEBUG_NET_LORA, "onMacEvent - Join Accept\n");
+        TRACE("onMacEvent - Join Accept\n");
         if (pS2LORA->xConfig.bOverTheAirActivation)
         {
             TimerStop( &pS2LORA->xJoinReqTimer );
@@ -190,12 +192,12 @@ void FTE_S2LORA_onMacEvent( LoRaMacEventFlags_t *flags, LoRaMacEventInfo_t *info
             FTE_MEM_free(pS2LORA->pSendFrame);
             pS2LORA->pSendFrame = NULL;
         }
-        TRACE(DEBUG_NET_LORA, "onMacEvent - Tx Done\n");
+        TRACE("onMacEvent - Tx Done\n");
     }
 
     if( flags->Bits.Rx == 1 )
     {
-        TRACE(DEBUG_NET_LORA, "onMacEvent - Rx Done\n");
+        TRACE("onMacEvent - Rx Done\n");
         if( flags->Bits.RxData == true )
         {
             FTE_S2LORA_processRxFrame( pS2LORA, flags, info );

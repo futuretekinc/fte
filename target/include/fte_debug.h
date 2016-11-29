@@ -12,22 +12,33 @@
 #define DEBUG_NET_SNMP      0x00000800
 #define DEBUG_NET_SSL       0x00001000
 #define DEBUG_NET_LORA      0x00002000
+#define DEBUG_NET_MBTCP     0x00004000
 
 #define DEBUG_ALL           0xFFFFFFFF
 
+#define FTE_MODULE_NET_SNMP     (1 << 1)     
+#define FTE_MODULE_NET_SMNG     (1 << 2)     
+#define FTE_MODULE_NET_MBTCP    (1 << 3)
+#define FTE_MODULE_NET_LORA     (1 << 4)
+#define FTE_MODULE_NET_SSL      (1 << 5)
+#define FTE_MODULE_DI           (1 << 6)
+#define FTE_MODULE_EVENT        (1 << 7)
+#define FTE_MODULE_OBJECT       (1 << 8)
+
+#define __MODULE__      0
 
 #if FTE_DEBUG
-#define TRACE(ulModule, ...)    FTE_DEBUG_trace(ulModule, __VA_ARGS__)
-#define TRACE_ON(ulModule)      FTE_DEBUG_traceOn(ulModule)
-#define TRACE_OFF(ulModule)     FTE_DEBUG_traceOff(ulModule)
-#define DEBUG(...)              FTE_DEBUG_error(__func__, __LINE__, __VA_ARGS__)
-#define ERROR(...)              FTE_DEBUG_error(__func__, __LINE__, __VA_ARGS__)
-#define err_sys(...)            FTE_DEBUG_error(__func__, __LINE__, __VA_ARGS__)
-#define DUMP(pTitle, pBuff, ulSize, ulWrapLen)     FTE_DEBUG_dump(__func__, __LINE__, pTitle, pBuff, ulSize, ulWrapLen)
+#define TRACE(...)      FTE_DEBUG_trace(__MODULE__, __VA_ARGS__)
+#define TRACE_ON()      FTE_DEBUG_traceOn(__MODULE__)
+#define TRACE_OFF()     FTE_DEBUG_traceOff(__MODULE__)
+#define DEBUG(...)      FTE_DEBUG_error(__MODULE__, __func__, __LINE__, __VA_ARGS__)
+#define ERROR(...)      FTE_DEBUG_error(__MODULE__, __func__, __LINE__, __VA_ARGS__)
+#define err_sys(...)    FTE_DEBUG_error(__MODULE__, __func__, __LINE__, __VA_ARGS__)
+#define DUMP(pTitle, pBuff, ulSize, ulWrapLen)     FTE_DEBUG_dump(__MODULE__, __func__, __LINE__, pTitle, pBuff, ulSize, ulWrapLen)
 #else
-#define TRACE(ulModule, ...)    
-#define TRACE_ON(ulModule)      
-#define TRACE_OFF(ulModule)     
+#define TRACE(...)    
+#define TRACE_ON()      
+#define TRACE_OFF()     
 #define DEBUG(...)              
 #define ERROR(...)              
 #define err_sys(...)            
@@ -38,8 +49,8 @@ FTE_RET     FTE_DEBUG_trace(FTE_UINT32 ulModule, const FTE_CHAR _PTR_ fmt_ptr, .
 FTE_RET     FTE_DEBUG_traceOn(FTE_UINT32 ulModule);
 FTE_RET     FTE_DEBUG_traceOff(FTE_UINT32 ulModule);
 FTE_BOOL    FTE_DEBUG_isTraceOn(FTE_UINT32 ulModule);
-FTE_RET     FTE_DEBUG_error(const FTE_CHAR _PTR_ pFuncName, FTE_INT32 nLine, const FTE_CHAR _PTR_ fmt_ptr, ... );
-FTE_RET     FTE_DEBUG_dump(const FTE_CHAR _PTR_ pFuncName, FTE_INT32 nLine, FTE_CHAR_PTR pTitle, FTE_VOID_PTR pBuff, FTE_UINT32 ulSize, FTE_UINT32 ulWrapLen);
+FTE_RET     FTE_DEBUG_error(FTE_UINT32 ulModule, const FTE_CHAR _PTR_ pFuncName, FTE_INT32 nLine, const FTE_CHAR _PTR_ fmt_ptr, ... );
+FTE_RET     FTE_DEBUG_dump(FTE_UINT32 ulModule, const FTE_CHAR _PTR_ pFuncName, FTE_INT32 nLine, FTE_CHAR_PTR pTitle, FTE_VOID_PTR pBuff, FTE_UINT32 ulSize, FTE_UINT32 ulWrapLen);
 
 FTE_INT32   FTE_TRACE_SHELL_cmd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
 

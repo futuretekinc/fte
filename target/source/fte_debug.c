@@ -85,6 +85,7 @@ FTE_BOOL FTE_DEBUG_isTraceOn
 
 FTE_RET    FTE_DEBUG_error
 (
+    FTE_UINT32      ulModule, 
     const FTE_CHAR _PTR_ pFuncName, 
     FTE_INT32   nLine, 
     const FTE_CHAR _PTR_ fmt_ptr, 
@@ -96,6 +97,11 @@ FTE_RET    FTE_DEBUG_error
    TIME_STRUCT  xTime;
    FTE_CHAR     pTimeBuff[64];
    
+    if ((_ulTraceModule & ulModule) != ulModule)
+    {
+        return  FTE_RET_OK;
+    }
+
     _time_get(&xTime);
     FTE_TIME_toStr(&xTime, pTimeBuff, sizeof(pTimeBuff));   
     ulLen = sprintf(&_pBuff[ulLen], "[%s] ", pTimeBuff);
@@ -109,6 +115,7 @@ FTE_RET    FTE_DEBUG_error
 
 FTE_RET    FTE_DEBUG_dump
 (
+    FTE_UINT32      ulModule, 
     const FTE_CHAR _PTR_ pFuncName, 
     FTE_INT32       nLine, 
     FTE_CHAR_PTR    pTitle, 
@@ -120,6 +127,11 @@ FTE_RET    FTE_DEBUG_dump
     FTE_UINT32  i;
     FTE_CHAR    pIndent[32];
     
+    if ((_ulTraceModule & ulModule) != ulModule)
+    {
+        return  FTE_RET_OK;
+    }
+
     if (pTitle != NULL)
     {
         fprintf(_debugOut, "%s : ", pTitle);

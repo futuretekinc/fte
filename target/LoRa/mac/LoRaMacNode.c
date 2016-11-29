@@ -22,6 +22,9 @@ Maintainer: Miguel Luis and Gregory Cristian
 #include "LoRaMacCrypto.h"
 #include "LoRaMac.h"
 
+#undef  __MODULE__
+#define __MODULE__  FTE_MODULE_NET_LORA
+
 /*!
  * Statistics
  */
@@ -876,7 +879,7 @@ uint8_t LoRaMacSendFrameOnChannel( LoRaMac_t *pLoRaMac, ChannelParams_t channel 
         // Send now
         if (pLoRaMac->Config.Debug.TrafficMonitorOn)
         {
-            TRACE(DEBUG_NET_LORA, "Tx[%04d] %4d - ", ++pLoRaMac->Statistics.TxPktCount, pLoRaMac->Status.BufferPktLen );
+            TRACE("Tx[%04d] %4d - ", ++pLoRaMac->Statistics.TxPktCount, pLoRaMac->Status.BufferPktLen );
             if (pLoRaMac->Config.Debug.PacketDumpOn)
             {
                 for(int i = 0 ; i < pLoRaMac->Status.BufferPktLen ; i++)
@@ -908,7 +911,7 @@ void OnTxDelayedTimerEvent( void *params )
     
     if (pLoRaMac->Config.Debug.TrafficMonitorOn)
     {
-        TRACE(DEBUG_NET_LORA, "Tx[%04d] %4d - ", ++pLoRaMac->Statistics.TxPktCount, pLoRaMac->Status.BufferPktLen );
+        TRACE("Tx[%04d] %4d - ", ++pLoRaMac->Statistics.TxPktCount, pLoRaMac->Status.BufferPktLen );
         if (pLoRaMac->Config.Debug.PacketDumpOn)
         {
             for(int i = 0 ; i < pLoRaMac->Status.BufferPktLen ; i++)
@@ -1237,7 +1240,7 @@ static void OnRadioRxDone( void *obj, uint8_t *payload, uint16_t size, int16_t r
 
     if (pLoRaMac->Config.Debug.TrafficMonitorOn)
     {
-        TRACE(DEBUG_NET_LORA, "Rx[%04d] %4d - ", ++pLoRaMac->Statistics.RxPktCount, size );
+        TRACE("Rx[%04d] %4d - ", ++pLoRaMac->Statistics.RxPktCount, size );
         if (pLoRaMac->Config.Debug.PacketDumpOn)
         {
             for(int i = 0 ; i < size ; i++)
@@ -1548,7 +1551,7 @@ static void OnRadioTxTimeout( void * obj)
     
     ASSERT(pLoRaMac != NULL);
         
-    TRACE(DEBUG_NET_LORA, "onRadioTxTimeout\n");
+    TRACE("onRadioTxTimeout\n");
     
     if( pLoRaMac->Config.DeviceClass != CLASS_C )
     {
@@ -1572,7 +1575,7 @@ static void OnRadioRxTimeout( void * obj)
     
     ASSERT(pLoRaMac != NULL);
      
-    TRACE(DEBUG_NET_LORA, "onRadioRxTimeout\n");
+    TRACE("onRadioRxTimeout\n");
     if( pLoRaMac->Config.DeviceClass != CLASS_C )
     {
         Radio.Sleep( );
@@ -1593,7 +1596,7 @@ static void OnRadioRxError( void * obj)
     
     ASSERT(pLoRaMac != NULL);
         
-    TRACE(DEBUG_NET_LORA, "onRadioRxError\n");
+    TRACE("onRadioRxError\n");
     if( pLoRaMac->Config.DeviceClass != CLASS_C )
     {
         Radio.Sleep( );
@@ -1672,7 +1675,7 @@ static void OnRxWindow1TimerEvent( void *params )
 
     ASSERT(pLoRaMac != NULL);
     
-    TRACE(DEBUG_NET_LORA, "OnRxWindow1TimerEvent : NetID = %d\n", pLoRaMac->Config.NetID);
+    TRACE("OnRxWindow1TimerEvent : NetID = %d\n", pLoRaMac->Config.NetID);
     
     uint16_t symbTimeout = 5; // DR_2, DR_1, DR_0
     int8_t datarate = 0;
@@ -1707,7 +1710,7 @@ static void OnRxWindow2TimerEvent( void * params)
     
     ASSERT(pLoRaMac != NULL);
 
-    TRACE(DEBUG_NET_LORA, "OnRxWindow2TimerEvent : NetID = %d\n", pLoRaMac->Config.NetID);
+    TRACE("OnRxWindow2TimerEvent : NetID = %d\n", pLoRaMac->Config.NetID);
     
     if( pLoRaMac->Status.NodeAckRequested == true )
     {

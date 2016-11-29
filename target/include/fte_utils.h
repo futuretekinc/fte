@@ -10,6 +10,19 @@
 #define isspace(c)           (c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\v')
 #endif		
 
+#define FTE_NTOHS(p)   (FTE_INT16)(((FTE_UINT16)((p) & 0xFF) << 8) | ((FTE_UINT16)((p) & 0xFF00) >> 8))
+#define FTE_HTONS(p)   (FTE_INT16)(((FTE_UINT16)((p) & 0xFF) << 8) | ((FTE_UINT16)((p) & 0xFF00) >> 8))
+#define FTE_NTOHUS(p)  (((FTE_UINT16)((p) & 0xFF) << 8) | ((FTE_UINT16)((p) & 0xFF00) >> 8))
+#define FTE_HTONUS(p)  (((FTE_UINT16)((p) & 0xFF) << 8) | ((FTE_UINT16)((p) & 0xFF00) >> 8))
+#define FTE_NTOHL(p)   (FTE_INT32)(((FTE_UINT32)((p) & 0xFF) << 24) | ((FTE_UINT32)((p) & 0xFF00) << 8) | \
+                        ((FTE_UINT32)((p) & 0xFF0000) >> 8) | ((FTE_UINT32)((p) & 0xFF000000) >> 24))
+#define FTE_HTONL(p)   (FTE_INT32)(((FTE_UINT32)((p) & 0xFF) << 24) | ((FTE_UINT32)((p) & 0xFF00) << 8) | \
+                        ((FTE_UINT32)((p) & 0xFF0000) >> 8) | ((FTE_UINT32)((p) & 0xFF000000) >> 24))
+#define FTE_NTOHUL(p)  (((FTE_UINT32)((p) & 0xFF) << 24) | ((FTE_UINT32)((p) & 0xFF00) << 8) | \
+                        ((FTE_UINT32)((p) & 0xFF0000) >> 8) | ((FTE_UINT32)((p) & 0xFF000000) >> 24))
+#define FTE_HTONUL(p)  (((FTE_UINT32)((p) & 0xFF) << 24) | ((FTE_UINT32)((p) & 0xFF00) << 8) | \
+                        ((FTE_UINT32)((p) & 0xFF0000) >> 8) | ((FTE_UINT32)((p) & 0xFF000000) >> 24))
+
 void    FTE_udelay(FTE_UINT32 usec);
 FTE_RET FTE_strToIP( FTE_CHAR_PTR pIPString, FTE_UINT32_PTR pIP);
 FTE_RET FTE_strToMAC( FTE_CHAR_PTR pMACString, _enet_address enet_address);

@@ -20,6 +20,8 @@ Maintainer: Miguel Luis and Gregory Cristian
 #define FTE_LORAWAN_SINGLE_TEST 1
 #if FTE_LORAWAN_SUPPORTED
 
+#undef  __MODULE__
+#define __MODULE__  FTE_MODULE_NET_LORA
 
 /*!
  * Radio events function pointer
@@ -146,7 +148,7 @@ void FTE_LORAWAN_onTxNextPacketTimerEvent( void *obj)
 {
     FTE_LORAWAN_PTR pLoRaWan = (FTE_LORAWAN_PTR)obj;
     
-    TRACE(DEBUG_NET_LORA, "onTxNextPacketTimer\n");
+    TRACE("onTxNextPacketTimer\n");
     if (pLoRaWan == NULL)
     {
         return;
@@ -165,7 +167,7 @@ void FTE_LORAWAN_onMacEvent( LoRaMacEventFlags_t *flags, LoRaMacEventInfo_t *inf
     
     if( flags->Bits.JoinAccept == 1 )
     {
-        TRACE(DEBUG_NET_LORA, "onMacEvent - Join Accept\n");
+        TRACE("onMacEvent - Join Accept\n");
         if (pLoRaWan->xConfig.bOverTheAirActivation)
         {
             TimerStop( &pLoRaWan->xJoinReqTimer );
@@ -176,12 +178,12 @@ void FTE_LORAWAN_onMacEvent( LoRaMacEventFlags_t *flags, LoRaMacEventInfo_t *inf
     
     if( flags->Bits.Tx == 1 )
     {
-        TRACE(DEBUG_NET_LORA, "onMacEvent - Tx Done\n");
+        TRACE("onMacEvent - Tx Done\n");
     }
 
     if( flags->Bits.Rx == 1 )
     {
-        TRACE(DEBUG_NET_LORA, "onMacEvent - Rx Done\n");
+        TRACE("onMacEvent - Rx Done\n");
         if( flags->Bits.RxData == true )
         {
             FTE_LORAWAN_processRxFrame( flags, info );

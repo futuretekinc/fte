@@ -2,6 +2,11 @@
 #include "fte_debug.h"
 #include "fte_event.h"
 #include "fte_config.h"
+
+#undef  __MODULE__
+#define __MODULE__  FTE_MODULE_OBJECT
+
+
 /*TASK*-----------------------------------------------------------------
 *
 * Function Name  : FTE_TASK_objectManagement
@@ -10,7 +15,7 @@
 *
 *END------------------------------------------------------------------*/
 void FTE_TASK_objectManagement
-(
+( 
     FTE_UINT32  params
 )
 {
@@ -27,7 +32,7 @@ void FTE_TASK_objectManagement
     xRet = FTE_OBJ_1WIRE_discovery(TRUE, &ulNewObject);
     if (xRet != FTE_RET_OK)
     {
-        TRACE(DEBUG_OBJECT, "1Wire discovery not supported!\n");
+        TRACE("1Wire discovery not supported!\n");
     }
 #endif
    _time_get_elapsed_ticks(&xNextTicks);

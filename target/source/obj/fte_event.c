@@ -6,6 +6,10 @@
 #include "fte_log.h"
 #include "fte_object.h"
 
+
+#undef  __MODULE__
+#define __MODULE__  FTE_MODULE_EVENT
+
 static FTE_RET    FTE_EVENT_proc(FTE_EVENT_PTR pEvent, TIME_STRUCT_PTR pTime);
 
 static FTE_LIST         _eventList =
@@ -231,7 +235,7 @@ FTE_RET    FTE_EVENT_check
             pObj = FTE_OBJ_get(pEvent->pConfig->ulEPID);
             if (pObj == NULL)
             {
-                TRACE(DEBUG_EVENT, "%s : Object not found[ulEPID = %08lx]\n", __func__, pEvent->pConfig->ulEPID);
+                TRACE("%s : Object not found[ulEPID = %08lx]\n", __func__, pEvent->pConfig->ulEPID);
                 return  MQX_INVALID_HANDLE;
             }
         }
@@ -353,7 +357,7 @@ FTE_RET    FTE_EVENT_check
         FTE_CHAR pBuff[32];
             
         FTE_VALUE_toString(pObj->pStatus->pValue, pBuff, 32);
-        TRACE(DEBUG_EVENT, "Event : %08x [%s]\n", pEvent->pConfig->ulEPID, pBuff, (pEvent->xState.bOccurred)?"Release":"Occurred");
+        TRACE("Event : %08x [%s]\n", pEvent->pConfig->ulEPID, pBuff, (pEvent->xState.bOccurred)?"Release":"Occurred");
         
         FTE_VALUE_getTimeStamp(pObj->pStatus->pValue, &pEvent->xState.xTimeStamp);
         pEvent->xState.bChanged     = TRUE;

@@ -1942,7 +1942,18 @@ FTE_NET_CFG FTE_defaultNetConfig =
     {
         .pID    = "admin",
         .pPasswd= "admin"
-    }
+    },
+#endif
+#if FTE_MBTCP_SUPPORTED
+    .xMBTCP     =
+    {
+        .usPort =   FTE_NET_MBTCP_PORT,
+        .ulMaxSessions= FTE_NET_MBTCP_MAX_SESSION,
+        .xMBSlave=  
+        {
+            .xType  = FTE_MODBUS_SLAVE_TYPE_GENERAL
+        }
+    },
 #endif
 };
 

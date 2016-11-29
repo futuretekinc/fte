@@ -6,8 +6,8 @@
 #include <ipcfg.h>
 #include <cyassl/ssl.h>
 
-#define FTE_SSL_ERR(...)    DEBUG(__VA_ARGS__)
-#define FTE_SSL_MSG(...)    TRACE(DEBUG_NET_SSL, __VA_ARGS__)
+#undef  __MODULE__
+#define __MODULE__  FTE_MODULE_NET_SSL
 
 #define CLIENT_DEFAULT_VERSION 3
 
@@ -27,28 +27,28 @@ FTE_SSL_CONTEXT_PTR FTE_SSL_create
     pxCTX = (FTE_SSL_CONTEXT_PTR)FTE_MEM_allocZero(sizeof(FTE_SSL_CONTEXT));
     if (pxCTX == NULL)
     {
-        FTE_SSL_ERR("Can not allocate memory.\n");
+        ERROR("Can not allocate memory.\n");
         goto error;
     }
     
     ulCACertLen = FTE_CFG_CERT_size();
     if (ulCACertLen == 0)
     {
-        FTE_SSL_ERR("Certificate does not exist.\n");
+        ERROR("Certificate does not exist.\n");
         goto error;
     }
     
     pCACert = (FTE_UINT8_PTR)FTE_MEM_allocZero(ulCACertLen);
     if (pCACert == NULL)
     {
-        FTE_SSL_ERR("Can not allocate memory.\n");
+        ERROR("Can not allocate memory.\n");
         goto error;
     }
     
     xRet = FTE_CFG_CERT_get(pCACert, ulCACertLen, NULL);
     if (xRet != FTE_RET_OK)
     {
-        FTE_SSL_ERR("Cannot import the certificate. - buffer too small\n");
+        ERROR("Cannot import the certificate. - buffer too small\n");
         goto error;
     }
     
@@ -65,26 +65,26 @@ FTE_SSL_CONTEXT_PTR FTE_SSL_create
     case FTE_SSL_METHOD_TLSV1_1:pxMETHOD = CyaTLSv1_1_client_method();    break;
     case FTE_SSL_METHOD_TLSV1_2:pxMETHOD = CyaTLSv1_2_client_method();    break;
     default:
-        FTE_SSL_ERR("Bad SSL version[Version : %d]\n", pConfig->nMethod);
+        ERROR("Bad SSL version[Version : %d]\n", pConfig->nMethod);
         goto error;
     }
    
     pxCTX->pxCTX = CyaSSL_CTX_new(pxMETHOD);
     if (pxCTX->pxCTX == NULL)
     {
-        FTE_SSL_ERR("unable to get CTX\n");
+        ERROR("unable to get CTX\n");
         goto error;
     }
    
     if (CyaSSL_CTX_load_verify_buffer(pxCTX->pxCTX, pCACert, ulCACertLen, SSL_FILETYPE_PEM) != SSL_SUCCESS)
     {
-        FTE_SSL_ERR("Failed to verify the certificate.\n");
+        ERROR("Failed to verify the certificate.\n");
         goto error;
     }
     
     if (CyaSSL_CTX_set_cipher_list(pxCTX->pxCTX, pConfig->pCipher) != SSL_SUCCESS)
     {
-        FTE_SSL_ERR("Failed to set cipher.\n");
+        ERROR("Failed to set cipher.\n");
         goto error;
     }
 
@@ -92,7 +92,7 @@ FTE_SSL_CONTEXT_PTR FTE_SSL_create
     pxCTX->pxSSL = CyaSSL_new(pxCTX->pxCTX);
     if (pxCTX->pxSSL == NULL)
     {        
-        FTE_SSL_ERR("Cannot allocate SSL context.\n");
+        ERROR("Cannot allocate SSL context.\n");
         goto error;
     }
     
@@ -193,7 +193,7 @@ FTE_RET   FTE_SSL_connect
     
     if (nRet != SSL_SUCCESS)
     {
-        FTE_SSL_ERR("SSL connection failed.");
+        ERROR("SSL connection failed.");
         CyaSSL_shutdown(pxCTX->pxSSL);
         
         return  RTCS_ERROR;

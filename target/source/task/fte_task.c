@@ -8,6 +8,7 @@
 #include "fte_task.h"
 #include "fte_task_watchdog.h"
 #include "fte_lora.h"
+#include "fte_mbtcp.h"
 #include <rtcs.h>
  
 void MAC_15_4_process(FTE_UINT32 params);
@@ -213,6 +214,28 @@ TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
     },
 #endif
+#if 0
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_MBTCP_MAIN,    /* Task Index */
+        .TASK_ADDRESS           =   FTE_MBTCP_mainTask,     /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_MBTCP_MAIN_STACK,  /* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_MBTCP_MAIN_PRIO,   /* Priority */
+        .TASK_NAME              =   "mbtcp",               /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   0,                      /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+#endif
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_MBTCP_SESSION,        /* Task Index */
+        .TASK_ADDRESS           =   FTE_MBTCP_sessionTask,        /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_MBTCP_SESSION_STACK,  /* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_MBTCP_SESSION_PRIO,   /* Priority */
+        .TASK_NAME              =   "mbtcp_session",               /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   0,                      /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
     { 0 }
 };
 
@@ -328,8 +351,6 @@ FTE_INT32 FTE_TASK_SHELL_cmd
                     printf("%2d : %8d %32s %4d\n", ++ulCount, pTaskInfo->xID, pTemplate->TASK_NAME, _task_free_stack(pTaskInfo->xID));
                 }
             }
-//            TASK_TEMPLATE_STRUCT_PTR pTemplate = _task_get_template_ptr(65541);
-//            printf("%2d : %8d %32s %4d\n", ++ulCount, pTaskInfo->xID, pTemplate->TASK_NAME, _task_free_stack(pTaskInfo->xID));
         }
         break;
         

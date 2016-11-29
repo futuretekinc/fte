@@ -74,6 +74,13 @@
 #define FTE_NET_SMNG_PRIO               9
 #define FTE_NET_SMNG_PORT               1234
 
+/* MODBUS/TCP Configuration */
+#define FTE_NET_MBTCP_BUFF_SIZE         512
+#define FTE_NET_MBTCP_STACK             (FTE_TASK_DEFAULT_STACK * 2 + FTE_NET_SMNG_BUFF_SIZE)
+#define FTE_NET_MBTCP_PRIO              9
+#define FTE_NET_MBTCP_PORT              502
+#define FTE_NET_MBTCP_MAX_SESSION       1
+     
 /* SNMP Configuration */
 #define FTE_NET_SNMP_TRAP_V1            0
 #define FTE_NET_SNMP_TRAP_V2            1
@@ -228,7 +235,10 @@ FTE_RET     FTE_PLATFORM_run(void);
 #define FTE_TASK_DOTECH                 17
 #define FTE_TASK_SOHA                   18
 #define FTE_TASK_ELT                    19
-     
+
+#define FTE_TASK_MBTCP_MAIN             20
+#define FTE_TASK_MBTCP_SESSION          21
+
 #define FTE_TASK_DEFAULT_STACK          512
 
 #if FTE_TASK_MAIN
@@ -314,6 +324,16 @@ FTE_RET     FTE_PLATFORM_run(void);
 #if FTE_TASK_ELT
     #define FTE_TASK_ELT_STACK         (FTE_TASK_DEFAULT_STACK * 2)
     #define FTE_TASK_ELT_PRIO          9
+#endif
+
+#if FTE_TASK_MBTCP_MAIN
+    #define FTE_TASK_MBTCP_MAIN_STACK   (FTE_TASK_DEFAULT_STACK * 2)
+    #define FTE_TASK_MBTCP_MAIN_PRIO    9
+#endif
+
+#if FTE_TASK_MBTCP_SESSION
+    #define FTE_TASK_MBTCP_SESSION_STACK         (FTE_TASK_DEFAULT_STACK * 2)
+    #define FTE_TASK_MBTCP_SESSION_PRIO          9
 #endif
 
 #if FTE_DI_SUPPORTED                    

@@ -322,6 +322,7 @@
           <state>$PROJ_DIR$/source/net/802_15_4/include</state>
           <state>$PROJ_DIR$/include</state>
           <state>$PROJ_DIR$/include/net</state>
+          <state>$PROJ_DIR$/include/protocol</state>
           <state>$PROJ_DIR$/include/target</state>
           <state>$PROJ_DIR$/include/dev</state>
           <state>$PROJ_DIR$/include/drv</state>
@@ -371,6 +372,11 @@
           <state>$PROJ_DIR$/LoRa/system</state>
           <state>$PROJ_DIR$/LoRa/system/crypto</state>
           <state>$PROJ_DIR$/LoRa/boards/mcu/mk60</state>
+          <state>$PROJ_DIR$/../freemodbus-v1.5.0/modbus/include</state>
+          <state>$PROJ_DIR$/../freemodbus-v1.5.0/demo/MK60D/port</state>
+          <state>$PROJ_DIR$/../freemodbus-v1.5.0/modbus/rtu</state>
+          <state>$PROJ_DIR$/../freemodbus-v1.5.0/modbus/tcp</state>
+          <state>$PROJ_DIR$/../freemodbus-v1.5.0/modbus/ascii</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -2442,6 +2448,9 @@
         <name>$PROJ_DIR$\..\lib\libjsmnd.a</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\lib\libmbtcpd.a</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\lib\libnxjsond.a</name>
       </file>
       <file>
@@ -2677,6 +2686,12 @@
         </file>
       </group>
       <group>
+        <name>mbtcp</name>
+        <file>
+          <name>$PROJ_DIR$\source\net\mbtcp\fte_mbtcp.c</name>
+        </file>
+      </group>
+      <group>
         <name>mqtt</name>
         <file>
           <name>$PROJ_DIR$\source\net\mqtt\fte_mqtt.c</name>
@@ -2796,6 +2811,21 @@
       <file>
         <name>$PROJ_DIR$\source\fte_value.c</name>
       </file>
+    </group>
+    <group>
+      <name>protocol</name>
+      <group>
+        <name>modbus</name>
+        <file>
+          <name>$PROJ_DIR$\source\protocol\modbus\fte_modbus.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\source\protocol\modbus\fte_modbus_gen.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\source\protocol\modbus\fte_modbus_registers.c</name>
+        </file>
+      </group>
     </group>
     <group>
       <name>shell</name>

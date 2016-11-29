@@ -18,6 +18,7 @@
 #include "fte_lora.h"
 #include "fte_dotech.h"
 #include "fte_lorawan.h"
+#include "fte_mbtcp.h"
 
 FTE_UINT32  FTE_SHELL_getPasswd(MQX_FILE_PTR pFile, FTE_CHAR_PTR pPasswd, FTE_UINT32 ulMaxLen, FTE_UINT32 ulTimeout);
 FTE_INT32  FTE_SHELL_cmdPasswd(FTE_INT32 nArgc, FTE_CHAR_PTR pArgv[]);
@@ -80,6 +81,9 @@ SHELL_COMMAND_STRUCT pSHELLCommands[] =
 
 #if FTE_MCP23S08_SUPPORTED
     {"mcp23s08",    FTE_MCP23S08_SHELL_cmd},
+#endif
+#if FTE_MBTCP_SUPPORTED
+    { "mbtcp",      FTE_MBTCP_SLAVE_SHELL_cmd},
 #endif
     { "mem",        FTE_MEM_SHELL_cmd},
 #if FTE_MQTT_SUPPORTED

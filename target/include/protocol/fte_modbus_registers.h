@@ -1,0 +1,35 @@
+#ifndef __FTE_MODBUS_REGISTERS_H__
+#define __FTE_MODBUS_REGISTERS_H__
+
+#define FTE_MODBUS_REG_SENSOR_BASE          0
+
+#define FTE_MODBUS_REG_TEMPERATURE_COUNT    1
+#define FTE_MODBUS_REG_HUMIDITY_COUNT       2
+#define FTE_MODBUS_REG_VOLTAGE_COUNT        3
+#define FTE_MODBUS_REG_CURRENT_COUNT        4
+#define FTE_MODBUS_REG_DI_COUNT             5
+#define FTE_MODBUS_REG_DO_COUNT             6
+#define FTE_MODBUS_REG_GAS_COUNT            7
+#define FTE_MODBUS_REG_POWER_COUNT          8
+#define FTE_MODBUS_REG_SRF_COUNT            9
+#define FTE_MODBUS_REG_AI_COUNT             10
+#define FTE_MODBUS_REG_COUNTER_COUNT        11
+#define FTE_MODBUS_REG_PRESSURE_COUNT       12
+#define FTE_MODBUS_REG_DISCRETE_COUNT       13
+#define FTE_MODBUS_REG_TEMP_CTRL_COUNT      14
+
+#define FTE_MODBUS_REG_SYSTEM_BASE          100
+#define FTE_MODBUS_REG_RESET                1
+
+#define FTE_MODBUS_REG_STATISTICS_BASE      200
+#define FTE_MODBUS_REG_RX_COUNT_LO          1
+#define FTE_MODBUS_REG_RX_COUNT_HI          2
+#define FTE_MODBUS_REG_TX_COUNT_LO          3
+#define FTE_MODBUS_REG_TX_COUNT_HI          4
+#define FTE_MODBUS_REG_ERROR_COUNT_LO       5
+#define FTE_MODBUS_REG_ERROR_COUNT_HI       6
+
+FTE_RET FTE_MODBUS_REG_read(FTE_UINT16   usReg, FTE_UINT16_PTR pValue, FTE_VOID_PTR pData);
+FTE_RET FTE_MODBUS_REG_write(FTE_UINT16   usReg, FTE_UINT16 usValue, FTE_VOID_PTR pData);
+
+#endif

@@ -599,7 +599,7 @@ FTE_INT32 FTE_NET_SHELL_cmd
                     goto error;
                 }
 
-                if (FTE_strToHex(pArgv[4], &xGatewayIP) != FTE_RET_OK)
+                if (FTE_strToIP(pArgv[4], &xGatewayIP) != FTE_RET_OK)
                 {
                     printf ("Error in parameter, invalid gateway ip address!\n");
                     nRet = SHELL_EXIT_ERROR;

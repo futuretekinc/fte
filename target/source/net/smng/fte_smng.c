@@ -6,12 +6,13 @@
 #include "fte_time.h"
 #include <rtcs.h>
 
+#undef  __MODULE__
+#define __MODULE__  FTE_MODULE_NET_SMNG
+
 #define FTE_SMNG_MSG_TYPE_DISCOVERY             0x01
 #define FTE_SMNG_MSG_TYPE_DISCOVERY_WITH_TRAPS  0x02
 #define FTE_SMNG_MSG_TYPE_RESET                 0x03
 #define FTE_SMNG_MSG_TYPE_UPGRADE               0x04
-
-#define SMNG_TRACE(...)  TRACE(DEBUG_NET_SMNG, __VA_ARGS__)
 
 typedef struct
 {
@@ -133,7 +134,7 @@ FTE_RET FTE_SMNGD_init
     FTE_VOID_PTR    pParams
 )
 { 
-   TRACE_ON(DEBUG_NET_SMNG);
+   TRACE_ON();
 #if 0   
     FTE_NET_CFG_PTR     pCfgNet = FTE_CFG_NET_get();
     FTE_JSON_VALUE_PTR  pObject;

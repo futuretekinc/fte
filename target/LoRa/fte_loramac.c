@@ -22,6 +22,9 @@ Maintainer: Miguel Luis and Gregory Cristian
 
 #if 1 //FTE_LORAMAC_SUPPORTED
 
+#undef  __MODULE__
+#define __MODULE__  FTE_MODULE_NET_LORA
+
 typedef struct
 {
     FTE_UINT32                 ulSize;
@@ -342,7 +345,7 @@ void FTE_LORAMAC_onRxDone( void * params, uint8_t *payload, uint16_t size, int16
     {
         ulBuffLen += sprintf(&pBuff[ulBuffLen], "%02x ", pLoRaMac->pBuffer[i]);
     }
-    TRACE(DEBUG_NET_LORA, "Rx Done[%3d, %3d], Data[%2d] - %s\n", 
+    TRACE( "Rx Done[%3d, %3d], Data[%2d] - %s\n", 
           pLoRaMac->nRSSI, pLoRaMac->nSNR, pLoRaMac->ulBufferSize, pBuff);
 }
 
@@ -350,21 +353,21 @@ void FTE_LORAMAC_onTxTimeout( void * params )
 {
     Radio.Sleep( );
     pLoRaMac->xState = FTE_LORAMAC_STATE_TX_TIMEOUT;
-    TRACE(DEBUG_NET_LORA, "Tx Timeout\n");
+    TRACE("Tx Timeout\n");
 }
 
 void FTE_LORAMAC_onRxTimeout( void * params )
 {
     Radio.Sleep( );
     pLoRaMac->xState = FTE_LORAMAC_STATE_RX_TIMEOUT;
-    TRACE(DEBUG_NET_LORA, "Rx Timeout\n");
+    TRACE("Rx Timeout\n");
 }
 
 void FTE_LORAMAC_onRxError( void * params )
 {
     Radio.Sleep( );
     pLoRaMac->xState = FTE_LORAMAC_STATE_RX_ERROR;
-    TRACE(DEBUG_NET_LORA, "Rx Error\n");
+    TRACE("Rx Error\n");
 }
 
 FTE_UINT32         FTE_LORAMAC_getFrequency(FTE_LORAMAC_PTR pLoRaMac)

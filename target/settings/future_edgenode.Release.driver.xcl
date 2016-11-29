@@ -1,0 +1,19 @@
+"--endian=little" 
+
+"--cpu=Cortex-M4" 
+
+"--fpu=None" 
+
+"-p" 
+
+"D:\Program Files\IAR Systems\Embedded Workbench 7.3\arm\CONFIG\debugger\Freescale\MK60DN512xxx10.ddf" 
+
+"--semihosting" 
+
+"--device=MK60DN512xxx10" 
+
+"--multicore_nr_of_cores=1" 
+
+
+
+

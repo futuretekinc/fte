@@ -23,6 +23,9 @@
     <path>$WS_DIR$\mfs\libmfs.ewp</path>
   </project>
   <project>
+    <path>$WS_DIR$\freemodbus-v1.5.0\libmodbus.ewp</path>
+  </project>
+  <project>
     <path>$WS_DIR$\nxjson\libnxjson.ewp</path>
   </project>
   <project>

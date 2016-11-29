@@ -11,11 +11,10 @@
 #include "fte_ssl.h"
 
 #if FTE_MQTT_SUPPORTED
-#if 0
-#define FTE_MQTT_TRACE(...)    TRACE(DEBUG_NET_MQTT, __VA_ARGS__);
-#else
-#define FTE_MQTT_TRACE(...)    
-#endif
+
+#undef  __MODULE__
+#define __MODULE__  FTE_MODULE_NET_MQTT
+
 #define FTE_MQTT_MSG_DEV_VALUE_STRING   "MSG_DEV_VALUE"
 #define FTE_MQTT_MSG_DEV_INFO_STRING    "MSG_DEV_INFO"
 #define FTE_MQTT_MSG_EP_VALUE_STRING    "MSG_EP_VALUE"
@@ -327,7 +326,7 @@ void FTE_MQTT_process
             _pStateCBs[pCTX->xState].callback(pCTX);
             if (pCTX->xState != xOldState)
             {
-                FTE_MQTT_TRACE("STATE CHANGED : %d -> %d\n", xOldState, pCTX->xState);
+                TRACE("STATE CHANGED : %d -> %d\n", xOldState, pCTX->xState);
                 xOldState = pCTX->xState;
             }
         }
@@ -1087,7 +1086,7 @@ FTE_RET FTE_MQTT_PING_send
         return  xRet;
      }
 
-    FTE_MQTT_TRACE("PING SEND : TIMEOUT = %d secs\n", pCTX->ulPingTimeout);
+    TRACE("PING SEND : TIMEOUT = %d secs\n", pCTX->ulPingTimeout);
     
     mqtt_ping(&pCTX->xBroker);
     
@@ -1123,7 +1122,7 @@ FTE_UINT32  FTE_MQTT_STATE_CB_uninitialized
     FTE_MQTT_CONTEXT_PTR    pCTX
 )
 {
-    FTE_MQTT_TRACE("MQTT STATE : Uninitialized\n");
+    TRACE("MQTT STATE : Uninitialized\n");
     FTE_MQTT_initSocket(pCTX);
     
     return  FTE_MQTT_RET_OK;
@@ -1135,7 +1134,7 @@ FTE_UINT32  FTE_MQTT_STATE_CB_initialized
     FTE_MQTT_CONTEXT_PTR    pCTX
 )
 {
-    FTE_MQTT_TRACE("MQTT STATE : Initialized\n");
+    TRACE("MQTT STATE : Initialized\n");
 
     FTE_UINT32  xState;
     FTE_SYS_STATE_get(&xState);
@@ -1157,7 +1156,7 @@ FTE_UINT32  FTE_MQTT_STATE_CB_connected
     FTE_CHAR    pTopic[FTE_MQTT_TOPIC_LENGTH+1];
     FTE_CHAR    pMessage[256];
     
-    FTE_MQTT_TRACE("MQTT STATE : Connected\n");
+    TRACE("MQTT STATE : Connected\n");
                                    
     sprintf(pTopic, "/v/a/g/%s/req", FTE_SYS_getOIDString());
     FTE_MQTT_subscribe(pCTX, pTopic);
@@ -1215,7 +1214,7 @@ FTE_UINT32  FTE_MQTT_STATE_CB_disconnected
     FTE_MQTT_CONTEXT_PTR    pCTX
 )
 {
-    FTE_MQTT_TRACE("MQTT STATE : Disconnected\n");
+    TRACE("MQTT STATE : Disconnected\n");
     
     FTE_MQTT_closeSocket(pCTX);
     
@@ -1255,7 +1254,7 @@ FTE_UINT32  FTE_MQTT_MSG_CB_connectionACK
 
     pCTX->xState = FTE_MQTT_STATE_CONNECTED;
     
-    FTE_MQTT_TRACE("MQTT Connected!\n");                        
+    TRACE("MQTT Connected!\n");                        
     
     return  FTE_MQTT_RET_OK;
 }
@@ -1327,7 +1326,7 @@ FTE_UINT32  FTE_MQTT_MSG_CB_publishACK
    
    ulMsgID = mqtt_parse_msg_id(pCTX->pBuff);
     
-    FTE_MQTT_TRACE("%16s : %3d\n", "PUB ACK", ulMsgID);
+    TRACE("%16s : %3d\n", "PUB ACK", ulMsgID);
     ulRet = FTE_MQTT_TRANS_get(pCTX, ulMsgID, &pTrans);
     if (ulRet != FTE_MQTT_RET_OK)
     {
@@ -1352,7 +1351,7 @@ FTE_UINT32  FTE_MQTT_MSG_CB_publishReceived
     
     ulMsgID = mqtt_parse_msg_id(pCTX->pBuff);
    
-    FTE_MQTT_TRACE("%16s : %3d\n", "PUB RECEIVED", ulMsgID);
+    TRACE("%16s : %3d\n", "PUB RECEIVED", ulMsgID);
     ulRet = FTE_MQTT_TRANS_get(pCTX, ulMsgID, &pTrans);
     if (ulRet != FTE_MQTT_RET_OK)
     {
@@ -1377,7 +1376,7 @@ FTE_UINT32  FTE_MQTT_MSG_CB_publishCompleted
     
     ulMsgID = mqtt_parse_msg_id(pCTX->pBuff);
 
-    FTE_MQTT_TRACE("%16s : %3d\n", "PUB COMPLETED", ulMsgID);
+    TRACE("%16s : %3d\n", "PUB COMPLETED", ulMsgID);
     
     ulRet = FTE_MQTT_TRANS_get(pCTX, ulMsgID, &pTrans);
     if (ulRet != FTE_MQTT_RET_OK)
@@ -1455,7 +1454,7 @@ FTE_RET   FTE_MQTT_TRANS_create
     FTE_RET           ulRet;
     FTE_MQTT_TRANS_PTR  pTrans;
         
-    FTE_MQTT_TRACE("%s : Free Trans Count : %d\n", __func__, FTE_LIST_count(&pCTX->xFreeTransList));
+    TRACE("%s : Free Trans Count : %d\n", __func__, FTE_LIST_count(&pCTX->xFreeTransList));
     if (FTE_LIST_count(&pCTX->xFreeTransList) != 0)
     {
         ulRet = FTE_LIST_popFront(&pCTX->xFreeTransList, (pointer _PTR_)&pTrans);
@@ -1488,7 +1487,7 @@ FTE_RET   FTE_MQTT_TRANS_destroy
 {
     FTE_LIST_remove(&pCTX->xTransList, pTrans);
     FTE_LIST_pushBack(&pCTX->xFreeTransList, pTrans);
-    FTE_MQTT_TRACE("%s : Free Trans Count : %d\n", __func__, FTE_LIST_count(&pCTX->xFreeTransList));
+    TRACE("%s : Free Trans Count : %d\n", __func__, FTE_LIST_count(&pCTX->xFreeTransList));
     
     return  FTE_MQTT_RET_OK;
 }
@@ -1558,7 +1557,7 @@ FTE_RET   FTE_MQTT_TRANS_checkTimeout
     FTE_LIST_ITER_init(&xRemoveList, &xIter);
     while((pTrans = FTE_LIST_ITER_getNext(&xIter)) != NULL)
     {
-        FTE_MQTT_TRACE("TRANS TIMEMOUT : %d\n", pTrans->nMsgID);
+        TRACE("TRANS TIMEMOUT : %d\n", pTrans->nMsgID);
         FTE_MQTT_TRANS_destroy(pCTX, pTrans);
         pCTX->xStatistics.ulTransTimeout++;
     }

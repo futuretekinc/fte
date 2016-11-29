@@ -2,6 +2,7 @@
 #include "fte_config.h"
 #include "fte_net.h"
 #include "fte_time.h"
+#include "fte_mbtcp.h"
 
 /*TASK*-----------------------------------------------------------------
 *
@@ -54,6 +55,7 @@ void FTE_TASK_net
 #if FTE_TELNETD_SUPPORTED
     printf("Starting telnet ... [%s]\n", (FTE_TELNETD_init(NULL) == FTE_RET_OK)?"OK":"FAILED");
 #endif
+    printf("Starting MB/TCP ... [%s]\n", (FTE_MBTCP_SLAVE_init(&pCfgNet->xMBTCP) == FTE_RET_OK)?"OK":"FAILED");
     
     // tcp/ip initialization waiting
     _time_delay(FTE_NET_INIT_WAITING_TIME);

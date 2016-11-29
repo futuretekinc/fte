@@ -1213,3 +1213,68 @@ FTE_BOOL    FTE_VALUE_equal
 
     return  FALSE;
 }
+
+FTE_RET FTE_VALUE_toINT16
+(
+    FTE_VALUE_PTR   pObj, 
+    FTE_INT16_PTR  pValue
+)
+{
+    ASSERT(pObj != NULL);
+    ASSERT(pValue != NULL);
+    
+    if (pObj->bValid == FALSE)
+    {
+        *pValue = 0;
+    }
+    else
+    {
+        switch(pObj->xType)
+        {
+        case    FTE_VALUE_TYPE_TEMPERATURE:
+        case    FTE_VALUE_TYPE_HUMIDITY:
+        case    FTE_VALUE_TYPE_PRESSURE:
+            {
+                *pValue = pObj->xData.nValue;
+            }
+            break;
+            
+        case    FTE_VALUE_TYPE_DIO:
+            {
+                *pValue = pObj->xData.bValue;
+            }
+            break;
+            
+        case    FTE_VALUE_TYPE_LED:
+            {
+                
+                *pValue = pObj->xData.xState;
+            }
+            break;
+            
+         case    FTE_VALUE_TYPE_VOLTAGE:
+         case    FTE_VALUE_TYPE_CURRENT:
+            {
+                *pValue = pObj->xData.ulValue / 10;
+            }
+            break;
+            
+         case    FTE_VALUE_TYPE_PWR_KW:
+         case    FTE_VALUE_TYPE_PWR_KWH:
+            {
+                *pValue = pObj->xData.ulValue / 10;
+            }
+            break;
+            
+         case    FTE_VALUE_TYPE_PPM:
+         case    FTE_VALUE_TYPE_ULONG:
+         case    FTE_VALUE_TYPE_HEX32:
+            {
+                *pValue = pObj->xData.ulValue;
+            }
+            break;
+        }
+    }
+                     
+    return  FTE_RET_OK;
+}

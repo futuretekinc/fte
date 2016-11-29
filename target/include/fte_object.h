@@ -1,10 +1,11 @@
 #ifndef __FTE_OBJECT_H__
 #define __FTE_OBJECT_H__
 
-#include "fte_event.h"
 #include "fte_value.h"
 #include "fte_json.h"
 #include "fte_time.h"
+#include "fte_list.h"
+#include "fte_event.h"
 
 #define MAX_OBJECT_NAME_LEN         16
 #define MAX_CONFIG_SIZE             52
@@ -30,8 +31,9 @@
 #define FTE_OBJ_CLASS_PRESSURE      ((0x0C) << FTE_OBJ_CLASS_SHIFT)
 #define FTE_OBJ_CLASS_DISCRETE      ((0x0D) << FTE_OBJ_CLASS_SHIFT)
 #define FTE_OBJ_CLASS_TEMP_CTRL     ((0x40) << FTE_OBJ_CLASS_SHIFT)
-#define FTE_OBJ_CLASS_CTRL          ((0x7F) << FTE_OBJ_CLASS_SHIFT)
+
 #define FTE_OBJ_CLASS_MULTI         ((0x7E) << FTE_OBJ_CLASS_SHIFT)
+#define FTE_OBJ_CLASS_CTRL          ((0x7F) << FTE_OBJ_CLASS_SHIFT)
 
 #define FTE_OBJ_TYPE_UNKNOWN        0x7FFFFFFF
 #define FTE_OBJ_TYPE_MASK           0x7FFF0000

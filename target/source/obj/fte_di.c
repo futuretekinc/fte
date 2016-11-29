@@ -6,6 +6,8 @@
 #include "sys/fte_sys_timer.h"
 #include "fte_time.h"
 
+#undef  __MODULE__
+#define __MODULE__  FTE_MODULE_DI
 #ifndef FTE_DIO_REMOVE_GLITCH
 #define FTE_DIO_REMOVE_GLITCH   1
 #endif
@@ -213,7 +215,7 @@ FTE_RET       FTE_DI_update(void)
                     }
 
                     FTE_OBJ_wasChanged(pObj);
-                    TRACE(DEBUG_DI, "The DI detection applied.[ Interval > %d msecs]\n", nDelayTime);
+                    TRACE("The DI detection applied.[ Interval > %d msecs]\n", nDelayTime);
                 }
             }
             else if (pStatus->xPresetValue.bChanged)

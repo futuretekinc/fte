@@ -16,6 +16,9 @@
 #include "nxjson.h"
 #include "fte_json.h"
 
+#undef  __MODULE__
+#define __MODULE__  FTE_MODULE_NET_SNMP
+
 #if FTE_SNMPD_SUPPORTED
 
 #if ! RTCSCFG_ENABLE_IP4 
@@ -31,7 +34,6 @@
 #endif
 
 /****************************************************************/
-#define SNMP_TRACE(...)  TRACE(DEBUG_NET_SNMP, __VA_ARGS__)
 
 #define COUNTER_OVERFLOW    5
 #define COUNTER_DELAY       5000
@@ -233,7 +235,7 @@ void FTE_SNMPD_TRAP_processing(void)
                 SNMPv2_trap_userSpec( (RTCSMIB_NODE *)&MIBNODE_msgAlert );
 #endif
                 ++ulRespAlertCount;
-                SNMP_TRACE("Send Alert trap[%d]\n", ulRespAlertCount);
+                TRACE("Send Alert trap[%d]\n", ulRespAlertCount);
             }
             break;
             
@@ -242,7 +244,7 @@ void FTE_SNMPD_TRAP_processing(void)
                 FTE_BOOL bNewServer = FALSE;
                 if (!FTE_NET_SERVER_isExist(pCurrentTrapMsg->xParams.xDiscovery.xHostIP))
                 {
-                    SNMP_TRACE("Add temporary trap server(%d.%d.%d.%d) for discovery\n", IPBYTES(pCurrentTrapMsg->xParams.xDiscovery.xHostIP));
+                    TRACE("Add temporary trap server(%d.%d.%d.%d) for discovery\n", IPBYTES(pCurrentTrapMsg->xParams.xDiscovery.xHostIP));
                     FTE_UINT32 error = RTCS_trap_target_add(pCurrentTrapMsg->xParams.xDiscovery.xHostIP);
                     if (error) 
                     {
@@ -257,12 +259,12 @@ void FTE_SNMPD_TRAP_processing(void)
                 SNMPv2_trap_userSpec( (RTCSMIB_NODE *)&MIBNODE_msgDiscovery );
 #endif
                 ++ulRespDiscoveryCount;
-                SNMP_TRACE("Send Discovery trap[%d]\n", ulRespDiscoveryCount);
+                TRACE("Send Discovery trap[%d]\n", ulRespDiscoveryCount);
                 
                 if (bNewServer)
                 {
                     RTCS_trap_target_remove(pCurrentTrapMsg->xParams.xDiscovery.xHostIP);
-                    SNMP_TRACE("Remove temporary trap server(%d.%d.%d.%d) for discovery\n", IPBYTES(pCurrentTrapMsg->xParams.xDiscovery.xHostIP));
+                    TRACE("Remove temporary trap server(%d.%d.%d.%d) for discovery\n", IPBYTES(pCurrentTrapMsg->xParams.xDiscovery.xHostIP));
                 }                
             }
             break;
@@ -275,7 +277,7 @@ void FTE_SNMPD_TRAP_processing(void)
                     FTE_UINT32 error = FTE_SNMPD_TRAP_add(pCurrentTrapMsg->xParams.xManagement.xServerIP, TRUE);
                     if (error) 
                     {
-                        SNMP_TRACE("\nFailed to add target trap, error = %X", error);
+                        TRACE("\nFailed to add target trap, error = %X", error);
                     } 
                 }
             }
@@ -288,7 +290,7 @@ void FTE_SNMPD_TRAP_processing(void)
                     FTE_UINT32 error = FTE_SNMPD_TRAP_del(pCurrentTrapMsg->xParams.xManagement.xServerIP);
                     if (error) 
                     {
-                        SNMP_TRACE("\nFailed to remove target trap, error = %X", error);
+                        TRACE("\nFailed to remove target trap, error = %X", error);
                     } 
                 }
             }
@@ -1216,15 +1218,16 @@ FTE_UINT32 MIB_set_diName
     return  MIB_set_objName(pParam, pVar, ulVarLen);
 }
 
-FTE_UINT32 MIB_set_diInitValue
+FTE_UINT32 MIB_set_diUpdateInterval
 (
     FTE_VOID_PTR    pParam, 
     FTE_UINT8_PTR   pVar, 
     FTE_UINT32      ulVarLen
 )
 {
-    return  MIB_set_objInitValue(pParam, pVar, ulVarLen);
+    return  MIB_set_objUpdateInterval(pParam, pVar, ulVarLen);
 }
+
 
 /******************************************************************************
  * Temperature Sensor
@@ -1999,6 +2002,67 @@ FTE_UINT32 MIB_set_dscValue(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 
 }
 
 FTE_UINT32 MIB_set_dscInitValue(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
+{
+    return  MIB_set_objInitValue(pParam, pVar, ulVarLen);
+}
+
+/******************************************************************************
+ * Multi
+ ******************************************************************************/
+FTE_UINT32 MIB_get_multiCount(FTE_VOID_PTR dummy)
+{ 
+    return  FTE_OBJ_count(FTE_OBJ_TYPE_MULTI, FTE_OBJ_CLASS_MASK, FALSE);
+} 
+
+FTE_UINT32 MIB_set_multiIndex (FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen) {return SNMP_ERROR_inconsistentValue;}
+
+FTE_BOOL MIB_find_multiEntry
+(
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
+)
+{ /* Body */
+   FTE_UINT32           nIndex = *(FTE_UINT32_PTR)index;
+   FTE_VOID_PTR           pObj;
+
+   if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
+   {
+      nIndex = 1;
+   } /* Endif */
+
+   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_MULTI, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   if (!pObj) 
+   {
+      return FALSE;
+   } /* Endif */ 
+   *(FTE_UINT32_PTR)index = nIndex;
+   *instance = pObj;
+   return TRUE;
+ 
+} /* Endbody */
+
+FTE_UINT32 MIB_set_multiName(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
+{
+    return  MIB_set_objName(pParam, pVar, ulVarLen);
+}
+
+FTE_UINT32 MIB_set_multiState(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
+{
+    return  MIB_set_objState(pParam, pVar, ulVarLen);
+}
+
+FTE_UINT32 MIB_set_multiUpdateInterval(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
+{
+    return  MIB_set_objUpdateInterval(pParam, pVar, ulVarLen);
+}
+
+FTE_UINT32 MIB_set_multiValue(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
+{
+    return  MIB_set_objValue(pParam, pVar, ulVarLen);
+}
+
+FTE_UINT32 MIB_set_multiInitValue(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
 {
     return  MIB_set_objInitValue(pParam, pVar, ulVarLen);
 }
@@ -2963,10 +3027,10 @@ const RTCSMIB_VALUE MIBVALUE_diLastTime =
     (void _PTR_)MIB_get_objLastTime
 };
 
-const RTCSMIB_VALUE MIBVALUE_diInitValue = 
+const RTCSMIB_VALUE MIBVALUE_diUpdateInterval = 
 {
-    RTCSMIB_NODETYPE_DISPSTR_FN,
-    (void _PTR_)MIB_get_objInitValue
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_objUpdateInterval
 };
 
 /******************************************************************************
@@ -3992,6 +4056,71 @@ const RTCSMIB_VALUE MIBVALUE_dscInitValue =
     RTCSMIB_NODETYPE_DISPSTR_FN,
     (void _PTR_)MIB_get_objInitValue
 }; 
+
+/******************************************************************************
+ * futuretek.fts.endpoints.epMulti.xxx
+ ******************************************************************************/
+
+const RTCSMIB_VALUE MIBVALUE_multiCount = 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_multiCount
+};
+
+const RTCSMIB_VALUE MIBVALUE_multiTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_multiEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_multiIndex = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_multiID= 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objID
+};
+
+const RTCSMIB_VALUE MIBVALUE_multiType = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objType
+};
+
+const RTCSMIB_VALUE MIBVALUE_multiSN = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objSN
+};
+
+const RTCSMIB_VALUE MIBVALUE_multiName = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objName
+};
+
+const RTCSMIB_VALUE MIBVALUE_multiState = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objState
+};
+
+const RTCSMIB_VALUE MIBVALUE_multiValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objValue
+};
+
 /******************************************************************************
  * futuretek.fts.endpoints.epDevice.xxx
  ******************************************************************************/
