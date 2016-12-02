@@ -447,6 +447,15 @@ FTE_RET   FTE_SNMPD_TRAP_delServer
    return   FTE_RET_OK;
 }
 
+static
+FTE_OBJECT_PTR  FTE_SNMPD_getObject
+(
+    FTE_OBJ_TYPE    xType,
+    FTE_ULONG       ulIndex
+)
+{
+    return  FTE_OBJ_get2((xType & FTE_OBJ_CLASS_MASK) | (nIndex & 0x000000FF),  FTE_OBJ_CLASS_MASK | 0x000000FF);
+}
 
 /*******************************************************************************
  * Support for MIB
@@ -1186,7 +1195,7 @@ FTE_BOOL MIB_find_diEntry
       nIndex = 1;
    } /* Endif */
 
-   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_DI, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_DI, nIndex);
    if (!pObj) 
    {
       return FALSE;
@@ -1254,7 +1263,7 @@ FTE_BOOL MIB_find_tempEntry
       nIndex = 1;
    } /* Endif */
 
-   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_TEMPERATURE, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_TEMPERATURE, nIndex);
    if (!pObj) 
    {
       return FALSE;
@@ -1306,7 +1315,7 @@ FTE_BOOL MIB_find_humiEntry
       nIndex = 1;
    } /* Endif */
 
-   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_HUMIDITY, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_HUMIDITY, nIndex);
    if (!pObj) 
    {
       return FALSE;
@@ -1357,7 +1366,7 @@ FTE_BOOL MIB_find_vltEntry
       nIndex = 1;
    } /* Endif */
 
-   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_VOLTAGE, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_VOLTAGE, nIndex);
    if (!pObj) 
    {
       return FALSE;
@@ -1408,7 +1417,7 @@ FTE_BOOL MIB_find_currEntry
       nIndex = 1;
    } /* Endif */
 
-   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_CURRENT, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_CURRENT, nIndex);
    if (!pObj) 
    {
       return FALSE;
@@ -1458,7 +1467,7 @@ FTE_BOOL MIB_find_doEntry
       nIndex = 1;
    } /* Endif */
 
-   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_DO, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_DO, nIndex);
    if (!pObj) 
    {
       return FALSE;
@@ -1556,7 +1565,7 @@ FTE_BOOL MIB_find_rlEntry
       nIndex = 1;
    } /* Endif */
 
-   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_RL, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_RL, nIndex);
    if (!pObj) 
    {
       return FALSE;
@@ -1655,7 +1664,7 @@ FTE_BOOL MIB_find_pwrEntry
       nIndex = 1;
    } /* Endif */
 
-   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_POWER, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_POWER, nIndex);
    if (!pObj) 
    {
       return FALSE;
@@ -1707,7 +1716,7 @@ FTE_BOOL MIB_find_gasEntry
       nIndex = 1;
    } /* Endif */
 
-   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_GAS, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_GAS, nIndex);
    if (!pObj) 
    {
       return FALSE;
@@ -1759,7 +1768,7 @@ FTE_BOOL MIB_find_dustEntry
       nIndex = 1;
    } /* Endif */
 
-   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_DUST, FTE_OBJ_TYPE_MASK, nIndex - 1, FALSE);
+   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_DUST, nIndex);
    if (!pObj) 
    {
       return FALSE;
@@ -1811,7 +1820,7 @@ FTE_BOOL MIB_find_cntEntry
       nIndex = 1;
    } /* Endif */
 
-   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_COUNT, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_COUNT, nIndex);
    if (!pObj) 
    {
       return FALSE;
@@ -1909,7 +1918,7 @@ FTE_BOOL MIB_find_prsEntry
       nIndex = 1;
    } /* Endif */
 
-   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_PRESSURE, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_PRESSURE, nIndex);
    if (!pObj) 
    {
       return FALSE;
@@ -1970,7 +1979,7 @@ FTE_BOOL MIB_find_dscEntry
       nIndex = 1;
    } /* Endif */
 
-   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_DISCRETE, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_DISCRETE, nIndex);
    if (!pObj) 
    {
       return FALSE;
@@ -2031,7 +2040,7 @@ FTE_BOOL MIB_find_multiEntry
       nIndex = 1;
    } /* Endif */
 
-   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_MULTI, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_MULTI, nIndex);
    if (!pObj) 
    {
       return FALSE;
@@ -2092,7 +2101,7 @@ FTE_BOOL MIB_find_devEntry
       nIndex = 1;
    } /* Endif */
 
-   pObj = FTE_OBJ_getAt(FTE_OBJ_TYPE_MULTI, FTE_OBJ_CLASS_MASK, nIndex - 1, FALSE);
+   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_MULTI, nIndex);
    if (!pObj) 
    {
       return FALSE;

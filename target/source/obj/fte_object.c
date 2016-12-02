@@ -191,6 +191,29 @@ FTE_OBJECT_PTR  FTE_OBJ_get
     return  NULL;
 }
 
+FTE_OBJECT_PTR  FTE_OBJ_get2
+(
+    FTE_OBJECT_ID   nID,
+    FTE_UINT32      nMask
+)
+{
+    FTE_OBJECT_PTR      pObj;
+    FTE_LIST_ITERATOR   xIter;
+    
+    if (FTE_LIST_ITER_init(&_xObjList, &xIter) == FTE_RET_OK)
+    {
+        while((pObj = (FTE_OBJECT_PTR)FTE_LIST_ITER_getNext(&xIter)) != NULL)
+        {
+            if ((pObj->pConfig->xCommon.nID & nMask) == (nID & nMask))
+            {
+                return  pObj;
+            }
+        }
+    }
+    
+    return  NULL;
+}
+
 FTE_OBJECT_PTR  FTE_OBJ_getAt
 (
     FTE_UINT32  nType, 
