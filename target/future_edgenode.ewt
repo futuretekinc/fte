@@ -2192,6 +2192,9 @@
         <name>$PROJ_DIR$\include\obj\fte_di.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\include\obj\fte_dio_node.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\include\obj\fte_do.h</name>
       </file>
       <file>
@@ -2238,6 +2241,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_eh2.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\target\fte_eh3.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_ep1.h</name>
@@ -2778,6 +2784,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\source\obj\fte_di.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\obj\fte_dio_node.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\source\obj\fte_do.c</name>

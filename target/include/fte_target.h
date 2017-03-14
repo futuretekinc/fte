@@ -208,6 +208,8 @@ FTE_RET     FTE_PLATFORM_run(void);
 #include "fte_es22.h"
 #elif defined(FTE_EH1)
 #include "fte_eh1.h"
+#elif defined(FTE_EH3)
+#include "fte_eh3.h"
 #elif defined(FTE_MN1)
 #include "fte_mn1.h"
 #endif
@@ -238,6 +240,7 @@ FTE_RET     FTE_PLATFORM_run(void);
 
 #define FTE_TASK_MBTCP_MAIN             20
 #define FTE_TASK_MBTCP_SESSION          21
+#define FTE_TASK_DIO_NODE         22
 
 #define FTE_TASK_DEFAULT_STACK          512
 
@@ -294,6 +297,11 @@ FTE_RET     FTE_PLATFORM_run(void);
 #if FTE_TASK_IOEX
     #define FTE_TASK_IOEX_STACK         (FTE_TASK_DEFAULT_STACK * 2)
     #define FTE_TASK_IOEX_PRIO          9
+#endif
+
+#if FTE_TASK_DIO_NODE
+	#define FTE_TASK_DIO_NODE_STACK         (FTE_TASK_DEFAULT_STACK * 2)
+    #define FTE_TASK_DIO_NODE_PRIO          9
 #endif
 
 #if FTE_TASK_DOTECH
@@ -414,8 +422,9 @@ FTE_RET     FTE_PLATFORM_run(void);
     #define FTE_LOG_MAX_COUNT   100
 #endif
 
-#define FTE_OBJ_LED_SYS0_STATUS  MAKE_SYSTEM_ID(FTE_OBJ_TYPE_LED, 100)
-#define FTE_OBJ_LED_SYS1_STATUS  MAKE_SYSTEM_ID(FTE_OBJ_TYPE_LED, 101)
-#define FTE_OBJ_TYPE_IOEX_RESET MAKE_SYSTEM_ID(FTE_OBJ_TYPE_DO, 100)
+#define FTE_OBJ_LED_SYS0_STATUS  	MAKE_SYSTEM_ID(FTE_OBJ_TYPE_LED, 100)
+#define FTE_OBJ_LED_SYS1_STATUS  	MAKE_SYSTEM_ID(FTE_OBJ_TYPE_LED, 101)
+#define FTE_OBJ_TYPE_IOEX_RESET 	MAKE_SYSTEM_ID(FTE_OBJ_TYPE_DO, 100)
+#define FTE_OBJ_TYPE_DIO_NODE_RESET MAKE_SYSTEM_ID(FTE_OBJ_TYPE_DO, 101)
 #endif
 

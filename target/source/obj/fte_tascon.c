@@ -257,7 +257,7 @@ FTE_RET   FTE_TASCON_HEM12_attach
     {
         return  xRet;
     }
-        
+    FTE_UCS_setUART(pUCS, &pStatus->xGUS.pModelInfo->xUARTConfig);
     pStatus->xGUS.pUCS = pUCS;
     
     FTE_TASCON_HEM12_init(pObj);
@@ -271,15 +271,19 @@ FTE_RET   FTE_TASCON_HEM12_detach
 )
 {
     FTE_TASCON_HEM12_STATUS_PTR  pStatus;
-
+	FTE_TASCON_HEM12_CONFIG_PTR  pConfig;
     ASSERT((pObj != NULL) && (pObj->pStatus != NULL));
 
-    pStatus = (FTE_TASCON_HEM12_STATUS_PTR)pObj->pStatus;    
+    pStatus = (FTE_TASCON_HEM12_STATUS_PTR)pObj->pStatus;
+	pConfig = (FTE_TASCON_HEM12_CONFIG_PTR)pObj->pConfig;
+	
     if (pStatus->xGUS.pUCS != NULL)
     {
         FTE_UCS_detach(pStatus->xGUS.pUCS, pObj->pConfig->xCommon.nID);
         pStatus->xGUS.pUCS = NULL;
     }
+	
+	memset(pConfig->pSensorID, 0xAA , sizeof(pConfig->pSensorID)); 
     
     return  FTE_RET_OK;
 }
@@ -479,7 +483,8 @@ FTE_RET   FTE_TASCON_HEM12_request
     FTE_TASCON_HEM12_FRAME_create(pConfig->pSensorID, 0, pReqBuff, sizeof(pReqBuff), &ulReqLen);    
         
     FTE_UCS_clear(pStatus->xGUS.pUCS);    
-        
+    
+	FTE_UCS_setUART(pStatus->xGUS.pUCS, &pStatus->xGUS.pModelInfo->xUARTConfig); 
     ulRcvdLen = FTE_UCS_sendAndRecv(pStatus->xGUS.pUCS, pReqBuff, ulReqLen, pRcvdBuff, sizeof(pRcvdBuff), FTE_HEM12_RESP_DELAY_TIME, FTE_HEM12_RESP_WAIT_TIME);            
     if (ulRcvdLen == 0)
     {
@@ -962,9 +967,10 @@ FTE_RET   FTE_TASCON_HEM12_06M_request
         FTE_TASCON_HEM12_06M_FRAME_create(pConfig->pSensorID, pStatus->nField, pReqBuff, sizeof(pReqBuff), &ulReqLen);    
 
         FTE_UCS_setBaudrate(pStatus->xGUS.pUCS, FTE_TASCON_HEM12_06M_DEFAULT_BAUDRATE);
-        
+        FTE_UCS_setUART(pStatus->xGUS.pUCS, &pStatus->xGUS.pModelInfo->xUARTConfig);
         FTE_UCS_clear(pStatus->xGUS.pUCS);    
         
+		memset(pRcvdBuff,0,sizeof(pRcvdBuff));
         ulRcvdLen = FTE_UCS_sendAndRecv(pStatus->xGUS.pUCS, pReqBuff, ulReqLen, pRcvdBuff, sizeof(pRcvdBuff), FTE_HEM12_RESP_DELAY_TIME, FTE_HEM12_RESP_WAIT_TIME);            
         
         pRespBuff = pRcvdBuff;
@@ -1160,20 +1166,22 @@ FTE_RET FTE_TASCON_create
         {
             if (memcmp(((FTE_TASCON_HEM12_CONFIG_PTR)pDevices[i].pObj->pConfig)->pSensorID, pSensorID, 6) == 0)
             {
-                return  FTE_RET_OK;
+                return  FTE_RET_DUPLICATE;
             }
         }
     }
     
     switch(xType)
     {
-    case    FTE_OBJ_TYPE_MULTI_HEM12:
+    //case    FTE_OBJ_TYPE_MULTI_HEM12:
+	case FTE_TASCON_MODEL_HEM12 :
         {
             pBaseConfig = (FTE_OBJECT_CONFIG_PTR)&FTE_TASCON_HEM12_defaultConfig;
         }
         break;
         
-    case    FTE_OBJ_TYPE_MULTI_HEM12_06M:
+    //case    FTE_OBJ_TYPE_MULTI_HEM12_06M:
+	case    FTE_TASCON_MODEL_HEM12_06M:
         {
             pBaseConfig = (FTE_OBJECT_CONFIG_PTR)&FTE_TASCON_HEM12_06M_defaultConfig;
         }
@@ -1336,6 +1344,7 @@ FTE_INT32  FTE_TASCON_HEM12_SHELL_cmd
                     if (pObj == NULL)
                     {
                         printf("Invalid OID[%08x]\n", nOID);
+						break;
                     }
                     
                     if (FTE_OBJ_TYPE(pObj) == FTE_OBJ_TYPE_MULTI_HEM12)
@@ -1402,18 +1411,20 @@ FTE_INT32  FTE_TASCON_HEM12_SHELL_cmd
             
          case    4:
             {
-                FTE_UINT32  nOID = 0;
-                FTE_strToHex(pArgv[1], &nOID);
                 
-                FTE_OBJECT_PTR  pObj = FTE_OBJ_get(nOID);                    
-                if (pObj == NULL)
-                {
-                    printf("Invalid OID[%08x]\n", nOID);
-                }
                 
                 if (strcmp(pArgv[2], "set_addr") == 0)
                 {
- 
+ 					FTE_UINT32  nOID = 0;
+                	FTE_strToHex(pArgv[1], &nOID);
+                
+                	FTE_OBJECT_PTR  pObj = FTE_OBJ_get(nOID);                    
+                	if (pObj == NULL)
+                	{
+                    	printf("Invalid OID[%08x]\n", nOID);
+						break;
+                	}
+					
                     if (FTE_TASCON_HEM12_06M_setAddress(pObj, pArgv[3], strlen(pArgv[3])) == FTE_RET_OK)
                     {
                         FTE_CFG_OBJ_save(pObj);
@@ -1457,6 +1468,10 @@ FTE_INT32  FTE_TASCON_HEM12_SHELL_cmd
                     {
                         printf("The object[%08x] is created successfully.\n", pObj->pConfig->xCommon.nID);
                     }
+					else if(xRet == FTE_RET_DUPLICATE)
+					{
+					    printf("The ADDRESS[%s] is duplicated.\n", pArgv[3]);
+					}
                     else
                     {
                         printf("Not supported or invalid model[%s]\n", pArgv[2]);
@@ -1480,10 +1495,17 @@ FTE_INT32  FTE_TASCON_HEM12_SHELL_cmd
         {
             printf ("Usage: %s [<command>]\n", pArgv[0]);
             printf ("  Commands:\n");
-            printf ("    <id> info\n");
+            printf ("  ---------------------------------------\n");
+			printf ("    <id> info\n");
             printf ("        Show object information.\n");
+			printf ("  ---------------------------------------\n");
+			printf ("    create <MODEL> <ADDRESS>\n");
+			printf ("		<MODEL>   HEM12 or HEM12-06m \n");
+			printf ("		<ADDRESS> Device Address. \n");
+			printf ("  ---------------------------------------\n");
             printf ("    <id> set_addr <address>\n");
-            printf ("        Set HEM12 Device Address\n");
+            printf ("        Set HEM12 Device Address.\n");
+			printf ("  ---------------------------------------\n");
         }
     }
     return   nRetCode;

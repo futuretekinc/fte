@@ -6,7 +6,7 @@
 
 "-p" 
 
-"D:\Program Files\IAR Systems\Embedded Workbench 7.3\arm\CONFIG\debugger\Freescale\MK60DN512xxx10.ddf" 
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.3\arm\CONFIG\debugger\Freescale\MK60DN512xxx10.ddf" 
 
 "--semihosting" 
 

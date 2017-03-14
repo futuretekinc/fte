@@ -89,6 +89,9 @@ typedef struct _FTE_CFG_EXT_POOL_STRUCT
 #if FTE_DOTECH_SUPPORTED
     FTE_DOTECH_EXT_CONFIG xDOTECH;
 #endif
+#if FTE_MULTI_DIO_NODE_SUPPORTED
+    FTE_DIO_NODE_EXT_CONFIG xDIO_NODE;
+#endif
 }   FTE_CFG_EXT_POOL, _PTR_ FTE_CFG_EXT_POOL_PTR;
 
 typedef struct _FTE_CFG_CERT_POOL_HEAD_STRUCT
@@ -1038,6 +1041,9 @@ FTE_RET   FTE_CFG_EXT_init(void)
 #if FTE_DOTECH_SUPPORTED
     FTE_DOTECH_initDefaultExtConfig(&_config.xExtPool.xDOTECH);
 #endif
+#if FTE_MULTI_DIO_NODE_SUPPORTED
+    FTE_DIO_NODE_initDefaultExtConfig(&_config.xExtPool.xDIO_NODE);
+#endif
     _config.bExtPoolModified = TRUE;
      
     return  FTE_RET_OK;
@@ -1091,6 +1097,33 @@ FTE_RET   FTE_CFG_IOEX_setExtConfig(FTE_VOID_PTR pIOEX, FTE_UINT32 ulIOEXLen)
     }
 
     memcpy(&_config.xExtPool.xIOEX, pIOEX, sizeof(_config.xExtPool.xIOEX));
+    _config.bExtPoolModified = TRUE;
+    
+    return  FTE_RET_OK;    
+}
+#endif
+
+#if FTE_MULTI_DIO_NODE_SUPPORTED
+FTE_RET   FTE_CFG_DIO_NODE_getExtConfig(FTE_VOID_PTR pBuff, FTE_UINT32 ulBuffLen)
+{
+    if ((_config.pDESC == NULL) || (ulBuffLen != sizeof(_config.xExtPool.xDIO_NODE)))
+    {
+        return  FTE_RET_ERROR;
+    }
+
+    memcpy(pBuff, &_config.xExtPool.xDIO_NODE, sizeof(_config.xExtPool.xDIO_NODE));
+    
+    return  FTE_RET_OK;    
+}
+
+FTE_RET   FTE_CFG_DIO_NODE_setExtConfig(FTE_VOID_PTR pIOEX, FTE_UINT32 ulIOEXLen)
+{
+    if ((_config.pDESC == NULL) || (ulIOEXLen != sizeof(_config.xExtPool.xDIO_NODE)))
+    {
+        return  FTE_RET_ERROR;
+    }
+
+    memcpy(&_config.xExtPool.xDIO_NODE, pIOEX, sizeof(_config.xExtPool.xDIO_NODE));
     _config.bExtPoolModified = TRUE;
     
     return  FTE_RET_OK;    

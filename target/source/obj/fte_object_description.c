@@ -848,6 +848,27 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
         
     },
 #endif
+#if FTE_MULTI_DIO_NODE_SUPPORTED
+	{   
+        .nType              = FTE_OBJ_TYPE_MULTI_DIO_NODE,
+        .pName              = "DIO_NODE",
+        .pVendor            = "FutureTek,Inc.",
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC | FTE_OBJ_FLAG_GUS,
+        .xSupportedFields   = FTE_OBJ_FIELD_ID | 
+                              FTE_OBJ_FIELD_NAME |
+                              FTE_OBJ_FIELD_NAME_EDIT |
+                              FTE_OBJ_FIELD_VALUE |
+                              FTE_OBJ_FIELD_STATE |
+                              FTE_OBJ_FIELD_ENABLE |
+                              FTE_OBJ_FIELD_ENABLE_EDIT,                
+        .nConfigSize        = sizeof(FTE_DIO_NODE_CONFIG),
+        .nStatusSize        = sizeof(FTE_DIO_NODE_STATUS),
+        .f_attach           = FTE_GUS_attach, 
+        .f_detach           = FTE_GUS_detach,
+        .pOpts              = (FTE_VOID_PTR)&FTE_DIO_NODE_GUSModelInfo
+        
+    },
+#endif
 #if FTE_DOTECH_SUPPORTED
     {   
         .nType              = FTE_OBJ_TYPE_MULTI_DOTECH_FX3D,

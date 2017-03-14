@@ -70,6 +70,7 @@ typedef struct _FTE_UART_CMD_SERVER_STRUCT
     FTE_SYS_LOCK    xSEMSend;
     FTE_SYS_LOCK    xSEMRecv;
     FTE_SYS_LOCK    xSEMSendNotEmtry;
+
     FTE_UINT32      nRecvHead;
     FTE_UINT32      nRecvTail;
     FTE_UINT32      nRecvCount;
@@ -133,6 +134,18 @@ int_32      FTE_UCS_SHELL_cmd(int_32 argc, FTE_CHAR_PTR argv[] );
 
 void        FTE_UCS_TASK_send(FTE_UINT32 nParams);
 void        FTE_UCS_TASK_recv(FTE_UINT32 nParams);
+
+FTE_RET     FTE_UCS_setUART
+(
+    FTE_UCS_PTR pUCS,
+    FTE_UCS_UART_CONFIG const _PTR_ pConfig
+);
+    
+FTE_RET     FTE_UCS_getUART
+(
+    FTE_UCS_PTR     pUCS,
+    FTE_UCS_UART_CONFIG_PTR pConfig
+);
 
 
 #endif

@@ -25,7 +25,7 @@ if not "%~1" == "" goto debugFile
 
 @echo on 
 
-"D:\Program Files\IAR Systems\Embedded Workbench 7.3\common\bin\cspybat" -f "E:\work\fte\bootloader\settings\bootloader.Release.general.xcl" --backend -f "E:\work\fte\bootloader\settings\bootloader.Release.driver.xcl" 
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.3\common\bin\cspybat" -f "E:\FTE\fte-161129\fte-master\bootloader\settings\bootloader.Release.general.xcl" --backend -f "E:\FTE\fte-161129\fte-master\bootloader\settings\bootloader.Release.driver.xcl" 
 
 @echo off 
 goto end 
@@ -34,7 +34,7 @@ goto end
 
 @echo on 
 
-"D:\Program Files\IAR Systems\Embedded Workbench 7.3\common\bin\cspybat" -f "E:\work\fte\bootloader\settings\bootloader.Release.general.xcl" "--debug_file=%~1" --backend -f "E:\work\fte\bootloader\settings\bootloader.Release.driver.xcl" 
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.3\common\bin\cspybat" -f "E:\FTE\fte-161129\fte-master\bootloader\settings\bootloader.Release.general.xcl" "--debug_file=%~1" --backend -f "E:\FTE\fte-161129\fte-master\bootloader\settings\bootloader.Release.driver.xcl" 
 
 @echo off 
 :end

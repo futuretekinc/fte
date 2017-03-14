@@ -506,9 +506,9 @@ FTE_INT32  FTE_MBTCP_SLAVE_SHELL_cmd
             }
 
             FTE_CFG_NET_copy(&xNetCfg);
-            
+#if FTE_MBTCP_SUPPORTED          
             memcpy(&xNetCfg.xMBTCP, &xMBTCPSlave.xConfig, sizeof(xMBTCPSlave.xConfig));
-            
+#endif            
             FTE_CFG_NET_set(&xNetCfg);
         }
         break;

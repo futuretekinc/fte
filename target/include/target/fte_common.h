@@ -45,6 +45,7 @@
 #define FTE_DEV_LWGPIO_UCS2_WCTRL       (FTE_DEV_TYPE_LWGPIO | 0x20)
 #define FTE_DEV_LWGPIO_UCS3_RCTRL       (FTE_DEV_TYPE_LWGPIO | 0x21)
 #define FTE_DEV_LWGPIO_UCS3_WCTRL       (FTE_DEV_TYPE_LWGPIO | 0x22)
+#define FTE_DEV_LWGPIO_DIO_NODE_RESET   (FTE_DEV_TYPE_LWGPIO | 0x23)
 
 #define FTE_DEV_GPIO_RESET              (FTE_DEV_TYPE_GPIO | 0x00)
 #define FTE_DEV_GPIO_AD7785_0_CS        (FTE_DEV_TYPE_GPIO | 0x01)
@@ -75,6 +76,7 @@
 #endif
 #define FTE_DEV_GPIO_DI_0               (FTE_DEV_TYPE_GPIO | 0x11)
 #define FTE_DEV_GPIO_IOEX_RESET         (FTE_DEV_TYPE_GPIO | 0x12)
+#define FTE_DEV_GPIO_DIO_NODE_RESET         (FTE_DEV_TYPE_GPIO | 0x13)
 
 #define FTE_DEV_I2C_0                   (FTE_DEV_TYPE_I2C | 0)
 #define FTE_DEV_I2C_1                   (FTE_DEV_TYPE_I2C | 1)
@@ -171,6 +173,7 @@
 
 #define FTE_GPIO_DI_0                   (GPIO_PORT_C | GPIO_PIN11)
 #define FTE_GPIO_IOEX_RESET             (GPIO_PORT_C | GPIO_PIN2)
+#define FTE_GPIO_DIO_NODE_RESET         (GPIO_PORT_C | GPIO_PIN2)
 
 #define FTE_GPIO_AD7785_0_CS_MUX        (LWGPIO_MUX_C4_GPIO)
 #define FTE_GPIO_AD7785_1_CS_MUX        (LWGPIO_MUX_C3_GPIO)
@@ -226,7 +229,7 @@
 
 #define FTE_GPIO_DI_0_MUX               (LWGPIO_MUX_C11_GPIO)
 #define FTE_GPIO_IOEX_RESET_MUX         (LWGPIO_MUX_C2_GPIO)
-
+#define FTE_GPIO_DIO_NODE_RESET_MUX         (LWGPIO_MUX_C2_GPIO)
 #ifndef FTE_UCS_1_FULL_DUPLEX
 #define FTE_UCS_1_FULL_DUPLEX               FALSE
 #endif

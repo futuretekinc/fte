@@ -144,6 +144,20 @@ TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
     },
 #endif
+
+#if FTE_MULTI_DIO_NODE_SUPPORTED
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_DIO_NODE,          /* Task Index */
+        .TASK_ADDRESS           =   FTE_DIO_NODE_task,          /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_DIO_NODE_STACK,    /* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_DIO_NODE_PRIO,     /* Priority */
+        .TASK_NAME              =   "DIO_NODE",                 /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   0,                      /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+#endif
+	
 #if FTE_LORAWAN_SUPPORTED
     { 
         .TASK_TEMPLATE_INDEX    =   FTE_TASK_LORA_CTRL,     /* Task Index */

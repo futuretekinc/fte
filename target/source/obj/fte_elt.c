@@ -292,7 +292,7 @@ FTE_RET FTE_ELT_create
     FTE_OBJECT_CONFIG_PTR   pConfig;
     FTE_OBJECT_CONFIG_PTR   pBaseConfig;
     FTE_OBJECT_CONFIG_PTR   pChildConfig[FTE_ELT_AQM100_FIELD_MAX];
-    FTE_UINT32              ulChildCount = 0 ;
+    FTE_UINT32              ulChildCount = 0;
     FTE_UINT32              ulSlaveID;
     FTE_OBJECT_PTR          pObj;
     

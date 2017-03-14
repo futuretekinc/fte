@@ -63,11 +63,18 @@ FTE_RET   FTE_LWGPIO_detach
     FTE_LWGPIO_PTR  pLWGPIO
 )
 {
-    if (pLWGPIO != NULL)
+    /*if (pLWGPIO != NULL)
     {
         memset(pLWGPIO, 0, sizeof(FTE_LWGPIO));
         _nGPIOs--;
             
+        return  FTE_RET_OK;
+    }*/
+    if (pLWGPIO->nParent != 0)
+    {
+        //memset(pLWGPIO, 0, sizeof(FTE_LWGPIO));
+        //_nGPIOs--;
+        pLWGPIO->nParent = 0;    
         return  FTE_RET_OK;
     }
     
@@ -371,7 +378,7 @@ FTE_INT32      FTE_LWGPIO_SHELL_cmd
     {
         if (bShortHelp)
         {
-            printf ("%s [<xDevID>]n", pArgv[0]);
+            printf ("%s [<xDevID>]\n", pArgv[0]);
         }
         else
         {

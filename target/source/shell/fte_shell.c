@@ -50,6 +50,9 @@ SHELL_COMMAND_STRUCT pSHELLCommands[] =
 #if FTE_DO_SUPPORTED
     { "do",         FTE_DO_SHELL_cmd},
 #endif
+#if FTE_MULTI_DIO_NODE_SUPPORTED
+	{ "dio",  FTE_DIO_SHELL_cmd},
+#endif
 #if FTE_DOTECH_SUPPORTED
     { "dotech",     FTE_DOTECH_SHELL_cmd},
 #endif
@@ -146,7 +149,7 @@ FTE_RET     FTE_SHELL_proc(void)
         return  FTE_RET_OK;
     }
 
-    fprintf(stdout, "\n\nWalcome to %s!\n", FTE_MODEL);
+    fprintf(stdout, "\n\nWelcome to %s!\n", FTE_MODEL);
     fflush(stdout);
     while(1)
     {

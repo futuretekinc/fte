@@ -1,6 +1,8 @@
 #ifndef __FTE_SYS_LOCK_H__
 #define __FTE_SYS_LOCK_H__
 
+#include "fte_type.h"
+
 typedef struct
 {
     LWSEM_STRUCT    xSemaphore;

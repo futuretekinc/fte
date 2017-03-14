@@ -586,7 +586,7 @@ FTE_INT32      FTE_GPIO_SHELL_cmd
     {
         if (bShortHelp)
         {
-            printf ("%s [<xDevID>]n", pArgv[0]);
+            printf ("%s [<xDevID>]\n", pArgv[0]);
         }
         else
         {

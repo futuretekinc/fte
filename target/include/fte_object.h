@@ -115,6 +115,7 @@
 #define FTE_OBJ_TYPE_MULTI_HEM12        ((FTE_OBJ_CLASS_MULTI       ) | (0x0C << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_MULTI_DOTECH_FX3D  ((FTE_OBJ_CLASS_MULTI      )  | (0x0D << FTE_OBJ_TYPE_SHIFT))
 #define FTE_OBJ_TYPE_MULTI_AQM100M      ((FTE_OBJ_CLASS_MULTI       ) | (0x0E << FTE_OBJ_TYPE_SHIFT))
+#define FTE_OBJ_TYPE_MULTI_DIO_NODE     ((FTE_OBJ_CLASS_MULTI       ) | (0x0F << FTE_OBJ_TYPE_SHIFT))
 
 #define FTE_OBJ_ID_MASK                     0xFFFFFFFF
 typedef FTE_UINT32 FTE_OBJECT_ID, _PTR_ FTE_OBJECT_ID_PTR;
@@ -421,5 +422,6 @@ FTE_INT32   FTE_OBJ_SHELL_cmd(FTE_INT32 argc, FTE_CHAR_PTR argv[]);
 #include "obj/fte_cias.h"
 #include "obj/fte_ioex.h"
 #include "obj/fte_dotech.h"
+#include "obj/fte_dio_node.h"
 
 #endif

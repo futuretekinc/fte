@@ -805,6 +805,18 @@ FTE_LWGPIO_CONFIG   pLWGPIOConfigs[] =
         .nInactive  = LWGPIO_VALUE_HIGH
     },
 #endif
+
+#if FTE_DEV_LWGPIO_DIO_NODE_RESET
+    {
+        .nID        = FTE_DEV_LWGPIO_DIO_NODE_RESET,
+        .nLWGPIO    = FTE_GPIO_DIO_NODE_RESET,
+        .nMUX       = FTE_GPIO_DIO_NODE_RESET_MUX,
+        .nDIR       = LWGPIO_DIR_OUTPUT,
+        .nInit      = LWGPIO_VALUE_HIGH,
+        .nActive    = LWGPIO_VALUE_LOW,
+        .nInactive  = LWGPIO_VALUE_HIGH
+    },
+#endif
 };
 
 FTE_GPIO_CONFIG     pGPIOConfigs[] =
@@ -1241,6 +1253,16 @@ FTE_GPIO_CONFIG     pGPIOConfigs[] =
     {
         .nID        = FTE_DEV_GPIO_IOEX_RESET,
         .nDevID     = FTE_DEV_LWGPIO_IOEX_RESET,
+        .nDIR       = FTE_GPIO_DIR_OUTPUT,
+        .nInit      = FTE_GPIO_VALUE_HIGH,
+        .nActive    = FTE_GPIO_VALUE_LOW,
+    },
+#endif
+
+#if FTE_DEV_GPIO_DIO_NODE_RESET
+    {
+        .nID        = FTE_DEV_GPIO_DIO_NODE_RESET,
+        .nDevID     = FTE_DEV_LWGPIO_DIO_NODE_RESET,
         .nDIR       = FTE_GPIO_DIR_OUTPUT,
         .nInit      = FTE_GPIO_VALUE_HIGH,
         .nActive    = FTE_GPIO_VALUE_LOW,
@@ -1724,6 +1746,20 @@ const FTE_DO_CONFIG fte_ioex_reset_config =
     .nGPIO      = FTE_DEV_GPIO_IOEX_RESET,
     .nLED       = 0
 };
+#endif 
+
+#if FTE_MULTI_DIO_NODE_SUPPORTED
+const FTE_DO_CONFIG fte_dio_node_reset_config =
+{
+    .xCommon    =
+    {
+        .nID        = FTE_OBJ_TYPE_DIO_NODE_RESET,
+        .pName      = "DIO_NODE Reset",
+        .xFlags     = FTE_OBJ_CONFIG_FLAG_ENABLE | FTE_OBJ_CONFIG_FLAG_TRAP_DIFF,
+    },
+    .nGPIO      = FTE_DEV_GPIO_DIO_NODE_RESET,
+    .nLED       = 0
+};
 #endif
 
 const 
@@ -1848,6 +1884,10 @@ const FTE_OBJECT_CONFIG_PTR pSystemObjectConfigs[] =
 #endif
 #if FTE_IOEX_SUPPORTED
     (FTE_OBJECT_CONFIG_PTR)&fte_ioex_reset_config
+#endif
+	  
+#if FTE_MULTI_DIO_NODE_SUPPORTED
+    (FTE_OBJECT_CONFIG_PTR)&fte_dio_node_reset_config
 #endif
 };
 
@@ -1982,9 +2022,14 @@ FTE_CFG_DESC  FTE_CFG_desc =
     .pSystem    = &FTE_defaultSystemConfig,
     .pShell     = &FTE_defaultShellConfig,
     .pNetwork   = &FTE_defaultNetConfig,
-    .nObjects   = sizeof(pInitObjConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR),
-    .pObjects   = pInitObjConfigs,
-    .nEvents    = sizeof(pInitEventConfigs) / sizeof(FTE_CFG_EVENT_PTR),
+#if FTE_MULTI_DIO_NODE_SUPPORTED 
+    .nObjects   =  0,
+    .pObjects   =  NULL,
+#else
+    .nObjects   =  sizeof(pInitObjConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR),
+    .pObjects   =  pInitObjConfigs,
+#endif
+	.nEvents    = sizeof(pInitEventConfigs) / sizeof(FTE_CFG_EVENT_PTR),
     .pEvents    = pInitEventConfigs
 };
 
@@ -2204,7 +2249,8 @@ void    FTE_SYS_STATE_changed( void )
 }
 
 void    FTE_SYS_STATE_CB_changed
-(   FTE_VOID_PTR     pParams 
+(
+   FTE_VOID_PTR     pParams 
 )
 {
     static FTE_UINT32 ulState = 0;

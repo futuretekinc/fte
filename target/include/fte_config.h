@@ -84,6 +84,9 @@ FTE_RET         FTE_CFG_CIAS_setExtConfig(FTE_VOID_PTR pCIAS, FTE_UINT32 ulCIASL
 FTE_RET         FTE_CFG_IOEX_getExtConfig(FTE_VOID_PTR pBuff, FTE_UINT32 ulBuffLen);
 FTE_RET         FTE_CFG_IOEX_setExtConfig(FTE_VOID_PTR pCIAS, FTE_UINT32 ulIOEXLen);
 
+FTE_RET         FTE_CFG_DIO_NODE_getExtConfig(FTE_VOID_PTR pBuff, FTE_UINT32 ulBuffLen);
+FTE_RET         FTE_CFG_DIO_NODE_setExtConfig(FTE_VOID_PTR pCIAS, FTE_UINT32 ulIOEXLen);
+
 FTE_RET         FTE_CFG_DOTECH_getExtConfig(FTE_VOID_PTR pBuff, FTE_UINT32 ulBuffLen);
 FTE_RET         FTE_CFG_DOTECH_setExtConfig(FTE_VOID_PTR pBuff, FTE_UINT32 ulBuffLen);
 

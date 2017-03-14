@@ -590,7 +590,7 @@ FTE_UINT32 FTE_UCS_sendAndRecv
 
     FTE_SYS_LOCK_disable(&pUCS->xSEMSend);
     FTE_SYS_LOCK_disable(&pUCS->xSEMSendNotEmtry);
-    
+
     _time_delay(nDelay);
     
     while (FTE_UCS_recvdLen(pUCS) < nBuffLen)
@@ -601,9 +601,8 @@ FTE_UINT32 FTE_UCS_sendAndRecv
         {
             break;
         }
-    }
-  
-    FTE_SYS_LOCK_enable(&pUCS->xSEMRecv);
+    }  
+	FTE_SYS_LOCK_enable(&pUCS->xSEMRecv);
 
     nCount = _FTE_UCS_recv(pUCS, pBuff, nBuffLen);
 
@@ -672,7 +671,7 @@ FTE_UINT32 FTE_UCS_MODBUS_getRegs
     {
         return  MQX_OUT_OF_MEMORY;
     }    
-        
+    memset(pReqFrame, 0x00, sizeof(FTE_UINT8)*10);    
     ulReqLen = 0;
     pReqFrame[ulReqLen++] = ucDeviceID;
     pReqFrame[ulReqLen++] = 0x03;
@@ -683,6 +682,7 @@ FTE_UINT32 FTE_UCS_MODBUS_getRegs
     uiCRC = FTE_CRC16(pReqFrame, ulReqLen);
     pReqFrame[ulReqLen++] = (uiCRC     ) & 0xFF;
     pReqFrame[ulReqLen++] = (uiCRC >> 8) & 0xFF;
+	//ulReqLen++;
                 
     ulRecvLen = FTE_UCS_sendAndRecv(pUCS, pReqFrame, ulReqLen, pRecvBuff, ulValidRespFrameLen * 2, 0, nTimeout);
     if (ulRecvLen < ulValidRespFrameLen)
@@ -750,7 +750,7 @@ FTE_UINT32 FTE_UCS_MODBUS_setReg
     uiCRC = FTE_CRC16(pReqFrame, ulReqLen);
     pReqFrame[ulReqLen++] = (uiCRC     ) & 0xFF;
     pReqFrame[ulReqLen++] = (uiCRC >> 8) & 0xFF;
-    pReqFrame[ulReqLen++] = 0;
+    //pReqFrame[ulReqLen++] = 0;
                 
     ulValidFrameLen = 8;
     
@@ -933,16 +933,21 @@ void FTE_UCS_TASK_send
             pUCS->nSendCount -= nWrittenCount;
         }
 
-        _time_delay(1);
+        //_time_delay(1);
+        //ioctl( pUCS->pFD, IO_IOCTL_SERIAL_WAIT_FOR_TC, NULL );
+		
+		
+		fflush(pUCS->pFD);
         ioctl( pUCS->pFD, IO_IOCTL_SERIAL_WAIT_FOR_TC, NULL );
-
+        fflush(pUCS->pFD);
+		
         pUCS->nSendHead = 0;
         pUCS->nSendTail = 0;
 
         
         if (pUCS->pFlowCtrl != NULL)
         {
-            for(int i = 0; i < 20 ;i++)
+            for(int i = 0; i < 60 ;i++)
                 _time_delay(0);
             if (pUCS->pFlowCtrl != NULL)
             {

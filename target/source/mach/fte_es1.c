@@ -44,6 +44,9 @@ const FTE_DO_CONFIG fte_init_mcp23s08_do1_config =
 };
 #endif
 
+
+
+
 const FTE_OBJECT_CONFIG_PTR pInitObjConfigs[] =
 {
 #if FTE_GPIO_DI_SUPPORTED
@@ -922,6 +925,58 @@ static const FTE_EVENT_CONFIG fte_changed_zone19_device_config =
 };
 #endif
 
+
+static const FTE_EVENT_CONFIG fte_changed_dio0_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b01),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+
+static const FTE_EVENT_CONFIG fte_changed_dio1_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b02),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+static const FTE_EVENT_CONFIG fte_changed_dio2_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b03),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+static const FTE_EVENT_CONFIG fte_changed_dio3_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DO, 0x0b04),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+static const FTE_EVENT_CONFIG fte_changed_dio4_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DO, 0x0b05),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+static const FTE_EVENT_CONFIG fte_changed_dio5_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DO, 0x0b06),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+static const FTE_EVENT_CONFIG fte_changed_dio6_config = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DO, 0x0b07),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+
 const FTE_CFG_EVENT_PTR pInitEventConfigs[] =
 {
 #if FTE_GPIO_DI_SUPPORTED
@@ -1013,4 +1068,11 @@ const FTE_CFG_EVENT_PTR pInitEventConfigs[] =
     (FTE_CFG_EVENT_PTR)&fte_changed_zone17_device_config, 
     (FTE_CFG_EVENT_PTR)&fte_changed_zone19_device_config, 
 #endif
+	(FTE_CFG_EVENT_PTR)&fte_changed_dio0_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_dio1_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_dio2_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_dio3_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_dio4_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_dio5_config,
+    (FTE_CFG_EVENT_PTR)&fte_changed_dio6_config,
 };

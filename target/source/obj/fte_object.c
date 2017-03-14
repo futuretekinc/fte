@@ -1557,7 +1557,7 @@ FTE_RET FTE_OBJ_CMD_run
     FTE_CHAR_PTR    pArgv[]
 )
 {
-    ASSERT((nArgc > 0) && (pArgv != NULL));
+    ASSERT((nArgc > 0) || (pArgv != NULL));
     
     FTE_RET xRet;
     FTE_OBJECT_ID   xObjID;
@@ -1712,23 +1712,29 @@ FTE_RET FTE_OBJ_CMD_add
                     FTE_GUS_MODEL_INFO_PTR  pInfo = pDesc->pOpts;
 
                     ASSERT(pInfo != NULL);
-                    
-                    if (pInfo->fCreate != NULL)
-                    {
-                        xRet = pInfo->fCreate(pArgv[1], (FTE_OBJECT_PTR _PTR_)&pObj);
-                        if (xRet == FTE_RET_OK)
-                        {
-                            printf("The object[%08x] is created successfully.\n", pObj->pConfig->xCommon.nID);
-                        }
-                        else
-                        {
-                            printf("The object creation is failed[%08x].\n", xRet);
-                        }
-                    }
-                    else
-                    {
-                        printf("The type[%s] does not support the dynamic creation.\n", pArgv[0]);
-                    }
+                    if(pArgv[1] != NULL)
+					{
+                    	if (pInfo->fCreate != NULL)
+                    	{
+                        	xRet = pInfo->fCreate(pArgv[1], (FTE_OBJECT_PTR _PTR_)&pObj);
+                        	if (xRet == FTE_RET_OK)
+                        	{
+                            	printf("The object[%08x] is created successfully.\n", pObj->pConfig->xCommon.nID);
+                        	}
+                        	else
+                        	{
+                            	printf("The object creation is failed[%08x].\n", xRet);
+                        	}
+                    	}
+                    	else
+                    	{
+                        	printf("The type[%s] does not support the dynamic creation.\n", pArgv[0]);
+                    	}
+					}
+					else
+					{
+					  printf("The type[%s] does not insert slave ID.\n", pArgv[0]);
+					}
                 }
                 else
                 {
@@ -2140,4 +2146,3 @@ FTE_INT32   FTE_OBJ_SHELL_cmd
     
     return   xRet;
 }
-

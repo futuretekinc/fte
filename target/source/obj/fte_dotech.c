@@ -300,7 +300,7 @@ FTE_RET     FTE_DOTECH_update
     }
  
     _time_get(&pStatus->xLastRequestTime);
-    
+    FTE_UCS_setUART(pUCS, &pStatus->xGUS.pModelInfo->xUARTConfig);    
     xRet = FTE_UCS_MODBUS_getRegs(pUCS, pConfig->xGUS.nSensorID, FTE_DOTECH_FX3D_REG_STAT_START, pRegs, FTE_DOTECH_FX3D_REG_STAT_MAX, xGlobalConfig.ulRequestTimeout);
     if (xRet != FTE_RET_OK)
     {
@@ -364,7 +364,7 @@ void FTE_DOTECH_task
         
         xRet = FTE_UCS_MODBUS_getRegs(pUCS, pConfig->xGUS.nSensorID, FTE_DOTECH_FX3D_REG_CTRL_START, pRegs, FTE_DOTECH_FX3D_REG_CTRL_MAX, xGlobalConfig.ulRequestTimeout);
         
-        FTE_UCS_setUART(pStatus->xGUS.pUCS, &xUARTConfig);    
+        //FTE_UCS_setUART(pStatus->xGUS.pUCS, &xUARTConfig);    
         
         if (xRet == FTE_RET_OK)
         {
@@ -426,7 +426,6 @@ void FTE_DOTECH_task
                 {
                     pStatus->ulRetryCount++;
                 }
-                
             }
         }
 
@@ -936,7 +935,9 @@ FTE_RET FTE_DOTECH_FX3D_getChildConfig
         ERROR("UCS[%d] is not exist\n", pParentConfig->xGUS.nUCSID);
         return  FTE_RET_ERROR;
     }
-    
+
+	
+    FTE_UCS_setUART(pUCS, &pParentStatus->xGUS.pModelInfo->xUARTConfig);  
     xRet = FTE_UCS_MODBUS_getRegs(pUCS, pParentConfig->xGUS.nSensorID, nCtrlID, pRegs, 1, xGlobalConfig.ulRequestTimeout);
     if (xRet != FTE_RET_OK)
     {
@@ -1097,10 +1098,12 @@ FTE_RET     FTE_DOTECH_FX3D_writeReg
     
     FTE_RET     xRet;
     FTE_DOTECH_CONFIG_PTR pConfig;
+	FTE_DOTECH_FX3D_STATUS_PTR pStatus;
     FTE_UCS_PTR pUCS;
     FTE_UINT16     i, usValue;
         
     pConfig = (FTE_DOTECH_CONFIG_PTR)pObj->pConfig;
+	pStatus = (FTE_DOTECH_FX3D_STATUS_PTR)pObj->pStatus;
     
     pUCS = FTE_UCS_get(pConfig->xGUS.nUCSID);
     if (pUCS == NULL)
@@ -1113,6 +1116,7 @@ FTE_RET     FTE_DOTECH_FX3D_writeReg
     
     for(i = 0 ; i < xGlobalConfig.ulRetryCount ;i++)
     {
+	  	FTE_UCS_setUART(pUCS, &pStatus->xGUS.pModelInfo->xUARTConfig);  
         xRet = FTE_UCS_MODBUS_setReg(pUCS, pConfig->xGUS.nSensorID, ulIndex, usValue, xGlobalConfig.ulRequestTimeout);
         if (xRet == FTE_RET_OK)
         {

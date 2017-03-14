@@ -450,11 +450,11 @@ FTE_RET   FTE_SNMPD_TRAP_delServer
 static
 FTE_OBJECT_PTR  FTE_SNMPD_getObject
 (
-    FTE_OBJ_TYPE    xType,
-    FTE_ULONG       ulIndex
+    FTE_OBJECT_ID    xType,
+    FTE_UINT64       ulIndex
 )
 {
-    return  FTE_OBJ_get2((xType & FTE_OBJ_CLASS_MASK) | (nIndex & 0x000000FF),  FTE_OBJ_CLASS_MASK | 0x000000FF);
+    return  FTE_OBJ_get2((xType & FTE_OBJ_CLASS_MASK) | (ulIndex & 0x000000FF),  FTE_OBJ_CLASS_MASK | 0x000000FF);
 }
 
 /*******************************************************************************
@@ -809,7 +809,7 @@ FTE_UINT32 MIB_set_objValue
     strncpy(_buff, (FTE_CHAR_PTR)pVar, ulVarLen);
     _buff[ulVarLen] = '\0';        
 
-    if (FTE_OBJ_CLASS(pObj) == FTE_OBJ_CLASS_MULTI)
+    if (FTE_OBJ_CLASS(pObj) == FTE_OBJ_TYPE_CTRL)
     {
         FTE_OBJ_setConfig(pObj, _buff);
     }
@@ -842,7 +842,7 @@ FTE_CHAR const _PTR_ MIB_get_objValue
      
     if ( FTE_OBJ_IS_ENABLED(pObj))
     {
-        if (FTE_OBJ_CLASS(pObj) == FTE_OBJ_CLASS_MULTI)
+        if (FTE_OBJ_CLASS(pObj) == FTE_OBJ_CLASS_CTRL)
         {
             FTE_OBJ_getConfig(pObj, _buff, sizeof(_buff));
         }
@@ -2081,7 +2081,7 @@ FTE_UINT32 MIB_set_multiInitValue(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_U
  ******************************************************************************/
 FTE_UINT32 MIB_get_devCount(FTE_VOID_PTR dummy)
 { 
-    return  FTE_OBJ_count(FTE_OBJ_TYPE_MULTI, FTE_OBJ_CLASS_MASK, FALSE);
+    return  FTE_OBJ_count(FTE_OBJ_TYPE_CTRL, FTE_OBJ_CLASS_MASK, FALSE);
 } 
 
 FTE_UINT32 MIB_set_devIndex (FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen) {return SNMP_ERROR_inconsistentValue;}
@@ -2101,7 +2101,7 @@ FTE_BOOL MIB_find_devEntry
       nIndex = 1;
    } /* Endif */
 
-   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_MULTI, nIndex);
+   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_CTRL, nIndex);
    if (!pObj) 
    {
       return FALSE;

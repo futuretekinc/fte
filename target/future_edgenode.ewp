@@ -185,7 +185,7 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state>FTE_ES22=1</state>
+          <state>FTE_EH3=1</state>
           <state>FTE_V2=1</state>
           <state>FTE_DEBUG=1</state>
           <state>FREESCALE_MQX</state>
@@ -229,7 +229,7 @@
         </option>
         <option>
           <name>CCDiagSuppress</name>
-          <state></state>
+          <state>Pa050</state>
         </option>
         <option>
           <name>CCDiagRemark</name>
@@ -2118,6 +2118,9 @@
         <name>$PROJ_DIR$\include\obj\fte_di.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\include\obj\fte_dio_node.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\include\obj\fte_do.h</name>
       </file>
       <file>
@@ -2164,6 +2167,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_eh2.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\target\fte_eh3.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_ep1.h</name>
@@ -2738,6 +2744,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\source\obj\fte_di.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\obj\fte_dio_node.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\source\obj\fte_do.c</name>
