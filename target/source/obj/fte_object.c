@@ -1672,7 +1672,8 @@ FTE_RET FTE_OBJ_CMD_list
                 printf(" %10s %-7s %s", pValueString, pUnitString, pTimeString);
             }
             
-            if (pObj->pAction->fGetStatistics != NULL)
+            
+            if ((pObj->pAction != NULL) && (pObj->pAction->fGetStatistics != NULL))
             {
                 FTE_OBJECT_STATISTICS    xStatistics;
                 FTE_UINT32                 nRatio;

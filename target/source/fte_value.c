@@ -1056,7 +1056,7 @@ FTE_CHAR_PTR    FTE_VALUE_toString
 #else
                 else 
                 {
-                    snprintf(pValueString, ulLen, "%d.%01d", pObj->xData.ulValue / 1000, pObj->xData.ulValue % 1000 / 100);
+                    snprintf(pValueString, ulLen, "%d.%02d", pObj->xData.ulValue / 1000, pObj->xData.ulValue % 1000 / 10);
                 }
 #endif
             }
@@ -1077,7 +1077,14 @@ FTE_CHAR_PTR    FTE_VALUE_toString
             
           case    FTE_VALUE_TYPE_PRESSURE:
             {
-                snprintf(pValueString, ulLen, "%d.%d", pObj->xData.nValue / 10, abs(pObj->xData.nValue) % 10);
+                if (pObj->xData.ulValue < 1000)
+                {
+                    snprintf(pValueString, ulLen, "%d.%03d", pObj->xData.ulValue / 1000, pObj->xData.ulValue % 1000);
+                }
+                else 
+                {
+                    snprintf(pValueString, ulLen, "%d.%02d", pObj->xData.ulValue / 1000, pObj->xData.ulValue % 1000 / 10);
+                }
             }
             break;
 

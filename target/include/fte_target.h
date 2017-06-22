@@ -123,6 +123,15 @@
 #define FTE_NET_TELNETD_PRIO            9
 #define FTE_NET_TELNETD_STACK           (FTE_TASK_DEFAULT_STACK * 4)
 
+#define FTE_NET_MBTCP_MASTER_NAME               "mbtcpm"
+#define FTE_NET_MBTCP_MASTER_STACK              (FTE_TASK_DEFAULT_STACK * 1)
+#define FTE_NET_MBTCP_MASTER_PRIO               9
+#define FTE_NET_MBTCP_MASTER_SLAVE_IP           IPADDR(10, 0, 1, 100)
+#define FTE_NET_MBTCP_MASTER_PORT               502
+#define FTE_NET_MBTCP_MASTER_KEEPALIVE          60
+#define FTE_NET_MBTCP_MASTER_TIMEOUT            60
+#define FTE_NET_MBTCP_MASTER_WITH_SSL           TRUE
+
 /******************************************************************************
  * Object Management Configuration
  ******************************************************************************/
@@ -206,6 +215,8 @@ FTE_RET     FTE_PLATFORM_run(void);
 #include "fte_es21.h"
 #elif defined(FTE_ES22)
 #include "fte_es22.h"
+#elif defined(FTE_ES23)
+#include "fte_es23.h"
 #elif defined(FTE_EH1)
 #include "fte_eh1.h"
 #elif defined(FTE_EH3)
@@ -240,7 +251,9 @@ FTE_RET     FTE_PLATFORM_run(void);
 
 #define FTE_TASK_MBTCP_MAIN             20
 #define FTE_TASK_MBTCP_SESSION          21
-#define FTE_TASK_DIO_NODE         22
+#define FTE_TASK_DIO_NODE               22
+
+#define FTE_TASK_TURBOMAX               23
 
 #define FTE_TASK_DEFAULT_STACK          512
 
@@ -343,6 +356,12 @@ FTE_RET     FTE_PLATFORM_run(void);
     #define FTE_TASK_MBTCP_SESSION_STACK         (FTE_TASK_DEFAULT_STACK * 2)
     #define FTE_TASK_MBTCP_SESSION_PRIO          9
 #endif
+
+#if FTE_TASK_TURBOMAX
+    #define FTE_TASK_TURBOMAX_STACK         (FTE_TASK_DEFAULT_STACK * 2)
+    #define FTE_TASK_TURBOMAX_PRIO          9
+#endif
+
 
 #if FTE_DI_SUPPORTED                    
     #if !FTE_DI_MAX_COUNT            

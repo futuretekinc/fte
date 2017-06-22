@@ -1,14 +1,14 @@
-"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.3\arm\bin\armproc.dll" 
+"D:\Program Files\IAR Systems\Embedded Workbench 7.3\arm\bin\armproc.dll" 
 
-"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.3\arm\bin\armjlink2.dll" 
+"D:\Program Files\IAR Systems\Embedded Workbench 7.3\arm\bin\armjlink2.dll" 
 
-"E:\FTE\fte-161129\fte-master\bootloader\Release\Exe\bootloader.out" 
+"E:\work\fte\bootloader\Release\Exe\bootloader.out" 
 
---plugin "C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.3\arm\bin\armbat.dll" 
+--plugin "D:\Program Files\IAR Systems\Embedded Workbench 7.3\arm\bin\armbat.dll" 
 
---device_macro "C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.3\arm\config\debugger\Freescale\Kxx.dmac" 
+--device_macro "D:\Program Files\IAR Systems\Embedded Workbench 7.3\arm\config\debugger\Freescale\Kxx.dmac" 
 
---flash_loader "C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.3\arm\config\flashloader\Freescale\FlashK60Dxxx128K.board" 
+--flash_loader "D:\Program Files\IAR Systems\Embedded Workbench 7.3\arm\config\flashloader\Freescale\FlashK60Dxxx128K.board" 
 
 
 

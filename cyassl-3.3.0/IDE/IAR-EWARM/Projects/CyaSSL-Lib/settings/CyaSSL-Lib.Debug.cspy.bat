@@ -25,7 +25,7 @@ if not "%~1" == "" goto debugFile
 
 @echo on 
 
-"D:\Program Files\IAR Systems\Embedded Workbench 7.3\common\bin\cspybat" -f "E:\work\fte\bootloader\settings\bootloader.Release.general.xcl" --backend -f "E:\work\fte\bootloader\settings\bootloader.Release.driver.xcl" 
+"D:\Program Files\IAR Systems\Embedded Workbench 7.3\common\bin\cspybat" -f "E:\work\fte\cyassl-3.3.0\IDE\IAR-EWARM\Projects\CyaSSL-Lib\settings\CyaSSL-Lib.Debug.general.xcl" --backend -f "E:\work\fte\cyassl-3.3.0\IDE\IAR-EWARM\Projects\CyaSSL-Lib\settings\CyaSSL-Lib.Debug.driver.xcl" 
 
 @echo off 
 goto end 
@@ -34,7 +34,7 @@ goto end
 
 @echo on 
 
-"D:\Program Files\IAR Systems\Embedded Workbench 7.3\common\bin\cspybat" -f "E:\work\fte\bootloader\settings\bootloader.Release.general.xcl" "--debug_file=%~1" --backend -f "E:\work\fte\bootloader\settings\bootloader.Release.driver.xcl" 
+"D:\Program Files\IAR Systems\Embedded Workbench 7.3\common\bin\cspybat" -f "E:\work\fte\cyassl-3.3.0\IDE\IAR-EWARM\Projects\CyaSSL-Lib\settings\CyaSSL-Lib.Debug.general.xcl" "--debug_file=%~1" --backend -f "E:\work\fte\cyassl-3.3.0\IDE\IAR-EWARM\Projects\CyaSSL-Lib\settings\CyaSSL-Lib.Debug.driver.xcl" 
 
 @echo off 
 :end

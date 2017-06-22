@@ -1995,6 +1995,28 @@ FTE_NET_CFG FTE_defaultNetConfig =
         }
     },
 #endif
+#if FTE_MBTCP_MASTER_SUPPORTED
+    .nMBTCPMasterCount  = 2,
+    .xMBTCPMasters      =
+    {
+        {
+            .ulUnitID   = 1,
+            .usOffset   = 0,
+            .bEnable    = TRUE,
+            .xIPAddress = FTE_NET_MBTCP_MASTER_SLAVE_IP,
+            .usPort     = FTE_NET_MBTCP_MASTER_PORT,
+            .ulKeepalive= FTE_NET_MBTCP_MASTER_KEEPALIVE
+        },
+        {
+            .ulUnitID   = 2,
+            .usOffset   = 0,
+            .bEnable    = TRUE,
+            .xIPAddress = FTE_NET_MBTCP_MASTER_SLAVE_IP,
+            .usPort     = FTE_NET_MBTCP_MASTER_PORT,
+            .ulKeepalive= FTE_NET_MBTCP_MASTER_KEEPALIVE
+        }
+    }
+#endif
 };
 
 static const 

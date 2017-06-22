@@ -8,7 +8,7 @@ void FTE_udelay
 {
     for(int j = ulMicroSecs*20 ; j > 0 ; j--);
 }
-
+ 
 FTE_RET FTE_strToIP
 (    FTE_CHAR_PTR    pIPString, 
     FTE_UINT32_PTR  pIP
@@ -261,7 +261,7 @@ FTE_RET FTE_strToUINT32
     FTE_CHAR_PTR     pString,
     FTE_UINT32_PTR   pValue
 )
-{
+{ 
     ASSERT((pString != NULL) && (pValue != NULL));
     
     FTE_UINT32  i = 0;

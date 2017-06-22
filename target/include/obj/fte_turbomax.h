@@ -1,0 +1,126 @@
+#ifndef _FTE_TURBOMAX_H__
+#define _FTE_TURBOMAX_H__
+
+#define FTE_TURBOMAX_MAX20_MAX                 13
+
+#define FTE_TURBOMAX_MAX20_FIELD_MOTOR_SPEED      0
+#define FTE_TURBOMAX_MAX20_FIELD_FITER_PRESS_DROP 1
+#define FTE_TURBOMAX_MAX20_FIELD_POWER            2
+#define FTE_TURBOMAX_MAX20_FIELD_SUCTION_TEMP     3
+#define FTE_TURBOMAX_MAX20_FIELD_DISCHARGE_TEMP   4
+#define FTE_TURBOMAX_MAX20_FIELD_MOTOR_TEMP       5
+#define FTE_TURBOMAX_MAX20_FIELD_RUN_TIME         6
+#define FTE_TURBOMAX_MAX20_FIELD_INPUT_CURRENT    7
+#define FTE_TURBOMAX_MAX20_FIELD_OUTPUT_CURRENT   8
+#define FTE_TURBOMAX_MAX20_FIELD_INVERTER_TEMP    9 
+#define FTE_TURBOMAX_MAX20_FIELD_AIR_TEMP         10
+#define FTE_TURBOMAX_MAX20_FIELD_STATUS           11
+#define FTE_TURBOMAX_MAX20_FIELD_ERROR_CODE       12
+
+#define FTE_TURBOMAX_MAX20_FIELD_MAX            13
+
+#define FTE_TURBOMAX_MAX20_CTRL_COUNT          0
+
+#define FTE_TURBOMAX_MAX20_DEFAULT_UPDATE_INTERVAL 2000
+
+typedef struct  FTE_TURBOMAX_CONFIG_STRUCT
+{
+    FTE_COMMON_CONFIG   xCommon;
+    FTE_UINT32          nModel;
+    FTE_UINT32          nInterval;
+//    FTE_UINT32          nSensorID;
+    FTE_UINT32          nBusID;
+}   FTE_TURBOMAX_CONFIG, _PTR_ FTE_TURBOMAX_CONFIG_PTR;
+
+typedef struct  FTE_TURBOMAX_EXT_CONFIG_STRUCT
+{
+    FTE_UINT32      ulLoopPeriod;
+    FTE_UINT32      ulUpdatePeriod;
+    FTE_UINT32      ulRequestTimeout;
+    FTE_UINT32      ulRetryCount;
+}   FTE_TURBOMAX_EXT_CONFIG, _PTR_ FTE_TURBOMAX_EXT_CONFIG_PTR;
+
+typedef struct  FTE_TURBOMAX_STATUS_STRUCT
+{
+    FTE_UINT32      ulRetryCount;
+    FTE_TIME        xLastRequestTime;
+    FTE_TIME        xLastUpdateTime;
+    
+    FTE_UINT16      pRegisters[108];
+} FTE_TURBOMAX_STATUS, _PTR_ FTE_TURBOMAX_STATUS_PTR;
+
+
+void    FTE_TURBOMAX_task
+(
+    FTE_UINT32  datas
+);
+
+FTE_RET FTE_TURBOMAX_initDefaultExtConfig
+(
+    FTE_TURBOMAX_EXT_CONFIG_PTR pConfig
+);
+
+FTE_INT32  FTE_TURBOMAX_SHELL_cmd
+(
+    FTE_INT32       nArgc, 
+    FTE_CHAR_PTR    pArgv[] 
+);
+
+FTE_RET FTE_TURBOMAX_MAX20_reset
+(
+    FTE_VOID
+);
+
+FTE_RET FTE_TURBOMAX_MAX20_attach
+(
+    FTE_OBJECT_PTR  pObj
+);
+
+FTE_RET FTE_TURBOMAX_MAX20_detach
+(
+    FTE_OBJECT_PTR  pObj
+);
+
+FTE_RET FTE_TURBOMAX_MAX20_setChildConfig
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_CHAR_PTR    pBuff
+);
+
+FTE_RET FTE_TURBOMAX_MAX20_getChildConfig
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_CHAR_PTR    pBuff, 
+    FTE_UINT32      ulBuffLen
+);
+
+FTE_RET FTE_TURBOMAX_MAX20_get
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT32      ulIndex, 
+    FTE_VALUE_PTR   pValue
+);
+
+FTE_RET FTE_TURBOMAX_MAX20_create
+(
+    FTE_OBJECT_CONFIG_PTR   pBaseConfig,
+    FTE_OBJECT_PTR _PTR_ ppObj
+);
+
+extern FTE_VALUE_TYPE       FTE_TURBOMAX_MAX20_valueTypes[];
+extern FTE_TURBOMAX_CONFIG    FTE_TURBOMAX_MAX20_defaultConfig;
+
+FTE_RET     FTE_TURBOMAX_create(FTE_OBJECT_CONFIG_PTR pConfig, FTE_OBJECT_PTR _PTR_ ppObj);
+
+FTE_RET   FTE_TURBOMAX_attach
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_VOID_PTR    pOpts
+);
+
+FTE_RET FTE_TURBOMAX_detach
+(
+    FTE_OBJECT_PTR  pObj
+);
+
+#endif

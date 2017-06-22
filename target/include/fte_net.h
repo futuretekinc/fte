@@ -9,6 +9,7 @@
 #include "fte_telnetd.h"
 #include "fte_ssl.h"
 #include "fte_mbtcp.h"
+#include "fte_mbtcp_master.h"
 
 typedef enum    _fte_net_type
 {
@@ -47,6 +48,10 @@ typedef struct FTE_NET_CONFIG_STRUCT
 #endif
 #if FTE_MBTCP_SUPPORTED
     FTE_MBTCP_SLAVE_CFG         xMBTCP;
+#endif
+#if FTE_MBTCP_MASTER_SUPPORTED
+    FTE_UINT32                  nMBTCPMasterCount;
+    FTE_MBTCP_MASTER_CFG        xMBTCPMasters[2];
 #endif
 }   FTE_NET_CFG, _PTR_ FTE_NET_CFG_PTR;
 

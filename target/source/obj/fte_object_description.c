@@ -889,6 +889,27 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
         .pOpts              = (FTE_VOID_PTR)&FTE_DOTECH_FX3D_GUSModelInfo
     },
 #endif
+#if FTE_TURBOMAX_SUPPORTED
+    {   
+        .nType              = FTE_OBJ_TYPE_MULTI_TURBOMAX_MAX20,
+        .pName              = "MAX20",
+        .pVendor            = "TurboMax.",
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC,
+        .xSupportedFields   = FTE_OBJ_FIELD_ID | 
+                              FTE_OBJ_FIELD_NAME |
+                              FTE_OBJ_FIELD_NAME_EDIT |
+                              FTE_OBJ_FIELD_VALUE |
+                              FTE_OBJ_FIELD_STATE |
+                              FTE_OBJ_FIELD_ENABLE |
+                              FTE_OBJ_FIELD_ENABLE_EDIT,                
+        .nConfigSize        = sizeof(FTE_TURBOMAX_CONFIG),
+        .nStatusSize        = sizeof(FTE_TURBOMAX_STATUS),
+        .f_create           = FTE_TURBOMAX_create,
+        .f_attach           = FTE_TURBOMAX_attach, 
+        .f_detach           = FTE_TURBOMAX_detach,
+        .pOpts              = NULL
+    },
+#endif
 };
 
 static const FTE_UINT32 _nObjDescs  = sizeof(_pObjDescs) / sizeof(FTE_OBJECT_DESC); 

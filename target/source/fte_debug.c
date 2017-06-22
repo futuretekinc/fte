@@ -180,6 +180,7 @@ static FTE_DEBUG_MODULE_TYPE_NAME  _pModuleTypeName[] =
     {   .pName = "snmp",    .ulType = DEBUG_NET_SNMP},
     {   .pName = "ssl",     .ulType = DEBUG_NET_SSL },
     {   .pName = "di",      .ulType = DEBUG_DI },
+    {   .pName = "mbtcp",   .ulType = DEBUG_NET_MBTCP},
     {   .pName = "all",     .ulType = DEBUG_ALL},
     {   .pName = NULL,      .ulType = 0}
 };

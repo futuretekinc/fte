@@ -185,7 +185,7 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state>FTE_EH3=1</state>
+          <state>FTE_ES7=1</state>
           <state>FTE_V2=1</state>
           <state>FTE_DEBUG=1</state>
           <state>FREESCALE_MQX</state>
@@ -2094,6 +2094,9 @@
         <name>$PROJ_DIR$\include\net\fte_json.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\include\net\fte_mbtcp.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\include\net\fte_mqtt.h</name>
       </file>
       <file>
@@ -2215,6 +2218,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_es22.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\target\fte_es23.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_es4.h</name>
@@ -2694,7 +2700,10 @@
       <group>
         <name>mbtcp</name>
         <file>
-          <name>$PROJ_DIR$\source\net\mbtcp\fte_mbtcp.c</name>
+          <name>$PROJ_DIR$\source\net\mbtcp\fte_mbtcp_master.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\source\net\mbtcp\fte_mbtcp_slave.c</name>
         </file>
       </group>
       <group>
@@ -2816,6 +2825,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\source\obj\fte_trueyes.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\obj\fte_turbomax.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\source\fte_value.c</name>

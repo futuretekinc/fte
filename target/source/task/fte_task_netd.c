@@ -58,6 +58,9 @@ void FTE_TASK_net
 #if FTE_MBTCP_SUPPORTED
     printf("Starting MB/TCP ... [%s]\n", (FTE_MBTCP_SLAVE_init(&pCfgNet->xMBTCP) == FTE_RET_OK)?"OK":"FAILED");
 #endif
+#if FTE_MBTCP_MASTER_SUPPORTED
+    printf("Starting MB/TCP Master... [%s]\n", (FTE_MBTCP_MASTER_init(pCfgNet->xMBTCPMasters, 2) == FTE_RET_OK)?"OK":"FAILED");
+#endif
     // tcp/ip initialization waiting
     _time_delay(FTE_NET_INIT_WAITING_TIME);
 

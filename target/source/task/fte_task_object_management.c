@@ -19,7 +19,6 @@ void FTE_TASK_objectManagement
     FTE_UINT32  params
 )
 {
-    FTE_RET             xRet;
     MQX_TICK_STRUCT     xTicks;            
     MQX_TICK_STRUCT     xNextTicks;            
     FTE_BOOL            bOverflow;
@@ -27,6 +26,7 @@ void FTE_TASK_objectManagement
     FTE_TASK_ID         xTaskID = _task_get_id();
         
 #if FTE_1WIRE_SUPPORTED
+    FTE_RET             xRet;
     FTE_UINT32 ulNewObject;
    
     xRet = FTE_OBJ_1WIRE_discovery(TRUE, &ulNewObject);

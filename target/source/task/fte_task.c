@@ -228,6 +228,18 @@ TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
     },
 #endif
+#if FTE_TURBOMAX_SUPPORTED
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_TURBOMAX,      /* Task Index */
+        .TASK_ADDRESS           =   FTE_TURBOMAX_task,      /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_TURBOMAX_STACK,/* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_TURBOMAX_PRIO, /* Priority */
+        .TASK_NAME              =   "TurboMax",               /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   0,                      /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+#endif
 #if 0
     { 
         .TASK_TEMPLATE_INDEX    =   FTE_TASK_MBTCP_MAIN,    /* Task Index */

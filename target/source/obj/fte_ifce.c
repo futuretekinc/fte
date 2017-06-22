@@ -86,6 +86,14 @@ FTE_RET   FTE_IFCE_attach
         pStatus->xCommon.pValue = FTE_VALUE_createHex32();
         break;
         
+    case    FTE_OBJ_CLASS_POWER:
+        pStatus->xCommon.pValue = FTE_VALUE_createPowerKW();
+        break;
+        
+    case    FTE_OBJ_CLASS_PRESSURE:
+        pStatus->xCommon.pValue = FTE_VALUE_createPressure();
+        break;
+        
     default:
         pStatus->xCommon.pValue = FTE_VALUE_createULONG();
     }

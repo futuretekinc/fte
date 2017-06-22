@@ -17,6 +17,7 @@
 #include "fte_cias.h"
 #include "fte_lora.h"
 #include "fte_dotech.h"
+#include "fte_turbomax.h"
 #include "fte_lorawan.h"
 #include "fte_mbtcp.h"
 
@@ -86,7 +87,10 @@ SHELL_COMMAND_STRUCT pSHELLCommands[] =
     {"mcp23s08",    FTE_MCP23S08_SHELL_cmd},
 #endif
 #if FTE_MBTCP_SUPPORTED
-    { "mbtcp",      FTE_MBTCP_SLAVE_SHELL_cmd},
+    { "mbtcps",      FTE_MBTCP_SLAVE_SHELL_cmd},
+#endif
+#if FTE_MBTCP_MASTER_SUPPORTED
+    { "mbtcpm",      FTE_MBTCP_MASTER_SHELL_cmd},
 #endif
     { "mem",        FTE_MEM_SHELL_cmd},
 #if FTE_MQTT_SUPPORTED
@@ -122,6 +126,9 @@ SHELL_COMMAND_STRUCT pSHELLCommands[] =
     { "shutdown",   FTE_SYS_SHUTDOWN_SHELL_cmd},
     { "sys",        FTE_SYS_SHELL_cmd},
     { "task",       FTE_TASK_SHELL_cmd},
+#if FTE_TURBOMAX_SUPPORTED
+    { "turbomax",      FTE_TURBOMAX_SHELL_cmd},
+#endif
 #if FTE_DEBUG
     { "trace",      FTE_TRACE_SHELL_cmd},
 #endif
