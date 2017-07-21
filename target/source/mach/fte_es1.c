@@ -46,7 +46,7 @@ const FTE_DO_CONFIG fte_init_mcp23s08_do1_config =
 
 
 
-
+#if ! FTE_DYNAMIC_OBJECT_SUPPORTED
 const FTE_OBJECT_CONFIG_PTR pInitObjConfigs[] =
 {
 #if FTE_GPIO_DI_SUPPORTED
@@ -103,7 +103,7 @@ const FTE_OBJECT_CONFIG_PTR pInitObjConfigs[] =
 //    (FTE_OBJECT_CONFIG_PTR)&FTE_CIAS_SIOUX_CU_defaultConfig,
 #endif
 #if FTE_IOEX_SUPPORTED
-//    (FTE_OBJECT_CONFIG_PTR)&FTE_IOEX_defaultConfig,
+    (FTE_OBJECT_CONFIG_PTR)&FTE_IOEX_defaultConfig,
 #endif
 #if FTE_DOTECH_SUPPORTED
 //    (FTE_OBJECT_CONFIG_PTR)&FTE_DOTECH_FX3D_defaultConfig,
@@ -112,6 +112,7 @@ const FTE_OBJECT_CONFIG_PTR pInitObjConfigs[] =
 //    (FTE_OBJECT_CONFIG_PTR)&FTE_TURBOMAX_MAX20_defaultConfig,
 #endif
 };
+#endif
 
 #if FTE_GPIO_DI_SUPPORTED
 static const FTE_EVENT_CONFIG fte_report_di_config = 
@@ -692,7 +693,7 @@ static const FTE_EVENT_CONFIG fte_changed_led8_config =
 };
 #endif
 
-#if FTE_CIAS_SIOUX_CU_SUPPORTED
+#if 1
 static const FTE_EVENT_CONFIG fte_changed_di0_config = 
 {
     .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_MULTI_DI, 0x0b01),
@@ -1036,7 +1037,7 @@ const FTE_CFG_EVENT_PTR pInitEventConfigs[] =
     (FTE_CFG_EVENT_PTR)&fte_changed_led7_config,
     (FTE_CFG_EVENT_PTR)&fte_changed_led8_config,
 #endif
-#if FTE_CIAS_SIOUX_CU_SUPPORTED
+#if 1//FTE_CIAS_SIOUX_CU_SUPPORTED
     (FTE_CFG_EVENT_PTR)&fte_changed_di0_config,
     (FTE_CFG_EVENT_PTR)&fte_changed_di1_config,
     (FTE_CFG_EVENT_PTR)&fte_changed_di2_config,

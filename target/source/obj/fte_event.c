@@ -606,7 +606,7 @@ FTE_INT32 FTE_EVENT_shell_cmd
                         break;
                     }
                     
-                    if (FTE_EVENT_getAt(ulIndex - 1, &pEvent) == FTE_RET_OK)                        
+                    if (FTE_EVENT_getAt(ulIndex - 1, &pEvent) != FTE_RET_OK)                        
                     {
                         printf("Error : Invalid index[%lu]\n", ulIndex);
                         break;
@@ -686,7 +686,7 @@ FTE_INT32 FTE_EVENT_shell_cmd
                         break;
                     }
                     
-                    if (FTE_EVENT_getAt(ulIndex - 1, &pEvent) == FTE_RET_OK)                        
+                    if (FTE_EVENT_getAt(ulIndex - 1, &pEvent) != FTE_RET_OK)                        
                     {
                         printf("Error : Invalid index[%lu]\n", ulIndex);
                         break;
@@ -797,7 +797,8 @@ FTE_INT32 FTE_EVENT_shell_cmd
                         break;
                     }
                     
-                    if (strcmp(pArgv[3], "interval") == 0)
+                    if 
+                        (strcmp(pArgv[3], "interval") == 0)
                     {
                         if (FTE_strToUINT32(pArgv[4], &ulInterval) != FTE_RET_OK)
                         {

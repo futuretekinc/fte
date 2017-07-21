@@ -211,12 +211,14 @@ static FTE_TRAP_MSG_PTR pCurrentTrapMsg = NULL;
 
 void FTE_SNMPD_TRAP_processing(void)
 {
+    uint32_t    loop_count = 10;
+    
     if (IPCFG_STATE_UNBOUND == ipcfg_get_state(BSP_DEFAULT_ENET_DEVICE))
     {
         return;
     }
     
-    if (FTE_LIST_count(&_trapList) != 0)
+    for(; (FTE_LIST_count(&_trapList) != 0) && (loop_count > 0) ; loop_count--)
     {
         if (FTE_LIST_popFront(&_trapList, (FTE_VOID_PTR _PTR_)&pCurrentTrapMsg) != FTE_RET_OK)
         {
@@ -305,7 +307,7 @@ void FTE_SNMPD_TRAP_processing(void)
         FTE_MEM_free(pCurrentTrapMsg);
         pCurrentTrapMsg = NULL;
         
-        _time_delay(100);
+        _time_delay(10);
     }
 }
 
@@ -325,6 +327,8 @@ FTE_RET   FTE_SNMPD_TRAP_sendAlert
         {
             return  FTE_RET_ERROR;
         }
+        
+        TRACE("Too many trap : %08x\n", pTempTrapMsg->xParams.xAlert.nOID);
         
         if (pTempTrapMsg->pBuff != NULL)
         {
@@ -1794,6 +1798,104 @@ FTE_UINT32 MIB_set_dustUpdateInterval(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, F
 {
     return  MIB_set_objUpdateInterval(pParam, pVar, ulVarLen);
 }
+/******************************************************************************
+ * AI
+ ******************************************************************************/
+FTE_UINT32 MIB_get_aiCount(FTE_VOID_PTR dummy)
+{ 
+    return  FTE_OBJ_count(FTE_OBJ_TYPE_AI, FTE_OBJ_CLASS_MASK, FALSE);
+} 
+
+FTE_UINT32 MIB_set_aiIndex (FTE_VOID_PTR dummy, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen) {return SNMP_ERROR_inconsistentValue;}
+
+FTE_BOOL MIB_find_aiEntry
+(
+    FTE_UINT32        op,
+    FTE_VOID_PTR        index,
+    FTE_VOID_PTR _PTR_  instance
+)
+{ /* Body */
+   FTE_UINT32           nIndex = *(FTE_UINT32_PTR)index;
+   FTE_VOID_PTR           pObj;
+
+   if ((op == RTCSMIB_OP_GETNEXT) && (nIndex == 0)) 
+   {
+      nIndex = 1;
+   } /* Endif */
+
+   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_AI, nIndex);
+   if (!pObj) 
+   {
+      return FALSE;
+   } /* Endif */
+   *(FTE_UINT32_PTR)index = nIndex;
+   *instance = pObj;
+   return TRUE;
+
+} /* Endbody */
+
+const char *MIB_get_aiInitState(FTE_VOID_PTR pParam)
+{
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)pParam;
+    FTE_VALUE       xValue;
+    assert(pObj != NULL);
+
+    FTE_VALUE_copy(&xValue, pObj->pStatus->pValue);
+    FTE_DO_getInitState(pObj, &xValue.xData.ulValue);    
+    FTE_VALUE_toString(pObj->pStatus->pValue, _buff, sizeof(_buff));
+
+    return _buff;
+}
+
+FTE_UINT32 MIB_set_aiInitState(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
+{
+    FTE_OBJECT_PTR  pObj = (FTE_OBJECT_PTR)pParam;
+    assert(pObj != NULL);
+        
+    if (ulVarLen >= sizeof(_buff))
+    {
+        return  SNMP_ERROR_wrongValue;
+    }
+        
+    strncpy(_buff, (FTE_CHAR_PTR)pVar, ulVarLen);
+    _buff[ulVarLen] = '\0';
+    
+    if ((strcasecmp((FTE_CHAR_PTR)_buff, "on") == 0) || (strcmp((FTE_CHAR_PTR)_buff, "1") == 0))
+    {
+        //fte_ai_set_init_state(pObj, TRUE);        
+    }
+    else if ((strcasecmp((FTE_CHAR_PTR)_buff, "off") == 0) || (strcmp((FTE_CHAR_PTR)_buff, "0") == 0))
+    {
+        //fte_ai_set_init_state(pObj, FALSE);        
+    }
+    else
+    {
+        return SNMP_ERROR_wrongValue;
+    }
+
+    return SNMP_ERROR_noError;    
+}
+
+FTE_UINT32 MIB_set_aiName(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
+{
+    return  MIB_set_objName(pParam, pVar, ulVarLen);
+}
+
+FTE_UINT32 MIB_set_aiState(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
+{
+    return  MIB_set_objState(pParam, pVar, ulVarLen);
+}
+
+FTE_UINT32 MIB_set_aiValue(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
+{
+    return  MIB_set_objValue(pParam, pVar, ulVarLen);
+}
+
+FTE_UINT32 MIB_set_aiInitValue(FTE_VOID_PTR pParam, FTE_UINT8_PTR pVar, FTE_UINT32 ulVarLen)
+{
+    return  MIB_set_objInitValue(pParam, pVar, ulVarLen);
+}
+
 
 /******************************************************************************
  * Count
@@ -1820,7 +1922,7 @@ FTE_BOOL MIB_find_cntEntry
       nIndex = 1;
    } /* Endif */
 
-   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_COUNT, nIndex);
+   pObj = FTE_SNMPD_getObject(FTE_OBJ_TYPE_AI, nIndex);
    if (!pObj) 
    {
       return FALSE;
@@ -3806,6 +3908,87 @@ const RTCSMIB_VALUE MIBVALUE_dustTotalFailed =
 	RTCSMIB_NODETYPE_UINT_FN,
 	(void _PTR_)MIB_get_objTotalFailed
 };
+
+/******************************************************************************
+ *
+ ******************************************************************************/
+const RTCSMIB_VALUE MIBVALUE_aiCount= 
+{
+	RTCSMIB_NODETYPE_UINT_FN,
+	(void _PTR_)MIB_get_aiCount
+};
+
+const RTCSMIB_VALUE MIBVALUE_aiTable = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_aiEntry = 
+{
+	RTCSMIB_NODETYPE_INT_CONST,
+	NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_aiIndex = 
+{
+    RTCSMIB_NODETYPE_INT_CONST,
+    NULL
+};
+
+const RTCSMIB_VALUE MIBVALUE_aiID = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objID
+};
+
+const RTCSMIB_VALUE MIBVALUE_aiType = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objType
+};
+
+const RTCSMIB_VALUE MIBVALUE_aiName = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objName
+};
+
+const RTCSMIB_VALUE MIBVALUE_aiSN = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objSN
+};
+
+const RTCSMIB_VALUE MIBVALUE_aiState = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objState
+};
+
+const RTCSMIB_VALUE MIBVALUE_aiValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_aiLastValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastValue
+};
+
+const RTCSMIB_VALUE MIBVALUE_aiLastTime = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objLastTime
+};
+
+const RTCSMIB_VALUE MIBVALUE_aiInitValue = 
+{
+    RTCSMIB_NODETYPE_DISPSTR_FN,
+    (void _PTR_)MIB_get_objInitValue
+}; 
 
 /******************************************************************************
  *

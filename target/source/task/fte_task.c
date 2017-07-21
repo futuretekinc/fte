@@ -240,7 +240,49 @@ TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
     },
 #endif
-#if 0
+#if FTE_FUTURETEK_SUPPORTED
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_FUTURETEK,      /* Task Index */
+        .TASK_ADDRESS           =   FTE_FUTURETEK_task,      /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_FUTURETEK_STACK,/* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_FUTURETEK_PRIO, /* Priority */
+        .TASK_NAME              =   "Futuretek",               /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   0,                      /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_FUTURETEK_MS10,      /* Task Index */
+        .TASK_ADDRESS           =   FTE_FUTURETEK_MS10_task,      /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_FUTURETEK_STACK,/* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_FUTURETEK_PRIO, /* Priority */
+        .TASK_NAME              =   "Futuretek",               /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   0,                      /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_FUTURETEK_KM21B20,      /* Task Index */
+        .TASK_ADDRESS           =   FTE_FUTURETEK_KM21B20_task,      /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_FUTURETEK_STACK,/* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_FUTURETEK_PRIO, /* Priority */
+        .TASK_NAME              =   "Futuretek",               /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   0,                      /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+    { 
+        .TASK_TEMPLATE_INDEX    =   FTE_TASK_FUTURETEK_JCG06,      /* Task Index */
+        .TASK_ADDRESS           =   FTE_FUTURETEK_JCG06_task,      /* Function */
+        .TASK_STACKSIZE         =   FTE_TASK_FUTURETEK_JCG06_STACK,/* Stack */
+        .TASK_PRIORITY          =   FTE_TASK_FUTURETEK_JCG06_PRIO, /* Priority */
+        .TASK_NAME              =   "Futuretek_jcg06",               /* Name */
+        .TASK_ATTRIBUTES        =   0,                      /* Attributes */
+        .CREATION_PARAMETER     =   0,                      /* Param */
+        .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
+    },
+#endif
+#if FTE_MBTCP_SUPPORTED
     { 
         .TASK_TEMPLATE_INDEX    =   FTE_TASK_MBTCP_MAIN,    /* Task Index */
         .TASK_ADDRESS           =   FTE_MBTCP_mainTask,     /* Function */
@@ -252,6 +294,7 @@ TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
     },
 #endif
+#if FTE_MBTCP_SUPPORTED
     { 
         .TASK_TEMPLATE_INDEX    =   FTE_TASK_MBTCP_SESSION,        /* Task Index */
         .TASK_ADDRESS           =   FTE_MBTCP_sessionTask,        /* Function */
@@ -262,6 +305,7 @@ TASK_TEMPLATE_STRUCT  MQX_template_list[] =
         .CREATION_PARAMETER     =   0,                      /* Param */
         .DEFAULT_TIME_SLICE     =   0                       /* Time Slice */
     },
+#endif
     { 0 }
 };
 

@@ -4,7 +4,25 @@
 #include "fte_time.h"
 #if FTE_SHT_SUPPORTED
 
-static  
+#define POLYNOMIAL 0x131 
+void        FTE_SHT_SCK_inMode(FTE_OBJECT_PTR  pObj);
+void        FTE_SHT_SCK_setHi(FTE_OBJECT_PTR  pObj);
+void        FTE_SHT_SCK_setlog(FTE_OBJECT_PTR  pObj);
+void        FTE_SHT_SDA_inMode(FTE_OBJECT_PTR  pObj);
+void        FTE_SHT_SDA_setHi(FTE_OBJECT_PTR  pObj);
+void        FTE_SHT_SDA_setLo(FTE_OBJECT_PTR  pObj);
+
+FTE_RET FTE_SHT_reset(FTE_OBJECT_PTR  pObj);
+FTE_RET FTE_SHT_break(FTE_OBJECT_PTR  pObj);
+FTE_RET FTE_SHT_setSingleShotDataAcquisitionMode(FTE_OBJECT_PTR  pObj, FTE_INT32_PTR pHumidity, FTE_INT32_PTR pTemperature, FTE_UINT32 nTimeout);
+FTE_RET FTE_SHT_setPeriodicDataAcquisitionMode(FTE_OBJECT_PTR  pObj);
+FTE_RET FTE_SHT_read(FTE_OBJECT_PTR  pObj, FTE_UINT8 nAddr, FTE_UINT8_PTR   pBuff, FTE_UINT32      nData);
+FTE_RET FTE_SHT_writeByte(FTE_OBJECT_PTR  pObj, FTE_UINT8 nData);
+FTE_RET FTE_SHT_write(FTE_OBJECT_PTR  pObj, FTE_UINT8 nAddr, FTE_UINT8_PTR   pData,     FTE_UINT32      nData, FTE_BOOL        bFinish);
+FTE_RET FTE_SHT_startCondition(FTE_OBJECT_PTR   pObj);
+FTE_RET FTE_SHT_stopCondition(FTE_OBJECT_PTR   pObj);
+FTE_UINT8   FTE_SHT_calcCRC(FTE_UINT8_PTR  pData, FTE_UINT32 nLen);
+
 FTE_RET FTE_SHT_init
 (
     FTE_OBJECT_PTR  pObj
@@ -22,50 +40,18 @@ FTE_RET FTE_SHT_stop
     FTE_OBJECT_PTR  pObj
 );
 
-static  
-void    FTE_SHT_done
+static 
+void FTE_SHT_restartConvert
 (
     FTE_TIMER_ID    xTimerID, 
     FTE_VOID_PTR    pData, 
     MQX_TICK_STRUCT_PTR pTick
-);
-
-static  
-FTE_RET FTE_SHT_connectionReset
-(
-    FTE_OBJECT_PTR  pObj
-);
-
-static  
-FTE_RET FTE_SHT_startTransmission
-(
-    FTE_OBJECT_PTR  pObj
 );
 
 static 
 FTE_RET  FTE_SHT_startConvert
 (
     FTE_OBJECT_PTR  pObj
-);
-
-static  
-void    FTE_SHT_restartConvert
-(
-    FTE_TIMER_ID    xTimerID, 
-    FTE_VOID_PTR    pData, 
-    MQX_TICK_STRUCT_PTR pTick
-);
-
-static FTE_RET  FTE_SHT_getHumidity
-(
-    FTE_OBJECT_PTR  pObj, 
-    FTE_UINT32_PTR  pHumidity
-);
-
-static FTE_RET  FTE_SHT_getTemperature
-(
-    FTE_OBJECT_PTR  pObj, 
-    FTE_INT32_PTR   pTemperature
 );
 
 static 
@@ -189,11 +175,14 @@ FTE_OBJECT_ACTION _Action =
     .fGetChildCount = FTE_SHT_getChildCount,
     .fGetChild      = FTE_SHT_getChild,
     .fAttachChild   = FTE_SHT_attachChild,
-    .fDetachChild   = FTE_SHT_detachChild,
+    .fDetachChild   = FTE_SHT_detachChild
 };
 
 static 
 FTE_LIST _xObjList = {0, NULL, NULL};
+static
+FTE_BOOL    bTrace = 0;
+FTE_CHAR    pTraceBuff[128];
 
 FTE_RET   FTE_SHT_attach
 (
@@ -241,7 +230,7 @@ FTE_RET   FTE_SHT_attach
     FTE_LWGPIO_setValue(pLWGPIO_SCL, FALSE);
 
     FTE_LWGPIO_setDirection(pLWGPIO_SDA, LWGPIO_DIR_INPUT);
-    FTE_LWGPIO_setDirection(pLWGPIO_SCL, LWGPIO_DIR_OUTPUT);
+    FTE_LWGPIO_setDirection(pLWGPIO_SCL, LWGPIO_DIR_INPUT);
    
     pStatus->pLWGPIO_SDA = pLWGPIO_SDA;
     pStatus->pLWGPIO_SCL = pLWGPIO_SCL;
@@ -298,9 +287,10 @@ FTE_RET   FTE_SHT_init
 )
 {
     ASSERT(pObj != NULL);
-  
-    FTE_SHT_connectionReset(pObj);
-    
+
+    FTE_SHT_reset(pObj);
+    FTE_SHT_break(pObj);
+
     return  FTE_RET_OK;
 }
 
@@ -338,12 +328,8 @@ FTE_RET   FTE_SHT_run
     
     pStatus->hRepeatTimer = _timer_start_periodic_at_ticks(FTE_SHT_restartConvert, pObj, TIMER_ELAPSED_TIME_MODE, &xTicks, &xDTicks);
     
-    pStatus->bHumidity = TRUE;
     FTE_SHT_startConvert(pObj);
     
-    _time_init_ticks(&xDTicks, _time_get_ticks_per_sec());
-    pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(FTE_SHT_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
-
     return  FTE_RET_OK;
 } 
 
@@ -359,85 +345,6 @@ FTE_RET   FTE_SHT_stop
 }
 
 static 
-void FTE_SHT_done
-(
-    FTE_TIMER_ID    xTimerID, 
-    FTE_VOID_PTR    pData, 
-    MQX_TICK_STRUCT_PTR pTick
-)
-{
-    FTE_RET             xRet;
-    FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)pData;
-    FTE_SHT_STATUS_PTR  pStatus = (FTE_SHT_STATUS_PTR)pObj->pStatus;
-    FTE_INT32           nChildIndex = -1; 
-    
-    if (FTE_FLAG_IS_SET(pStatus->xCommon.xFlags, FTE_SHT_FLAG_CONVERT_HUMIDITY))
-    {
-        FTE_UINT32             nHumidity;
-        
-        nChildIndex = FTE_SHT_FIELD_HUMI;
-        if (FTE_SHT_getHumidity(pObj, &nHumidity) == FTE_RET_OK)
-        {
-            FTE_VALUE_setHumidity(&pStatus->xCommon.pValue[FTE_SHT_FIELD_HUMI], nHumidity);
-            FT_OBJ_STAT_incSucceed(&pStatus->xCommon.xStatistics);
-        }
-        else
-        {
-            FTE_VALUE_setValid(&pStatus->xCommon.pValue[FTE_SHT_FIELD_HUMI], FALSE);
-            FT_OBJ_STAT_incFailed(&pStatus->xCommon.xStatistics);
-        }
-        
-        pStatus->bHumidity = FALSE;
-        pStatus->xCommon.xFlags = FTE_FLAG_CLR(pStatus->xCommon.xFlags, FTE_SHT_FLAG_CONVERT_HUMIDITY);
-    }
-    else
-    {
-        FTE_INT32             nTemperature;
-        
-        nChildIndex = FTE_SHT_FIELD_TEMP;
-        
-        if (FTE_SHT_getTemperature(pObj, &nTemperature) == FTE_RET_OK)
-        {
-            FTE_VALUE_setTemperature(&pStatus->xCommon.pValue[FTE_SHT_FIELD_TEMP], nTemperature);
-            FT_OBJ_STAT_incSucceed(&pStatus->xCommon.xStatistics);
-        }
-        else
-        {
-            FTE_VALUE_setValid(&pStatus->xCommon.pValue[FTE_SHT_FIELD_TEMP], FALSE);
-            FT_OBJ_STAT_incFailed(&pStatus->xCommon.xStatistics);
-        }
-
-        pStatus->bHumidity = TRUE;
-        pStatus->xCommon.xFlags = FTE_FLAG_CLR(pStatus->xCommon.xFlags, FTE_SHT_FLAG_CONVERT_TEMPERATURE);
-    }
-
-    if (nChildIndex >= 0)
-    {
-        FTE_OBJECT_PTR      pChild = NULL;
-        
-        xRet = FTE_OBJ_getChild(pObj, nChildIndex, &pChild);
-        if (xRet == FTE_RET_OK)
-        {
-            FTE_VALUE   xValue;
-            
-            FTE_VALUE_copy(&xValue, pChild->pStatus->pValue);
-
-            FTE_VALUE_copy(pChild->pStatus->pValue, &pStatus->xCommon.pValue[nChildIndex]);
-            
-            if (!FTE_VALUE_equal(&xValue, pChild->pStatus->pValue))
-            {
-                FTE_OBJ_wasChanged(pChild);
-            }
-            else
-            {
-                FTE_OBJ_wasUpdated(pChild);
-            }
-        }
-    }
-}
-
-
-static 
 void FTE_SHT_restartConvert
 (
     FTE_TIMER_ID    xTimerID, 
@@ -446,7 +353,6 @@ void FTE_SHT_restartConvert
 )
 {
     FTE_OBJECT_PTR      pObj = (FTE_OBJECT_PTR)pData;
-    MQX_TICK_STRUCT     xDTicks;            
     FTE_SHT_STATUS_PTR  pStatus = (FTE_SHT_STATUS_PTR)pObj->pStatus;
 
     _time_get_elapsed_ticks(&pStatus->xCommon.xStartTicks);
@@ -454,17 +360,14 @@ void FTE_SHT_restartConvert
     if (FTE_OBJ_IS_ENABLED(pObj))
     {
         FTE_SHT_startConvert(pObj);
-        
-        _time_init_ticks(&xDTicks, _time_get_ticks_per_sec());
-        pStatus->hConvertTimer = _timer_start_oneshot_after_ticks(FTE_SHT_done, pObj, TIMER_ELAPSED_TIME_MODE, &xDTicks);
     }
     else
     {
-        FTE_SHT_STATUS_PTR  pStatus = (FTE_SHT_STATUS_PTR)pObj->pStatus;
         _timer_cancel(pStatus->hRepeatTimer);
         pStatus->hRepeatTimer = 0;
     }
 }  
+
 
 
 FTE_RET FTE_SHT_create
@@ -526,7 +429,17 @@ void    FTE_SHT_delay
     FTE_UINT32  nDelay
 )
 {
-    _time_delay(0);
+    for(int i = 0 ; i < 1000 ; i++);
+    //_time_delay(1);
+}
+
+void    FTE_SHT_SCK_inMode
+(
+    FTE_OBJECT_PTR  pObj
+)
+{
+    FTE_LWGPIO_setDirection(((FTE_SHT_STATUS_PTR)pObj->pStatus)->pLWGPIO_SCL, LWGPIO_DIR_INPUT);
+    FTE_SHT_delay(1);
 }
 
 void    FTE_SHT_SCK_setHi
@@ -534,7 +447,7 @@ void    FTE_SHT_SCK_setHi
     FTE_OBJECT_PTR  pObj
 )
 {
-    FTE_LWGPIO_setValue(((FTE_SHT_STATUS_PTR)pObj->pStatus)->pLWGPIO_SCL, TRUE);
+    FTE_LWGPIO_setDirection(((FTE_SHT_STATUS_PTR)pObj->pStatus)->pLWGPIO_SCL, LWGPIO_DIR_INPUT);
     FTE_SHT_delay(1);
 }
 
@@ -543,11 +456,11 @@ void    FTE_SHT_SCK_setLo
     FTE_OBJECT_PTR  pObj
 )
 {
-    FTE_LWGPIO_setValue(((FTE_SHT_STATUS_PTR)pObj->pStatus)->pLWGPIO_SCL, FALSE);
+    FTE_LWGPIO_setDirection(((FTE_SHT_STATUS_PTR)pObj->pStatus)->pLWGPIO_SCL, LWGPIO_DIR_OUTPUT);
     FTE_SHT_delay(1);
 }
 
-void    FTE_SHT_DATA_inMode
+void    FTE_SHT_SDA_inMode
 (
     FTE_OBJECT_PTR  pObj
 )
@@ -556,16 +469,7 @@ void    FTE_SHT_DATA_inMode
     FTE_SHT_delay(1);
 }
 
-void    FTE_SHT_DATA_outMode
-(
-    FTE_OBJECT_PTR  pObj
-)
-{
-    //FTE_LWGPIO_setDirection(((FTE_SHT_STATUS_PTR)pObj->pStatus)->pLWGPIO_SDA, LWGPIO_DIR_OUTPUT);
-    FTE_SHT_delay(1);
-}
-
-void    FTE_SHT_DATA_setHi
+void    FTE_SHT_SDA_setHi
 (
     FTE_OBJECT_PTR  pObj
 )
@@ -574,7 +478,7 @@ void    FTE_SHT_DATA_setHi
     FTE_SHT_delay(1);
 }
 
-void    FTE_SHT_DATA_setLo
+void    FTE_SHT_SDA_setLo
 (
     FTE_OBJECT_PTR  pObj
 )
@@ -583,7 +487,7 @@ void    FTE_SHT_DATA_setLo
     FTE_SHT_delay(1);
 }
 
-FTE_BOOL FTE_SHT_DATA_get
+FTE_BOOL FTE_SHT_SDA_get
 (
     FTE_OBJECT_PTR  pObj
 )
@@ -595,135 +499,169 @@ FTE_BOOL FTE_SHT_DATA_get
     return  bValue;
 }
 
-FTE_RET   FTE_SHT_connectionReset(FTE_OBJECT_PTR pObj)
+FTE_RET FTE_SHT_startCondition
+(
+    FTE_OBJECT_PTR   pObj
+)
 {
-    for(FTE_INT32 i = 0 ; i < 9 ; i++)
+    FTE_SHT_SDA_inMode(pObj);
+    FTE_SHT_SCK_inMode(pObj);
+    FTE_SHT_SDA_setLo(pObj);
+    FTE_SHT_SCK_setLo(pObj);
+    
+    return  FTE_RET_OK;
+}
+
+FTE_RET FTE_SHT_stopCondition
+(
+    FTE_OBJECT_PTR   pObj
+)
+{
+    FTE_SHT_SCK_setLo(pObj);
+    FTE_SHT_SDA_setLo(pObj);
+    FTE_SHT_SCK_inMode(pObj);
+    FTE_SHT_SDA_inMode(pObj);
+   
+    return  FTE_RET_OK;
+}
+
+FTE_RET FTE_SHT_writeByte
+(
+    FTE_OBJECT_PTR  pObj,
+    FTE_UINT8       nData
+)
+{
+    for(FTE_INT32 j = 0 ; j < 8 ; j++)
     {
+        if ((nData >> (7-j)) & 0x01)
+        {
+            FTE_SHT_SDA_setHi(pObj);
+        }
+        else
+        {
+            FTE_SHT_SDA_setLo(pObj);
+        }
         FTE_SHT_SCK_setHi(pObj);
         FTE_SHT_SCK_setLo(pObj);
     }
+
+    FTE_SHT_SDA_inMode(pObj);
     FTE_SHT_SCK_setHi(pObj);
-    FTE_SHT_DATA_setLo(pObj);
-    FTE_SHT_SCK_setLo(pObj);
-    FTE_SHT_SCK_setHi(pObj);
-    FTE_SHT_DATA_setHi(pObj);
+    FTE_BOOL    bNACK = FTE_SHT_SDA_get(pObj);
     FTE_SHT_SCK_setLo(pObj);
     
-    return  FTE_RET_OK;
-}
-
-
-FTE_RET   FTE_SHT_startTransmission(FTE_OBJECT_PTR pObj)
-{    
-    FTE_SHT_SCK_setHi(pObj);
-    FTE_SHT_DATA_setLo(pObj);
-    FTE_SHT_SCK_setLo(pObj);
-    FTE_SHT_SCK_setHi(pObj);
-    FTE_SHT_DATA_setHi(pObj);
-    FTE_SHT_SCK_setLo(pObj);
-    FTE_SHT_DATA_setLo(pObj);
-    
-    return  FTE_RET_OK;
-}
- 
-FTE_RET   _sht_write
-(
-    FTE_OBJECT_PTR  pObj, 
-    FTE_UINT8_PTR   pData, 
-    FTE_UINT32      nData
-)
-{
-    ASSERT(pObj != NULL);
-
-    for(FTE_INT32 i = 0 ; i < nData ; i++)
-    {
-        for(FTE_INT32 j = 0 ; j < 8 ; j++)
-        {
-            if ((pData[i] >> (7-j)) & 0x01)
-            {
-                FTE_SHT_DATA_setHi(pObj);
-            }
-            FTE_SHT_SCK_setHi(pObj);
-            FTE_SHT_SCK_setLo(pObj);
-            FTE_SHT_DATA_setLo(pObj);
-        }
-    }
-    
-    FTE_SHT_DATA_inMode(pObj);
-    FTE_SHT_SCK_setHi(pObj);
-    FTE_BOOL bACK = FTE_SHT_DATA_get(pObj);
-    FTE_SHT_SCK_setLo(pObj);
-       
-    if (!bACK)
-    {
-        return  FTE_RET_OK;
-    }
-    else
+    if (bNACK)
     {
         return  FTE_RET_ERROR;
     }
+    
+    return  FTE_RET_OK;
 }
 
-FTE_RET   _sht_read
+FTE_RET FTE_SHT_readByte
+(
+    FTE_OBJECT_PTR  pObj,
+    FTE_UINT8_PTR   pData,
+    FTE_BOOL        bAck
+)
+{
+    FTE_UINT8   nByte = 0;
+    
+    FTE_SHT_SDA_inMode(pObj);
+    for(FTE_INT32 j = 0 ; j < 8 ; j++)
+    {
+        FTE_SHT_SCK_setHi(pObj);
+        FTE_SHT_delay(1);
+        if (FTE_SHT_SDA_get(pObj) == TRUE)
+        {
+            nByte |= 1 << (7 - j);
+        }
+        FTE_SHT_SCK_setLo(pObj);
+    }
+        
+    *pData = nByte;
+    
+    if (bAck)
+    {
+        FTE_SHT_SDA_setLo(pObj);
+    }
+    else
+    {
+        FTE_SHT_SDA_setHi(pObj);
+    }
+    
+    FTE_SHT_SCK_setHi(pObj);
+    FTE_SHT_SCK_setLo(pObj);
+    FTE_SHT_SDA_inMode(pObj);
+    
+    return  FTE_RET_OK;
+}
+
+FTE_RET   FTE_SHT_write
 (
     FTE_OBJECT_PTR  pObj, 
+    FTE_UINT8       nAddr,
+    FTE_UINT8_PTR   pData, 
+    FTE_UINT32      nData,
+    FTE_BOOL        bFinish
+)
+{
+    ASSERT(pObj != NULL);
+    
+    FTE_SHT_startCondition(pObj);
+
+    nAddr = nAddr << 1;
+    
+    if (FTE_SHT_writeByte(pObj, nAddr) != FTE_RET_OK)
+    {
+        return  FTE_RET_ERROR;
+    }
+    
+    for(FTE_INT32 i = 0 ; i < nData ; i++)
+    {
+        if (FTE_SHT_writeByte(pObj, pData[i]) != FTE_RET_OK)
+        {        
+           return  FTE_RET_ERROR;
+        }
+    }
+   
+    if (bFinish)
+    {
+        FTE_SHT_startCondition(pObj);    
+    }
+      
+    return  FTE_RET_OK;
+}
+
+
+FTE_RET   FTE_SHT_read
+(
+    FTE_OBJECT_PTR  pObj, 
+    FTE_UINT8       nAddr,
     FTE_UINT8_PTR   pBuff, 
     FTE_UINT32      nData
 )
 {
     ASSERT(pObj != NULL);
 
+    FTE_SHT_startCondition(pObj);
+    
+    nAddr = (nAddr << 1) | 0x01;
+    
+    if (FTE_SHT_writeByte(pObj, nAddr) != FTE_RET_OK)
+    {
+        FTE_SHT_startCondition(pObj);    
+        return  FTE_RET_ERROR;
+    }
+    
     for(FTE_INT32 i = 0 ; i < nData ; i++)
     {
-        FTE_UINT8  nByte = 0;
-        
-        FTE_SHT_DATA_inMode(pObj);
-        for(FTE_INT32 j = 0 ; j < 8 ; j++)
-        {
-            FTE_SHT_SCK_setHi(pObj);
-            if (i < 2)
-            {
-                if (FTE_SHT_DATA_get(pObj) == TRUE)
-                {
-                    nByte |= 1 << (7 - j);
-                }
-            }
-            else
-            {
-                if (FTE_SHT_DATA_get(pObj) == TRUE)
-                {
-                    nByte |= 1 << j;
-                }
-            }
-            FTE_SHT_SCK_setLo(pObj);
-        }
-        
-        pBuff[i] = nByte;
-        
-        FTE_SHT_DATA_outMode(pObj);
-        FTE_SHT_DATA_setLo(pObj);
-        FTE_SHT_SCK_setHi(pObj);
-        FTE_SHT_SCK_setLo(pObj);
+        FTE_SHT_readByte(pObj, &pBuff[i], (i != nData -1));
     }
-            
+
+    FTE_SHT_stopCondition(pObj);    
+    
     return  FTE_RET_OK;
-}
-
-FTE_RET   _sht_send_cmd
-(
-    FTE_OBJECT_PTR  pObj, 
-    FTE_UINT32      nAddr, 
-    FTE_UINT32      nCmd
-)
-{
-    FTE_UINT8  pData[1];
-    ASSERT(pObj != NULL);
-
-    
-     pData[0] = ((nAddr & 0x07) << 5) | (nCmd & 0x1F);
-    FTE_SHT_startTransmission(pObj);
-    
-    return  _sht_write(pObj, pData, 1);
 }
 
 FTE_RET   FTE_SHT_startConvert
@@ -732,20 +670,63 @@ FTE_RET   FTE_SHT_startConvert
 )
 {
     ASSERT(pObj != NULL);
+    FTE_RET             xRet;
+    FTE_OBJECT_PTR      pChild = NULL;
     FTE_SHT_STATUS_PTR  pStatus = (FTE_SHT_STATUS_PTR)pObj->pStatus;
+    FTE_INT32           nHumidity = 0, nTemperature = 0;
     
-    FTE_SHT_connectionReset(pObj);
+    xRet = FTE_SHT_setSingleShotDataAcquisitionMode(pObj, &nHumidity, &nTemperature, 100);
+    if (xRet != FTE_RET_OK)
+    {
+        return  xRet;
+    }
+     
+    FTE_VALUE_setHumidity(&pStatus->xCommon.pValue[FTE_SHT_FIELD_HUMI], nHumidity);
+    FT_OBJ_STAT_incSucceed(&pStatus->xCommon.xStatistics);
+
+    xRet = FTE_OBJ_getChild(pObj, FTE_SHT_FIELD_HUMI, &pChild);
+    if (xRet == FTE_RET_OK)
+    {
+        FTE_VALUE   xValue;
+        
+        FTE_VALUE_copy(&xValue, pChild->pStatus->pValue);
+
+        FTE_VALUE_copy(pChild->pStatus->pValue, &pStatus->xCommon.pValue[FTE_SHT_FIELD_HUMI]);
+        
+        if (!FTE_VALUE_equal(&xValue, pChild->pStatus->pValue))
+        {
+            FTE_OBJ_wasChanged(pChild);
+        }
+        else
+        {
+            FTE_OBJ_wasUpdated(pChild);
+        }
+    }
+
     
-    if (pStatus->bHumidity)
+    FTE_VALUE_setTemperature(&pStatus->xCommon.pValue[FTE_SHT_FIELD_TEMP], nTemperature);
+    FT_OBJ_STAT_incSucceed(&pStatus->xCommon.xStatistics);
+
+    xRet = FTE_OBJ_getChild(pObj, FTE_SHT_FIELD_TEMP, &pChild);
+    if (xRet == FTE_RET_OK)
     {
-        pStatus->xCommon.xFlags = FTE_FLAG_SET(pStatus->xCommon.xFlags, FTE_SHT_FLAG_CONVERT_HUMIDITY);
-        return  _sht_send_cmd(pObj, 0, 5);
+        FTE_VALUE   xValue;
+        
+        FTE_VALUE_copy(&xValue, pChild->pStatus->pValue);
+
+        FTE_VALUE_copy(pChild->pStatus->pValue, &pStatus->xCommon.pValue[FTE_SHT_FIELD_TEMP]);
+        
+        if (!FTE_VALUE_equal(&xValue, pChild->pStatus->pValue))
+        {
+            FTE_OBJ_wasChanged(pChild);
+        }
+        else
+        {
+            FTE_OBJ_wasUpdated(pChild);
+        }
     }
-    else
-    {
-        pStatus->xCommon.xFlags = FTE_FLAG_SET(pStatus->xCommon.xFlags, FTE_SHT_FLAG_CONVERT_TEMPERATURE);
-        return  _sht_send_cmd(pObj, 0, 3);
-    }
+
+    return  FTE_RET_OK;
 }
 
 FTE_UINT8 FTE_SHT_crc8
@@ -755,6 +736,7 @@ FTE_UINT8 FTE_SHT_crc8
     FTE_UINT32      nLen
 )
 {
+#if 0
     for(FTE_UINT8 i = 0 ; i < nLen ; i++)
     {
         FTE_UINT8  ubData = pBuff[i];
@@ -773,72 +755,25 @@ FTE_UINT8 FTE_SHT_crc8
             ubData <<= 1;
         }
     }
+#else
+     for(FTE_UINT8 i = 0; i < nLen ; i++)
+     {
+         ubCRC ^= (pBuff[i]);
+        for(FTE_UINT8 j = 8; j > 0; --j)
+        {
+            if(ubCRC & 0x80)
+            {
+               ubCRC = (ubCRC << 1) ^ 0x131;
+            }
+            else
+            {
+                ubCRC = (ubCRC << 1);
+            }
+        }
+    }
     
+#endif
     return  ubCRC;
-}
-
-FTE_RET   FTE_SHT_getTemperature
-(
-    FTE_OBJECT_PTR  pObj, 
-    FTE_INT32_PTR   pTemperature
-)
-{
-    FTE_UINT8  pBuff[4];
-    FTE_INT32 nTemperature;
-    ASSERT(pObj != NULL);
-    
-    pBuff[0] = 0x03;
-    
-    if ((_sht_read(pObj, &pBuff[1], 3) == FTE_RET_OK) && (FTE_SHT_crc8(0x00, pBuff, 4) == 0))
-    {
-        nTemperature = (FTE_INT32)((-39.6 + 0.01*((((FTE_INT32)pBuff[1] << 8) | pBuff[2]) & 0x3FFFF)) * 100);
-        
-        if (-4000 <= nTemperature && nTemperature <= 12000)
-        {
-            *pTemperature = nTemperature;
-            return  FTE_RET_OK;
-        }
-    }
-    
-    return  FTE_RET_ERROR;
-}
-
-FTE_RET   FTE_SHT_getHumidity
-(
-    FTE_OBJECT_PTR  pObj, 
-    FTE_UINT32_PTR  pHumidity
-)
-{
-    FTE_UINT8  pBuff[4];
-    FTE_INT32  nHumidity;
-    FTE_UINT8  ubCRC = 0;
-    
-    ASSERT(pObj != NULL);
-    
-    pBuff[0] = 0x05;
-    
-    if ((_sht_read(pObj, &pBuff[1], 3) == FTE_RET_OK) && (FTE_SHT_crc8(ubCRC, pBuff, 4) == 0))
-    {
-        FTE_INT32  nValue = ((FTE_INT32)pBuff[1] << 8) | pBuff[2];        
-        nHumidity = (FTE_INT32)((-2.0468 + 0.0367*nValue + -0.0000015955*nValue*nValue) * 100);
-        
-        if (nHumidity <= 0)
-        {
-            *pHumidity = 0;
-        }
-        else if(nHumidity >= 10000)
-        {
-            *pHumidity = 10000;
-        }
-        else
-        {
-            *pHumidity = (FTE_UINT32)nHumidity;
-        }
-        
-        return  FTE_RET_OK;
-    }
-    
-    return  FTE_RET_ERROR;
 }
 
 FTE_UINT32      FTE_SHT_getUpdateInterval
@@ -1084,6 +1019,26 @@ FTE_INT32   FTE_SHT_SHELL_cmd
             }
             break;
 
+        case    3:
+            {
+                if (strcasecmp(pArgv[1], "trace") == 0)
+                {
+                    if (strcasecmp(pArgv[2], "on") == 0)
+                    {
+                        bTrace = 1;
+                    }
+                    else if (strcasecmp(pArgv[2], "off") == 0)
+                    {
+                        bTrace = 0;
+                    }
+                    else if (strcasecmp(pArgv[2], "print") == 0)
+                    {
+                        printf("%s", pTraceBuff);
+                    }
+                }
+            }
+            break;
+            
         case    4:
             {
                 if (FTE_strToHex(pArgv[1], &nID) != FTE_RET_OK)
@@ -1148,6 +1103,132 @@ error:
         }
     }
     return   return_code;
+}
+
+FTE_RET   FTE_SHT_reset
+(
+    FTE_OBJECT_PTR  pObj
+)
+{
+    FTE_RET     xRet;
+    FTE_UINT8   pData[2] = {0x30, 0xA2};
+    
+    xRet = FTE_SHT_write(pObj, 0x44, pData, sizeof(pData), 1);
+    if (xRet != FTE_RET_OK)
+    {
+        printf("Failed to break operation!\n");
+    }
+    else
+    {
+        _time_delay(20);
+    }
+    
+    return  xRet;
+}
+
+
+FTE_RET   FTE_SHT_break
+(
+    FTE_OBJECT_PTR  pObj
+)
+{
+    FTE_RET     xRet;
+    FTE_UINT8   pData[2] = {0x30, 0x93};
+    
+    xRet = FTE_SHT_write(pObj, 0x44, pData, sizeof(pData), 1);
+    if (xRet != FTE_RET_OK)
+    {
+        printf("Failed to break operation!\n");
+    }
+    else
+    {
+        _time_delay(20);
+    }
+    
+    return  xRet;
+}
+
+
+FTE_RET   FTE_SHT_setPeriodicDataAcquisitionMode
+(
+    FTE_OBJECT_PTR  pObj
+)
+{
+    FTE_RET     xRet;
+    FTE_UINT8   pData[2] = {0x21, 0x30};
+    
+    xRet = FTE_SHT_write(pObj, 0x44, pData, sizeof(pData), 1);
+    if (xRet != FTE_RET_OK)
+    {
+        printf("Faile to set periodic data acquisition mode!\n");
+    }
+    else
+    {
+        printf("Periodic data acquisition mode!\n");    
+    }
+    return  xRet;
+}
+
+FTE_RET   FTE_SHT_setSingleShotDataAcquisitionMode
+(
+    FTE_OBJECT_PTR  pObj,
+    FTE_INT32_PTR   pHumidity,
+    FTE_INT32_PTR   pTemperature,
+    FTE_UINT32      nTimeout
+)
+{
+    FTE_RET     xRet;
+    FTE_UINT8   pData[2] = {0x24, 0x00};
+    
+    xRet = FTE_SHT_write(pObj, 0x44, pData, sizeof(pData), 1);
+    if (xRet != FTE_RET_OK)
+    {
+        printf("Faile to set periodic data acquisition mode!\n");
+    }
+    else
+    {
+        FTE_RET xRet;
+        FTE_UINT8   pBuff[6];
+        FTE_TIME    xCurrentTime, xStartTime;
+        FTE_INT32   nDiffTime = 0;
+        
+        FTE_TIME_getCurrent(&xStartTime);
+
+        while(1)
+        {
+            xRet = FTE_SHT_read(pObj, 0x44, pBuff, sizeof(pBuff));
+            if (xRet == FTE_RET_OK)
+            {
+                if ((FTE_SHT_crc8(0xFF, &pBuff[0], 2) == pBuff[2]) && (FTE_SHT_crc8(0xFF, &pBuff[3], 2) == pBuff[5]))
+                {
+                    *pTemperature = ((FTE_INT32)pBuff[0] * 256 + pBuff[1]) * 175 * 100 / 65535 - 4500;
+                    *pHumidity = ((FTE_INT32)pBuff[3] * 256 + pBuff[4]) * 10000 / 65535;
+                    
+                    if (bTrace)
+                    {
+                        snprintf(pTraceBuff, sizeof(pTraceBuff) - 1, "Data : %02x %02x %02x %02x %02x %02x\n", pBuff[0], pBuff[1], pBuff[2], pBuff[3], pBuff[4], pBuff[5]);
+                    }
+                }
+                else
+                {
+                    printf("Checksum invalid!");
+                    xRet = FTE_RET_INVALID_CHECKSUM;
+                }
+                break;
+            }
+            
+            FTE_TIME_getCurrent(&xCurrentTime);
+            FTE_TIME_diffMilliseconds(&xCurrentTime, &xStartTime, &nDiffTime);            
+
+            if (nDiffTime > nTimeout)
+            {
+                xRet = FTE_RET_ERROR;
+                break;
+            }
+            _time_delay(1);
+        }
+    }
+    return  xRet;
 }
 
 #endif

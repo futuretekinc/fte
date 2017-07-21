@@ -1,12 +1,12 @@
 #ifndef __FTE_H__
 #define __FTE_H__
 
-#define FTE_MODEL                           "FTE-EH3"
+#define FTE_MODEL                           "FTE-ES24"
 
-#define FTE_TEMP_SUPPORTED                  0
-#define FTE_HUMIDITY_SUPPORTED              0
+#define FTE_TEMP_SUPPORTED                  1
+#define FTE_HUMIDITY_SUPPORTED              1
 #define FTE_CO2_SUPPORTED                   0
-#define FTE_POWER_SUPPORTED                 0
+#define FTE_POWER_SUPPORTED                 1
 #define FTE_DYNAMIC_OBJECT_SUPPORTED        1
 
 #define FTE_CONSOLE_SUPPORTED               1
@@ -25,12 +25,12 @@
 
 #define FTE_SPI_SUPPORTED                   0
 #define FTE_AD7785_SUPPORTED                0
-#define FTE_1WIRE_SUPPORTED                 0
+#define FTE_1WIRE_SUPPORTED                 1
 #define FTE_MCP23S08_SUPPORTED              0
 #define FTE_UCS_SUPPORTED                   1
 #define FTE_UCM_SUPPORTED                   0
 #define FTE_DEV_LWGPIO_UCS1_RCTRL_SUPPORTED 0
-#define FTE_DEV_LWGPIO_UCS1_WCTRL_SUPPORTED 0
+#define FTE_DEV_LWGPIO_UCS1_WCTRL_SUPPORTED 1
 #define FTE_DEV_LWGPIO_UCS2_RCTRL_SUPPORTED 0
 #define FTE_DEV_LWGPIO_UCS2_WCTRL_SUPPORTED 0
 
@@ -43,8 +43,8 @@
 #define FTE_GAI_CURRENT0_SUPPORTED          0
 #define FTE_GAI_CURRENT1_SUPPORTED          0
 #define FTE_PRESSURE_SUPPORTED              0
-#define FTE_SHT_SUPPORTED                   0
-#define FTE_DS18B20_SUPPORTED               0
+#define FTE_SHT_SUPPORTED                   1
+#define FTE_DS18B20_SUPPORTED               1
 #define FTE_DI_SUPPORTED                    1
 #define FTE_DO_SUPPORTED                    1
 #define FTE_RL_SUPPORTED                    0
@@ -55,16 +55,16 @@
 #define FTE_GPIO_DI_SUPPORTED               1
 #define FTE_MULTI_DI_SUPPORTED              1
 #define FTE_MULTI_DO_SUPPORTED              1
-#define FTE_MULTI_AI_SUPPORTED              0
-#define FTE_MULTI_TEMP_SUPPORTED            0
-#define FTE_MULTI_HUMI_SUPPORTED            0
-#define FTE_MULTI_CO2_SUPPORTED             0
-#define FTE_MULTI_VOC_SUPPORTED             0
-#define FTE_MULTI_COUNT_SUPPORTED           0
-#define FTE_MULTI_PRESSURE_SUPPORTED        0
-#define FTE_MULTI_VOLTAGE_SUPPORTED         0
-#define FTE_MULTI_CURRENT_SUPPORTED         0
-#define FTE_MULTI_POWER_SUPPORTED           0
+#define FTE_MULTI_AI_SUPPORTED              1
+#define FTE_MULTI_TEMP_SUPPORTED            1
+#define FTE_MULTI_HUMI_SUPPORTED            1
+#define FTE_MULTI_CO2_SUPPORTED             1
+#define FTE_MULTI_VOC_SUPPORTED             1
+#define FTE_MULTI_COUNT_SUPPORTED           1
+#define FTE_MULTI_PRESSURE_SUPPORTED        1
+#define FTE_MULTI_VOLTAGE_SUPPORTED         1
+#define FTE_MULTI_CURRENT_SUPPORTED         1
+#define FTE_MULTI_POWER_SUPPORTED           1
 #define FTE_MULTI_VALUE_SUPPORTED           1
 #define FTE_MULTI_DISCRETE_SUPPORTED        0
 
@@ -88,7 +88,8 @@
 #define FTE_CIAS_SIOUX_CU_SUPPORTED         0
 #define FTE_IOEX_SUPPORTED                  0
 #define FTE_DOTECH_SUPPORTED                0
-#define FTE_MULTI_DIO_NODE_SUPPORTED        1
+#define FTE_TURBOMAX_SUPPORTED              0
+#define FTE_FUTURETEK_SUPPORTED             1
 
 #define FTE_NET_SUPPORTED                   1
 #define FTE_HTTPD_SUPPORTED                 0
@@ -98,15 +99,16 @@
 #define FTE_TELNETD_SUPPORTED               1
 #define FTE_SMNGD_SUPPORTED                 1
 #define FTE_MBTCP_SUPPORTED                 0
+#define FTE_MBTCP_MASTER_SUPPORTED          1
 
-#define FTE_DI_MAX_COUNT                    7
-#define FTE_DO_MAX_COUNT                    7
+#define FTE_DI_MAX_COUNT                    2
+#define FTE_DO_MAX_COUNT                    2
 #define FTE_RL_MAX_COUNT                    0
 #define FTE_LED_MAX_COUNT                   1
 #define FTE_PT100_MAX_COUNT                 0
-#define FTE_DS18B20_MAX_COUNT               0
-#define FTE_SHT_MAX_COUNT                   0
-#define FTE_1WIRE_MAX_DEVICES               0
+#define FTE_DS18B20_MAX_COUNT               10
+#define FTE_SHT_MAX_COUNT                   1
+#define FTE_1WIRE_MAX_DEVICES               10
 
 #define FTE_DEBUG                           1
 

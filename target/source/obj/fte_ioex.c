@@ -38,7 +38,13 @@ static  FTE_BOOL     bTraceTxPkt = TRUE;
 #else
 #define FTE_IOEX_DUMP(x,y)   
 #endif
+#define FTE_IOEX_DEVICE_MAX  1
 
+typedef struct  FTE_IOEX_DEVICE_STRUCT
+{
+    _task_id        xTaskID;
+    FTE_OBJECT_PTR  pObj;
+}   FTE_IOEX_DEVICE, _PTR_ FTE_IOEX_DEVICE_PTR;
 static const 
 FTE_IFCE_CONFIG FTE_IOEX_DI0_defaultConfig =
 {
@@ -335,10 +341,95 @@ FTE_GUS_MODEL_INFO    FTE_IOEX_GUSModelInfo =
     .pName          = "IOEX",
     .nFieldCount    = FTE_IOEX_DI_MAX,
     .pValueTypes    = FTE_IOEX_valueTypes,
+    .fCreate        = FTE_IOEX_create,
     .fAttach        = FTE_IOEX_attach,
     .fDetach        = FTE_IOEX_detach,
     .fGet           = FTE_IOEX_get,
 };
+
+static const FTE_EVENT_CONFIG FTE_IOEX_eventDIDefault = 
+{
+    .ulEPID      = MAKE_ID(FTE_OBJ_TYPE_DI, 0x0001),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_WARNING,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+
+static
+FTE_IOEX_DEVICE  pDevices[FTE_IOEX_DEVICE_MAX];
+
+FTE_RET FTE_IOEX_create
+(
+    FTE_CHAR_PTR    pSlaveID,
+    FTE_OBJECT_PTR _PTR_ ppObj
+)
+{
+    ASSERT((pSlaveID != NULL) && (ppObj != NULL));
+    
+    int i;
+    FTE_RET                 xRet;
+    FTE_OBJECT_CONFIG_PTR   pConfig;
+    FTE_OBJECT_CONFIG_PTR   pChildConfig[FTE_IOEX_DI_MAX];
+    FTE_UINT32              ulChildCount = 0;
+    FTE_UINT32              ulSlaveID;
+    FTE_OBJECT_PTR          pObj;
+    FTE_EVENT_CONFIG        xEventConfig;
+    
+    xRet = FTE_strToUINT32(pSlaveID, &ulSlaveID);
+    if (xRet != FTE_RET_OK)
+    {
+        return  xRet;
+    }
+    
+    for(i = 0 ; i < FTE_IOEX_DEVICE_MAX ; i++)
+    {
+        if (pDevices[i].pObj != NULL)
+        {
+            if (((FTE_IOEX_CONFIG_PTR)pDevices[i].pObj->pConfig)->xGUS.nSensorID== ulSlaveID)
+            {
+                return  FTE_RET_OK;
+            }
+        }
+    }
+    
+    FTE_IOEX_defaultConfig.nSensorID = ulSlaveID;
+    
+    xRet = FTE_CFG_OBJ_create((FTE_OBJECT_CONFIG_PTR)&FTE_IOEX_defaultConfig, &pConfig, pChildConfig, FTE_IOEX_DI_MAX, &ulChildCount);
+    if (xRet != FTE_RET_OK)
+    {
+        return  xRet;
+    }    
+    
+    pObj = FTE_OBJ_create(pConfig);
+    if (pObj == NULL)
+    {
+        return  FTE_RET_INSUFFICIENT_MEMORY;
+    }
+
+    memcpy(&xEventConfig, &FTE_IOEX_eventDIDefault, sizeof(xEventConfig));
+    
+    if (ulChildCount != 0)
+    {
+        for(i = 0 ; i < ulChildCount ; i++)
+        {
+            FTE_OBJECT_PTR  pChild;
+            
+            pChild = FTE_OBJ_create(pChildConfig[i]);
+            if (pChild == NULL)
+            {
+                ERROR("The child object creation failed.\n");
+            }
+
+            xEventConfig.ulEPID = pChild->pConfig->xCommon.nID;
+            FTE_CFG_EVENT_create(&xEventConfig);            
+        }
+    }
+    
+    *ppObj = pObj;
+        
+    return  FTE_RET_OK;    
+}
+
 
 FTE_RET   FTE_IOEX_attach
 (
@@ -529,7 +620,7 @@ void FTE_IOEX_task
         FTE_UINT32 ulRecvLen;
         FTE_INT32   nElapsedUpdateTime = 0;
         int     i;
-
+#if 1
         _time_get(&xCurrentTime);
         
         FTE_TIME_diffMilliseconds(&xCurrentTime, &pStatus->xLastUpdateTime, &nElapsedUpdateTime);
@@ -595,7 +686,13 @@ void FTE_IOEX_task
             
             ulRecvLen = FTE_UCS_clear(pStatus->xGUS.pUCS);
         }
-
+#else
+        for(i = 0 ; i < FTE_IOEX_DI_MAX ; i++)
+        {
+            pStatus->pDI[i].bValue = rand() % 2;
+        }
+                      
+#endif
         FTE_TIME_DELAY_waitingAndSetNext(&xDelay);
     }      
 }

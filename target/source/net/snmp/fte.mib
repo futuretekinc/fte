@@ -48,6 +48,8 @@ FTE-E	 DEFINITIONS ::= BEGIN
 
         epPower         OBJECT IDENTIFIER ::= { endpoints 2048 }
 
+        epAI            OBJECT IDENTIFIER ::= { endpoints 2560 }
+
         epCount         OBJECT IDENTIFIER ::= { endpoints 2816 }
 
         epPressure      OBJECT IDENTIFIER ::= { endpoints 3072 }
@@ -1038,6 +1040,117 @@ FTE-E	 DEFINITIONS ::= BEGIN
                         ""
                 ::= { gasEntry 1002 }
 
+       aiCount OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        ""
+                ::= { epAI 1 }
+
+        aiTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF CntEntry
+                ACCESS not-accessible
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { epAI 2 }
+
+        aiEntry OBJECT-TYPE
+                SYNTAX CntEntry
+                ACCESS not-accessible
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                INDEX { aiID }
+                ::= { aiTable 1 }
+
+
+        AiEntry ::= SEQUENCE { 
+            aiID DisplayString,
+            aiType DisplayString,
+            aiName DisplayString,
+            aiSN DisplayString,
+            aiState DisplayString,
+            aiValue DisplayString,
+            aiLastValue DisplayString,
+            aiLastTime DisplayString,
+            aiInitValue DisplayString
+        }
+
+        aiID OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-only
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { aiEntry 1 }
+
+        aiType OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-only
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { aiEntry 2 }
+
+        aiName OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-write
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { aiEntry 3 }
+
+        aiSN OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-only
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { aiEntry 4 }
+
+        aiState OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-write
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { aiEntry 5 }
+
+        aiValue OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-write
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { aiEntry 6 }
+
+        aiLastValue OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-only
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { aiEntry 7 }
+
+        aiLastTime OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-only
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { aiEntry 8 }
+
+        aiInitValue OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-write
+                STATUS deprecated
+                DESCRIPTION
+                        ""
+                ::= { aiEntry 9 }
+
+ 
         cntCount OBJECT-TYPE
                 SYNTAX INTEGER
                 ACCESS read-only

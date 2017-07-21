@@ -64,7 +64,7 @@ void FTE_TASK_net
     // tcp/ip initialization waiting
     _time_delay(FTE_NET_INIT_WAITING_TIME);
 
-    FTE_TIME_DELAY_init(&xTimeDelay, FTE_NET_STATE_CHECK_INTERVAL);
+    FTE_TIME_DELAY_init(&xTimeDelay, 100);//FTE_NET_STATE_CHECK_INTERVAL);
     FTE_NET_isActive(&bLinkActive);
     
     while(TRUE)

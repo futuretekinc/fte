@@ -2044,7 +2044,7 @@ FTE_CFG_DESC  FTE_CFG_desc =
     .pSystem    = &FTE_defaultSystemConfig,
     .pShell     = &FTE_defaultShellConfig,
     .pNetwork   = &FTE_defaultNetConfig,
-#if FTE_MULTI_DIO_NODE_SUPPORTED 
+#if FTE_DYNAMIC_OBJECT_SUPPORTED
     .nObjects   =  0,
     .pObjects   =  NULL,
 #else

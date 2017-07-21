@@ -910,6 +910,62 @@ static const FTE_OBJECT_DESC _pObjDescs[] =
         .pOpts              = NULL
     },
 #endif
+#if FTE_FUTURETEK_SUPPORTED
+    {   
+        .nType              = FTE_OBJ_TYPE_MULTI_FUTURETEK_MS10,
+        .pName              = "MS10",
+        .pVendor            = "Futuretek.",
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC | FTE_OBJ_FLAG_GUS,
+        .xSupportedFields   = FTE_OBJ_FIELD_ID | 
+                              FTE_OBJ_FIELD_NAME |
+                              FTE_OBJ_FIELD_NAME_EDIT |
+                              FTE_OBJ_FIELD_VALUE |
+                              FTE_OBJ_FIELD_STATE |
+                              FTE_OBJ_FIELD_ENABLE |
+                              FTE_OBJ_FIELD_ENABLE_EDIT,                
+        .nConfigSize        = sizeof(FTE_FUTURETEK_CONFIG),
+        .nStatusSize        = sizeof(FTE_FUTURETEK_STATUS),
+        .f_attach           = FTE_GUS_attach, 
+        .f_detach           = FTE_GUS_detach,
+        .pOpts              = (FTE_VOID_PTR)&FTE_FUTURETEK_MS10_GUSModelInfo
+    },
+    {   
+        .nType              = FTE_OBJ_TYPE_MULTI_FUTURETEK_KM21B20,
+        .pName              = "KM21B20",
+        .pVendor            = "Futuretek.",
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC | FTE_OBJ_FLAG_GUS,
+        .xSupportedFields   = FTE_OBJ_FIELD_ID | 
+                              FTE_OBJ_FIELD_NAME |
+                              FTE_OBJ_FIELD_NAME_EDIT |
+                              FTE_OBJ_FIELD_VALUE |
+                              FTE_OBJ_FIELD_STATE |
+                              FTE_OBJ_FIELD_ENABLE |
+                              FTE_OBJ_FIELD_ENABLE_EDIT,                
+        .nConfigSize        = sizeof(FTE_FUTURETEK_CONFIG),
+        .nStatusSize        = sizeof(FTE_FUTURETEK_STATUS),
+        .f_attach           = FTE_GUS_attach, 
+        .f_detach           = FTE_GUS_detach,
+        .pOpts              = (FTE_VOID_PTR)&FTE_FUTURETEK_KM21B20_GUSModelInfo
+    },
+    {   
+        .nType              = FTE_OBJ_TYPE_MULTI_FUTURETEK_JCG06,
+        .pName              = "JCG06",
+        .pVendor            = "Futuretek.",
+        .xFlags             = FTE_OBJ_FLAG_DYNAMIC | FTE_OBJ_FLAG_GUS,
+        .xSupportedFields   = FTE_OBJ_FIELD_ID | 
+                              FTE_OBJ_FIELD_NAME |
+                              FTE_OBJ_FIELD_NAME_EDIT |
+                              FTE_OBJ_FIELD_VALUE |
+                              FTE_OBJ_FIELD_STATE |
+                              FTE_OBJ_FIELD_ENABLE |
+                              FTE_OBJ_FIELD_ENABLE_EDIT,                
+        .nConfigSize        = sizeof(FTE_FUTURETEK_CONFIG),
+        .nStatusSize        = sizeof(FTE_FUTURETEK_STATUS),
+        .f_attach           = FTE_GUS_attach, 
+        .f_detach           = FTE_GUS_detach,
+        .pOpts              = (FTE_VOID_PTR)&FTE_FUTURETEK_JCG06_GUSModelInfo
+    },
+#endif
 };
 
 static const FTE_UINT32 _nObjDescs  = sizeof(_pObjDescs) / sizeof(FTE_OBJECT_DESC); 

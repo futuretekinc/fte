@@ -867,6 +867,134 @@ FTE_INT32  FTE_UCS_SHELL_cmd
                 }
             }
             break;
+            
+        case    4:
+            {
+                FTE_UINT32   id;
+                   
+                if (FTE_strToHex(pArgv[1], &id) != FTE_RET_OK)
+                {
+                    bPrintUsage = 1;
+                    break;
+                }
+                   
+                FTE_UCS_PTR  pUCS = FTE_UCS_get(id);
+                if (pUCS == NULL)
+                {
+                    printf("Failed to get UCS[%08x]\n", id);
+                }
+                   
+                if (strcasecmp(pArgv[2], "baudrate") == 0)
+                {
+                    FTE_UINT32   ulBaudrate;
+                    
+                    if (FTE_strToUINT32(pArgv[3], &ulBaudrate) == FTE_RET_OK)
+                    {
+                        if (FTE_UCS_setBaudrate(pUCS, ulBaudrate) == FTE_RET_OK)
+                        {
+                            printf("UCS[%08x] baudrate changed to %d bps", id, ulBaudrate);
+                        }
+                        else
+                        {
+                            printf("Failed to change baudrate of UCS[%08x]", id);
+                        }
+                    }
+                }
+                
+            }
+            break;
+            
+        default:
+            {
+                if ((nArgc > 6) && (strcasecmp(pArgv[2], "sar") == 0))
+                {
+                    FTE_UINT32   id;
+                       
+                    if (FTE_strToHex(pArgv[1], &id) != FTE_RET_OK)
+                    {
+                        bPrintUsage = 1;
+                        break;
+                    }
+                       
+                    FTE_UCS_PTR  pUCS = FTE_UCS_get(id);
+                    if (pUCS == NULL)
+                    {
+                        printf("Failed to get UCS[%08x]\n", id);
+                    }
+                   
+                    FTE_UINT32  ulSendLen;
+                    FTE_UINT32  ulRecvLen;
+                    
+                    if(FTE_strToUINT32(pArgv[3], &ulSendLen) != FTE_RET_OK)
+                    {
+                        break;
+                    }
+                    
+                    if(FTE_strToUINT32(pArgv[4], &ulRecvLen) != FTE_RET_OK)
+                    {
+                        break;
+                    }
+                    
+                    if ((ulSendLen == 0) && (ulSendLen + 5 != nArgc))
+                    {
+                        printf("Invalid data length!");
+                        break;
+                    }
+                    
+                    FTE_UINT8_PTR   pData = NULL;
+                    FTE_UINT8_PTR   pBuff = NULL;
+                    
+                    pData = FTE_MEM_alloc(ulSendLen);
+                    if (pData == NULL)
+                    {
+                        printf("Not enough memory!");
+                        break;
+                    }
+                    
+                    pBuff = FTE_MEM_alloc(ulRecvLen);
+                    if (pBuff == NULL)
+                    {
+                        FTE_MEM_free(pData);
+                        printf("Not enough memory!");
+                        break;
+                    }
+                    for(FTE_INT i = 0 ; i < ulSendLen && (i < nArgc - 5) ; i++)
+                    {
+                        FTE_UINT32  value;
+                        if (FTE_strToHex(pArgv[i+5], &value) != FTE_RET_OK)
+                        {
+                            printf("Invalid data!");
+                            xRet = FTE_RET_ERROR;
+                            break;
+                        }
+                        
+                        pData[i] = (FTE_UINT8)value;
+                    }
+                    
+                    if (xRet == FTE_RET_OK)
+                    {
+                        if (FTE_UCS_sendAndRecv(pUCS, pData, ulSendLen, pBuff, ulRecvLen, 0, 100) == ulRecvLen)
+                        {
+                            for(FTE_INT i = 0 ; i < ulRecvLen ; i++)
+                            {
+                                printf("%02x ", pBuff[i]);
+                            }
+                            printf("\n");
+                        }
+                    }
+                    
+                    if (pData != NULL)
+                    {
+                        FTE_MEM_free(pData);
+                    }
+                    
+                    if (pBuff != NULL)
+                    {
+                        FTE_MEM_free(pBuff);
+                    }
+                }
+            }
+            break;
         }
     }
 
@@ -911,11 +1039,13 @@ void FTE_UCS_TASK_send
         if (pUCS->pFlowCtrl != NULL)
         {
             FTE_LWGPIO_setValue(pUCS->pFlowCtrl, TRUE);
-        }
 
-        if (pUCS->pFlowCtrl2 != NULL)
-        {
-            FTE_LWGPIO_setValue(pUCS->pFlowCtrl2, FALSE);
+            if (pUCS->pFlowCtrl2 != NULL)
+            {
+                FTE_LWGPIO_setValue(pUCS->pFlowCtrl2, FALSE);
+            }
+            
+            for(int i = 0 ; i < 30000 ; i++);
         }
 
         while(pUCS->nSendCount != 0)
@@ -933,10 +1063,6 @@ void FTE_UCS_TASK_send
             pUCS->nSendCount -= nWrittenCount;
         }
 
-        //_time_delay(1);
-        //ioctl( pUCS->pFD, IO_IOCTL_SERIAL_WAIT_FOR_TC, NULL );
-		
-		
 		fflush(pUCS->pFD);
         ioctl( pUCS->pFD, IO_IOCTL_SERIAL_WAIT_FOR_TC, NULL );
         fflush(pUCS->pFD);
@@ -947,12 +1073,10 @@ void FTE_UCS_TASK_send
         
         if (pUCS->pFlowCtrl != NULL)
         {
-            for(int i = 0; i < 60 ;i++)
-                _time_delay(0);
-            if (pUCS->pFlowCtrl != NULL)
-            {
-                FTE_LWGPIO_setValue(pUCS->pFlowCtrl, FALSE);
-            }
+            for(int i = 0 ; i < 30000 ; i++);
+            
+            FTE_LWGPIO_setValue(pUCS->pFlowCtrl, FALSE);
+            
             if (pUCS->pFlowCtrl2 != NULL)
             {
                 FTE_LWGPIO_setValue(pUCS->pFlowCtrl2, TRUE);

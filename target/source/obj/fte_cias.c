@@ -8,6 +8,14 @@
 
 #if FTE_CIAS_SIOUX_CU_SUPPORTED
 
+#define FTE_CIAS_SIOUX_CU_DEVICE_MAX  1
+
+typedef struct  FTE_CIAS_SIOUX_CU_DEVICE_STRUCT
+{
+    _task_id        xTaskID;
+    FTE_OBJECT_PTR  pObj;
+}   FTE_CIAS_SIOUX_CU_DEVICE, _PTR_ FTE_CIAS_SIOUX_CU_DEVICE_PTR;
+
 static const 
 FTE_IFCE_CONFIG FTE_CIAS_SIOUX_CU_ZONE1_defaultConfig =
 {
@@ -170,8 +178,8 @@ FTE_GUS_CONFIG FTE_CIAS_SIOUX_CU_defaultConfig =
         .nID        = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_SIOUX_CU, 0x0001),
         .pName      = "SIOUX_CU",
         .xFlags     = FTE_OBJ_CONFIG_FLAG_DISABLE, 
-        .ulChild    = sizeof(xCIASSIOUXCUChildConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR),
-        .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)xCIASSIOUXCUChildConfigs
+        .ulChild    = sizeof(FTE_CIAS_SIOUX_CU_defaultChildConfigs) / sizeof(FTE_OBJECT_CONFIG_PTR),
+        .pChild     = (FTE_OBJECT_CONFIG_PTR _PTR_)FTE_CIAS_SIOUX_CU_defaultChildConfigs
     },
     .nModel     = FTE_GUS_MODEL_CIAS_SIOUX_CU,
     .nSensorID  = 0x01,
@@ -221,11 +229,95 @@ FTE_GUS_MODEL_INFO    FTE_CIAS_SIOUX_CU_GUSModelInfo =
     .xFlags         = FTE_GUS_FLAG_SHARED,
     .nFieldCount    = FTE_CIAS_SIOUX_CU_ALARM_MAX + FTE_CIAS_SIOUX_CU_ZONE_MAX,
     .pValueTypes    = FTE_CIAS_SIOUX_CU_valueTypes,
+    .fCreate        = FTE_CIAS_SIOUX_CU_create,
     .fAttach        = FTE_CIAS_SIOUX_CU_attach,
     .fDetach        = FTE_CIAS_SIOUX_CU_detach,
     .fGet           = FTE_CIAS_SIOUX_CU_get,
-    .fCreateJSON    = FTE_CIAS_SIOUX_CU_createJSON
+//    .fCreateJSON    = FTE_CIAS_SIOUX_CU_createJSON
 };
+
+static const FTE_EVENT_CONFIG FTE_CIAS_SIOUX_CU_zoneEventConfig = 
+{
+    .ulEPID     = MAKE_ID(FTE_OBJ_TYPE_MULTI_CIAS_ZONE, 0x0a01),
+    .xType      = FTE_EVENT_TYPE_ENABLE | FTE_EVENT_TYPE_SNMP_TRAP | FTE_EVENT_TYPE_MQTT_PUB,
+    .xLevel     = FTE_EVENT_LEVEL_ALERT,
+    .xCondition = FTE_EVENT_CONDITION_CHANGED,
+};
+
+static
+FTE_CIAS_SIOUX_CU_DEVICE  pDevices[FTE_CIAS_SIOUX_CU_DEVICE_MAX];
+
+FTE_RET FTE_CIAS_SIOUX_CU_create
+(
+    FTE_CHAR_PTR    pSlaveID,
+    FTE_OBJECT_PTR _PTR_ ppObj
+)
+{
+    ASSERT((pSlaveID != NULL) && (ppObj != NULL));
+    
+    int i;
+    FTE_RET                 xRet;
+    FTE_OBJECT_CONFIG_PTR   pConfig;
+    FTE_OBJECT_CONFIG_PTR   pChildConfig[FTE_CIAS_SIOUX_CU_ALARM_MAX + FTE_CIAS_SIOUX_CU_ZONE_MAX];
+    FTE_UINT32              ulChildCount = 0;
+    FTE_UINT32              ulSlaveID;
+    FTE_OBJECT_PTR          pObj;
+    FTE_EVENT_CONFIG        xEventConfig;
+    
+    xRet = FTE_strToUINT32(pSlaveID, &ulSlaveID);
+    if (xRet != FTE_RET_OK)
+    {
+        return  xRet;
+    }
+    
+    for(i = 0 ; i < FTE_CIAS_SIOUX_CU_DEVICE_MAX ; i++)
+    {
+        if (pDevices[i].pObj != NULL)
+        {
+            if (((FTE_CIAS_SIOUX_CU_CONFIG_PTR)pDevices[i].pObj->pConfig)->xGUS.nSensorID== ulSlaveID)
+            {
+                return  FTE_RET_OK;
+            }
+        }
+    }
+    
+    FTE_CIAS_SIOUX_CU_defaultConfig.nSensorID = ulSlaveID;
+    
+    xRet = FTE_CFG_OBJ_create((FTE_OBJECT_CONFIG_PTR)&FTE_CIAS_SIOUX_CU_defaultConfig, &pConfig, pChildConfig, FTE_CIAS_SIOUX_CU_ALARM_MAX + FTE_CIAS_SIOUX_CU_ZONE_MAX, &ulChildCount);
+    if (xRet != FTE_RET_OK)
+    {
+        return  xRet;
+    }    
+    
+    pObj = FTE_OBJ_create(pConfig);
+    if (pObj == NULL)
+    {
+        return  FTE_RET_INSUFFICIENT_MEMORY;
+    }
+
+    memcpy(&xEventConfig, &FTE_CIAS_SIOUX_CU_zoneEventConfig, sizeof(xEventConfig));
+    
+    if (ulChildCount != 0)
+    {
+        for(i = FTE_CIAS_SIOUX_CU_ALARM_MAX ; i < ulChildCount ; i++)
+        {
+            FTE_OBJECT_PTR  pChild;
+            
+            pChild = FTE_OBJ_create(pChildConfig[i]);
+            if (pChild == NULL)
+            {
+                ERROR("The child object creation failed.\n");
+            }
+
+            xEventConfig.ulEPID = pChild->pConfig->xCommon.nID;
+            FTE_CFG_EVENT_create(&xEventConfig);            
+        }
+    }
+    
+    *ppObj = pObj;
+        
+    return  FTE_RET_OK;    
+}
 
 FTE_RET   FTE_CIAS_SIOUX_CU_attach
 (
@@ -473,7 +565,7 @@ void FTE_CIAS_SIOUX_CU_task
 
                 ulReqLen = 0;
                 pReqFrame[ulReqLen++] = 0x01;
-                ulCRC = fte_crc_ccitt(ulCRC, &pReqFrame[ulReqLen-1], 1);
+                ulCRC = FTE_CRC_CCITT(ulCRC, &pReqFrame[ulReqLen-1], 1);
                 
                 if ((SIOUX_CU[ulID].pZones[nZone-1].nDeviceNumber == 0x01) || 
                     (SIOUX_CU[ulID].pZones[nZone-1].nDeviceNumber == 0x03) ||
@@ -486,14 +578,14 @@ void FTE_CIAS_SIOUX_CU_task
                 {
                     pReqFrame[ulReqLen++] = SIOUX_CU[ulID].pZones[nZone-1].nDeviceNumber;
                 }
-                ulCRC = fte_crc_ccitt(ulCRC, &SIOUX_CU[ulID].pZones[nZone-1].nDeviceNumber, 1);
+                ulCRC = FTE_CRC_CCITT(ulCRC, &SIOUX_CU[ulID].pZones[nZone-1].nDeviceNumber, 1);
                 
                 pReqFrame[ulReqLen++] = 0x50;
-                ulCRC = fte_crc_ccitt(ulCRC, &pReqFrame[ulReqLen-1], 1);
+                ulCRC = FTE_CRC_CCITT(ulCRC, &pReqFrame[ulReqLen-1], 1);
                 pReqFrame[ulReqLen++] = 0xA3;
-                ulCRC = fte_crc_ccitt(ulCRC, &pReqFrame[ulReqLen-1], 1);
+                ulCRC = FTE_CRC_CCITT(ulCRC, &pReqFrame[ulReqLen-1], 1);
                 pReqFrame[ulReqLen++] = 0x5B;
-                ulCRC = fte_crc_ccitt(ulCRC, &pReqFrame[ulReqLen-1], 1);
+                ulCRC = FTE_CRC_CCITT(ulCRC, &pReqFrame[ulReqLen-1], 1);
                 
                 pReqFrame[ulReqLen++] = (ulCRC >> 8) & 0xFF;
                 pReqFrame[ulReqLen++] = (ulCRC     ) & 0xFF;
@@ -552,7 +644,7 @@ void FTE_CIAS_SIOUX_CU_task
                     {
                         int i;
                         
-                        ulCRC = fte_crc_ccitt(0xFFFF, pRespFrame, 9);
+                        ulCRC = FTE_CRC_CCITT(0xFFFF, pRespFrame, 9);
                         if ((((ulCRC >> 8) & 0xFF) == pRespFrame[9]) && ((ulCRC & 0xFF) == pRespFrame[10]))
                         {
                             FTE_UINT32     ulValue;
@@ -615,10 +707,10 @@ FTE_RET FTE_FTLM_createJSON
     FTE_JSON_OBJECT_PTR _PTR_ ppJSON
 )
 {
-    
     ASSERT((pObj != NULL) && (ppJSON != NULL));
     
-    FTE_RET xRet;
+    FTE_RET xRet = FTE_RET_ERROR;
+#if 0   
     FTE_JSON_VALUE_PTR  pValue = NULL;
     FTE_JSON_OBJECT_PTR  pValues ;
     FTE_UINT32  ulCmd;
@@ -684,7 +776,6 @@ FTE_RET FTE_FTLM_createJSON
     }                    
     
     *ppJSON = pValue;
-    
     return  FTE_RET_OK;
 error:
     
@@ -700,6 +791,7 @@ error:
         pObject = NULL;
     }
     
+#endif    
     return  xRet;
 }
 

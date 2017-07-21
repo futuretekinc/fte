@@ -333,6 +333,7 @@ FTE_UINT32  FTE_1WIRE_search
     FTE_INT32  nCount = 0;
     FTE_BOOL bFound;
     FTE_UINT8  data;
+    FTE_UINT8  data2;
     FTE_UINT8  pROMCode[8];
     FTE_UINT8  pComPos[64];
     FTE_UINT8  nComPos = 0;
@@ -412,12 +413,14 @@ FTE_UINT32  FTE_1WIRE_search
         }
 
         data = 0xFF;
+        data2 = 0x00;
         for(i = 0 ; i < 8 ; i++)
         {
             data &= pROMCode[i];
+            data2 |= pROMCode[i];
         }
-        
-        if (bFound && (data != 0xFF))
+
+        if (bFound && (data != 0xFF) && (data2 != 0x00))
         {
             if (nCount < nMaxCount)
             {

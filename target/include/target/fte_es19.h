@@ -7,6 +7,7 @@
 #define FTE_HUMIDITY_SUPPORTED              0
 #define FTE_CO2_SUPPORTED                   0
 #define FTE_POWER_SUPPORTED                 0
+#define FTE_DYNAMIC_OBJECT_SUPPORTED        0
 
 #define FTE_CONSOLE_SUPPORTED               1
 #define FTE_LOG_SUPPORTED                   1

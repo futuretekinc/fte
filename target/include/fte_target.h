@@ -217,6 +217,8 @@ FTE_RET     FTE_PLATFORM_run(void);
 #include "fte_es22.h"
 #elif defined(FTE_ES23)
 #include "fte_es23.h"
+#elif defined(FTE_ES24)
+#include "fte_es24.h"
 #elif defined(FTE_EH1)
 #include "fte_eh1.h"
 #elif defined(FTE_EH3)
@@ -254,6 +256,10 @@ FTE_RET     FTE_PLATFORM_run(void);
 #define FTE_TASK_DIO_NODE               22
 
 #define FTE_TASK_TURBOMAX               23
+#define FTE_TASK_FUTURETEK              24
+#define FTE_TASK_FUTURETEK_JCG06              25
+#define FTE_TASK_FUTURETEK_KM21B20      26
+#define FTE_TASK_FUTURETEK_MS10         27
 
 #define FTE_TASK_DEFAULT_STACK          512
 
@@ -273,12 +279,12 @@ FTE_RET     FTE_PLATFORM_run(void);
 #endif
 
 #if FTE_TASK_SHELL
-    #define FTE_TASK_SHELL_STACK        (FTE_TASK_DEFAULT_STACK * 4)
+    #define FTE_TASK_SHELL_STACK        (FTE_TASK_DEFAULT_STACK * 2)
     #define FTE_TASK_SHELL_PRIO         9
 #endif
      
 #if FTE_TASK_TIMER
-    #define FTE_TASK_TIMER_STACK        FTE_TASK_DEFAULT_STACK * 2
+    #define FTE_TASK_TIMER_STACK        FTE_TASK_DEFAULT_STACK
     #define FTE_TASK_TIMER_PRIO         9
 #endif
 
@@ -360,6 +366,16 @@ FTE_RET     FTE_PLATFORM_run(void);
 #if FTE_TASK_TURBOMAX
     #define FTE_TASK_TURBOMAX_STACK         (FTE_TASK_DEFAULT_STACK * 2)
     #define FTE_TASK_TURBOMAX_PRIO          9
+#endif
+
+#if FTE_TASK_FUTURETEK
+    #define FTE_TASK_FUTURETEK_STACK         (FTE_TASK_DEFAULT_STACK * 2)
+    #define FTE_TASK_FUTURETEK_PRIO          9
+#endif
+
+#if FTE_TASK_FUTURETEK_JCG06
+    #define FTE_TASK_FUTURETEK_JCG06_STACK         (FTE_TASK_DEFAULT_STACK * 2)
+    #define FTE_TASK_FUTURETEK_JCG06_PRIO          9
 #endif
 
 

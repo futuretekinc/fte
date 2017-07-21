@@ -150,6 +150,7 @@ FTE_JSON_VALUE_PTR  FTE_JSON_VALUE_createValue
     case    FTE_VALUE_TYPE_PRESSURE:
     case    FTE_VALUE_TYPE_PWR_KWH:
     case   FTE_VALUE_TYPE_PWR_KW:
+    case    FTE_VALUE_TYPE_PH:
         {
             return  FTE_JSON_VALUE_createFloat(pValue->xData.ulValue);
         }

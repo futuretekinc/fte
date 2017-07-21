@@ -2210,6 +2210,9 @@
         <name>$PROJ_DIR$\include\obj\fte_ftlm.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\include\obj\fte_futuretek.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\include\obj\fte_gus.h</name>
       </file>
       <file>
@@ -2232,6 +2235,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\include\obj\fte_srf.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\obj\fte_turbomax.h</name>
       </file>
     </group>
     <group>
@@ -2295,6 +2301,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_es23.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\include\target\fte_es24.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\include\target\fte_es4.h</name>
@@ -2816,6 +2825,9 @@
         <name>$PROJ_DIR$\source\obj\fte_ftlm.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\source\obj\fte_futuretek.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\source\obj\fte_gai.c</name>
       </file>
       <file>
@@ -2829,6 +2841,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\source\obj\fte_ioex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\obj\fte_jcg06.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\source\obj\fte_led.c</name>
@@ -2853,6 +2868,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\source\obj\fte_sht.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\source\obj\fte_sht7x.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\source\obj\fte_soha.c</name>

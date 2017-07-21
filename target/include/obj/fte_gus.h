@@ -18,6 +18,9 @@
 #define FTE_GUS_MODEL_DOTECH_FX3D           15
 #define FTE_GUS_MODEL_ELT_AQM100M           16
 #define FTE_GUS_MODEL_DIO_NODE              17
+#define FTE_GUS_MODEL_FUTURETE_MS10         18
+#define FTE_GUS_MODEL_FUTURETE_KM21B20      19
+#define FTE_GUS_MODEL_FUTURETE_JCG06        20
 #define FTE_GUS_RESPONSE_TIME               500
 
 #define FTE_GUS_FLAG_SHARED                 0x00000001

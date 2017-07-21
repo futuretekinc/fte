@@ -16,14 +16,14 @@
 
 #define DEBUG_ALL           0xFFFFFFFF
 
-#define FTE_MODULE_NET_SNMP     (1 << 1)     
-#define FTE_MODULE_NET_SMNG     (1 << 2)     
-#define FTE_MODULE_NET_MBTCP    (1 << 3)
-#define FTE_MODULE_NET_LORA     (1 << 4)
-#define FTE_MODULE_NET_SSL      (1 << 5)
-#define FTE_MODULE_DI           (1 << 6)
-#define FTE_MODULE_EVENT        (1 << 7)
-#define FTE_MODULE_OBJECT       (1 << 8)
+#define FTE_MODULE_NET_SNMP     (1 << 11)     
+#define FTE_MODULE_NET_SMNG     (1 << 10)     
+#define FTE_MODULE_NET_MBTCP    (1 << 14)
+#define FTE_MODULE_NET_LORA     (1 << 13)
+#define FTE_MODULE_NET_SSL      (1 << 12)
+#define FTE_MODULE_DI           (1 << 2)
+#define FTE_MODULE_EVENT        (1 << 1)
+#define FTE_MODULE_OBJECT       (1 << 0)
 
 #define __MODULE__      0
 

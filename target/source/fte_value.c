@@ -17,6 +17,8 @@ FTE_VALUE_PTR   FTE_VALUE_create
     case    FTE_VALUE_TYPE_TEMPERATURE: return  FTE_VALUE_createTemperature();
     case    FTE_VALUE_TYPE_HUMIDITY:    return  FTE_VALUE_createHumidity();
     case    FTE_VALUE_TYPE_PPM:         return  FTE_VALUE_createPPM();
+    case    FTE_VALUE_TYPE_PH:         return  FTE_VALUE_createPH();
+    case    FTE_VALUE_TYPE_MM:         return  FTE_VALUE_createMM();
     case    FTE_VALUE_TYPE_BOOL: 
     case    FTE_VALUE_TYPE_DIO:         return  FTE_VALUE_createDIO();
     case    FTE_VALUE_TYPE_VOLTAGE:     return  FTE_VALUE_createVoltage();
@@ -84,6 +86,36 @@ FTE_VALUE_PTR   FTE_VALUE_createPPM(void)
     if (pValue != NULL)
     {
         pValue->xType = FTE_VALUE_TYPE_PPM;
+        pValue->bValid = FALSE;
+        pValue->xData.ulValue = 0;
+    }
+    
+    return  pValue;
+}
+
+FTE_VALUE_PTR   FTE_VALUE_createPH(void)
+{
+    FTE_VALUE_PTR   pValue;
+    
+    pValue = FTE_MEM_allocZero(sizeof(FTE_VALUE));
+    if (pValue != NULL)
+    {
+        pValue->xType = FTE_VALUE_TYPE_PH;
+        pValue->bValid = FALSE;
+        pValue->xData.ulValue = 0;
+    }
+    
+    return  pValue;
+}
+
+FTE_VALUE_PTR   FTE_VALUE_createMM(void)
+{
+    FTE_VALUE_PTR   pValue;
+    
+    pValue = FTE_MEM_allocZero(sizeof(FTE_VALUE));
+    if (pValue != NULL)
+    {
+        pValue->xType = FTE_VALUE_TYPE_MM;
         pValue->bValid = FALSE;
         pValue->xData.ulValue = 0;
     }
@@ -310,6 +342,20 @@ FTE_RET FTE_VALUE_initPPM
     
     memset(pValue, 0, sizeof(FTE_VALUE));
     pValue->xType = FTE_VALUE_TYPE_PPM;
+    pValue->xData.ulValue = ulValue;
+    
+    return  FTE_RET_OK;
+}
+FTE_RET FTE_VALUE_initPH
+(
+    FTE_VALUE_PTR   pValue, 
+    FTE_UINT32      ulValue
+)
+{
+    ASSERT(pValue != NULL);
+    
+    memset(pValue, 0, sizeof(FTE_VALUE));
+    pValue->xType = FTE_VALUE_TYPE_PH;
     pValue->xData.ulValue = ulValue;
     
     return  FTE_RET_OK;
@@ -556,6 +602,20 @@ FTE_RET FTE_VALUE_set
         }
         break;
 
+    case    FTE_VALUE_TYPE_PH:
+    case    FTE_VALUE_TYPE_MM:
+        {
+            FTE_INT32  nValue = strtol(pString, NULL, 10);
+            
+            if (nValue < 0)
+            {
+                goto error;                
+            }
+            
+            pObj->xData.ulValue = (FTE_UINT32)nValue;
+        }
+        break;
+
     case    FTE_VALUE_TYPE_DIO:
         {
             if ((strcasecmp(pString, "on") == 0) || (strcasecmp(pString, "1") == 0))
@@ -713,6 +773,64 @@ FTE_RET FTE_VALUE_setPPM
 }
 
 FTE_RET FTE_VALUE_getPPM
+(
+    FTE_VALUE_PTR   pObj, 
+    FTE_UINT32_PTR  pulValue
+)
+{
+    ASSERT(pObj != NULL);
+    
+    *pulValue = pObj->xData.ulValue;
+    
+    return  FTE_RET_OK;
+}
+
+FTE_RET FTE_VALUE_setPH
+(
+    FTE_VALUE_PTR   pObj, 
+    FTE_UINT32      ulValue
+)
+{
+    ASSERT(pObj != NULL);
+    
+    pObj->bChanged = (pObj->xData.ulValue != ulValue);
+    pObj->xData.ulValue  = ulValue;
+    FTE_VALUE_setValid(pObj, TRUE);
+    _time_get (&pObj->xTimeStamp);
+    
+    return  FTE_RET_OK;
+}
+
+FTE_RET FTE_VALUE_getPH
+(
+    FTE_VALUE_PTR   pObj, 
+    FTE_UINT32_PTR  pulValue
+)
+{
+    ASSERT(pObj != NULL);
+    
+    *pulValue = pObj->xData.ulValue;
+    
+    return  FTE_RET_OK;
+}
+
+FTE_RET FTE_VALUE_setMM
+(
+    FTE_VALUE_PTR   pObj, 
+    FTE_UINT32      ulValue
+)
+{
+    ASSERT(pObj != NULL);
+    
+    pObj->bChanged = (pObj->xData.ulValue != ulValue);
+    pObj->xData.ulValue  = ulValue;
+    FTE_VALUE_setValid(pObj, TRUE);
+    _time_get (&pObj->xTimeStamp);
+    
+    return  FTE_RET_OK;
+}
+
+FTE_RET FTE_VALUE_getMM
 (
     FTE_VALUE_PTR   pObj, 
     FTE_UINT32_PTR  pulValue
@@ -1069,6 +1187,18 @@ FTE_CHAR_PTR    FTE_VALUE_toString
             }
             break;
             
+         case    FTE_VALUE_TYPE_PH:
+            {
+                snprintf(pValueString, ulLen, "%d.%02d", pObj->xData.ulValue / 100, pObj->xData.ulValue % 100);
+            }
+            break;
+            
+         case    FTE_VALUE_TYPE_MM:
+            {
+                snprintf(pValueString, ulLen, "%d.%02d", pObj->xData.ulValue / 100, pObj->xData.ulValue % 100);
+            }
+            break;
+            
          case    FTE_VALUE_TYPE_HEX32:
             {
                 snprintf(pValueString, ulLen, "0x%08x", pObj->xData.ulValue);
@@ -1145,6 +1275,18 @@ FTE_CHAR_PTR    FTE_VALUE_unit
         }
         break;
         
+     case    FTE_VALUE_TYPE_PH:
+        {
+            snprintf(pUnitString, ulLen, "PH");
+        }
+        break;
+        
+     case    FTE_VALUE_TYPE_MM:
+        {
+            snprintf(pUnitString, ulLen, "MM");
+        }
+        break;
+        
      case    FTE_VALUE_TYPE_PRESSURE:
         {
             snprintf(pUnitString, ulLen, "kgf");
@@ -1202,6 +1344,8 @@ FTE_BOOL    FTE_VALUE_equal
     case    FTE_VALUE_TYPE_PWR_KWH:
     case    FTE_VALUE_TYPE_PWR_KW:
     case    FTE_VALUE_TYPE_PPM:
+    case    FTE_VALUE_TYPE_PH:
+    case    FTE_VALUE_TYPE_MM:
     case    FTE_VALUE_TYPE_ULONG:
     case    FTE_VALUE_TYPE_HEX32:
         {
@@ -1274,6 +1418,8 @@ FTE_RET FTE_VALUE_toINT16
             break;
             
          case    FTE_VALUE_TYPE_PPM:
+         case    FTE_VALUE_TYPE_PH:
+         case    FTE_VALUE_TYPE_MM:
          case    FTE_VALUE_TYPE_ULONG:
          case    FTE_VALUE_TYPE_HEX32:
             {
